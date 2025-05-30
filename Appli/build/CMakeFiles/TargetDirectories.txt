@@ -1,4 +1,0 @@
-/home/blake/NER/Cerberus-2.0/Appli/build/CMakeFiles/Cerberus-2.0_Appli.dir
-/home/blake/NER/Cerberus-2.0/Appli/build/CMakeFiles/STM32_Drivers.dir
-/home/blake/NER/Cerberus-2.0/Appli/build/CMakeFiles/edit_cache.dir
-/home/blake/NER/Cerberus-2.0/Appli/build/CMakeFiles/rebuild_cache.dir
