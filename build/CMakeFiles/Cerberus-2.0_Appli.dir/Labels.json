@@ -1,0 +1,43 @@
+{
+	"sources" : 
+	[
+		{
+			"file" : "/home/blake/NER/Cerberus-2.0/build/CMakeFiles/Cerberus-2.0_Appli"
+		},
+		{
+			"file" : "/home/blake/NER/Cerberus-2.0/build/CMakeFiles/Cerberus-2.0_Appli.rule"
+		},
+		{
+			"file" : "/home/blake/NER/Cerberus-2.0/build/CMakeFiles/Cerberus-2.0_Appli-complete.rule"
+		},
+		{
+			"file" : "/home/blake/NER/Cerberus-2.0/build/Appli/src/Cerberus-2.0_Appli-stamp/Cerberus-2.0_Appli-build.rule"
+		},
+		{
+			"file" : "/home/blake/NER/Cerberus-2.0/build/Appli/src/Cerberus-2.0_Appli-stamp/Cerberus-2.0_Appli-configure.rule"
+		},
+		{
+			"file" : "/home/blake/NER/Cerberus-2.0/build/Appli/src/Cerberus-2.0_Appli-stamp/Cerberus-2.0_Appli-download.rule"
+		},
+		{
+			"file" : "/home/blake/NER/Cerberus-2.0/build/Appli/src/Cerberus-2.0_Appli-stamp/Cerberus-2.0_Appli-install.rule"
+		},
+		{
+			"file" : "/home/blake/NER/Cerberus-2.0/build/Appli/src/Cerberus-2.0_Appli-stamp/Cerberus-2.0_Appli-mkdir.rule"
+		},
+		{
+			"file" : "/home/blake/NER/Cerberus-2.0/build/Appli/src/Cerberus-2.0_Appli-stamp/Cerberus-2.0_Appli-patch.rule"
+		},
+		{
+			"file" : "/home/blake/NER/Cerberus-2.0/build/Appli/src/Cerberus-2.0_Appli-stamp/Cerberus-2.0_Appli-update.rule"
+		}
+	],
+	"target" : 
+	{
+		"labels" : 
+		[
+			"Cerberus-2.0_Appli"
+		],
+		"name" : "Cerberus-2.0_Appli"
+	}
+}

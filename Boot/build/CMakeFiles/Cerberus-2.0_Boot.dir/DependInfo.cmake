@@ -1,0 +1,45 @@
+
+# Consider dependencies only in project.
+set(CMAKE_DEPENDS_IN_PROJECT_ONLY OFF)
+
+# The set of languages for which implicit dependencies are needed:
+set(CMAKE_DEPENDS_LANGUAGES
+  "ASM"
+  )
+# The set of files for implicit dependencies of each language:
+set(CMAKE_DEPENDS_CHECK_ASM
+  "/home/blake/NER/Cerberus-2.0/Boot/Core/Startup/startup_stm32h7r7xx.s" "/home/blake/NER/Cerberus-2.0/Boot/build/CMakeFiles/Cerberus-2.0_Boot.dir/Core/Startup/startup_stm32h7r7xx.s.obj"
+  )
+set(CMAKE_ASM_COMPILER_ID "GNU")
+
+# Preprocessor definitions for this target.
+set(CMAKE_TARGET_DEFINITIONS_ASM
+  "DEBUG"
+  "STM32H7R7xx"
+  "USE_HAL_DRIVER"
+  )
+
+# The include file search paths:
+set(CMAKE_ASM_TARGET_INCLUDE_PATH
+  "../Core/Inc"
+  "../../Drivers/STM32H7RSxx_HAL_Driver/Inc"
+  "../../Drivers/STM32H7RSxx_HAL_Driver/Inc/Legacy"
+  "../../Drivers/CMSIS/Device/ST/STM32H7RSxx/Include"
+  "../../Drivers/CMSIS/Include"
+  )
+
+# The set of dependency files which are needed:
+set(CMAKE_DEPENDS_DEPENDENCY_FILES
+  "/home/blake/NER/Cerberus-2.0/Boot/Core/Src/main.c" "CMakeFiles/Cerberus-2.0_Boot.dir/Core/Src/main.c.obj" "gcc" "CMakeFiles/Cerberus-2.0_Boot.dir/Core/Src/main.c.obj.d"
+  "/home/blake/NER/Cerberus-2.0/Boot/Core/Src/stm32h7rsxx_hal_msp.c" "CMakeFiles/Cerberus-2.0_Boot.dir/Core/Src/stm32h7rsxx_hal_msp.c.obj" "gcc" "CMakeFiles/Cerberus-2.0_Boot.dir/Core/Src/stm32h7rsxx_hal_msp.c.obj.d"
+  "/home/blake/NER/Cerberus-2.0/Boot/Core/Src/stm32h7rsxx_it.c" "CMakeFiles/Cerberus-2.0_Boot.dir/Core/Src/stm32h7rsxx_it.c.obj" "gcc" "CMakeFiles/Cerberus-2.0_Boot.dir/Core/Src/stm32h7rsxx_it.c.obj.d"
+  "/home/blake/NER/Cerberus-2.0/Boot/Core/Src/syscalls.c" "CMakeFiles/Cerberus-2.0_Boot.dir/Core/Src/syscalls.c.obj" "gcc" "CMakeFiles/Cerberus-2.0_Boot.dir/Core/Src/syscalls.c.obj.d"
+  "/home/blake/NER/Cerberus-2.0/Boot/Core/Src/sysmem.c" "CMakeFiles/Cerberus-2.0_Boot.dir/Core/Src/sysmem.c.obj" "gcc" "CMakeFiles/Cerberus-2.0_Boot.dir/Core/Src/sysmem.c.obj.d"
+  )
+
+# Targets to which this target links.
+set(CMAKE_TARGET_LINKED_INFO_FILES
+  )
+
+# Fortran module output directory.
+set(CMAKE_Fortran_TARGET_MODULE_DIR "")

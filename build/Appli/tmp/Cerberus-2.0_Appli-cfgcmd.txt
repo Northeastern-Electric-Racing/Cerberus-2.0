@@ -1,0 +1,1 @@
+cmd='/usr/bin/cmake;-DCMAKE_EXPORT_COMPILE_COMMANDS=ON;-DCMAKE_TOOLCHAIN_FILE=/home/blake/NER/Cerberus-2.0/gcc-arm-none-eabi.cmake;-GUnix Makefiles;<SOURCE_DIR><SOURCE_SUBDIR>'
