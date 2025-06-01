@@ -25,6 +25,9 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
 # Compiler options
 set(STM32_MCU_FLAGS  "-mcpu=cortex-m7 -mfpu=fpv5-d16 -mfloat-abi=hard " )
 
+# Additional linker flags to handle exception tables
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,--gc-sections")
+
 #Linker options
 set(STM32_LINKER_SCRIPT stm32h7r7xx_flash.ld)
 set(STM32_LINKER_OPTION  )

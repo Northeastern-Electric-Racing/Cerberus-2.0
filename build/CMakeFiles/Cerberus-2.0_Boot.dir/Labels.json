@@ -1,0 +1,43 @@
+{
+	"sources" : 
+	[
+		{
+			"file" : "/home/app/build/CMakeFiles/Cerberus-2.0_Boot"
+		},
+		{
+			"file" : "/home/app/build/CMakeFiles/Cerberus-2.0_Boot.rule"
+		},
+		{
+			"file" : "/home/app/build/CMakeFiles/Cerberus-2.0_Boot-complete.rule"
+		},
+		{
+			"file" : "/home/app/build/Boot/src/Cerberus-2.0_Boot-stamp/Cerberus-2.0_Boot-build.rule"
+		},
+		{
+			"file" : "/home/app/build/Boot/src/Cerberus-2.0_Boot-stamp/Cerberus-2.0_Boot-configure.rule"
+		},
+		{
+			"file" : "/home/app/build/Boot/src/Cerberus-2.0_Boot-stamp/Cerberus-2.0_Boot-download.rule"
+		},
+		{
+			"file" : "/home/app/build/Boot/src/Cerberus-2.0_Boot-stamp/Cerberus-2.0_Boot-install.rule"
+		},
+		{
+			"file" : "/home/app/build/Boot/src/Cerberus-2.0_Boot-stamp/Cerberus-2.0_Boot-mkdir.rule"
+		},
+		{
+			"file" : "/home/app/build/Boot/src/Cerberus-2.0_Boot-stamp/Cerberus-2.0_Boot-patch.rule"
+		},
+		{
+			"file" : "/home/app/build/Boot/src/Cerberus-2.0_Boot-stamp/Cerberus-2.0_Boot-update.rule"
+		}
+	],
+	"target" : 
+	{
+		"labels" : 
+		[
+			"Cerberus-2.0_Boot"
+		],
+		"name" : "Cerberus-2.0_Boot"
+	}
+}
