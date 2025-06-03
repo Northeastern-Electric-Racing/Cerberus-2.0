@@ -14,7 +14,6 @@ set(CMAKE_ASM_COMPILER_ID "GNU")
 
 # Preprocessor definitions for this target.
 set(CMAKE_TARGET_DEFINITIONS_ASM
-  "DEBUG"
   "STM32H7R7xx"
   "USE_HAL_DRIVER"
   )

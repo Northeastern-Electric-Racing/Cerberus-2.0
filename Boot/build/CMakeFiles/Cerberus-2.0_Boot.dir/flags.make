@@ -3,15 +3,15 @@
 
 # compile ASM with /home/dev/arm-gnu-toolchain-11.3.rel1-x86_64-arm-none-eabi/bin/arm-none-eabi-gcc
 # compile C with /home/dev/arm-gnu-toolchain-11.3.rel1-x86_64-arm-none-eabi/bin/arm-none-eabi-gcc
-ASM_DEFINES = -DDEBUG -DSTM32H7R7xx -DUSE_HAL_DRIVER
+ASM_DEFINES = -DSTM32H7R7xx -DUSE_HAL_DRIVER
 
 ASM_INCLUDES = -I/home/app/Boot/Core/Inc -I/home/app/Boot/../Drivers/STM32H7RSxx_HAL_Driver/Inc -I/home/app/Boot/../Drivers/STM32H7RSxx_HAL_Driver/Inc/Legacy -I/home/app/Boot/../Drivers/CMSIS/Device/ST/STM32H7RSxx/Include -I/home/app/Boot/../Drivers/CMSIS/Include
 
-ASM_FLAGS =  -mcpu=cortex-m7 -mfpu=fpv5-d16 -mfloat-abi=hard  -Wall -Wextra -Wpedantic -fdata-sections -ffunction-sections -x assembler-with-cpp -MMD -MP -g
+ASM_FLAGS =  -mcpu=cortex-m7 -mfpu=fpv5-d16 -mfloat-abi=hard  -Wall -Wextra -Wpedantic -fdata-sections -ffunction-sections -x assembler-with-cpp -MMD -MP -O3 -DNDEBUG
 
-C_DEFINES = -DDEBUG -DSTM32H7R7xx -DUSE_HAL_DRIVER
+C_DEFINES = -DSTM32H7R7xx -DUSE_HAL_DRIVER
 
 C_INCLUDES = -I/home/app/Boot/Core/Inc -I/home/app/Boot/../Drivers/STM32H7RSxx_HAL_Driver/Inc -I/home/app/Boot/../Drivers/STM32H7RSxx_HAL_Driver/Inc/Legacy -I/home/app/Boot/../Drivers/CMSIS/Device/ST/STM32H7RSxx/Include -I/home/app/Boot/../Drivers/CMSIS/Include
 
-C_FLAGS =  -mcpu=cortex-m7 -mfpu=fpv5-d16 -mfloat-abi=hard  -Wall -Wextra -Wpedantic -fdata-sections -ffunction-sections -O0 -g3 -std=gnu11
+C_FLAGS =  -mcpu=cortex-m7 -mfpu=fpv5-d16 -mfloat-abi=hard  -Wall -Wextra -Wpedantic -fdata-sections -ffunction-sections -Os -g0 -std=gnu11
 

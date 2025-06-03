@@ -16,6 +16,7 @@ include("gcc-arm-none-eabi.cmake")
 
 # Set the project name
 set(CMAKE_PROJECT_NAME Cerberus-2.0)
+set(CMAKE_BUILD_TYPE Release)
 
 # Core project settings
 project(${CMAKE_PROJECT_NAME})

@@ -22,7 +22,7 @@ CMAKE_AR:FILEPATH=/home/dev/arm-gnu-toolchain-11.3.rel1-x86_64-arm-none-eabi/bin
 
 //Choose the type of build, options are: None Debug Release RelWithDebInfo
 // MinSizeRel ...
-CMAKE_BUILD_TYPE:STRING=
+CMAKE_BUILD_TYPE:STRING=Release
 
 //Enable/Disable color output during build.
 CMAKE_COLOR_MAKEFILE:BOOL=ON

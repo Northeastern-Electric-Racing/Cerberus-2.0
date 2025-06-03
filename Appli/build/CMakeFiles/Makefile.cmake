@@ -131,4 +131,7 @@ set(CMAKE_MAKEFILE_PRODUCTS
 set(CMAKE_DEPEND_INFO_FILES
   "CMakeFiles/Cerberus-2.0_Appli.dir/DependInfo.cmake"
   "CMakeFiles/STM32_Drivers.dir/DependInfo.cmake"
+  "CMakeFiles/Interfaces.dir/DependInfo.cmake"
+  "CMakeFiles/ThreadX.dir/DependInfo.cmake"
+  "CMakeFiles/NetXDuo.dir/DependInfo.cmake"
   )

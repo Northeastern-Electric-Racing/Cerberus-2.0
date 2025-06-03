@@ -1,4 +1,7 @@
 /home/app/Appli/build/CMakeFiles/Cerberus-2.0_Appli.dir
 /home/app/Appli/build/CMakeFiles/STM32_Drivers.dir
+/home/app/Appli/build/CMakeFiles/Interfaces.dir
+/home/app/Appli/build/CMakeFiles/ThreadX.dir
+/home/app/Appli/build/CMakeFiles/NetXDuo.dir
 /home/app/Appli/build/CMakeFiles/edit_cache.dir
 /home/app/Appli/build/CMakeFiles/rebuild_cache.dir

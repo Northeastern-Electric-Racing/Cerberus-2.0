@@ -5,7 +5,7 @@ events:
     kind: "message-v1"
     backtrace:
       - "/usr/share/cmake-3.28/Modules/CMakeDetermineSystem.cmake:228 (message)"
-      - "CMakeLists.txt:21 (project)"
+      - "CMakeLists.txt:22 (project)"
     message: |
       The target system is: Generic -  - arm
       The host system is: Linux - 6.6.87.1-microsoft-standard-WSL2 - x86_64
@@ -15,7 +15,7 @@ events:
       - "/usr/share/cmake-3.28/Modules/CMakeDetermineCompilerId.cmake:17 (message)"
       - "/usr/share/cmake-3.28/Modules/CMakeDetermineCompilerId.cmake:64 (__determine_compiler_id_test)"
       - "/usr/share/cmake-3.28/Modules/CMakeDetermineCCompiler.cmake:123 (CMAKE_DETERMINE_COMPILER_ID)"
-      - "CMakeLists.txt:21 (project)"
+      - "CMakeLists.txt:22 (project)"
     message: |
       Compiling the C compiler identification source file "CMakeCCompilerId.c" failed.
       Compiler: /home/dev/arm-gnu-toolchain-11.3.rel1-x86_64-arm-none-eabi/bin/arm-none-eabi-gcc 
@@ -45,7 +45,7 @@ events:
       - "/usr/share/cmake-3.28/Modules/CMakeDetermineCompilerId.cmake:17 (message)"
       - "/usr/share/cmake-3.28/Modules/CMakeDetermineCompilerId.cmake:64 (__determine_compiler_id_test)"
       - "/usr/share/cmake-3.28/Modules/CMakeDetermineCCompiler.cmake:123 (CMAKE_DETERMINE_COMPILER_ID)"
-      - "CMakeLists.txt:21 (project)"
+      - "CMakeLists.txt:22 (project)"
     message: |
       Compiling the C compiler identification source file "CMakeCCompilerId.c" succeeded.
       Compiler: /home/dev/arm-gnu-toolchain-11.3.rel1-x86_64-arm-none-eabi/bin/arm-none-eabi-gcc 
@@ -67,7 +67,7 @@ events:
       - "/usr/share/cmake-3.28/Modules/CMakeDetermineCompilerId.cmake:17 (message)"
       - "/usr/share/cmake-3.28/Modules/CMakeDetermineCompilerId.cmake:64 (__determine_compiler_id_test)"
       - "/usr/share/cmake-3.28/Modules/CMakeDetermineCXXCompiler.cmake:126 (CMAKE_DETERMINE_COMPILER_ID)"
-      - "CMakeLists.txt:21 (project)"
+      - "CMakeLists.txt:22 (project)"
     message: |
       Compiling the CXX compiler identification source file "CMakeCXXCompilerId.cpp" failed.
       Compiler: /home/dev/arm-gnu-toolchain-11.3.rel1-x86_64-arm-none-eabi/bin/arm-none-eabi-g++ 
@@ -97,7 +97,7 @@ events:
       - "/usr/share/cmake-3.28/Modules/CMakeDetermineCompilerId.cmake:17 (message)"
       - "/usr/share/cmake-3.28/Modules/CMakeDetermineCompilerId.cmake:64 (__determine_compiler_id_test)"
       - "/usr/share/cmake-3.28/Modules/CMakeDetermineCXXCompiler.cmake:126 (CMAKE_DETERMINE_COMPILER_ID)"
-      - "CMakeLists.txt:21 (project)"
+      - "CMakeLists.txt:22 (project)"
     message: |
       Compiling the CXX compiler identification source file "CMakeCXXCompilerId.cpp" succeeded.
       Compiler: /home/dev/arm-gnu-toolchain-11.3.rel1-x86_64-arm-none-eabi/bin/arm-none-eabi-g++ 
@@ -118,12 +118,12 @@ events:
     backtrace:
       - "/usr/share/cmake-3.28/Modules/CMakeDetermineCompilerABI.cmake:57 (try_compile)"
       - "/usr/share/cmake-3.28/Modules/CMakeTestCCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
-      - "CMakeLists.txt:21 (project)"
+      - "CMakeLists.txt:22 (project)"
     checks:
       - "Detecting C compiler ABI info"
     directories:
-      source: "/home/app/build/CMakeFiles/CMakeScratch/TryCompile-megPmx"
-      binary: "/home/app/build/CMakeFiles/CMakeScratch/TryCompile-megPmx"
+      source: "/home/app/build/CMakeFiles/CMakeScratch/TryCompile-uc6Sq9"
+      binary: "/home/app/build/CMakeFiles/CMakeScratch/TryCompile-uc6Sq9"
     cmakeVariables:
       CMAKE_C_FLAGS: "  -Wall -Wextra -Wpedantic -fdata-sections -ffunction-sections"
       CMAKE_C_FLAGS_DEBUG: "-O0 -g3"
@@ -132,13 +132,13 @@ events:
       variable: "CMAKE_C_ABI_COMPILED"
       cached: true
       stdout: |
-        Change Dir: '/home/app/build/CMakeFiles/CMakeScratch/TryCompile-megPmx'
+        Change Dir: '/home/app/build/CMakeFiles/CMakeScratch/TryCompile-uc6Sq9'
         
-        Run Build Command(s): /usr/bin/cmake -E env VERBOSE=1 /usr/bin/gmake -f Makefile cmTC_61b03/fast
-        /usr/bin/gmake  -f CMakeFiles/cmTC_61b03.dir/build.make CMakeFiles/cmTC_61b03.dir/build
-        gmake[1]: Entering directory '/home/app/build/CMakeFiles/CMakeScratch/TryCompile-megPmx'
-        Building C object CMakeFiles/cmTC_61b03.dir/CMakeCCompilerABI.c.obj
-        /home/dev/arm-gnu-toolchain-11.3.rel1-x86_64-arm-none-eabi/bin/arm-none-eabi-gcc   -Wall -Wextra -Wpedantic -fdata-sections -ffunction-sections    -v -o CMakeFiles/cmTC_61b03.dir/CMakeCCompilerABI.c.obj -c /usr/share/cmake-3.28/Modules/CMakeCCompilerABI.c
+        Run Build Command(s): /usr/bin/cmake -E env VERBOSE=1 /usr/bin/gmake -f Makefile cmTC_f2230/fast
+        /usr/bin/gmake  -f CMakeFiles/cmTC_f2230.dir/build.make CMakeFiles/cmTC_f2230.dir/build
+        gmake[1]: Entering directory '/home/app/build/CMakeFiles/CMakeScratch/TryCompile-uc6Sq9'
+        Building C object CMakeFiles/cmTC_f2230.dir/CMakeCCompilerABI.c.obj
+        /home/dev/arm-gnu-toolchain-11.3.rel1-x86_64-arm-none-eabi/bin/arm-none-eabi-gcc   -Wall -Wextra -Wpedantic -fdata-sections -ffunction-sections    -v -o CMakeFiles/cmTC_f2230.dir/CMakeCCompilerABI.c.obj -c /usr/share/cmake-3.28/Modules/CMakeCCompilerABI.c
         Using built-in specs.
         COLLECT_GCC=/home/dev/arm-gnu-toolchain-11.3.rel1-x86_64-arm-none-eabi/bin/arm-none-eabi-gcc
         Target: arm-none-eabi
@@ -146,8 +146,8 @@ events:
         Thread model: single
         Supported LTO compression algorithms: zlib
         gcc version 11.3.1 20220712 (Arm GNU Toolchain 11.3.Rel1) 
-        COLLECT_GCC_OPTIONS='-Wall' '-Wextra' '-Wpedantic' '-fdata-sections' '-ffunction-sections' '-v' '-o' 'CMakeFiles/cmTC_61b03.dir/CMakeCCompilerABI.c.obj' '-c' '-mcpu=arm7tdmi' '-mfloat-abi=soft' '-marm' '-mlibarch=armv4t' '-march=armv4t' '-dumpdir' 'CMakeFiles/cmTC_61b03.dir/'
-         /home/dev/arm-gnu-toolchain-11.3.rel1-x86_64-arm-none-eabi/bin/../libexec/gcc/arm-none-eabi/11.3.1/cc1 -quiet -v -iprefix /home/dev/arm-gnu-toolchain-11.3.rel1-x86_64-arm-none-eabi/bin/../lib/gcc/arm-none-eabi/11.3.1/ -isysroot /home/dev/arm-gnu-toolchain-11.3.rel1-x86_64-arm-none-eabi/bin/../arm-none-eabi -D__USES_INITFINI__ /usr/share/cmake-3.28/Modules/CMakeCCompilerABI.c -quiet -dumpdir CMakeFiles/cmTC_61b03.dir/ -dumpbase CMakeCCompilerABI.c.c -dumpbase-ext .c -mcpu=arm7tdmi -mfloat-abi=soft -marm -mlibarch=armv4t -march=armv4t -Wall -Wextra -Wpedantic -version -fdata-sections -ffunction-sections -o /tmp/ccCWKhL0.s
+        COLLECT_GCC_OPTIONS='-Wall' '-Wextra' '-Wpedantic' '-fdata-sections' '-ffunction-sections' '-v' '-o' 'CMakeFiles/cmTC_f2230.dir/CMakeCCompilerABI.c.obj' '-c' '-mcpu=arm7tdmi' '-mfloat-abi=soft' '-marm' '-mlibarch=armv4t' '-march=armv4t' '-dumpdir' 'CMakeFiles/cmTC_f2230.dir/'
+         /home/dev/arm-gnu-toolchain-11.3.rel1-x86_64-arm-none-eabi/bin/../libexec/gcc/arm-none-eabi/11.3.1/cc1 -quiet -v -iprefix /home/dev/arm-gnu-toolchain-11.3.rel1-x86_64-arm-none-eabi/bin/../lib/gcc/arm-none-eabi/11.3.1/ -isysroot /home/dev/arm-gnu-toolchain-11.3.rel1-x86_64-arm-none-eabi/bin/../arm-none-eabi -D__USES_INITFINI__ /usr/share/cmake-3.28/Modules/CMakeCCompilerABI.c -quiet -dumpdir CMakeFiles/cmTC_f2230.dir/ -dumpbase CMakeCCompilerABI.c.c -dumpbase-ext .c -mcpu=arm7tdmi -mfloat-abi=soft -marm -mlibarch=armv4t -march=armv4t -Wall -Wextra -Wpedantic -version -fdata-sections -ffunction-sections -o /tmp/cca68d6N.s
         GNU C17 (Arm GNU Toolchain 11.3.Rel1) version 11.3.1 20220712 (arm-none-eabi)
         	compiled by GNU C version 4.8.5 20150623 (Red Hat 4.8.5-44), GMP version 6.2.1, MPFR version 3.1.6, MPC version 1.0.3, isl version isl-0.15-1-g835ea3a-GMP
         
@@ -168,18 +168,18 @@ events:
         
         GGC heuristics: --param ggc-min-expand=100 --param ggc-min-heapsize=131072
         Compiler executable checksum: 801c9e4705ed9ec92526a3ce66f3ab92
-        COLLECT_GCC_OPTIONS='-Wall' '-Wextra' '-Wpedantic' '-fdata-sections' '-ffunction-sections' '-v' '-o' 'CMakeFiles/cmTC_61b03.dir/CMakeCCompilerABI.c.obj' '-c' '-mcpu=arm7tdmi' '-mfloat-abi=soft' '-marm' '-mlibarch=armv4t' '-march=armv4t' '-dumpdir' 'CMakeFiles/cmTC_61b03.dir/'
-         /home/dev/arm-gnu-toolchain-11.3.rel1-x86_64-arm-none-eabi/bin/../lib/gcc/arm-none-eabi/11.3.1/../../../../arm-none-eabi/bin/as -v -march=armv4t -mfloat-abi=soft -meabi=5 -o CMakeFiles/cmTC_61b03.dir/CMakeCCompilerABI.c.obj /tmp/ccCWKhL0.s
+        COLLECT_GCC_OPTIONS='-Wall' '-Wextra' '-Wpedantic' '-fdata-sections' '-ffunction-sections' '-v' '-o' 'CMakeFiles/cmTC_f2230.dir/CMakeCCompilerABI.c.obj' '-c' '-mcpu=arm7tdmi' '-mfloat-abi=soft' '-marm' '-mlibarch=armv4t' '-march=armv4t' '-dumpdir' 'CMakeFiles/cmTC_f2230.dir/'
+         /home/dev/arm-gnu-toolchain-11.3.rel1-x86_64-arm-none-eabi/bin/../lib/gcc/arm-none-eabi/11.3.1/../../../../arm-none-eabi/bin/as -v -march=armv4t -mfloat-abi=soft -meabi=5 -o CMakeFiles/cmTC_f2230.dir/CMakeCCompilerABI.c.obj /tmp/cca68d6N.s
         GNU assembler version 2.38 (arm-none-eabi) using BFD version (Arm GNU Toolchain 11.3.Rel1) 2.38.20220708
         COMPILER_PATH=/home/dev/arm-gnu-toolchain-11.3.rel1-x86_64-arm-none-eabi/bin/../libexec/gcc/arm-none-eabi/11.3.1/:/home/dev/arm-gnu-toolchain-11.3.rel1-x86_64-arm-none-eabi/bin/../libexec/gcc/:/home/dev/arm-gnu-toolchain-11.3.rel1-x86_64-arm-none-eabi/bin/../lib/gcc/arm-none-eabi/11.3.1/../../../../arm-none-eabi/bin/
         LIBRARY_PATH=/home/dev/arm-gnu-toolchain-11.3.rel1-x86_64-arm-none-eabi/bin/../lib/gcc/arm-none-eabi/11.3.1/:/home/dev/arm-gnu-toolchain-11.3.rel1-x86_64-arm-none-eabi/bin/../lib/gcc/:/home/dev/arm-gnu-toolchain-11.3.rel1-x86_64-arm-none-eabi/bin/../lib/gcc/arm-none-eabi/11.3.1/../../../../arm-none-eabi/lib/:/home/dev/arm-gnu-toolchain-11.3.rel1-x86_64-arm-none-eabi/bin/../arm-none-eabi/lib/
-        COLLECT_GCC_OPTIONS='-Wall' '-Wextra' '-Wpedantic' '-fdata-sections' '-ffunction-sections' '-v' '-o' 'CMakeFiles/cmTC_61b03.dir/CMakeCCompilerABI.c.obj' '-c' '-mcpu=arm7tdmi' '-mfloat-abi=soft' '-marm' '-mlibarch=armv4t' '-march=armv4t' '-dumpdir' 'CMakeFiles/cmTC_61b03.dir/CMakeCCompilerABI.c.'
-        Linking C static library libcmTC_61b03.a
-        /usr/bin/cmake -P CMakeFiles/cmTC_61b03.dir/cmake_clean_target.cmake
-        /usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_61b03.dir/link.txt --verbose=1
-        /home/dev/arm-gnu-toolchain-11.3.rel1-x86_64-arm-none-eabi/bin/arm-none-eabi-ar qc libcmTC_61b03.a CMakeFiles/cmTC_61b03.dir/CMakeCCompilerABI.c.obj
-        /home/dev/arm-gnu-toolchain-11.3.rel1-x86_64-arm-none-eabi/bin/arm-none-eabi-ranlib libcmTC_61b03.a
-        gmake[1]: Leaving directory '/home/app/build/CMakeFiles/CMakeScratch/TryCompile-megPmx'
+        COLLECT_GCC_OPTIONS='-Wall' '-Wextra' '-Wpedantic' '-fdata-sections' '-ffunction-sections' '-v' '-o' 'CMakeFiles/cmTC_f2230.dir/CMakeCCompilerABI.c.obj' '-c' '-mcpu=arm7tdmi' '-mfloat-abi=soft' '-marm' '-mlibarch=armv4t' '-march=armv4t' '-dumpdir' 'CMakeFiles/cmTC_f2230.dir/CMakeCCompilerABI.c.'
+        Linking C static library libcmTC_f2230.a
+        /usr/bin/cmake -P CMakeFiles/cmTC_f2230.dir/cmake_clean_target.cmake
+        /usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_f2230.dir/link.txt --verbose=1
+        /home/dev/arm-gnu-toolchain-11.3.rel1-x86_64-arm-none-eabi/bin/arm-none-eabi-ar qc libcmTC_f2230.a CMakeFiles/cmTC_f2230.dir/CMakeCCompilerABI.c.obj
+        /home/dev/arm-gnu-toolchain-11.3.rel1-x86_64-arm-none-eabi/bin/arm-none-eabi-ranlib libcmTC_f2230.a
+        gmake[1]: Leaving directory '/home/app/build/CMakeFiles/CMakeScratch/TryCompile-uc6Sq9'
         
       exitCode: 0
   -
@@ -187,7 +187,7 @@ events:
     backtrace:
       - "/usr/share/cmake-3.28/Modules/CMakeDetermineCompilerABI.cmake:127 (message)"
       - "/usr/share/cmake-3.28/Modules/CMakeTestCCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
-      - "CMakeLists.txt:21 (project)"
+      - "CMakeLists.txt:22 (project)"
     message: |
       Parsed C implicit include dir info: rv=done
         found start of include info
@@ -207,17 +207,17 @@ events:
     backtrace:
       - "/usr/share/cmake-3.28/Modules/CMakeDetermineCompilerABI.cmake:159 (message)"
       - "/usr/share/cmake-3.28/Modules/CMakeTestCCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
-      - "CMakeLists.txt:21 (project)"
+      - "CMakeLists.txt:22 (project)"
     message: |
       Parsed C implicit link information:
         link line regex: [^( *|.*[/\\])(arm-none-eabi-g\\+\\+|CMAKE_LINK_STARTFILE-NOTFOUND|([^/\\]+-)?ld|collect2)[^/\\]*( |$)]
-        ignore line: [Change Dir: '/home/app/build/CMakeFiles/CMakeScratch/TryCompile-megPmx']
+        ignore line: [Change Dir: '/home/app/build/CMakeFiles/CMakeScratch/TryCompile-uc6Sq9']
         ignore line: []
-        ignore line: [Run Build Command(s): /usr/bin/cmake -E env VERBOSE=1 /usr/bin/gmake -f Makefile cmTC_61b03/fast]
-        ignore line: [/usr/bin/gmake  -f CMakeFiles/cmTC_61b03.dir/build.make CMakeFiles/cmTC_61b03.dir/build]
-        ignore line: [gmake[1]: Entering directory '/home/app/build/CMakeFiles/CMakeScratch/TryCompile-megPmx']
-        ignore line: [Building C object CMakeFiles/cmTC_61b03.dir/CMakeCCompilerABI.c.obj]
-        ignore line: [/home/dev/arm-gnu-toolchain-11.3.rel1-x86_64-arm-none-eabi/bin/arm-none-eabi-gcc   -Wall -Wextra -Wpedantic -fdata-sections -ffunction-sections    -v -o CMakeFiles/cmTC_61b03.dir/CMakeCCompilerABI.c.obj -c /usr/share/cmake-3.28/Modules/CMakeCCompilerABI.c]
+        ignore line: [Run Build Command(s): /usr/bin/cmake -E env VERBOSE=1 /usr/bin/gmake -f Makefile cmTC_f2230/fast]
+        ignore line: [/usr/bin/gmake  -f CMakeFiles/cmTC_f2230.dir/build.make CMakeFiles/cmTC_f2230.dir/build]
+        ignore line: [gmake[1]: Entering directory '/home/app/build/CMakeFiles/CMakeScratch/TryCompile-uc6Sq9']
+        ignore line: [Building C object CMakeFiles/cmTC_f2230.dir/CMakeCCompilerABI.c.obj]
+        ignore line: [/home/dev/arm-gnu-toolchain-11.3.rel1-x86_64-arm-none-eabi/bin/arm-none-eabi-gcc   -Wall -Wextra -Wpedantic -fdata-sections -ffunction-sections    -v -o CMakeFiles/cmTC_f2230.dir/CMakeCCompilerABI.c.obj -c /usr/share/cmake-3.28/Modules/CMakeCCompilerABI.c]
         ignore line: [Using built-in specs.]
         ignore line: [COLLECT_GCC=/home/dev/arm-gnu-toolchain-11.3.rel1-x86_64-arm-none-eabi/bin/arm-none-eabi-gcc]
         ignore line: [Target: arm-none-eabi]
@@ -225,8 +225,8 @@ events:
         ignore line: [Thread model: single]
         ignore line: [Supported LTO compression algorithms: zlib]
         ignore line: [gcc version 11.3.1 20220712 (Arm GNU Toolchain 11.3.Rel1) ]
-        ignore line: [COLLECT_GCC_OPTIONS='-Wall' '-Wextra' '-Wpedantic' '-fdata-sections' '-ffunction-sections' '-v' '-o' 'CMakeFiles/cmTC_61b03.dir/CMakeCCompilerABI.c.obj' '-c' '-mcpu=arm7tdmi' '-mfloat-abi=soft' '-marm' '-mlibarch=armv4t' '-march=armv4t' '-dumpdir' 'CMakeFiles/cmTC_61b03.dir/']
-        ignore line: [ /home/dev/arm-gnu-toolchain-11.3.rel1-x86_64-arm-none-eabi/bin/../libexec/gcc/arm-none-eabi/11.3.1/cc1 -quiet -v -iprefix /home/dev/arm-gnu-toolchain-11.3.rel1-x86_64-arm-none-eabi/bin/../lib/gcc/arm-none-eabi/11.3.1/ -isysroot /home/dev/arm-gnu-toolchain-11.3.rel1-x86_64-arm-none-eabi/bin/../arm-none-eabi -D__USES_INITFINI__ /usr/share/cmake-3.28/Modules/CMakeCCompilerABI.c -quiet -dumpdir CMakeFiles/cmTC_61b03.dir/ -dumpbase CMakeCCompilerABI.c.c -dumpbase-ext .c -mcpu=arm7tdmi -mfloat-abi=soft -marm -mlibarch=armv4t -march=armv4t -Wall -Wextra -Wpedantic -version -fdata-sections -ffunction-sections -o /tmp/ccCWKhL0.s]
+        ignore line: [COLLECT_GCC_OPTIONS='-Wall' '-Wextra' '-Wpedantic' '-fdata-sections' '-ffunction-sections' '-v' '-o' 'CMakeFiles/cmTC_f2230.dir/CMakeCCompilerABI.c.obj' '-c' '-mcpu=arm7tdmi' '-mfloat-abi=soft' '-marm' '-mlibarch=armv4t' '-march=armv4t' '-dumpdir' 'CMakeFiles/cmTC_f2230.dir/']
+        ignore line: [ /home/dev/arm-gnu-toolchain-11.3.rel1-x86_64-arm-none-eabi/bin/../libexec/gcc/arm-none-eabi/11.3.1/cc1 -quiet -v -iprefix /home/dev/arm-gnu-toolchain-11.3.rel1-x86_64-arm-none-eabi/bin/../lib/gcc/arm-none-eabi/11.3.1/ -isysroot /home/dev/arm-gnu-toolchain-11.3.rel1-x86_64-arm-none-eabi/bin/../arm-none-eabi -D__USES_INITFINI__ /usr/share/cmake-3.28/Modules/CMakeCCompilerABI.c -quiet -dumpdir CMakeFiles/cmTC_f2230.dir/ -dumpbase CMakeCCompilerABI.c.c -dumpbase-ext .c -mcpu=arm7tdmi -mfloat-abi=soft -marm -mlibarch=armv4t -march=armv4t -Wall -Wextra -Wpedantic -version -fdata-sections -ffunction-sections -o /tmp/cca68d6N.s]
         ignore line: [GNU C17 (Arm GNU Toolchain 11.3.Rel1) version 11.3.1 20220712 (arm-none-eabi)]
         ignore line: [	compiled by GNU C version 4.8.5 20150623 (Red Hat 4.8.5-44)  GMP version 6.2.1  MPFR version 3.1.6  MPC version 1.0.3  isl version isl-0.15-1-g835ea3a-GMP]
         ignore line: []
@@ -247,18 +247,18 @@ events:
         ignore line: []
         ignore line: [GGC heuristics: --param ggc-min-expand=100 --param ggc-min-heapsize=131072]
         ignore line: [Compiler executable checksum: 801c9e4705ed9ec92526a3ce66f3ab92]
-        ignore line: [COLLECT_GCC_OPTIONS='-Wall' '-Wextra' '-Wpedantic' '-fdata-sections' '-ffunction-sections' '-v' '-o' 'CMakeFiles/cmTC_61b03.dir/CMakeCCompilerABI.c.obj' '-c' '-mcpu=arm7tdmi' '-mfloat-abi=soft' '-marm' '-mlibarch=armv4t' '-march=armv4t' '-dumpdir' 'CMakeFiles/cmTC_61b03.dir/']
-        ignore line: [ /home/dev/arm-gnu-toolchain-11.3.rel1-x86_64-arm-none-eabi/bin/../lib/gcc/arm-none-eabi/11.3.1/../../../../arm-none-eabi/bin/as -v -march=armv4t -mfloat-abi=soft -meabi=5 -o CMakeFiles/cmTC_61b03.dir/CMakeCCompilerABI.c.obj /tmp/ccCWKhL0.s]
+        ignore line: [COLLECT_GCC_OPTIONS='-Wall' '-Wextra' '-Wpedantic' '-fdata-sections' '-ffunction-sections' '-v' '-o' 'CMakeFiles/cmTC_f2230.dir/CMakeCCompilerABI.c.obj' '-c' '-mcpu=arm7tdmi' '-mfloat-abi=soft' '-marm' '-mlibarch=armv4t' '-march=armv4t' '-dumpdir' 'CMakeFiles/cmTC_f2230.dir/']
+        ignore line: [ /home/dev/arm-gnu-toolchain-11.3.rel1-x86_64-arm-none-eabi/bin/../lib/gcc/arm-none-eabi/11.3.1/../../../../arm-none-eabi/bin/as -v -march=armv4t -mfloat-abi=soft -meabi=5 -o CMakeFiles/cmTC_f2230.dir/CMakeCCompilerABI.c.obj /tmp/cca68d6N.s]
         ignore line: [GNU assembler version 2.38 (arm-none-eabi) using BFD version (Arm GNU Toolchain 11.3.Rel1) 2.38.20220708]
         ignore line: [COMPILER_PATH=/home/dev/arm-gnu-toolchain-11.3.rel1-x86_64-arm-none-eabi/bin/../libexec/gcc/arm-none-eabi/11.3.1/:/home/dev/arm-gnu-toolchain-11.3.rel1-x86_64-arm-none-eabi/bin/../libexec/gcc/:/home/dev/arm-gnu-toolchain-11.3.rel1-x86_64-arm-none-eabi/bin/../lib/gcc/arm-none-eabi/11.3.1/../../../../arm-none-eabi/bin/]
         ignore line: [LIBRARY_PATH=/home/dev/arm-gnu-toolchain-11.3.rel1-x86_64-arm-none-eabi/bin/../lib/gcc/arm-none-eabi/11.3.1/:/home/dev/arm-gnu-toolchain-11.3.rel1-x86_64-arm-none-eabi/bin/../lib/gcc/:/home/dev/arm-gnu-toolchain-11.3.rel1-x86_64-arm-none-eabi/bin/../lib/gcc/arm-none-eabi/11.3.1/../../../../arm-none-eabi/lib/:/home/dev/arm-gnu-toolchain-11.3.rel1-x86_64-arm-none-eabi/bin/../arm-none-eabi/lib/]
-        ignore line: [COLLECT_GCC_OPTIONS='-Wall' '-Wextra' '-Wpedantic' '-fdata-sections' '-ffunction-sections' '-v' '-o' 'CMakeFiles/cmTC_61b03.dir/CMakeCCompilerABI.c.obj' '-c' '-mcpu=arm7tdmi' '-mfloat-abi=soft' '-marm' '-mlibarch=armv4t' '-march=armv4t' '-dumpdir' 'CMakeFiles/cmTC_61b03.dir/CMakeCCompilerABI.c.']
-        ignore line: [Linking C static library libcmTC_61b03.a]
-        ignore line: [/usr/bin/cmake -P CMakeFiles/cmTC_61b03.dir/cmake_clean_target.cmake]
-        ignore line: [/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_61b03.dir/link.txt --verbose=1]
-        ignore line: [/home/dev/arm-gnu-toolchain-11.3.rel1-x86_64-arm-none-eabi/bin/arm-none-eabi-ar qc libcmTC_61b03.a CMakeFiles/cmTC_61b03.dir/CMakeCCompilerABI.c.obj]
-        ignore line: [/home/dev/arm-gnu-toolchain-11.3.rel1-x86_64-arm-none-eabi/bin/arm-none-eabi-ranlib libcmTC_61b03.a]
-        ignore line: [gmake[1]: Leaving directory '/home/app/build/CMakeFiles/CMakeScratch/TryCompile-megPmx']
+        ignore line: [COLLECT_GCC_OPTIONS='-Wall' '-Wextra' '-Wpedantic' '-fdata-sections' '-ffunction-sections' '-v' '-o' 'CMakeFiles/cmTC_f2230.dir/CMakeCCompilerABI.c.obj' '-c' '-mcpu=arm7tdmi' '-mfloat-abi=soft' '-marm' '-mlibarch=armv4t' '-march=armv4t' '-dumpdir' 'CMakeFiles/cmTC_f2230.dir/CMakeCCompilerABI.c.']
+        ignore line: [Linking C static library libcmTC_f2230.a]
+        ignore line: [/usr/bin/cmake -P CMakeFiles/cmTC_f2230.dir/cmake_clean_target.cmake]
+        ignore line: [/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_f2230.dir/link.txt --verbose=1]
+        ignore line: [/home/dev/arm-gnu-toolchain-11.3.rel1-x86_64-arm-none-eabi/bin/arm-none-eabi-ar qc libcmTC_f2230.a CMakeFiles/cmTC_f2230.dir/CMakeCCompilerABI.c.obj]
+        ignore line: [/home/dev/arm-gnu-toolchain-11.3.rel1-x86_64-arm-none-eabi/bin/arm-none-eabi-ranlib libcmTC_f2230.a]
+        ignore line: [gmake[1]: Leaving directory '/home/app/build/CMakeFiles/CMakeScratch/TryCompile-uc6Sq9']
         ignore line: []
         ignore line: []
         implicit libs: []
