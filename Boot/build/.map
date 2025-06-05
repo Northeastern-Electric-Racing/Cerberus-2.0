@@ -566,6 +566,10 @@ Discarded input sections
                 0x0000000000000000       0x16 CMakeFiles/Cerberus-2.0_Boot.dir/home/app/Drivers/Embedded-Base/general/src/lan8670.c.obj
  .text.LAN8670_PLCA_Set_Node_Id
                 0x0000000000000000       0x16 CMakeFiles/Cerberus-2.0_Boot.dir/home/app/Drivers/Embedded-Base/general/src/lan8670.c.obj
+ .rodata.LAN8670_Get_Link_State.str1.1
+                0x0000000000000000       0x58 CMakeFiles/Cerberus-2.0_Boot.dir/home/app/Drivers/Embedded-Base/general/src/lan8670.c.obj
+ .text.LAN8670_Get_Link_State
+                0x0000000000000000       0x48 CMakeFiles/Cerberus-2.0_Boot.dir/home/app/Drivers/Embedded-Base/general/src/lan8670.c.obj
  .comment       0x0000000000000000       0x34 CMakeFiles/Cerberus-2.0_Boot.dir/home/app/Drivers/Embedded-Base/general/src/lan8670.c.obj
  .ARM.attributes
                 0x0000000000000000       0x32 CMakeFiles/Cerberus-2.0_Boot.dir/home/app/Drivers/Embedded-Base/general/src/lan8670.c.obj
