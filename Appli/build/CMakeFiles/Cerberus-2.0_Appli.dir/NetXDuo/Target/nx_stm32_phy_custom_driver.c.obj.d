@@ -48,4 +48,6 @@ CMakeFiles/Cerberus-2.0_Appli.dir/NetXDuo/Target/nx_stm32_phy_custom_driver.c.ob
  /home/app/Appli/../Drivers/STM32H7RSxx_HAL_Driver/Inc/stm32h7rsxx_hal_flash.h \
  /home/app/Appli/../Drivers/STM32H7RSxx_HAL_Driver/Inc/stm32h7rsxx_hal_flash_ex.h \
  /home/app/Appli/../Drivers/STM32H7RSxx_HAL_Driver/Inc/stm32h7rsxx_hal_pwr.h \
- /home/app/Appli/../Drivers/STM32H7RSxx_HAL_Driver/Inc/stm32h7rsxx_hal_pwr_ex.h
+ /home/app/Appli/../Drivers/STM32H7RSxx_HAL_Driver/Inc/stm32h7rsxx_hal_pwr_ex.h \
+ /home/app/Appli/../Drivers/Embedded-Base/general/include/lan8670.h \
+ /home/dev/arm-gnu-toolchain-11.3.rel1-x86_64-arm-none-eabi/lib/gcc/arm-none-eabi/11.3.1/include/stdbool.h

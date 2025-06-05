@@ -20,6 +20,8 @@ set(CMAKE_TARGET_DEFINITIONS_ASM
 
 # The include file search paths:
 set(CMAKE_ASM_TARGET_INCLUDE_PATH
+  "/home/app/Boot/../Drivers/Embedded-Base/general/include"
+  "/home/app/Boot/../Drivers/Embedded-Base/middleware/include"
   "/home/app/Boot/Core/Inc"
   "/home/app/Boot/../Drivers/STM32H7RSxx_HAL_Driver/Inc"
   "/home/app/Boot/../Drivers/STM32H7RSxx_HAL_Driver/Inc/Legacy"
@@ -34,6 +36,7 @@ set(CMAKE_DEPENDS_DEPENDENCY_FILES
   "/home/app/Boot/Core/Src/stm32h7rsxx_it.c" "CMakeFiles/Cerberus-2.0_Boot.dir/Core/Src/stm32h7rsxx_it.c.obj" "gcc" "CMakeFiles/Cerberus-2.0_Boot.dir/Core/Src/stm32h7rsxx_it.c.obj.d"
   "/home/app/Boot/Core/Src/syscalls.c" "CMakeFiles/Cerberus-2.0_Boot.dir/Core/Src/syscalls.c.obj" "gcc" "CMakeFiles/Cerberus-2.0_Boot.dir/Core/Src/syscalls.c.obj.d"
   "/home/app/Boot/Core/Src/sysmem.c" "CMakeFiles/Cerberus-2.0_Boot.dir/Core/Src/sysmem.c.obj" "gcc" "CMakeFiles/Cerberus-2.0_Boot.dir/Core/Src/sysmem.c.obj.d"
+  "/home/app/Drivers/Embedded-Base/general/src/lan8670.c" "CMakeFiles/Cerberus-2.0_Boot.dir/home/app/Drivers/Embedded-Base/general/src/lan8670.c.obj" "gcc" "CMakeFiles/Cerberus-2.0_Boot.dir/home/app/Drivers/Embedded-Base/general/src/lan8670.c.obj.d"
   )
 
 # Targets to which this target links which contain Fortran sources.

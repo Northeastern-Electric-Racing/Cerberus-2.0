@@ -23,6 +23,8 @@ set(CMAKE_TARGET_DEFINITIONS_ASM
 
 # The include file search paths:
 set(CMAKE_ASM_TARGET_INCLUDE_PATH
+  "/home/app/Appli/../Drivers/Embedded-Base/general/include"
+  "/home/app/Appli/../Drivers/Embedded-Base/middleware/include"
   "/home/app/Appli/Core/Inc"
   "/home/app/Appli/AZURE_RTOS/App"
   "/home/app/Appli/NetXDuo/App"
@@ -49,6 +51,7 @@ set(CMAKE_DEPENDS_DEPENDENCY_FILES
   "/home/app/Appli/Core/Src/sysmem.c" "CMakeFiles/Cerberus-2.0_Appli.dir/Core/Src/sysmem.c.obj" "gcc" "CMakeFiles/Cerberus-2.0_Appli.dir/Core/Src/sysmem.c.obj.d"
   "/home/app/Appli/NetXDuo/App/app_netxduo.c" "CMakeFiles/Cerberus-2.0_Appli.dir/NetXDuo/App/app_netxduo.c.obj" "gcc" "CMakeFiles/Cerberus-2.0_Appli.dir/NetXDuo/App/app_netxduo.c.obj.d"
   "/home/app/Appli/NetXDuo/Target/nx_stm32_phy_custom_driver.c" "CMakeFiles/Cerberus-2.0_Appli.dir/NetXDuo/Target/nx_stm32_phy_custom_driver.c.obj" "gcc" "CMakeFiles/Cerberus-2.0_Appli.dir/NetXDuo/Target/nx_stm32_phy_custom_driver.c.obj.d"
+  "/home/app/Drivers/Embedded-Base/general/src/lan8670.c" "CMakeFiles/Cerberus-2.0_Appli.dir/home/app/Drivers/Embedded-Base/general/src/lan8670.c.obj" "gcc" "CMakeFiles/Cerberus-2.0_Appli.dir/home/app/Drivers/Embedded-Base/general/src/lan8670.c.obj.d"
   )
 
 # Targets to which this target links which contain Fortran sources.

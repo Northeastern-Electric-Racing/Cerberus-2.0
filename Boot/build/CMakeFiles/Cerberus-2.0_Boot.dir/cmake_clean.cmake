@@ -11,6 +11,8 @@ file(REMOVE_RECURSE
   "CMakeFiles/Cerberus-2.0_Boot.dir/Core/Src/sysmem.c.obj"
   "CMakeFiles/Cerberus-2.0_Boot.dir/Core/Src/sysmem.c.obj.d"
   "CMakeFiles/Cerberus-2.0_Boot.dir/Core/Startup/startup_stm32h7r7xx.s.obj"
+  "CMakeFiles/Cerberus-2.0_Boot.dir/home/app/Drivers/Embedded-Base/general/src/lan8670.c.obj"
+  "CMakeFiles/Cerberus-2.0_Boot.dir/home/app/Drivers/Embedded-Base/general/src/lan8670.c.obj.d"
   "Cerberus-2.0_Boot.elf"
   "Cerberus-2.0_Boot.pdb"
 )

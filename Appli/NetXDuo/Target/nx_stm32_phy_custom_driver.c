@@ -14,7 +14,7 @@
 #include "nx_stm32_eth_config.h"
 
 /* USER CODE BEGIN Includes */
-
+#include "lan8670.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/

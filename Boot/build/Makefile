@@ -294,6 +294,30 @@ Core/Startup/startup_stm32h7r7xx.s.obj:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Cerberus-2.0_Boot.dir/build.make CMakeFiles/Cerberus-2.0_Boot.dir/Core/Startup/startup_stm32h7r7xx.s.obj
 .PHONY : Core/Startup/startup_stm32h7r7xx.s.obj
 
+home/app/Drivers/Embedded-Base/general/src/lan8670.obj: home/app/Drivers/Embedded-Base/general/src/lan8670.c.obj
+.PHONY : home/app/Drivers/Embedded-Base/general/src/lan8670.obj
+
+# target to build an object file
+home/app/Drivers/Embedded-Base/general/src/lan8670.c.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Cerberus-2.0_Boot.dir/build.make CMakeFiles/Cerberus-2.0_Boot.dir/home/app/Drivers/Embedded-Base/general/src/lan8670.c.obj
+.PHONY : home/app/Drivers/Embedded-Base/general/src/lan8670.c.obj
+
+home/app/Drivers/Embedded-Base/general/src/lan8670.i: home/app/Drivers/Embedded-Base/general/src/lan8670.c.i
+.PHONY : home/app/Drivers/Embedded-Base/general/src/lan8670.i
+
+# target to preprocess a source file
+home/app/Drivers/Embedded-Base/general/src/lan8670.c.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Cerberus-2.0_Boot.dir/build.make CMakeFiles/Cerberus-2.0_Boot.dir/home/app/Drivers/Embedded-Base/general/src/lan8670.c.i
+.PHONY : home/app/Drivers/Embedded-Base/general/src/lan8670.c.i
+
+home/app/Drivers/Embedded-Base/general/src/lan8670.s: home/app/Drivers/Embedded-Base/general/src/lan8670.c.s
+.PHONY : home/app/Drivers/Embedded-Base/general/src/lan8670.s
+
+# target to generate assembly for a file
+home/app/Drivers/Embedded-Base/general/src/lan8670.c.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Cerberus-2.0_Boot.dir/build.make CMakeFiles/Cerberus-2.0_Boot.dir/home/app/Drivers/Embedded-Base/general/src/lan8670.c.s
+.PHONY : home/app/Drivers/Embedded-Base/general/src/lan8670.c.s
+
 home/app/Drivers/STM32H7RSxx_HAL_Driver/Src/stm32h7rsxx_hal.obj: home/app/Drivers/STM32H7RSxx_HAL_Driver/Src/stm32h7rsxx_hal.c.obj
 .PHONY : home/app/Drivers/STM32H7RSxx_HAL_Driver/Src/stm32h7rsxx_hal.obj
 
@@ -611,6 +635,9 @@ help:
 	@echo "... Core/Src/system_stm32h7rsxx.i"
 	@echo "... Core/Src/system_stm32h7rsxx.s"
 	@echo "... Core/Startup/startup_stm32h7r7xx.obj"
+	@echo "... home/app/Drivers/Embedded-Base/general/src/lan8670.obj"
+	@echo "... home/app/Drivers/Embedded-Base/general/src/lan8670.i"
+	@echo "... home/app/Drivers/Embedded-Base/general/src/lan8670.s"
 	@echo "... home/app/Drivers/STM32H7RSxx_HAL_Driver/Src/stm32h7rsxx_hal.obj"
 	@echo "... home/app/Drivers/STM32H7RSxx_HAL_Driver/Src/stm32h7rsxx_hal.i"
 	@echo "... home/app/Drivers/STM32H7RSxx_HAL_Driver/Src/stm32h7rsxx_hal.s"

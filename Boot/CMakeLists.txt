@@ -57,11 +57,19 @@ enable_language(C ASM)
 # Add include paths
 target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
     # Add user defined include paths
+    "../Drivers/Embedded-Base/general/include/"
+    "../Drivers/Embedded-Base/middleware/include/"
+)
+
+# Add Embedded Base files that need to be included.
+file(GLOB_RECURSE EMBEDDED_BASE_SOURCES 
+    "../Drivers/Embedded-Base/general/src/lan8670.c"
 )
 
 # Add sources to executable
 target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     # Add user sources here
+    ${EMBEDDED_BASE_SOURCES}
 )
 
 # Link directories setup
