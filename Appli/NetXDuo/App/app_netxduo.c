@@ -24,7 +24,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "ethernet.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -196,6 +196,27 @@ UINT MX_NetXDuo_Init(VOID *memory_ptr)
 static VOID nx_app_thread_entry (ULONG thread_input)
 {
   /* USER CODE BEGIN Nx_App_Thread_Entry 0 */
+
+  /* Wait for IP link up. */
+  ULONG status;
+  ULONG actual_status;
+  status = nx_ip_status_check(&NetXDuoEthIpInstance, NX_IP_LINK_ENABLED, &actual_status, NX_WAIT_FOREVER);
+
+  /* Check if nx_ip_status_check() was successful or not. */
+  if (status != NX_SUCCESS) {
+    printf("[app_netxduo.c/nx_app_thread_entry()] ERROR: nx_ip_status_check() failed!\n");
+    return;
+  }
+
+  /* Initialize ethernet system (all that stuff can be configured in ethernet.c) */
+  ethernet_init(&NetXDuoEthIpInstance, &NxAppPool);
+
+  /* Thread loop. */
+  while(1)
+  {
+    ethernet_process();
+    tx_thread_sleep(NETX_THREAD_DELAY);
+  }
 
   /* USER CODE END Nx_App_Thread_Entry 0 */
 

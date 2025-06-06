@@ -18,6 +18,8 @@ file(REMOVE_RECURSE
   "CMakeFiles/Cerberus-2.0_Appli.dir/Core/Startup/startup_stm32h7r7xx.s.obj"
   "CMakeFiles/Cerberus-2.0_Appli.dir/NetXDuo/App/app_netxduo.c.obj"
   "CMakeFiles/Cerberus-2.0_Appli.dir/NetXDuo/App/app_netxduo.c.obj.d"
+  "CMakeFiles/Cerberus-2.0_Appli.dir/NetXDuo/App/ethernet.c.obj"
+  "CMakeFiles/Cerberus-2.0_Appli.dir/NetXDuo/App/ethernet.c.obj.d"
   "CMakeFiles/Cerberus-2.0_Appli.dir/NetXDuo/Target/nx_stm32_phy_custom_driver.c.obj"
   "CMakeFiles/Cerberus-2.0_Appli.dir/NetXDuo/Target/nx_stm32_phy_custom_driver.c.obj.d"
   "CMakeFiles/Cerberus-2.0_Appli.dir/home/app/Drivers/Embedded-Base/general/src/lan8670.c.obj"

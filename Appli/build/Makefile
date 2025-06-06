@@ -413,6 +413,30 @@ NetXDuo/App/app_netxduo.c.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Cerberus-2.0_Appli.dir/build.make CMakeFiles/Cerberus-2.0_Appli.dir/NetXDuo/App/app_netxduo.c.s
 .PHONY : NetXDuo/App/app_netxduo.c.s
 
+NetXDuo/App/ethernet.obj: NetXDuo/App/ethernet.c.obj
+.PHONY : NetXDuo/App/ethernet.obj
+
+# target to build an object file
+NetXDuo/App/ethernet.c.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Cerberus-2.0_Appli.dir/build.make CMakeFiles/Cerberus-2.0_Appli.dir/NetXDuo/App/ethernet.c.obj
+.PHONY : NetXDuo/App/ethernet.c.obj
+
+NetXDuo/App/ethernet.i: NetXDuo/App/ethernet.c.i
+.PHONY : NetXDuo/App/ethernet.i
+
+# target to preprocess a source file
+NetXDuo/App/ethernet.c.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Cerberus-2.0_Appli.dir/build.make CMakeFiles/Cerberus-2.0_Appli.dir/NetXDuo/App/ethernet.c.i
+.PHONY : NetXDuo/App/ethernet.c.i
+
+NetXDuo/App/ethernet.s: NetXDuo/App/ethernet.c.s
+.PHONY : NetXDuo/App/ethernet.s
+
+# target to generate assembly for a file
+NetXDuo/App/ethernet.c.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Cerberus-2.0_Appli.dir/build.make CMakeFiles/Cerberus-2.0_Appli.dir/NetXDuo/App/ethernet.c.s
+.PHONY : NetXDuo/App/ethernet.c.s
+
 NetXDuo/Target/nx_stm32_phy_custom_driver.obj: NetXDuo/Target/nx_stm32_phy_custom_driver.c.obj
 .PHONY : NetXDuo/Target/nx_stm32_phy_custom_driver.obj
 
@@ -16703,6 +16727,9 @@ help:
 	@echo "... NetXDuo/App/app_netxduo.obj"
 	@echo "... NetXDuo/App/app_netxduo.i"
 	@echo "... NetXDuo/App/app_netxduo.s"
+	@echo "... NetXDuo/App/ethernet.obj"
+	@echo "... NetXDuo/App/ethernet.i"
+	@echo "... NetXDuo/App/ethernet.s"
 	@echo "... NetXDuo/Target/nx_stm32_phy_custom_driver.obj"
 	@echo "... NetXDuo/Target/nx_stm32_phy_custom_driver.i"
 	@echo "... NetXDuo/Target/nx_stm32_phy_custom_driver.s"

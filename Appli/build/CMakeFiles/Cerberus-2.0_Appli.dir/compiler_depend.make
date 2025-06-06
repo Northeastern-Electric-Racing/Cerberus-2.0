@@ -334,6 +334,7 @@ CMakeFiles/Cerberus-2.0_Appli.dir/NetXDuo/App/app_netxduo.c.obj: /home/app/Appli
   /home/app/Middlewares/ST/threadx/ports/cortex_m7/gnu/inc/tx_port.h \
   /home/app/Appli/Core/Inc/tx_user.h \
   /home/app/Appli/NetXDuo/App/app_netxduo.h \
+  /home/app/Appli/NetXDuo/App/ethernet.h \
   /home/app/Appli/NetXDuo/App/nx_user.h \
   /home/dev/arm-gnu-toolchain-11.3.rel1-x86_64-arm-none-eabi/arm-none-eabi/include/_ansi.h \
   /home/dev/arm-gnu-toolchain-11.3.rel1-x86_64-arm-none-eabi/arm-none-eabi/include/_newlib_version.h \
@@ -343,11 +344,14 @@ CMakeFiles/Cerberus-2.0_Appli.dir/NetXDuo/App/app_netxduo.c.obj: /home/app/Appli
   /home/dev/arm-gnu-toolchain-11.3.rel1-x86_64-arm-none-eabi/arm-none-eabi/include/machine/ieeefp.h \
   /home/dev/arm-gnu-toolchain-11.3.rel1-x86_64-arm-none-eabi/arm-none-eabi/include/machine/stdlib.h \
   /home/dev/arm-gnu-toolchain-11.3.rel1-x86_64-arm-none-eabi/arm-none-eabi/include/newlib.h \
+  /home/dev/arm-gnu-toolchain-11.3.rel1-x86_64-arm-none-eabi/arm-none-eabi/include/stdint.h \
   /home/dev/arm-gnu-toolchain-11.3.rel1-x86_64-arm-none-eabi/arm-none-eabi/include/stdio.h \
   /home/dev/arm-gnu-toolchain-11.3.rel1-x86_64-arm-none-eabi/arm-none-eabi/include/stdlib.h \
   /home/dev/arm-gnu-toolchain-11.3.rel1-x86_64-arm-none-eabi/arm-none-eabi/include/string.h \
   /home/dev/arm-gnu-toolchain-11.3.rel1-x86_64-arm-none-eabi/arm-none-eabi/include/strings.h \
+  /home/dev/arm-gnu-toolchain-11.3.rel1-x86_64-arm-none-eabi/arm-none-eabi/include/sys/_intsup.h \
   /home/dev/arm-gnu-toolchain-11.3.rel1-x86_64-arm-none-eabi/arm-none-eabi/include/sys/_locale.h \
+  /home/dev/arm-gnu-toolchain-11.3.rel1-x86_64-arm-none-eabi/arm-none-eabi/include/sys/_stdint.h \
   /home/dev/arm-gnu-toolchain-11.3.rel1-x86_64-arm-none-eabi/arm-none-eabi/include/sys/_types.h \
   /home/dev/arm-gnu-toolchain-11.3.rel1-x86_64-arm-none-eabi/arm-none-eabi/include/sys/cdefs.h \
   /home/dev/arm-gnu-toolchain-11.3.rel1-x86_64-arm-none-eabi/arm-none-eabi/include/sys/config.h \
@@ -357,7 +361,45 @@ CMakeFiles/Cerberus-2.0_Appli.dir/NetXDuo/App/app_netxduo.c.obj: /home/app/Appli
   /home/dev/arm-gnu-toolchain-11.3.rel1-x86_64-arm-none-eabi/arm-none-eabi/include/sys/stdio.h \
   /home/dev/arm-gnu-toolchain-11.3.rel1-x86_64-arm-none-eabi/arm-none-eabi/include/sys/string.h \
   /home/dev/arm-gnu-toolchain-11.3.rel1-x86_64-arm-none-eabi/lib/gcc/arm-none-eabi/11.3.1/include/stdarg.h \
-  /home/dev/arm-gnu-toolchain-11.3.rel1-x86_64-arm-none-eabi/lib/gcc/arm-none-eabi/11.3.1/include/stddef.h
+  /home/dev/arm-gnu-toolchain-11.3.rel1-x86_64-arm-none-eabi/lib/gcc/arm-none-eabi/11.3.1/include/stddef.h \
+  /home/dev/arm-gnu-toolchain-11.3.rel1-x86_64-arm-none-eabi/lib/gcc/arm-none-eabi/11.3.1/include/stdint.h
+
+CMakeFiles/Cerberus-2.0_Appli.dir/NetXDuo/App/ethernet.c.obj: /home/app/Appli/NetXDuo/App/ethernet.c \
+  /home/app/Middlewares/ST/netxduo/common/inc/nx_api.h \
+  /home/app/Middlewares/ST/netxduo/ports/cortex_m7/gnu/inc/nx_port.h \
+  /home/app/Middlewares/ST/threadx/common/inc/tx_api.h \
+  /home/app/Middlewares/ST/threadx/common/inc/tx_trace.h \
+  /home/app/Middlewares/ST/threadx/ports/cortex_m7/gnu/inc/tx_port.h \
+  /home/app/Appli/Core/Inc/tx_user.h \
+  /home/app/Appli/NetXDuo/App/ethernet.h \
+  /home/app/Appli/NetXDuo/App/nx_user.h \
+  /home/dev/arm-gnu-toolchain-11.3.rel1-x86_64-arm-none-eabi/arm-none-eabi/include/_ansi.h \
+  /home/dev/arm-gnu-toolchain-11.3.rel1-x86_64-arm-none-eabi/arm-none-eabi/include/_newlib_version.h \
+  /home/dev/arm-gnu-toolchain-11.3.rel1-x86_64-arm-none-eabi/arm-none-eabi/include/alloca.h \
+  /home/dev/arm-gnu-toolchain-11.3.rel1-x86_64-arm-none-eabi/arm-none-eabi/include/machine/_default_types.h \
+  /home/dev/arm-gnu-toolchain-11.3.rel1-x86_64-arm-none-eabi/arm-none-eabi/include/machine/_types.h \
+  /home/dev/arm-gnu-toolchain-11.3.rel1-x86_64-arm-none-eabi/arm-none-eabi/include/machine/ieeefp.h \
+  /home/dev/arm-gnu-toolchain-11.3.rel1-x86_64-arm-none-eabi/arm-none-eabi/include/machine/stdlib.h \
+  /home/dev/arm-gnu-toolchain-11.3.rel1-x86_64-arm-none-eabi/arm-none-eabi/include/newlib.h \
+  /home/dev/arm-gnu-toolchain-11.3.rel1-x86_64-arm-none-eabi/arm-none-eabi/include/stdint.h \
+  /home/dev/arm-gnu-toolchain-11.3.rel1-x86_64-arm-none-eabi/arm-none-eabi/include/stdio.h \
+  /home/dev/arm-gnu-toolchain-11.3.rel1-x86_64-arm-none-eabi/arm-none-eabi/include/stdlib.h \
+  /home/dev/arm-gnu-toolchain-11.3.rel1-x86_64-arm-none-eabi/arm-none-eabi/include/string.h \
+  /home/dev/arm-gnu-toolchain-11.3.rel1-x86_64-arm-none-eabi/arm-none-eabi/include/strings.h \
+  /home/dev/arm-gnu-toolchain-11.3.rel1-x86_64-arm-none-eabi/arm-none-eabi/include/sys/_intsup.h \
+  /home/dev/arm-gnu-toolchain-11.3.rel1-x86_64-arm-none-eabi/arm-none-eabi/include/sys/_locale.h \
+  /home/dev/arm-gnu-toolchain-11.3.rel1-x86_64-arm-none-eabi/arm-none-eabi/include/sys/_stdint.h \
+  /home/dev/arm-gnu-toolchain-11.3.rel1-x86_64-arm-none-eabi/arm-none-eabi/include/sys/_types.h \
+  /home/dev/arm-gnu-toolchain-11.3.rel1-x86_64-arm-none-eabi/arm-none-eabi/include/sys/cdefs.h \
+  /home/dev/arm-gnu-toolchain-11.3.rel1-x86_64-arm-none-eabi/arm-none-eabi/include/sys/config.h \
+  /home/dev/arm-gnu-toolchain-11.3.rel1-x86_64-arm-none-eabi/arm-none-eabi/include/sys/features.h \
+  /home/dev/arm-gnu-toolchain-11.3.rel1-x86_64-arm-none-eabi/arm-none-eabi/include/sys/lock.h \
+  /home/dev/arm-gnu-toolchain-11.3.rel1-x86_64-arm-none-eabi/arm-none-eabi/include/sys/reent.h \
+  /home/dev/arm-gnu-toolchain-11.3.rel1-x86_64-arm-none-eabi/arm-none-eabi/include/sys/stdio.h \
+  /home/dev/arm-gnu-toolchain-11.3.rel1-x86_64-arm-none-eabi/arm-none-eabi/include/sys/string.h \
+  /home/dev/arm-gnu-toolchain-11.3.rel1-x86_64-arm-none-eabi/lib/gcc/arm-none-eabi/11.3.1/include/stdarg.h \
+  /home/dev/arm-gnu-toolchain-11.3.rel1-x86_64-arm-none-eabi/lib/gcc/arm-none-eabi/11.3.1/include/stddef.h \
+  /home/dev/arm-gnu-toolchain-11.3.rel1-x86_64-arm-none-eabi/lib/gcc/arm-none-eabi/11.3.1/include/stdint.h
 
 CMakeFiles/Cerberus-2.0_Appli.dir/NetXDuo/Target/nx_stm32_phy_custom_driver.c.obj: /home/app/Appli/NetXDuo/Target/nx_stm32_phy_custom_driver.c \
   /home/app/Drivers/CMSIS/Device/ST/STM32H7RSxx/Include/stm32h7r7xx.h \
@@ -445,6 +487,8 @@ CMakeFiles/Cerberus-2.0_Appli.dir/home/app/Drivers/Embedded-Base/general/src/lan
 /home/app/Appli/NetXDuo/Target/nx_stm32_phy_custom_driver.c:
 
 /home/app/Appli/NetXDuo/App/app_netxduo.c:
+
+/home/app/Appli/NetXDuo/App/ethernet.c:
 
 /home/dev/arm-gnu-toolchain-11.3.rel1-x86_64-arm-none-eabi/arm-none-eabi/include/time.h:
 
@@ -549,6 +593,8 @@ CMakeFiles/Cerberus-2.0_Appli.dir/home/app/Drivers/Embedded-Base/general/src/lan
 /home/app/Appli/Core/Src/sysmem.c:
 
 /home/dev/arm-gnu-toolchain-11.3.rel1-x86_64-arm-none-eabi/arm-none-eabi/include/machine/stdlib.h:
+
+/home/app/Appli/NetXDuo/App/ethernet.h:
 
 /home/app/Drivers/STM32H7RSxx_HAL_Driver/Inc/stm32h7rsxx_hal_dma.h:
 

@@ -62,17 +62,19 @@ target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
     # Add user defined include paths
     "../Drivers/Embedded-Base/general/include/"
     "../Drivers/Embedded-Base/middleware/include/"
+    "./NetXDuo"
 )
 
 # Contains every c/cpp file in Embedded-Base. Dunno if this is bad practice
-file(GLOB_RECURSE EMBEDDED_BASE_SOURCES 
+file(GLOB_RECURSE PROJECT_SOURCES 
     "../Drivers/Embedded-Base/general/src/lan8670.c"
+    "./NetXDuo/ethernet.c"
 )
 
 # Add sources to executable
 target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     # Add user sources here
-    ${EMBEDDED_BASE_SOURCES}
+    ${PROJECT_SOURCES}
 )
 
 # Link directories setup

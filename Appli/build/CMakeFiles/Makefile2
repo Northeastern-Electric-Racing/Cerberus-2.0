@@ -86,13 +86,13 @@ clean: CMakeFiles/NetXDuo.dir/clean
 # Target rules for target CMakeFiles/Cerberus-2.0_Appli.dir
 
 # All Build rule for target.
-CMakeFiles/Cerberus-2.0_Appli.dir/all: CMakeFiles/Interfaces.dir/all
 CMakeFiles/Cerberus-2.0_Appli.dir/all: CMakeFiles/ThreadX.dir/all
 CMakeFiles/Cerberus-2.0_Appli.dir/all: CMakeFiles/STM32_Drivers.dir/all
+CMakeFiles/Cerberus-2.0_Appli.dir/all: CMakeFiles/Interfaces.dir/all
 CMakeFiles/Cerberus-2.0_Appli.dir/all: CMakeFiles/NetXDuo.dir/all
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Cerberus-2.0_Appli.dir/build.make CMakeFiles/Cerberus-2.0_Appli.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Cerberus-2.0_Appli.dir/build.make CMakeFiles/Cerberus-2.0_Appli.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/app/Appli/build/CMakeFiles --progress-num=1 "Built target Cerberus-2.0_Appli"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/app/Appli/build/CMakeFiles --progress-num=1,2 "Built target Cerberus-2.0_Appli"
 .PHONY : CMakeFiles/Cerberus-2.0_Appli.dir/all
 
 # Build rule for subdir invocation for target.
@@ -144,12 +144,12 @@ CMakeFiles/STM32_Drivers.dir/clean:
 CMakeFiles/Interfaces.dir/all:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Interfaces.dir/build.make CMakeFiles/Interfaces.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Interfaces.dir/build.make CMakeFiles/Interfaces.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/app/Appli/build/CMakeFiles --progress-num=2 "Built target Interfaces"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/app/Appli/build/CMakeFiles --progress-num= "Built target Interfaces"
 .PHONY : CMakeFiles/Interfaces.dir/all
 
 # Build rule for subdir invocation for target.
 CMakeFiles/Interfaces.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/app/Appli/build/CMakeFiles 1
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/app/Appli/build/CMakeFiles 0
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/Interfaces.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/app/Appli/build/CMakeFiles 0
 .PHONY : CMakeFiles/Interfaces.dir/rule
