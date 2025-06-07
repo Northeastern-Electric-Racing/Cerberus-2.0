@@ -5624,7 +5624,7 @@ ITCM             0x0000000000000000 0x0000000000010000 xrw
 DTCM             0x0000000020000000 0x0000000000010000 rw
 SRAMAHB          0x0000000030000000 0x0000000000008000 rw
 BKPSRAM          0x0000000038800000 0x0000000000001000 rw
-FLASH            0x0000000008000000 0x0000000000010000 xrw
+FLASH            0x0000000008000000 0x0000000000040000 xrw
 *default*        0x0000000000000000 0xffffffffffffffff
 
 Linker script and memory map
@@ -6347,7 +6347,7 @@ LOAD /home/dev/arm-gnu-toolchain-11.3.rel1-x86_64-arm-none-eabi/bin/../lib/gcc/a
                 0x0000000000000200                _Min_Heap_Size = 0x200
                 0x0000000000000400                _Min_Stack_Size = 0x400
                 0x0000000008000000                __FLASH_BEGIN = 0x8000000
-                0x0000000000010000                __FLASH_SIZE = 0x10000
+                0x0000000000040000                __FLASH_SIZE = 0x40000
                 0x0000000024000000                __RAM_BEGIN = 0x24000000
                 0x000000000004fc00                __RAM_SIZE = 0x4fc00
                 0x0000000000000400                __RAM_NONCACHEABLEBUFFER_SIZE = 0x400
@@ -7634,9 +7634,6 @@ LOAD /home/dev/arm-gnu-toolchain-11.3.rel1-x86_64-arm-none-eabi/bin/../lib/gcc/a
                 0x000000000800d778                . = ALIGN (0x4)
  *fill*         0x000000000800d777        0x1 
 
-.rel.dyn        0x000000000800d778        0x0
- .rel.iplt      0x000000000800d778        0x0 /home/dev/arm-gnu-toolchain-11.3.rel1-x86_64-arm-none-eabi/bin/../lib/gcc/arm-none-eabi/11.3.1/thumb/v7e-m+dp/hard/crtbegin.o
-
 .ARM.extab      0x000000000800d778        0x0
                 0x000000000800d778                . = ALIGN (0x4)
  *(.ARM.extab* .gnu.linkonce.armextab.*)
@@ -7674,6 +7671,9 @@ LOAD /home/dev/arm-gnu-toolchain-11.3.rel1-x86_64-arm-none-eabi/bin/../lib/gcc/a
                 [!provide]                        PROVIDE (__fini_array_end = .)
                 0x000000000800d780                . = ALIGN (0x4)
                 0x000000000800d780                _sidata = LOADADDR (.data)
+
+.rel.dyn        0x000000000800d780        0x0
+ .rel.iplt      0x000000000800d780        0x0 /home/dev/arm-gnu-toolchain-11.3.rel1-x86_64-arm-none-eabi/bin/../lib/gcc/arm-none-eabi/11.3.1/thumb/v7e-m+dp/hard/crtbegin.o
 
 .data           0x0000000024000000       0xd4 load address 0x000000000800d780
                 0x0000000024000000                . = ALIGN (0x4)

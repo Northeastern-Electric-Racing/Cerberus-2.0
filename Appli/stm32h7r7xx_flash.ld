@@ -42,7 +42,7 @@ _Min_Heap_Size = 0x200;      /* required amount of heap  */
 _Min_Stack_Size = 0x400; /* required amount of stack */
 
 __FLASH_BEGIN  = 0x08000000;
-__FLASH_SIZE   = 0x00010000;
+__FLASH_SIZE   = 0x00040000;
 
 
 __RAM_BEGIN    = 0x24000000;
@@ -100,15 +100,15 @@ SECTIONS
     . = ALIGN(4);
   } >FLASH
 
-  .ARM.extab :  /* Remove READONLY as we're using GCC 10.3 */
+  .ARM.extab (READONLY) : /* The READONLY keyword is only supported in GCC11 and later, remove it if using GCC10 or earlier. */
   {
     . = ALIGN(4);
     *(.ARM.extab* .gnu.linkonce.armextab.*)
     . = ALIGN(4);
   } >FLASH
 
-  .ARM :  /* Remove READONLY as we're using GCC 10.3 */
-  {
+  .ARM (READONLY) : /* The READONLY keyword is only supported in GCC11 and later, remove it if using GCC10 or earlier. */
+   {
     . = ALIGN(4);
     __exidx_start = .;
     *(.ARM.exidx*)
@@ -116,7 +116,7 @@ SECTIONS
     . = ALIGN(4);
   } >FLASH
 
-  .preinit_array :  /* Remove READONLY as we're using GCC 10.3 */
+  .preinit_array  (READONLY) : /* The READONLY keyword is only supported in GCC11 and later, remove it if using GCC10 or earlier. */
   {
     . = ALIGN(4);
     PROVIDE_HIDDEN (__preinit_array_start = .);
@@ -125,7 +125,7 @@ SECTIONS
     . = ALIGN(4);
   } >FLASH
 
-  .init_array :  /* Remove READONLY as we're using GCC 10.3 */
+  .init_array (READONLY) : /* The READONLY keyword is only supported in GCC11 and later, remove it if using GCC10 or earlier. */
   {
     . = ALIGN(4);
     PROVIDE_HIDDEN (__init_array_start = .);
@@ -135,7 +135,7 @@ SECTIONS
     . = ALIGN(4);
   } >FLASH
 
-  .fini_array :  /* Remove READONLY as we're using GCC 10.3 */
+  .fini_array (READONLY) : /* The READONLY keyword is only supported in GCC11 and later, remove it if using GCC10 or earlier. */
   {
     . = ALIGN(4);
     PROVIDE_HIDDEN (__fini_array_start = .);
