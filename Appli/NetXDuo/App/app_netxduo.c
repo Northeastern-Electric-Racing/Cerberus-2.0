@@ -25,6 +25,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "ethernet.h"
+#include "messages.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -209,7 +210,7 @@ static VOID nx_app_thread_entry (ULONG thread_input)
   }
 
   /* Initialize ethernet system (all that stuff can be configured in ethernet.c) */
-  ethernet_init(&NetXDuoEthIpInstance, &NxAppPool, VCU);
+  ethernet_init(&NetXDuoEthIpInstance, &NxAppPool, VCU, messages_handler);
 
   /* Thread loop. */
   while(1)

@@ -1,6 +1,8 @@
-CMakeFiles/Cerberus-2.0_Appli.dir/NetXDuo/Target/nx_stm32_phy_custom_driver.c.obj: \
- /home/app/Appli/NetXDuo/Target/nx_stm32_phy_custom_driver.c \
- /home/app/Appli/../Middlewares/ST/netxduo/common/drivers/ethernet/nx_stm32_phy_driver.h \
+CMakeFiles/Cerberus-2.0_Appli.dir/Core/Src/system_stm32h7rsxx.c.obj: \
+ /home/app/Appli/Core/Src/system_stm32h7rsxx.c \
+ /home/app/Appli/../Drivers/CMSIS/Device/ST/STM32H7RSxx/Include/stm32h7rsxx.h \
+ /home/app/Appli/../Drivers/CMSIS/Device/ST/STM32H7RSxx/Include/stm32h7r7xx.h \
+ /home/app/Appli/../Drivers/CMSIS/Include/core_cm7.h \
  /home/dev/arm-gnu-toolchain-11.3.rel1-x86_64-arm-none-eabi/lib/gcc/arm-none-eabi/11.3.1/include/stdint.h \
  /home/dev/arm-gnu-toolchain-11.3.rel1-x86_64-arm-none-eabi/arm-none-eabi/include/stdint.h \
  /home/dev/arm-gnu-toolchain-11.3.rel1-x86_64-arm-none-eabi/arm-none-eabi/include/machine/_default_types.h \
@@ -8,20 +10,16 @@ CMakeFiles/Cerberus-2.0_Appli.dir/NetXDuo/Target/nx_stm32_phy_custom_driver.c.ob
  /home/dev/arm-gnu-toolchain-11.3.rel1-x86_64-arm-none-eabi/arm-none-eabi/include/_newlib_version.h \
  /home/dev/arm-gnu-toolchain-11.3.rel1-x86_64-arm-none-eabi/arm-none-eabi/include/sys/_intsup.h \
  /home/dev/arm-gnu-toolchain-11.3.rel1-x86_64-arm-none-eabi/arm-none-eabi/include/sys/_stdint.h \
- /home/app/Appli/NetXDuo/Target/nx_stm32_eth_config.h \
- /home/app/Appli/../Drivers/STM32H7RSxx_HAL_Driver/Inc/stm32h7rsxx_hal.h \
- /home/app/Appli/./Core/Inc/stm32h7rsxx_hal_conf.h \
- /home/app/Appli/../Drivers/STM32H7RSxx_HAL_Driver/Inc/stm32h7rsxx_hal_rcc.h \
- /home/app/Appli/../Drivers/STM32H7RSxx_HAL_Driver/Inc/stm32h7rsxx_hal_def.h \
- /home/app/Appli/../Drivers/CMSIS/Device/ST/STM32H7RSxx/Include/stm32h7rsxx.h \
- /home/app/Appli/../Drivers/CMSIS/Device/ST/STM32H7RSxx/Include/stm32h7r7xx.h \
- /home/app/Appli/../Drivers/CMSIS/Include/core_cm7.h \
  /home/app/Appli/../Drivers/CMSIS/Include/cmsis_version.h \
  /home/app/Appli/../Drivers/CMSIS/Include/cmsis_compiler.h \
  /home/app/Appli/../Drivers/CMSIS/Include/cmsis_gcc.h \
  /home/app/Appli/../Drivers/CMSIS/Include/mpu_armv7.h \
  /home/app/Appli/../Drivers/CMSIS/Include/cachel1_armv7.h \
  /home/app/Appli/../Drivers/CMSIS/Device/ST/STM32H7RSxx/Include/system_stm32h7rsxx.h \
+ /home/app/Appli/../Drivers/STM32H7RSxx_HAL_Driver/Inc/stm32h7rsxx_hal.h \
+ /home/app/Appli/Core/Inc/stm32h7rsxx_hal_conf.h \
+ /home/app/Appli/../Drivers/STM32H7RSxx_HAL_Driver/Inc/stm32h7rsxx_hal_rcc.h \
+ /home/app/Appli/../Drivers/STM32H7RSxx_HAL_Driver/Inc/stm32h7rsxx_hal_def.h \
  /home/app/Appli/../Drivers/STM32H7RSxx_HAL_Driver/Inc/Legacy/stm32_hal_legacy.h \
  /home/dev/arm-gnu-toolchain-11.3.rel1-x86_64-arm-none-eabi/arm-none-eabi/include/math.h \
  /home/dev/arm-gnu-toolchain-11.3.rel1-x86_64-arm-none-eabi/arm-none-eabi/include/sys/reent.h \
@@ -48,6 +46,4 @@ CMakeFiles/Cerberus-2.0_Appli.dir/NetXDuo/Target/nx_stm32_phy_custom_driver.c.ob
  /home/app/Appli/../Drivers/STM32H7RSxx_HAL_Driver/Inc/stm32h7rsxx_hal_flash.h \
  /home/app/Appli/../Drivers/STM32H7RSxx_HAL_Driver/Inc/stm32h7rsxx_hal_flash_ex.h \
  /home/app/Appli/../Drivers/STM32H7RSxx_HAL_Driver/Inc/stm32h7rsxx_hal_pwr.h \
- /home/app/Appli/../Drivers/STM32H7RSxx_HAL_Driver/Inc/stm32h7rsxx_hal_pwr_ex.h \
- /home/app/Appli/../Drivers/Embedded-Base/general/include/lan8670.h \
- /home/dev/arm-gnu-toolchain-11.3.rel1-x86_64-arm-none-eabi/lib/gcc/arm-none-eabi/11.3.1/include/stdbool.h
+ /home/app/Appli/../Drivers/STM32H7RSxx_HAL_Driver/Inc/stm32h7rsxx_hal_pwr_ex.h

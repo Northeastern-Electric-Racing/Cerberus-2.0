@@ -1,8 +1,8 @@
 CMakeFiles/Cerberus-2.0_Appli.dir/Core/Src/stm32h7rsxx_hal_msp.c.obj: \
  /home/app/Appli/Core/Src/stm32h7rsxx_hal_msp.c \
- /home/app/Appli/Core/Inc/main.h \
+ /home/app/Appli/./Core/Inc/main.h \
  /home/app/Appli/../Drivers/STM32H7RSxx_HAL_Driver/Inc/stm32h7rsxx_hal.h \
- /home/app/Appli/Core/Inc/stm32h7rsxx_hal_conf.h \
+ /home/app/Appli/./Core/Inc/stm32h7rsxx_hal_conf.h \
  /home/app/Appli/../Drivers/STM32H7RSxx_HAL_Driver/Inc/stm32h7rsxx_hal_rcc.h \
  /home/app/Appli/../Drivers/STM32H7RSxx_HAL_Driver/Inc/stm32h7rsxx_hal_def.h \
  /home/app/Appli/../Drivers/CMSIS/Device/ST/STM32H7RSxx/Include/stm32h7rsxx.h \

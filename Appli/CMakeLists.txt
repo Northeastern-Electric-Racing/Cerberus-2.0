@@ -63,12 +63,14 @@ target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
     "../Drivers/Embedded-Base/general/include/"
     "../Drivers/Embedded-Base/middleware/include/"
     "./NetXDuo"
+    "./Core/Inc/"
 )
 
 # Contains every c/cpp file in Embedded-Base. Dunno if this is bad practice
 file(GLOB_RECURSE PROJECT_SOURCES 
     "../Drivers/Embedded-Base/general/src/lan8670.c"
     "./NetXDuo/ethernet.c"
+    "./Core/messages.c"
 )
 
 # Add sources to executable

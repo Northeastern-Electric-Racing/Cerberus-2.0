@@ -253,6 +253,30 @@ Core/Src/main.c.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Cerberus-2.0_Appli.dir/build.make CMakeFiles/Cerberus-2.0_Appli.dir/Core/Src/main.c.s
 .PHONY : Core/Src/main.c.s
 
+Core/Src/messages.obj: Core/Src/messages.c.obj
+.PHONY : Core/Src/messages.obj
+
+# target to build an object file
+Core/Src/messages.c.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Cerberus-2.0_Appli.dir/build.make CMakeFiles/Cerberus-2.0_Appli.dir/Core/Src/messages.c.obj
+.PHONY : Core/Src/messages.c.obj
+
+Core/Src/messages.i: Core/Src/messages.c.i
+.PHONY : Core/Src/messages.i
+
+# target to preprocess a source file
+Core/Src/messages.c.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Cerberus-2.0_Appli.dir/build.make CMakeFiles/Cerberus-2.0_Appli.dir/Core/Src/messages.c.i
+.PHONY : Core/Src/messages.c.i
+
+Core/Src/messages.s: Core/Src/messages.c.s
+.PHONY : Core/Src/messages.s
+
+# target to generate assembly for a file
+Core/Src/messages.c.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Cerberus-2.0_Appli.dir/build.make CMakeFiles/Cerberus-2.0_Appli.dir/Core/Src/messages.c.s
+.PHONY : Core/Src/messages.c.s
+
 Core/Src/stm32h7rsxx_hal_msp.obj: Core/Src/stm32h7rsxx_hal_msp.c.obj
 .PHONY : Core/Src/stm32h7rsxx_hal_msp.obj
 
@@ -16707,6 +16731,9 @@ help:
 	@echo "... Core/Src/main.obj"
 	@echo "... Core/Src/main.i"
 	@echo "... Core/Src/main.s"
+	@echo "... Core/Src/messages.obj"
+	@echo "... Core/Src/messages.i"
+	@echo "... Core/Src/messages.s"
 	@echo "... Core/Src/stm32h7rsxx_hal_msp.obj"
 	@echo "... Core/Src/stm32h7rsxx_hal_msp.i"
 	@echo "... Core/Src/stm32h7rsxx_hal_msp.s"

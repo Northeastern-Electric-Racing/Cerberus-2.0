@@ -2,10 +2,10 @@ CMakeFiles/Cerberus-2.0_Appli.dir/AZURE_RTOS/App/app_azure_rtos.c.obj: \
  /home/app/Appli/AZURE_RTOS/App/app_azure_rtos.c \
  /home/app/Appli/AZURE_RTOS/App/app_azure_rtos.h \
  /home/app/Appli/AZURE_RTOS/App/app_azure_rtos_config.h \
- /home/app/Appli/Core/Inc/app_threadx.h \
+ /home/app/Appli/./Core/Inc/app_threadx.h \
  /home/app/Appli/../Middlewares/ST/threadx/common/inc/tx_api.h \
  /home/app/Appli/../Middlewares/ST/threadx/ports/cortex_m7/gnu/inc/tx_port.h \
- /home/app/Appli/Core/Inc/tx_user.h \
+ /home/app/Appli/./Core/Inc/tx_user.h \
  /home/dev/arm-gnu-toolchain-11.3.rel1-x86_64-arm-none-eabi/arm-none-eabi/include/stdlib.h \
  /home/dev/arm-gnu-toolchain-11.3.rel1-x86_64-arm-none-eabi/arm-none-eabi/include/machine/ieeefp.h \
  /home/dev/arm-gnu-toolchain-11.3.rel1-x86_64-arm-none-eabi/arm-none-eabi/include/_ansi.h \
@@ -52,7 +52,7 @@ CMakeFiles/Cerberus-2.0_Appli.dir/AZURE_RTOS/App/app_azure_rtos.c.obj: \
  /home/app/Appli/../Drivers/CMSIS/Include/cachel1_armv7.h \
  /home/app/Appli/../Drivers/CMSIS/Device/ST/STM32H7RSxx/Include/system_stm32h7rsxx.h \
  /home/app/Appli/../Drivers/STM32H7RSxx_HAL_Driver/Inc/stm32h7rsxx_hal.h \
- /home/app/Appli/Core/Inc/stm32h7rsxx_hal_conf.h \
+ /home/app/Appli/./Core/Inc/stm32h7rsxx_hal_conf.h \
  /home/app/Appli/../Drivers/STM32H7RSxx_HAL_Driver/Inc/stm32h7rsxx_hal_rcc.h \
  /home/app/Appli/../Drivers/STM32H7RSxx_HAL_Driver/Inc/stm32h7rsxx_hal_def.h \
  /home/app/Appli/../Drivers/STM32H7RSxx_HAL_Driver/Inc/Legacy/stm32_hal_legacy.h \
