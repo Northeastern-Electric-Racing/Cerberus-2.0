@@ -1,5 +1,8 @@
 {
     "files.associations": {
-        "stm32h7rsxx_hal.h": "c"
+        "stm32h7rsxx_hal.h": "c",
+        "ethernet.h": "c",
+        "nx_api.h": "c",
+        "stdint.h": "c"
     }
 }

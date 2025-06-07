@@ -209,13 +209,13 @@ static VOID nx_app_thread_entry (ULONG thread_input)
   }
 
   /* Initialize ethernet system (all that stuff can be configured in ethernet.c) */
-  ethernet_init(&NetXDuoEthIpInstance, &NxAppPool);
+  ethernet_init(&NetXDuoEthIpInstance, &NxAppPool, VCU);
 
   /* Thread loop. */
   while(1)
   {
     ethernet_process();
-    tx_thread_sleep(NETX_THREAD_DELAY);
+    tx_thread_sleep(ETHERNET_THREAD_DELAY);
   }
 
   /* USER CODE END Nx_App_Thread_Entry 0 */

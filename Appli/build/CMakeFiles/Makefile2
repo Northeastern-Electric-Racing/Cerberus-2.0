@@ -86,9 +86,9 @@ clean: CMakeFiles/NetXDuo.dir/clean
 # Target rules for target CMakeFiles/Cerberus-2.0_Appli.dir
 
 # All Build rule for target.
+CMakeFiles/Cerberus-2.0_Appli.dir/all: CMakeFiles/Interfaces.dir/all
 CMakeFiles/Cerberus-2.0_Appli.dir/all: CMakeFiles/ThreadX.dir/all
 CMakeFiles/Cerberus-2.0_Appli.dir/all: CMakeFiles/STM32_Drivers.dir/all
-CMakeFiles/Cerberus-2.0_Appli.dir/all: CMakeFiles/Interfaces.dir/all
 CMakeFiles/Cerberus-2.0_Appli.dir/all: CMakeFiles/NetXDuo.dir/all
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Cerberus-2.0_Appli.dir/build.make CMakeFiles/Cerberus-2.0_Appli.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Cerberus-2.0_Appli.dir/build.make CMakeFiles/Cerberus-2.0_Appli.dir/build
