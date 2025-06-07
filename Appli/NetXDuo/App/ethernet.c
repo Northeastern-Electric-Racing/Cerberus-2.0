@@ -6,7 +6,7 @@ typedef struct {
 	uint8_t node_id;
     Ethernet_MessageHandler function; // Function to process messages when they get recieved.
 
-	/* NetX Stuff */
+	/* NetX/ThreadX Stuff */
 	NX_IP *ip;
 	NX_PACKET_POOL *packet_pool;
 } __ethernet_device_t;
@@ -16,20 +16,29 @@ typedef struct {
 	uint8_t head;
 	uint8_t tail;
 	uint8_t count;
+    TX_MUTEX mutex;
 } __ethernet_queue_t;
 
 /* GLOBALS */
 static __ethernet_device_t device = {0};
 static __ethernet_queue_t incoming = {0};
-static __ethernet_queue_t outgoing = {0};
+static __ethernet_queue_t outgoing = {0}; // TODO - maybe add a third "priority" outgoing queue
 NX_UDP_SOCKET socket;
 
 /* Adds an ethernet message to a queue. Not intended for use outside of this file. */
 static uint8_t __ethernet_queue_message(__ethernet_queue_t *queue, ethernet_message_t *message) {
     
+    /* Get queue mutex */
+    uint8_t status = tx_mutex_get(&queue->mutex, TX_WAIT_FOREVER);
+    if(status != TX_SUCCESS) {
+        printf("[ethernet.c/__ethernet_queue_message()] ERROR: Failed to get queue mutex (Status: %d).\n", status);
+        return ETH_STATUS_ERROR;
+    }
+
     /* Check if queue is full. */
     if(queue->count >= ETHERNET_QUEUE_SIZE) {
         printf("[ethernet.c/__ethernet_queue_message()] ERROR: Ethernet queue is full!\n");
+        tx_mutex_put(&queue->mutex); // (Release the queue mutex.)
         return ETH_STATUS_ERROR;
     }
 
@@ -38,7 +47,34 @@ static uint8_t __ethernet_queue_message(__ethernet_queue_t *queue, ethernet_mess
     queue->tail = (queue->tail + 1) % ETHERNET_QUEUE_SIZE;
     queue->count++;
     printf("[ethernet.c/__ethernet_queue_message()] Queued ethernet message (Message ID: %d).\n", message->message_id);
+    tx_mutex_put(&queue->mutex); // (Release the queue mutex.)
     return ETH_STATUS_OK;
+}
+
+/* Removes an ethernet message from a queue. Not intended for use outside of this file. */
+static uint8_t __ethernet_dequeue_message(__ethernet_queue_t *queue, ethernet_message_t *message) {
+    
+    /* Get queue mutex */
+    uint8_t status = tx_mutex_get(&queue->mutex, TX_WAIT_FOREVER);
+    if(status != TX_SUCCESS) {
+        printf("[ethernet.c/__ethernet_dequeue_message()] ERROR: Failed to get queue mutex (Status: %d).\n", status);
+        return ETH_STATUS_ERROR;
+    }
+
+    /* Check if queue is empty. */
+    if (queue->count == 0) {
+        printf("[ethernet.c/__ethernet_dequeue_message()] Queue is empty. No messages to dequeue.\n");
+        tx_mutex_put(&queue->mutex); // (Release the queue mutex.)
+        return ETH_STATUS_QUEUEEMPTY;
+    }
+
+    /* Remove the message from the queue and copy it to the message buffer. */
+    memcpy(message, &queue->messages[queue->head], sizeof(ethernet_message_t));
+    queue->head = (queue->head + 1) % ETHERNET_QUEUE_SIZE;
+    queue->count--;
+    printf("[ethernet.c/__ethernet_dequeue_message()] Dequeued ethernet message (Message ID: %d).\n", message->message_id);
+    tx_mutex_put(&queue->mutex); // (Release queue mutex.)
+    return ETH_STATUS_QUEUENOTEMPTY;
 }
 
 /* Called when an ethernet message is recieved. */
@@ -77,23 +113,6 @@ static void __ethernet_recieve_callback(NX_UDP_SOCKET *socket) {
 
     /* Release the packet */
     nx_packet_release(packet);
-}
-
-/* Removes an ethernet message from a queue. Not intended for use outside of this file. */
-static uint8_t __ethernet_dequeue_message(__ethernet_queue_t *queue, ethernet_message_t *message) {
-    
-    /* Check if queue is empty. */
-    if (queue->count == 0) {
-        printf("[ethernet.c/__ethernet_dequeue_message] Queue is empty. No messages to dequeue.\n");
-        return ETH_STATUS_QUEUEEMPTY;
-    }
-
-    /* Remove the message from the queue and copy it to the message buffer. */
-    memcpy(message, &queue->messages[queue->head], sizeof(ethernet_message_t));
-    queue->head = (queue->head + 1) % ETHERNET_QUEUE_SIZE;
-    queue->count--;
-    printf("[ethernet.c/__ethernet_dequeue_message()] Dequeued ethernet message (Message ID: %d).\n", message->message_id);
-    return ETH_STATUS_QUEUENOTEMPTY;
 }
 
 /* Sends a UDP packet. */
@@ -185,6 +204,20 @@ uint8_t ethernet_init(NX_IP *ip, NX_PACKET_POOL *packet_pool, ethernet_node_t no
     device.ip = ip;
     device.packet_pool = packet_pool;
     device.function = function;
+
+    /* Create incoming queue mutex. */
+    status = tx_mutex_create(&incoming.mutex, "Incoming Queue Mutex", TX_NO_INHERIT);
+    if(status != TX_SUCCESS) {
+        printf("[ethernet.c/ethernet_init()] ERROR: Failed to create incoming mutex (Status: %d).\n", status);
+        return ETH_STATUS_ERROR;
+    }
+
+    /* Create outgoing queue mutex. */
+    status = tx_mutex_create(&outgoing.mutex, "Outgoing Queue Mutex", TX_NO_INHERIT);
+    if(status != TX_SUCCESS) {
+        printf("[ethernet.c/ethernet_init()] ERROR: Failed to create outgoing mutex (Status: %d).\n", status);
+        return ETH_STATUS_ERROR;
+    }
 
     /* Create UDP socket for broadcasting */
     status = nx_udp_socket_create(
