@@ -21,10 +21,17 @@
 #define ETHERNET_THREAD_DELAY  		10 /* Delay for the NetX thread (in ticks) */
 
 typedef enum {
-	VCU = 0,
-	BMS = 1,
-	MSB = 2,
-} ethernet_node_t;	// TODO - i dunno what is actually gonna be part of the ethernet network so probably change this eventually
+	ALL = 0,
+	VCU = 1,
+	Compute = 2,
+	TPU = 3,
+} ethernet_node_t;
+/*
+*	TODO - ethernet doesn't have hardware filtering like CAN, so i've made it so the intended recipient of messages can be specified when they're sent.
+*	If this ends up being jank here's some other ideas:
+*	1. Add 'uint8_t filter[10]' to __ethernet_device_t, which would store any CAN IDs that need to be recieved. This could be configured in ethernet_init(). Any recieved messages would be checked against this array (in a for loop), and would be added to the queue if their IDs match.
+*	2. No filtering at all. Every message recieved gets added to the inbound queue since all dequeued messages get their IDs checked anyway.
+*/
 /* END CONFIG
 */
 

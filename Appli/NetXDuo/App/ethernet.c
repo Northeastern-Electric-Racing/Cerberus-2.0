@@ -183,6 +183,9 @@ static uint8_t __ethernet_send_message(uint8_t message_id, uint8_t recipient_id,
     return ETH_STATUS_OK;
 }
 
+
+/* API FUNCTIONS */
+
 uint8_t ethernet_init(NX_IP *ip, NX_PACKET_POOL *packet_pool, ethernet_node_t node_id, Ethernet_MessageHandler function) {
     
     uint8_t status;
