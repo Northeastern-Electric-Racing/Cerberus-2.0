@@ -64,11 +64,11 @@ int32_t nx_eth_phy_init(void)
     /* USER CODE BEGIN PHY_INIT_0 */
 
     /* Set up LAN8670 IO */
-    lan8670_io_ctx.Init = NULL;  // Optional, can be NULL
-    lan8670_io_ctx.DeInit = NULL;  // Optional, can be NULL
-    lan8670_io_ctx.WriteReg = ETH_WritePHYRegister;  // Use STM32's ETH write function
-    lan8670_io_ctx.ReadReg = ETH_ReadPHYRegister;    // Use STM32's ETH read function
-    lan8670_io_ctx.GetTick = HAL_GetTick;            // Use HAL tick function
+    lan8670_io_ctx.Init = NULL;
+    lan8670_io_ctx.DeInit = NULL;
+    lan8670_io_ctx.WriteReg = ETH_WritePHYRegister;  // STM32 ETH write function
+    lan8670_io_ctx.ReadReg = ETH_ReadPHYRegister;    // STM32 ETH read function
+    lan8670_io_ctx.GetTick = HAL_GetTick;            // HAL tick function
 
     /* Register the IO functions with the LAN8670 driver */
     ret = LAN8670_RegisterBusIO(&lan8670, &lan8670_io_ctx);

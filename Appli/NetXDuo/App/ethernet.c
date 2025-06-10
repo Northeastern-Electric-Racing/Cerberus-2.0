@@ -12,12 +12,15 @@ typedef struct {
 } __ethernet_device_t;
 
 typedef struct {
-	ethernet_message_t messages[ETHERNET_QUEUE_SIZE];
+	ethernet_message_t messages[ETH_QUEUE_SIZE];
 	uint8_t head;
 	uint8_t tail;
 	uint8_t count;
     TX_MUTEX mutex;
 } __ethernet_queue_t;
+
+/* NODE IP ADDRESSES */
+ULONG nodes[4] = {ETH_IP_BROADCAST, ETH_IP_VCU, ETH_IP_COMPUTE, ETH_IP_TPU};
 
 /* GLOBALS */
 static __ethernet_device_t device = {0};
@@ -36,7 +39,7 @@ static uint8_t __ethernet_queue_message(__ethernet_queue_t *queue, ethernet_mess
     }
 
     /* Check if queue is full. */
-    if(queue->count >= ETHERNET_QUEUE_SIZE) {
+    if(queue->count >= ETH_QUEUE_SIZE) {
         printf("[ethernet.c/__ethernet_queue_message()] ERROR: Ethernet queue is full!\n");
         tx_mutex_put(&queue->mutex); // (Release the queue mutex.)
         return ETH_STATUS_ERROR;
@@ -44,7 +47,7 @@ static uint8_t __ethernet_queue_message(__ethernet_queue_t *queue, ethernet_mess
 
     /* Copy the message into the queue. */
     memcpy(&queue->messages[queue->tail], message, sizeof(ethernet_message_t));
-    queue->tail = (queue->tail + 1) % ETHERNET_QUEUE_SIZE;
+    queue->tail = (queue->tail + 1) % ETH_QUEUE_SIZE;
     queue->count++;
     printf("[ethernet.c/__ethernet_queue_message()] Queued ethernet message (Message ID: %d).\n", message->message_id);
     tx_mutex_put(&queue->mutex); // (Release the queue mutex.)
@@ -70,7 +73,7 @@ static uint8_t __ethernet_dequeue_message(__ethernet_queue_t *queue, ethernet_me
 
     /* Remove the message from the queue and copy it to the message buffer. */
     memcpy(message, &queue->messages[queue->head], sizeof(ethernet_message_t));
-    queue->head = (queue->head + 1) % ETHERNET_QUEUE_SIZE;
+    queue->head = (queue->head + 1) % ETH_QUEUE_SIZE;
     queue->count--;
     printf("[ethernet.c/__ethernet_dequeue_message()] Dequeued ethernet message (Message ID: %d).\n", message->message_id);
     tx_mutex_put(&queue->mutex); // (Release queue mutex.)
@@ -116,7 +119,7 @@ static void __ethernet_recieve_callback(NX_UDP_SOCKET *socket) {
 }
 
 /* Sends a UDP packet. */
-static uint8_t __ethernet_send_message(uint8_t message_id, uint8_t recipient_id, uint8_t *data, uint8_t data_length) {
+static uint8_t __ethernet_send_message(uint8_t message_id, ethernet_node_t recipient_id, uint8_t *data, uint8_t data_length) {
     NX_PACKET *packet;
     uint8_t status;
     ethernet_message_t message = {0};
@@ -128,7 +131,7 @@ static uint8_t __ethernet_send_message(uint8_t message_id, uint8_t recipient_id,
     }
 
     /* Check data length */
-    if (data_length > ETHERNET_MAX_PACKET_SIZE) {
+    if (data_length > ETH_MAX_PACKET_SIZE) {
         printf("[ethernet.c/__ethernet_send_message()] ERROR: Data length exceeds maximum.\n");
         return ETH_STATUS_ERROR;
     }
@@ -170,8 +173,8 @@ static uint8_t __ethernet_send_message(uint8_t message_id, uint8_t recipient_id,
     status = nx_udp_socket_send(
         &socket,
         packet,
-        ETHERNET_BROADCAST_IP,
-        ETHERNET_UDP_PORT
+        nodes[recipient_id], // When editing, make sure the order of nodes[] matches the order of ethernet_node_t.
+        ETH_UDP_PORT
     );
     if(status != NX_SUCCESS) {
         printf("[ethernet.c/__ethernet_send_message()] ERROR: Failed to send packet (Status: %d).\n", status);
@@ -230,7 +233,7 @@ uint8_t ethernet_init(NX_IP *ip, NX_PACKET_POOL *packet_pool, ethernet_node_t no
         NX_IP_NORMAL,                   // Type of service
         NX_FRAGMENT_OKAY,               // Fragment flag
         NX_IP_TIME_TO_LIVE,             // Time to live
-        ETHERNET_QUEUE_SIZE + 2         // Queue size (slightly larger than the application-level queue just in case processing takes a while or something.)
+        ETH_QUEUE_SIZE + 2         // Queue size (slightly larger than the application-level queue just in case processing takes a while or something.)
     );
     if(status != NX_SUCCESS) {
         printf("[ethernet.c/ethernet_init()] ERROR: Failed to create UDP socket (Status: %d).\n", status);
@@ -240,7 +243,7 @@ uint8_t ethernet_init(NX_IP *ip, NX_PACKET_POOL *packet_pool, ethernet_node_t no
     /* Bind socket to broadcast port */
     status = nx_udp_socket_bind(
         &socket,                        // Socket to bind
-        ETHERNET_UDP_PORT,              // Port
+        ETH_UDP_PORT,              // Port
         TX_WAIT_FOREVER                 // Wait forever
     );
     if(status != NX_SUCCESS) {
@@ -268,7 +271,7 @@ uint8_t ethernet_init(NX_IP *ip, NX_PACKET_POOL *packet_pool, ethernet_node_t no
     return ETH_STATUS_OK;
 }
 
-uint8_t ethernet_queue_message(uint8_t message_id, uint8_t recipient_id, uint8_t *data, uint8_t data_length) {
+uint8_t ethernet_queue_message(uint8_t message_id, ethernet_node_t recipient_id, uint8_t *data, uint8_t data_length) {
     uint8_t status;
     ethernet_message_t message = {0};
 
@@ -303,6 +306,7 @@ uint8_t ethernet_process(void) {
         status = __ethernet_send_message(message.message_id, message.recipient_id, message.data, message.data_length);
         if(status != ETH_STATUS_OK) {
             printf("[ethernet.c/ethernet_process()] WARNING: Failed to send message after removing from outgoing queue (Message ID: %d).\n", message.message_id);
+            // TODO - maybe add the message back into the queue if it fails to send? not sure if this is a good idea tho
         }
     }
 

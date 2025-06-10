@@ -216,7 +216,7 @@ static VOID nx_app_thread_entry (ULONG thread_input)
   while(1)
   {
     ethernet_process();
-    tx_thread_sleep(ETHERNET_THREAD_DELAY);
+    tx_thread_sleep(ETH_THREAD_DELAY);
   }
 
   /* USER CODE END Nx_App_Thread_Entry 0 */
