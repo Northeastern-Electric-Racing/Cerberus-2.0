@@ -20,10 +20,16 @@
 #define ETH_THREAD_DELAY  	10 /* Delay for the NetX thread (in ticks) */
 
 typedef enum {
-	ALL = 0,
-	VCU = 1,
-	Compute = 2,
-	TPU = 3,
+    NONE        = 0x00,     // 0b00000000
+    VCU         = (1 << 0), // 0b00000001
+    COMPUTE     = (1 << 1), // 0b00000010
+    TPU         = (1 << 2), // 0b00000100
+    NODE4       = (1 << 3), // 0b00001000
+    NODE5       = (1 << 4), // 0b00010000
+    NODE6       = (1 << 5), // 0b00100000
+    NODE7       = (1 << 6), // 0b01000000
+    NODE8       = (1 << 7), // 0b10000000
+    ALL         = 0xFF      // 0b11111111
 } ethernet_node_t;
 
 #define ETH_IP_BROADCAST 	IP_ADDRESS(255,255,255,255)
