@@ -1,21 +1,21 @@
 #include "u_threads.h"
 
 /* Helper function. Creates a ThreadX thread. */
-static uint8_t _threads_create(TX_BYTE_POOL *byte_pool, const thread_t *thread) {
+static uint8_t _create_thread(TX_BYTE_POOL *byte_pool, const thread_t *thread) {
     CHAR *pointer;
     uint8_t status;
 
     /* Allocate the stack for the thread. */
     status = tx_byte_allocate(byte_pool, (VOID**) &pointer, thread->size, TX_NO_WAIT);
     if(status != TX_SUCCESS) {
-        printf("[u_threads.c/_threads_create()] ERROR: Failed to allocate stack before creating thread (Status: %d, Thread: %s).\n", status, thread->name);
+        printf("[u_threads.c/_create_thread()] ERROR: Failed to allocate stack before creating thread (Status: %d, Thread: %s).\n", status, thread->name);
         return THREADS_STATUS_ERROR;
     }
 
     /* Create the thread. */
     status = tx_thread_create(thread->thread, thread->name, thread->function, thread->thread_input, pointer, thread->size, thread->priority, thread->threshold, thread->time_slice, thread->auto_start);
     if(status != TX_SUCCESS) {
-        printf("[u_threads.c/_threads_create()] ERROR: Failed to create thread (Status: %d, Thread: %s).\n", status, thread->name);
+        printf("[u_threads.c/_create_thread()] ERROR: Failed to create thread (Status: %d, Thread: %s).\n", status, thread->name);
         return THREADS_STATUS_ERROR;
     }
     
@@ -52,7 +52,7 @@ VOID thread_template(ULONG thread_input) {
 uint8_t threads_init(TX_BYTE_POOL *byte_pool) {
 
     /* Create Threads */
-    _threads_create(byte_pool, &template_config); // Create Template Thread
+    _create_thread(byte_pool, &template_config); // Create Template Thread
     // add more threads here if need eventually
 
     printf("[u_threads.c/threads_init()] SUCCESS: Ran threads_init().\n");
