@@ -8,6 +8,7 @@
         "threads.h": "c",
         "u_ethernet.h": "c",
         "u_threads.h": "c",
-        "tx_api.h": "c"
+        "tx_api.h": "c",
+        "stdbool.h": "c"
     }
 }

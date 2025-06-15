@@ -252,13 +252,13 @@ uint8_t ethernet_init(NX_IP *ip, NX_PACKET_POOL *packet_pool, ethernet_node_t no
 
     /* Create UDP socket for broadcasting */
     status = nx_udp_socket_create(
-        ip,                             // IP instance
-        &socket,                        // Socket to create
-        "Ethernet Broadcast",           // Socket name
-        NX_IP_NORMAL,                   // Type of service
-        NX_FRAGMENT_OKAY,               // Fragment flag
-        NX_IP_TIME_TO_LIVE,             // Time to live
-        ETH_QUEUE_SIZE + 2         // Queue size (slightly larger than the application-level queue just in case processing takes a while or something.)
+        ip,                         // IP instance
+        &socket,                    // Socket to create
+        "Ethernet Broadcast",       // Socket name
+        NX_IP_NORMAL,               // Type of service
+        NX_FRAGMENT_OKAY,           // Fragment flag
+        NX_IP_TIME_TO_LIVE,         // Time to live
+        ETH_QUEUE_SIZE + 2          // Queue size (slightly larger than the application-level queue just in case processing takes a while or something.)
     );
     if(status != NX_SUCCESS) {
         printf("[u_ethernet.c/ethernet_init()] ERROR: Failed to create UDP socket (Status: %d).\n", status);
@@ -267,9 +267,9 @@ uint8_t ethernet_init(NX_IP *ip, NX_PACKET_POOL *packet_pool, ethernet_node_t no
 
     /* Bind socket to broadcast port */
     status = nx_udp_socket_bind(
-        &socket,                        // Socket to bind
-        ETH_UDP_PORT,              // Port
-        TX_WAIT_FOREVER                 // Wait forever
+        &socket,                     // Socket to bind
+        ETH_UDP_PORT,                // Port
+        TX_WAIT_FOREVER              // Wait forever
     );
     if(status != NX_SUCCESS) {
         printf("[u_ethernet.c/ethernet_init()] ERROR: Failed to bind UDP socket (Status: %d).\n", status);
@@ -279,8 +279,8 @@ uint8_t ethernet_init(NX_IP *ip, NX_PACKET_POOL *packet_pool, ethernet_node_t no
 
     /* Enable UDP recieve callback */
     status = nx_udp_socket_receive_notify(
-        &socket,                        // Socket to set callback for
-        &_recieve_message               // Callback function
+        &socket,                      // Socket to set callback for
+        &_recieve_message             // Callback function
     );
     if(status != NX_SUCCESS) {
         printf("[u_ethernet.c/ethernet_init()] ERROR: Failed to set recieve callback (Status: %d).\n", status);

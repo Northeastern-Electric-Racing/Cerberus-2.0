@@ -1,5 +1,5 @@
-#ifndef __ETHERNET_H
-#define __ETHERNET_H
+#ifndef __U_ETHERNET_H
+#define __U_ETHERNET_H
 
 #include "nx_api.h"
 #include <stdint.h>
@@ -43,9 +43,30 @@ typedef struct {
 
 typedef void (*Ethernet_MessageHandler)(ethernet_message_t *message);
 
-/* API FUNCTIONS */
+/**
+ * @brief Initializes the NetX ethernet system in a repo. Inteded to be called from nx_app_thread_entry() in app_netxduo.c
+ * @param ip Pointer to the NetX IP instance.
+ * @param packet_pool Pointer to the NetX packet pool instance.
+ * @param node_id The ID (ethernet_node_t) of this node.
+ * @param function The function to be called when a message is recieved. See the Ethernet_MessageHandler function prototype above.
+ * @return Status.
+ */
 uint8_t ethernet_init(NX_IP *ip, NX_PACKET_POOL *packet_pool, ethernet_node_t node_id, Ethernet_MessageHandler function);
+
+/**
+ * @brief Places an ethernet message in the outgoing queue (which will send the message).
+ * @param message_id The ID of the ethernet message.
+ * @param recipient_id The ID(s) of the inteded recipients.
+ * @param data The data to be sent in the message.
+ * @param data_length The length of the data, in bytes.
+ * @return Status.
+ */
 uint8_t ethernet_queue_message(uint8_t message_id, ethernet_node_t recipient_id, uint8_t *data, uint8_t data_length);
+
+/**
+ * @brief Handles all ethernet processing (sending outgoing messages, recieving incoming messages, etc.).
+ *        This function is intended to be called repeatetly by the NetX thread.
+ */
 uint8_t ethernet_process(void);
 
 #define ETH_STATUS_OK 				0
@@ -54,4 +75,4 @@ uint8_t ethernet_process(void);
 #define ETH_STATUS_QUEUEEMPTY 		3
 #define ETH_STATUS_QUEUENOTEMPTY 	4
 
-#endif /* ethernet.h */
+#endif /* u_ethernet.h */
