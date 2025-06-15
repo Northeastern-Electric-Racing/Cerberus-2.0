@@ -31,13 +31,13 @@ static uint8_t _ethernet_queue_message(_ethernet_queue_t *queue, ethernet_messag
     /* Get queue mutex */
     uint8_t status = tx_mutex_get(&queue->mutex, TX_WAIT_FOREVER);
     if(status != TX_SUCCESS) {
-        printf("[ethernet.c/_ethernet_queue_message()] ERROR: Failed to get queue mutex (Status: %d).\n", status);
+        printf("[u_ethernet.c/_ethernet_queue_message()] ERROR: Failed to get queue mutex (Status: %d).\n", status);
         return ETH_STATUS_ERROR;
     }
 
     /* Check if queue is full. */
     if(queue->count >= ETH_QUEUE_SIZE) {
-        printf("[ethernet.c/_ethernet_queue_message()] ERROR: Ethernet queue is full!\n");
+        printf("[u_ethernet.c/_ethernet_queue_message()] ERROR: Ethernet queue is full!\n");
         tx_mutex_put(&queue->mutex); // (Release the queue mutex.)
         return ETH_STATUS_ERROR;
     }
@@ -46,7 +46,7 @@ static uint8_t _ethernet_queue_message(_ethernet_queue_t *queue, ethernet_messag
     memcpy(&queue->messages[queue->tail], message, sizeof(ethernet_message_t));
     queue->tail = (queue->tail + 1) % ETH_QUEUE_SIZE;
     queue->count++;
-    printf("[ethernet.c/_ethernet_queue_message()] Queued ethernet message (Message ID: %d).\n", message->message_id);
+    printf("[u_ethernet.c/_ethernet_queue_message()] Queued ethernet message (Message ID: %d).\n", message->message_id);
     tx_mutex_put(&queue->mutex); // (Release the queue mutex.)
     return ETH_STATUS_OK;
 }
@@ -57,13 +57,13 @@ static uint8_t _ethernet_dequeue_message(_ethernet_queue_t *queue, ethernet_mess
     /* Get queue mutex */
     uint8_t status = tx_mutex_get(&queue->mutex, TX_WAIT_FOREVER);
     if(status != TX_SUCCESS) {
-        printf("[ethernet.c/_ethernet_dequeue_message()] ERROR: Failed to get queue mutex (Status: %d).\n", status);
+        printf("[u_ethernet.c/_ethernet_dequeue_message()] ERROR: Failed to get queue mutex (Status: %d).\n", status);
         return ETH_STATUS_ERROR;
     }
 
     /* Check if queue is empty. */
     if (queue->count == 0) {
-        printf("[ethernet.c/_ethernet_dequeue_message()] Queue is empty. No messages to dequeue.\n");
+        printf("[u_ethernet.c/_ethernet_dequeue_message()] Queue is empty. No messages to dequeue.\n");
         tx_mutex_put(&queue->mutex); // (Release the queue mutex.)
         return ETH_STATUS_QUEUEEMPTY;
     }
@@ -72,7 +72,7 @@ static uint8_t _ethernet_dequeue_message(_ethernet_queue_t *queue, ethernet_mess
     memcpy(message, &queue->messages[queue->head], sizeof(ethernet_message_t));
     queue->head = (queue->head + 1) % ETH_QUEUE_SIZE;
     queue->count--;
-    printf("[ethernet.c/_ethernet_dequeue_message()] Dequeued ethernet message (Message ID: %d).\n", message->message_id);
+    printf("[u_ethernet.c/_ethernet_dequeue_message()] Dequeued ethernet message (Message ID: %d).\n", message->message_id);
     tx_mutex_put(&queue->mutex); // (Release queue mutex.)
     return ETH_STATUS_QUEUENOTEMPTY;
 }
@@ -97,12 +97,12 @@ static void _ethernet_recieve_callback(NX_UDP_SOCKET *socket) {
             &bytes_copied                   // Stores how many bytes were actually copied to &message
         );
         if(bytes_copied < sizeof(ethernet_message_t)) {
-            printf("[ethernet.c/_ethernet_recieve_callback()] WARNING: Received ethernet message was smaller than expected (only recieved %lu of %u expected bytes).\n", bytes_copied, sizeof(ethernet_message_t));
+            printf("[u_ethernet.c/_ethernet_recieve_callback()] WARNING: Received ethernet message was smaller than expected (only recieved %lu of %u expected bytes).\n", bytes_copied, sizeof(ethernet_message_t));
         }
 
         /* Process recieved message */
         if(status == NX_SUCCESS) {
-            printf("[ethernet.c/_ethernet_recieve_callback()] Recieved ethernet message! (Sender ID: %d, Message ID: %d).\n", message.sender_id, message.message_id);
+            printf("[u_ethernet.c/_ethernet_recieve_callback()] Recieved ethernet message! (Sender ID: %d, Message ID: %d).\n", message.sender_id, message.message_id);
             _ethernet_queue_message(&incoming, &message);
         }
     }
@@ -119,13 +119,13 @@ static uint8_t _ethernet_send_message(uint8_t message_id, ethernet_node_t recipi
 
     /* Check if ethernet is initialized */
     if(!device.is_initialized) {
-        printf("[ethernet.c/_ethernet_send_message()] ERROR: Ethernet device is not initialized, so ethernet_send_message() will not work.\n");
+        printf("[u_ethernet.c/_ethernet_send_message()] ERROR: Ethernet device is not initialized, so ethernet_send_message() will not work.\n");
         return ETH_STATUS_ERROR;
     }
 
     /* Check data length */
     if (data_length > ETH_MAX_PACKET_SIZE) {
-        printf("[ethernet.c/_ethernet_send_message()] ERROR: Data length exceeds maximum.\n");
+        printf("[u_ethernet.c/_ethernet_send_message()] ERROR: Data length exceeds maximum.\n");
         return ETH_STATUS_ERROR;
     }
 
@@ -144,7 +144,7 @@ static uint8_t _ethernet_send_message(uint8_t message_id, ethernet_node_t recipi
         TX_WAIT_FOREVER             // Wait indefinitely until a packet is available
     );
     if(status != NX_SUCCESS) {
-        printf("[ethernet.c/_ethernet_send_message()] ERROR: Failed to allocate packet (Status: %d).\n", status);
+        printf("[u_ethernet.c/_ethernet_send_message()] ERROR: Failed to allocate packet (Status: %d).\n", status);
         return ETH_STATUS_ERROR;
     }
 
@@ -157,7 +157,7 @@ static uint8_t _ethernet_send_message(uint8_t message_id, ethernet_node_t recipi
         TX_WAIT_FOREVER             // Wait indefinitely
     );
     if(status != NX_SUCCESS) {
-        printf("[ethernet.c/_ethernet_send_message()] ERROR: Failed to append data to packet (Status: %d).\n", status);
+        printf("[u_ethernet.c/_ethernet_send_message()] ERROR: Failed to append data to packet (Status: %d).\n", status);
         nx_packet_release(packet);
         return ETH_STATUS_ERROR;
     }
@@ -170,12 +170,12 @@ static uint8_t _ethernet_send_message(uint8_t message_id, ethernet_node_t recipi
         ETH_UDP_PORT
     );
     if(status != NX_SUCCESS) {
-        printf("[ethernet.c/_ethernet_send_message()] ERROR: Failed to send packet (Status: %d).\n", status);
+        printf("[u_ethernet.c/_ethernet_send_message()] ERROR: Failed to send packet (Status: %d).\n", status);
         nx_packet_release(packet);
         return ETH_STATUS_ERROR;
     }
 
-    printf("[ethernet.c/_ethernet_send_message()] Sent ethernet message (Recipient ID: %d, Message ID: %d).\n", message.sender_id, message.message_id);
+    printf("[u_ethernet.c/_ethernet_send_message()] Sent ethernet message (Recipient ID: %d, Message ID: %d).\n", message.sender_id, message.message_id);
     return ETH_STATUS_OK;
 }
 
@@ -187,13 +187,13 @@ uint8_t ethernet_init(NX_IP *ip, NX_PACKET_POOL *packet_pool, ethernet_node_t no
 
     /* Make sure pointers are real instead of fake */
     if(!ip || !packet_pool) {
-        printf("[ethernet.c/ethernet_init()] ERROR: Invalid pointer parameters.\n");
+        printf("[u_ethernet.c/ethernet_init()] ERROR: Invalid pointer parameters.\n");
         return ETH_STATUS_ERROR;
     }
 
     /* Make sure device isn't already initialized */
     if(device.is_initialized) {
-        printf("[ethernet.c/ethernet_init()] ERROR: Ethernet is already initialized.\n");
+        printf("[u_ethernet.c/ethernet_init()] ERROR: Ethernet is already initialized.\n");
         return ETH_STATUS_ERROR;
     }
 
@@ -206,14 +206,14 @@ uint8_t ethernet_init(NX_IP *ip, NX_PACKET_POOL *packet_pool, ethernet_node_t no
     /* Enable UDP */
     status = nx_udp_enable(device.ip);
     if (status != NX_SUCCESS) {
-        printf("[ethernet.c/ethernet_init()] ERROR: Failed to enable UDP (Status: %d).\n", status);
+        printf("[u_ethernet.c/ethernet_init()] ERROR: Failed to enable UDP (Status: %d).\n", status);
         return ETH_STATUS_ERROR;
     }
 
     /* Enable igmp */
     status = nx_igmp_enable(ip);
     if (status != NX_SUCCESS) {
-        printf("[ethernet.c/ethernet_init()] ERROR: Failed to enable igmp (Status: %d).\n", status);
+        printf("[u_ethernet.c/ethernet_init()] ERROR: Failed to enable igmp (Status: %d).\n", status);
         return ETH_STATUS_ERROR;
     }
 
@@ -231,7 +231,7 @@ uint8_t ethernet_init(NX_IP *ip, NX_PACKET_POOL *packet_pool, ethernet_node_t no
             ULONG address = ETH_IP(i);
             status = nx_igmp_multicast_join(device.ip, address);
             if(status != NX_SUCCESS) {
-                printf("[ethernet.c/ethernet_init()] ERROR: Failed to join multicast group (Status: %d, Address: %lu).\n", status, address);
+                printf("[u_ethernet.c/ethernet_init()] ERROR: Failed to join multicast group (Status: %d, Address: %lu).\n", status, address);
             }
         }
     }
@@ -239,14 +239,14 @@ uint8_t ethernet_init(NX_IP *ip, NX_PACKET_POOL *packet_pool, ethernet_node_t no
     /* Create incoming queue mutex. */
     status = tx_mutex_create(&incoming.mutex, "Incoming Queue Mutex", TX_NO_INHERIT);
     if(status != TX_SUCCESS) {
-        printf("[ethernet.c/ethernet_init()] ERROR: Failed to create incoming mutex (Status: %d).\n", status);
+        printf("[u_ethernet.c/ethernet_init()] ERROR: Failed to create incoming mutex (Status: %d).\n", status);
         return ETH_STATUS_ERROR;
     }
 
     /* Create outgoing queue mutex. */
     status = tx_mutex_create(&outgoing.mutex, "Outgoing Queue Mutex", TX_NO_INHERIT);
     if(status != TX_SUCCESS) {
-        printf("[ethernet.c/ethernet_init()] ERROR: Failed to create outgoing mutex (Status: %d).\n", status);
+        printf("[u_ethernet.c/ethernet_init()] ERROR: Failed to create outgoing mutex (Status: %d).\n", status);
         return ETH_STATUS_ERROR;
     }
 
@@ -261,7 +261,7 @@ uint8_t ethernet_init(NX_IP *ip, NX_PACKET_POOL *packet_pool, ethernet_node_t no
         ETH_QUEUE_SIZE + 2         // Queue size (slightly larger than the application-level queue just in case processing takes a while or something.)
     );
     if(status != NX_SUCCESS) {
-        printf("[ethernet.c/ethernet_init()] ERROR: Failed to create UDP socket (Status: %d).\n", status);
+        printf("[u_ethernet.c/ethernet_init()] ERROR: Failed to create UDP socket (Status: %d).\n", status);
         return ETH_STATUS_ERROR;
     }
 
@@ -272,7 +272,7 @@ uint8_t ethernet_init(NX_IP *ip, NX_PACKET_POOL *packet_pool, ethernet_node_t no
         TX_WAIT_FOREVER                 // Wait forever
     );
     if(status != NX_SUCCESS) {
-        printf("[ethernet.c/ethernet_init()] ERROR: Failed to bind UDP socket (Status: %d).\n", status);
+        printf("[u_ethernet.c/ethernet_init()] ERROR: Failed to bind UDP socket (Status: %d).\n", status);
         nx_udp_socket_delete(&socket);
         return ETH_STATUS_ERROR;
     }
@@ -283,7 +283,7 @@ uint8_t ethernet_init(NX_IP *ip, NX_PACKET_POOL *packet_pool, ethernet_node_t no
         &_ethernet_recieve_callback      // Callback function
     );
     if(status != NX_SUCCESS) {
-        printf("[ethernet.c/ethernet_init()] ERROR: Failed to set recieve callback (Status: %d).\n", status);
+        printf("[u_ethernet.c/ethernet_init()] ERROR: Failed to set recieve callback (Status: %d).\n", status);
         nx_udp_socket_unbind(&socket);
         nx_udp_socket_delete(&socket);
         return ETH_STATUS_ERROR;
@@ -292,7 +292,7 @@ uint8_t ethernet_init(NX_IP *ip, NX_PACKET_POOL *packet_pool, ethernet_node_t no
     /* Mark device as initialized. */
     device.is_initialized = true;
 
-    printf("[ethernet.c/ethernet_init()] Ethernet initialized successfully!\n");
+    printf("[u_ethernet.c/ethernet_init()] Ethernet initialized successfully!\n");
     return ETH_STATUS_OK;
 }
 
@@ -310,7 +310,7 @@ uint8_t ethernet_queue_message(uint8_t message_id, ethernet_node_t recipient_id,
     /* Place message in outgoing queue */
     status = _ethernet_queue_message(&outgoing, &message);
     if(status != ETH_STATUS_OK) {
-        printf("[ethernet.c/ethernet_queue_message()] ERROR: Failed to place message in outgoing queue (Message ID: %d).\n", message.message_id);
+        printf("[u_ethernet.c/ethernet_queue_message()] ERROR: Failed to place message in outgoing queue (Message ID: %d).\n", message.message_id);
         return ETH_STATUS_ERROR;
     }
 
@@ -322,7 +322,7 @@ uint8_t ethernet_process(void) {
     uint8_t status;
 
     if(!device.is_initialized) {
-        printf("[ethernet.c/ethernet_process()] ERROR: Ethernet device is not initialized. Skipping ethernet thread stuff until then...\n");
+        printf("[u_ethernet.c/ethernet_process()] ERROR: Ethernet device is not initialized. Skipping ethernet thread stuff until then...\n");
         return ETH_STATUS_ERROR;
     }
 
@@ -330,7 +330,7 @@ uint8_t ethernet_process(void) {
     while(_ethernet_dequeue_message(&outgoing, &message) == ETH_STATUS_QUEUENOTEMPTY) {
         status = _ethernet_send_message(message.message_id, message.recipient_id, message.data, message.data_length);
         if(status != ETH_STATUS_OK) {
-            printf("[ethernet.c/ethernet_process()] WARNING: Failed to send message after removing from outgoing queue (Message ID: %d).\n", message.message_id);
+            printf("[u_ethernet.c/ethernet_process()] WARNING: Failed to send message after removing from outgoing queue (Message ID: %d).\n", message.message_id);
             // TODO - maybe add the message back into the queue if it fails to send? not sure if this is a good idea tho
         }
     }
