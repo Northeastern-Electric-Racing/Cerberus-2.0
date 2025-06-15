@@ -39,6 +39,13 @@ include("../gcc-arm-none-eabi.cmake")
 set(CMAKE_PROJECT_NAME Cerberus-2.0_Appli)
 project(${CMAKE_PROJECT_NAME})
 
+# Compiler warnings to disable (probably not a good idea)
+if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
+    add_compile_options(
+        -Wno-unused-parameter      # Unused function parameters
+    )
+endif()
+
 # Create an executable object type
 add_executable(${CMAKE_PROJECT_NAME})
 
@@ -69,8 +76,9 @@ target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
 # Contains every c/cpp file in Embedded-Base. Dunno if this is bad practice
 file(GLOB_RECURSE PROJECT_SOURCES 
     "../Drivers/Embedded-Base/general/src/lan8670.c"
-    "./NetXDuo/ethernet.c"
-    "./Core/messages.c"
+    "./NetXDuo/u_ethernet.c"
+    "./Core/u_messages.c"
+    "./Core/u_threads.c"
 )
 
 # Add sources to executable

@@ -3,4 +3,4 @@
 
 void messages_handler(ethernet_message_t *message);
 
-#endif /* messages.h */
+#endif /* u_messages.h */

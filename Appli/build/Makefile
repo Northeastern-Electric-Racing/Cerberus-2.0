@@ -253,30 +253,6 @@ Core/Src/main.c.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Cerberus-2.0_Appli.dir/build.make CMakeFiles/Cerberus-2.0_Appli.dir/Core/Src/main.c.s
 .PHONY : Core/Src/main.c.s
 
-Core/Src/messages.obj: Core/Src/messages.c.obj
-.PHONY : Core/Src/messages.obj
-
-# target to build an object file
-Core/Src/messages.c.obj:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Cerberus-2.0_Appli.dir/build.make CMakeFiles/Cerberus-2.0_Appli.dir/Core/Src/messages.c.obj
-.PHONY : Core/Src/messages.c.obj
-
-Core/Src/messages.i: Core/Src/messages.c.i
-.PHONY : Core/Src/messages.i
-
-# target to preprocess a source file
-Core/Src/messages.c.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Cerberus-2.0_Appli.dir/build.make CMakeFiles/Cerberus-2.0_Appli.dir/Core/Src/messages.c.i
-.PHONY : Core/Src/messages.c.i
-
-Core/Src/messages.s: Core/Src/messages.c.s
-.PHONY : Core/Src/messages.s
-
-# target to generate assembly for a file
-Core/Src/messages.c.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Cerberus-2.0_Appli.dir/build.make CMakeFiles/Cerberus-2.0_Appli.dir/Core/Src/messages.c.s
-.PHONY : Core/Src/messages.c.s
-
 Core/Src/stm32h7rsxx_hal_msp.obj: Core/Src/stm32h7rsxx_hal_msp.c.obj
 .PHONY : Core/Src/stm32h7rsxx_hal_msp.obj
 
@@ -405,6 +381,54 @@ Core/Src/tx_initialize_low_level.S.obj:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Cerberus-2.0_Appli.dir/build.make CMakeFiles/Cerberus-2.0_Appli.dir/Core/Src/tx_initialize_low_level.S.obj
 .PHONY : Core/Src/tx_initialize_low_level.S.obj
 
+Core/Src/u_messages.obj: Core/Src/u_messages.c.obj
+.PHONY : Core/Src/u_messages.obj
+
+# target to build an object file
+Core/Src/u_messages.c.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Cerberus-2.0_Appli.dir/build.make CMakeFiles/Cerberus-2.0_Appli.dir/Core/Src/u_messages.c.obj
+.PHONY : Core/Src/u_messages.c.obj
+
+Core/Src/u_messages.i: Core/Src/u_messages.c.i
+.PHONY : Core/Src/u_messages.i
+
+# target to preprocess a source file
+Core/Src/u_messages.c.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Cerberus-2.0_Appli.dir/build.make CMakeFiles/Cerberus-2.0_Appli.dir/Core/Src/u_messages.c.i
+.PHONY : Core/Src/u_messages.c.i
+
+Core/Src/u_messages.s: Core/Src/u_messages.c.s
+.PHONY : Core/Src/u_messages.s
+
+# target to generate assembly for a file
+Core/Src/u_messages.c.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Cerberus-2.0_Appli.dir/build.make CMakeFiles/Cerberus-2.0_Appli.dir/Core/Src/u_messages.c.s
+.PHONY : Core/Src/u_messages.c.s
+
+Core/Src/u_threads.obj: Core/Src/u_threads.c.obj
+.PHONY : Core/Src/u_threads.obj
+
+# target to build an object file
+Core/Src/u_threads.c.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Cerberus-2.0_Appli.dir/build.make CMakeFiles/Cerberus-2.0_Appli.dir/Core/Src/u_threads.c.obj
+.PHONY : Core/Src/u_threads.c.obj
+
+Core/Src/u_threads.i: Core/Src/u_threads.c.i
+.PHONY : Core/Src/u_threads.i
+
+# target to preprocess a source file
+Core/Src/u_threads.c.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Cerberus-2.0_Appli.dir/build.make CMakeFiles/Cerberus-2.0_Appli.dir/Core/Src/u_threads.c.i
+.PHONY : Core/Src/u_threads.c.i
+
+Core/Src/u_threads.s: Core/Src/u_threads.c.s
+.PHONY : Core/Src/u_threads.s
+
+# target to generate assembly for a file
+Core/Src/u_threads.c.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Cerberus-2.0_Appli.dir/build.make CMakeFiles/Cerberus-2.0_Appli.dir/Core/Src/u_threads.c.s
+.PHONY : Core/Src/u_threads.c.s
+
 Core/Startup/startup_stm32h7r7xx.obj: Core/Startup/startup_stm32h7r7xx.s.obj
 .PHONY : Core/Startup/startup_stm32h7r7xx.obj
 
@@ -437,29 +461,29 @@ NetXDuo/App/app_netxduo.c.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Cerberus-2.0_Appli.dir/build.make CMakeFiles/Cerberus-2.0_Appli.dir/NetXDuo/App/app_netxduo.c.s
 .PHONY : NetXDuo/App/app_netxduo.c.s
 
-NetXDuo/App/ethernet.obj: NetXDuo/App/ethernet.c.obj
-.PHONY : NetXDuo/App/ethernet.obj
+NetXDuo/App/u_ethernet.obj: NetXDuo/App/u_ethernet.c.obj
+.PHONY : NetXDuo/App/u_ethernet.obj
 
 # target to build an object file
-NetXDuo/App/ethernet.c.obj:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Cerberus-2.0_Appli.dir/build.make CMakeFiles/Cerberus-2.0_Appli.dir/NetXDuo/App/ethernet.c.obj
-.PHONY : NetXDuo/App/ethernet.c.obj
+NetXDuo/App/u_ethernet.c.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Cerberus-2.0_Appli.dir/build.make CMakeFiles/Cerberus-2.0_Appli.dir/NetXDuo/App/u_ethernet.c.obj
+.PHONY : NetXDuo/App/u_ethernet.c.obj
 
-NetXDuo/App/ethernet.i: NetXDuo/App/ethernet.c.i
-.PHONY : NetXDuo/App/ethernet.i
+NetXDuo/App/u_ethernet.i: NetXDuo/App/u_ethernet.c.i
+.PHONY : NetXDuo/App/u_ethernet.i
 
 # target to preprocess a source file
-NetXDuo/App/ethernet.c.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Cerberus-2.0_Appli.dir/build.make CMakeFiles/Cerberus-2.0_Appli.dir/NetXDuo/App/ethernet.c.i
-.PHONY : NetXDuo/App/ethernet.c.i
+NetXDuo/App/u_ethernet.c.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Cerberus-2.0_Appli.dir/build.make CMakeFiles/Cerberus-2.0_Appli.dir/NetXDuo/App/u_ethernet.c.i
+.PHONY : NetXDuo/App/u_ethernet.c.i
 
-NetXDuo/App/ethernet.s: NetXDuo/App/ethernet.c.s
-.PHONY : NetXDuo/App/ethernet.s
+NetXDuo/App/u_ethernet.s: NetXDuo/App/u_ethernet.c.s
+.PHONY : NetXDuo/App/u_ethernet.s
 
 # target to generate assembly for a file
-NetXDuo/App/ethernet.c.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Cerberus-2.0_Appli.dir/build.make CMakeFiles/Cerberus-2.0_Appli.dir/NetXDuo/App/ethernet.c.s
-.PHONY : NetXDuo/App/ethernet.c.s
+NetXDuo/App/u_ethernet.c.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Cerberus-2.0_Appli.dir/build.make CMakeFiles/Cerberus-2.0_Appli.dir/NetXDuo/App/u_ethernet.c.s
+.PHONY : NetXDuo/App/u_ethernet.c.s
 
 NetXDuo/Target/nx_stm32_phy_custom_driver.obj: NetXDuo/Target/nx_stm32_phy_custom_driver.c.obj
 .PHONY : NetXDuo/Target/nx_stm32_phy_custom_driver.obj
@@ -16731,9 +16755,6 @@ help:
 	@echo "... Core/Src/main.obj"
 	@echo "... Core/Src/main.i"
 	@echo "... Core/Src/main.s"
-	@echo "... Core/Src/messages.obj"
-	@echo "... Core/Src/messages.i"
-	@echo "... Core/Src/messages.s"
 	@echo "... Core/Src/stm32h7rsxx_hal_msp.obj"
 	@echo "... Core/Src/stm32h7rsxx_hal_msp.i"
 	@echo "... Core/Src/stm32h7rsxx_hal_msp.s"
@@ -16750,13 +16771,19 @@ help:
 	@echo "... Core/Src/system_stm32h7rsxx.i"
 	@echo "... Core/Src/system_stm32h7rsxx.s"
 	@echo "... Core/Src/tx_initialize_low_level.obj"
+	@echo "... Core/Src/u_messages.obj"
+	@echo "... Core/Src/u_messages.i"
+	@echo "... Core/Src/u_messages.s"
+	@echo "... Core/Src/u_threads.obj"
+	@echo "... Core/Src/u_threads.i"
+	@echo "... Core/Src/u_threads.s"
 	@echo "... Core/Startup/startup_stm32h7r7xx.obj"
 	@echo "... NetXDuo/App/app_netxduo.obj"
 	@echo "... NetXDuo/App/app_netxduo.i"
 	@echo "... NetXDuo/App/app_netxduo.s"
-	@echo "... NetXDuo/App/ethernet.obj"
-	@echo "... NetXDuo/App/ethernet.i"
-	@echo "... NetXDuo/App/ethernet.s"
+	@echo "... NetXDuo/App/u_ethernet.obj"
+	@echo "... NetXDuo/App/u_ethernet.i"
+	@echo "... NetXDuo/App/u_ethernet.s"
 	@echo "... NetXDuo/Target/nx_stm32_phy_custom_driver.obj"
 	@echo "... NetXDuo/Target/nx_stm32_phy_custom_driver.i"
 	@echo "... NetXDuo/Target/nx_stm32_phy_custom_driver.s"

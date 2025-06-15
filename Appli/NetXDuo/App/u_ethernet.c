@@ -1,4 +1,4 @@
-#include "ethernet.h"
+#include "u_ethernet.h"
 
 /* PRIVATE STRUCTS */
 typedef struct {
@@ -226,7 +226,7 @@ uint8_t ethernet_init(NX_IP *ip, NX_PACKET_POOL *packet_pool, ethernet_node_t no
     *        multicast groups any time you want to send a message to a new combination of nodes,
     *        but if this setup ends up being too slow or something, feel free to get rid of it.
     */
-    for(uint8_t i = (1 << 0); i < (1 << 8); i++) {
+    for(int i = (1 << 0); i < (1 << 8); i++) {
         if((i & device.node_id) == device.node_id) {
             ULONG address = ETH_IP(i);
             status = nx_igmp_multicast_join(device.ip, address);

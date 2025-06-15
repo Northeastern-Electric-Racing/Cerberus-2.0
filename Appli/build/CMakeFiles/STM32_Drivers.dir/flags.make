@@ -6,5 +6,5 @@ C_DEFINES = -DNX_INCLUDE_USER_DEFINE_FILE -DSTM32H7R7xx -DTX_INCLUDE_USER_DEFINE
 
 C_INCLUDES = -I/home/app/Appli/Core/Inc -I/home/app/Appli/AZURE_RTOS/App -I/home/app/Appli/NetXDuo/App -I/home/app/Appli/NetXDuo/Target -I/home/app/Appli/../Middlewares/ST/netxduo/common/drivers/ethernet -I/home/app/Appli/../Middlewares/ST/netxduo/common/inc -I/home/app/Appli/../Middlewares/ST/netxduo/ports/cortex_m7/gnu/inc -I/home/app/Appli/../Middlewares/ST/threadx/common/inc -I/home/app/Appli/../Middlewares/ST/threadx/ports/cortex_m7/gnu/inc -I/home/app/Appli/../Drivers/STM32H7RSxx_HAL_Driver/Inc -I/home/app/Appli/../Drivers/STM32H7RSxx_HAL_Driver/Inc/Legacy -I/home/app/Appli/../Drivers/CMSIS/Device/ST/STM32H7RSxx/Include -I/home/app/Appli/../Drivers/CMSIS/Include
 
-C_FLAGS =  -mcpu=cortex-m7 -mfpu=fpv5-d16 -mfloat-abi=hard  -Wall -Wextra -Wpedantic -fdata-sections -ffunction-sections -Os -g0 -std=gnu11
+C_FLAGS =  -mcpu=cortex-m7 -mfpu=fpv5-d16 -mfloat-abi=hard  -Wall -Wextra -Wpedantic -fdata-sections -ffunction-sections -Os -g0 -std=gnu11 -Wno-unused-parameter
 
