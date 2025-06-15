@@ -10,10 +10,14 @@ jobs:
       with:
         submodules: recursive
         fetch-depth: 0
-    - name: Build with CMake
-      run: | 
-        if ! docker compose run --rm ner-gcc-arm sh -c mkdir -p build && cd build && cmake -DCMAKE_BUILD_TYPE=Release .. && cmake --build .; then
-        echo "The application has failed to build."
-        exit 1
-        fi
-      
+    
+    - name: Clean and Build Project
+      run: |
+        docker compose run --rm ner-gcc-arm sh -c '
+          cmake --build build --target clean ;
+          find . -type d -name "build" -exec rm -rf {} + ;
+          mkdir -p build &&
+          cd build &&
+          cmake -DCMAKE_BUILD_TYPE=Release .. &&
+          cmake --build .
+        '
