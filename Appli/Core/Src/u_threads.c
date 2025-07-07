@@ -9,17 +9,17 @@ static uint8_t _create_thread(TX_BYTE_POOL *byte_pool, const thread_t *thread) {
     status = tx_byte_allocate(byte_pool, (VOID**) &pointer, thread->size, TX_NO_WAIT);
     if(status != TX_SUCCESS) {
         printf("[u_threads.c/_create_thread()] ERROR: Failed to allocate stack before creating thread (Status: %d, Thread: %s).\n", status, thread->name);
-        return THREADS_STATUS_ERROR;
+        return U_ERROR;
     }
 
     /* Create the thread. */
     status = tx_thread_create(thread->thread, thread->name, thread->function, thread->thread_input, pointer, thread->size, thread->priority, thread->threshold, thread->time_slice, thread->auto_start);
     if(status != TX_SUCCESS) {
         printf("[u_threads.c/_create_thread()] ERROR: Failed to create thread (Status: %d, Thread: %s).\n", status, thread->name);
-        return THREADS_STATUS_ERROR;
+        return U_ERROR;
     }
     
-    return THREADS_STATUS_OK;
+    return U_SUCCESS;
 }
 
 /* Template Thread */
@@ -56,5 +56,5 @@ uint8_t threads_init(TX_BYTE_POOL *byte_pool) {
     // add more threads here if need eventually
 
     printf("[u_threads.c/threads_init()] SUCCESS: Ran threads_init().\n");
-    return THREADS_STATUS_OK;
+    return U_SUCCESS;
 }

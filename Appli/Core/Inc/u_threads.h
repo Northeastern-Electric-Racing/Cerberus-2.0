@@ -2,6 +2,7 @@
 #define __U_THREADS_H
 
 #include "tx_api.h"
+#include "u_config.h"
 #include <stdint.h>
 #include <stdio.h>
 
@@ -10,10 +11,6 @@
 *   
 *   Author: Blake Jackson
 */
-
-/* STATUS MACROS */
-#define THREADS_STATUS_OK    0
-#define THREADS_STATUS_ERROR 1
 
 /* Initializes all threads. Called from app_threadx.c */
 uint8_t threads_init(TX_BYTE_POOL *byte_pool);
