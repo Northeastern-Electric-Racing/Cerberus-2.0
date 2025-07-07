@@ -79,6 +79,7 @@ file(GLOB_RECURSE PROJECT_SOURCES
     "./NetXDuo/u_ethernet.c"
     "./Core/u_messages.c"
     "./Core/u_threads.c"
+    "./Core/u_statemachine.c"
 )
 
 # Add sources to executable

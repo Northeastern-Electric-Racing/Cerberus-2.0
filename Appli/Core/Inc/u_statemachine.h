@@ -3,6 +3,7 @@
 
 #include "u_config.h"
 #include <stdint.h>
+#include <stdio.h>
 
 /* Car states */
 typedef enum {
