@@ -1,5 +1,7 @@
 #include "u_statemachine.h"
 
+// TODO - this whole file is a todo. i dunno how state machines are supposed to work
+
 static state_t current_state = STATE_READY; // Stores the car's current state. The car's initial state on startup can be set here.
 
 /* Called when EVENT_BUTTON is triggered. */
