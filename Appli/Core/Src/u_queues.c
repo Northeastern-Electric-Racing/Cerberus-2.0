@@ -1,4 +1,5 @@
 #include "u_queues.h"
+#include <stdio.h>
 
 /* Helper function. Creates a ThreadX queue. */
 static uint8_t _create_queue(const queue_t *queue) {
@@ -15,16 +16,26 @@ static uint8_t _create_queue(const queue_t *queue) {
 
 }
 
-/* Template Queue */
-TX_QUEUE queue_template;
-static UCHAR _template_memory[1 * 10];    /* (message_size * capacity) */
-static const queue_t _template_config = {
-    .queue         = &queue_template,     /* Pointer to the queue. */
-    .name          = "Template Queue",    /* Name of the queue. */
-    .priority      = 0,                   /* Priority of the queue. */
-    .message_size  = 1,                   /* Size of each queue message, in bytes. */
-    .capacity      = 10,                  /* Number of messages the queue can hold. */
-    .memory        = _template_memory     /* Pointer to the queue's memory. */
+/* Incoming Ethernet Queue */
+TX_QUEUE eth_incoming;
+static UCHAR _eth_incoming_memory[sizeof(ethernet_message_t) * 10]; /* (message_size * capacity) */
+static const queue_t _eth_incoming_config = {
+    .queue         = &eth_incoming,              /* Pointer to the queue. */
+    .name          = "Incoming Ethernet Queue",  /* Name of the queue. */
+    .message_size  = sizeof(ethernet_message_t), /* Size of each queue message, in bytes. */
+    .capacity      = 10,                         /* Number of messages the queue can hold. */
+    .memory        = _eth_incoming_memory        /* Pointer to the queue's memory. */
+};
+
+/* Outgoing Ethernet Queue */
+TX_QUEUE eth_outgoing;
+static UCHAR _eth_outgoing_memory[sizeof(ethernet_message_t) * 10]; /* (message_size * capacity) */
+static const queue_t _eth_outgoing_config = {
+    .queue         = &eth_outgoing,              /* Pointer to the queue. */
+    .name          = "Outgoing Ethernet Queue",  /* Name of the queue. */
+    .message_size  = sizeof(ethernet_message_t), /* Size of each queue message, in bytes. */
+    .capacity      = 10,                         /* Number of messages the queue can hold. */
+    .memory        = _eth_outgoing_memory        /* Pointer to the queue's memory. */
 };
 
 /* Initializes all ThreadX queues. 
@@ -33,7 +44,8 @@ static const queue_t _template_config = {
 uint8_t queues_init() {
 
     /* Create Queues */
-    _create_queue(&_template_config); // Create Template queue.
+    _create_queue(&_eth_incoming_config); // Create Incoming Ethernet Queue.
+    _create_queue(&_eth_outgoing_config); // Create Outgoing Ethernet Queue.
     // add more queues here if need eventually
 
     printf("[u_queues.c/queues_init()] Ran queues_init().\n");

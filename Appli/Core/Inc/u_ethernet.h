@@ -3,6 +3,7 @@
 
 #include "nx_api.h"
 #include "u_config.h"
+#include "u_queues.h"
 #include <stdint.h>
 #include <stdbool.h>
 
@@ -69,11 +70,5 @@ uint8_t ethernet_queue_message(uint8_t message_id, ethernet_node_t recipient_id,
  *        This function is intended to be called repeatetly by the NetX thread.
  */
 uint8_t ethernet_process(void);
-
-#define ETH_STATUS_OK 				0
-#define ETH_STATUS_ERROR 			1
-#define ETH_STATUS_WARNING 			2
-#define ETH_STATUS_QUEUEEMPTY 		3
-#define ETH_STATUS_QUEUENOTEMPTY 	4
 
 #endif /* u_ethernet.h */
