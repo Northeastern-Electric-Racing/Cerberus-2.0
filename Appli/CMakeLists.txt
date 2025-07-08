@@ -80,6 +80,7 @@ file(GLOB_RECURSE PROJECT_SOURCES
     "./Core/u_messages.c"
     "./Core/u_threads.c"
     "./Core/u_statemachine.c"
+    "./Core/u_queues.c"
 )
 
 # Add sources to executable

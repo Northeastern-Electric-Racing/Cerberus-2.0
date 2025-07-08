@@ -23,9 +23,9 @@ static uint8_t _create_thread(TX_BYTE_POOL *byte_pool, const thread_t *thread) {
 }
 
 /* Template Thread */
-static TX_THREAD template;
-static const thread_t template_config = {
-        .thread     = &template,         /* Thread */
+static TX_THREAD _template;
+static const thread_t _template_config = {
+        .thread     = &_template,        /* Thread */
         .name       = "Template Thread", /* Name */
         .function   = thread_template,   /* Thread Function */
         .size       = 512,               /* Stack Size (in bytes) */
@@ -42,19 +42,19 @@ VOID thread_template(ULONG thread_input) {
         // TODO - make thread do stuff
 
         /* Sleep Thread for specified number of ticks. */
-        tx_thread_sleep(template_config.sleep);
+        tx_thread_sleep(_template_config.sleep);
     }
 }
 
 /* Initializes all ThreadX threads. 
-*  Calls to _threads_create() should go in here
+*  Calls to _create_thread() should go in here
 */
 uint8_t threads_init(TX_BYTE_POOL *byte_pool) {
 
     /* Create Threads */
-    _create_thread(byte_pool, &template_config); // Create Template Thread
+    _create_thread(byte_pool, &_template_config); // Create Template thread.
     // add more threads here if need eventually
 
-    printf("[u_threads.c/threads_init()] SUCCESS: Ran threads_init().\n");
+    printf("[u_threads.c/threads_init()] Ran threads_init().\n");
     return U_SUCCESS;
 }

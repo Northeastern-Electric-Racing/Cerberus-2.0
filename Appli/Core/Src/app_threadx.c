@@ -23,6 +23,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "u_queues.h"
 #include "u_threads.h"
 /* USER CODE END Includes */
 
@@ -108,6 +109,7 @@ UINT App_ThreadX_Init(VOID *memory_ptr)
   }
 
   /* USER CODE BEGIN App_ThreadX_Init */
+  queues_init();
   threads_init(byte_pool);
   /* USER CODE END App_ThreadX_Init */
 
