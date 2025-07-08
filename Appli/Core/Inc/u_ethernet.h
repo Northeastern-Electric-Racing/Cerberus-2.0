@@ -2,6 +2,7 @@
 #define __U_ETHERNET_H
 
 #include "nx_api.h"
+#include "u_config.h"
 #include <stdint.h>
 #include <stdbool.h>
 

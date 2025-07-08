@@ -76,7 +76,7 @@ target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
 # Contains every c/cpp file in Embedded-Base. Dunno if this is bad practice
 file(GLOB_RECURSE PROJECT_SOURCES 
     "../Drivers/Embedded-Base/general/src/lan8670.c"
-    "./NetXDuo/u_ethernet.c"
+    "./Core/u_ethernet.c"
     "./Core/u_messages.c"
     "./Core/u_threads.c"
     "./Core/u_statemachine.c"
