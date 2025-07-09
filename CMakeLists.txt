@@ -48,16 +48,31 @@ target_link_directories(${CMAKE_PROJECT_NAME} PRIVATE
 # Add sources to executable
 target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     # Add user sources here
+    "../Drivers/Embedded-Base/general/src/lan8670.c"
+    "./Core/Src/u_ethernet.c"
+    "./Core/Src/u_messages.c"
+    "./Core/Src/u_threads.c"
+    "./Core/Src/u_statemachine.c"
+    "./Core/Src/u_queues.c"
 )
 
 # Add include paths
 target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
     # Add user defined include paths
+    "./Drivers/Embedded-Base/general/include/"
+    "./Drivers/Embedded-Base/middleware/include/"
+    "./NetXDuo"
+    "./Core/Inc/"
 )
 
 # Add project symbols (macros)
 target_compile_definitions(${CMAKE_PROJECT_NAME} PRIVATE
     # Add user defined symbols
+)
+
+# Compiler options
+target_compile_options(${CMAKE_PROJECT_NAME} PRIVATE
+    -Wno-unused-parameter
 )
 
 # Add linked libraries
