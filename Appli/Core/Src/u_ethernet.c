@@ -258,7 +258,7 @@ uint8_t ethernet_process(void) {
         status = _send_message(message.message_id, message.recipient_id, message.data, message.data_length);
         if(status != U_SUCCESS) {
             printf("[u_ethernet.c/ethernet_process()] WARNING: Failed to send message after removing from outgoing queue (Message ID: %d).\n", message.message_id);
-            // TODO - maybe add the message back into the queue if it fails to send? not sure if this is a good idea tho
+            // u_TODO - maybe add the message back into the queue if it fails to send? not sure if this is a good idea tho
         }
     }
 

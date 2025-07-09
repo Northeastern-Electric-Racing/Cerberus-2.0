@@ -17,7 +17,7 @@
 *  (This stuff should be consistent across the whole network.)
 */
 #define ETH_UDP_PORT  		2006 /* UDP port for communication */
-#define ETH_MAX_PACKET_SIZE	8 /* Maximum ethernet packet size */ // TODO - i made this 8 bytes for consistency with CAN, but obv it can be a lot larger.
+#define ETH_MAX_PACKET_SIZE	8 /* Maximum ethernet packet size */ // u_TODO - i made this 8 bytes for consistency with CAN, but obv it can be a lot larger.
 #define ETH_QUEUE_SIZE 		10 /* Number of packets to queue */
 #define ETH_THREAD_DELAY  	10 /* Delay for the NetX thread (in ticks) */
 
