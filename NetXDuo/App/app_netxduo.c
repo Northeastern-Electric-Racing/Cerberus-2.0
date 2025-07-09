@@ -23,7 +23,8 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "u_ethernet.h"
+#include "u_messages.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/

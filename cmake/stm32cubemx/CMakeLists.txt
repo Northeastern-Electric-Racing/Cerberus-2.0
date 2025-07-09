@@ -19,6 +19,7 @@ set(MX_Include_Dirs
     ${CMAKE_SOURCE_DIR}/AZURE_RTOS/App
     ${CMAKE_SOURCE_DIR}/Drivers/STM32H5xx_HAL_Driver/Inc
     ${CMAKE_SOURCE_DIR}/Drivers/STM32H5xx_HAL_Driver/Inc/Legacy
+    ${CMAKE_SOURCE_DIR}/Middlewares/ST/netxduo/common/drivers/ethernet
     ${CMAKE_SOURCE_DIR}/Middlewares/ST/threadx/common/inc
     ${CMAKE_SOURCE_DIR}/Drivers/CMSIS/Device/ST/STM32H5xx/Include
     ${CMAKE_SOURCE_DIR}/Middlewares/ST/netxduo/common/inc
@@ -30,7 +31,7 @@ set(MX_Include_Dirs
 # STM32CubeMX generated application sources
 set(MX_Application_Src
     ${CMAKE_SOURCE_DIR}/AZURE_RTOS/App/app_azure_rtos.c
-    ${CMAKE_SOURCE_DIR}/NetXDuo/Target/nx_stm32_custom_driver.c
+    ${CMAKE_SOURCE_DIR}/NetXDuo/Target/nx_stm32_phy_custom_driver.c
     ${CMAKE_SOURCE_DIR}/NetXDuo/App/app_netxduo.c
     ${CMAKE_SOURCE_DIR}/Core/Src/tx_initialize_low_level.S
     ${CMAKE_SOURCE_DIR}/Core/Src/main.c
@@ -236,6 +237,7 @@ set(ThreadX_Src
     ${CMAKE_SOURCE_DIR}/Middlewares/ST/threadx/common/src/txe_timer_info_get.c
 )
 set(NetXDuo_Src
+    ${CMAKE_SOURCE_DIR}/Middlewares/ST/netxduo/common/drivers/ethernet/nx_stm32_eth_driver.c
     ${CMAKE_SOURCE_DIR}/Middlewares/ST/netxduo/common/src/nx_arp_announce_send.c
     ${CMAKE_SOURCE_DIR}/Middlewares/ST/netxduo/common/src/nx_arp_dynamic_entries_invalidate.c
     ${CMAKE_SOURCE_DIR}/Middlewares/ST/netxduo/common/src/nx_arp_dynamic_entry_delete.c

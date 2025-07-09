@@ -9,16 +9,16 @@
 /*                                                                        */
 /**************************************************************************/
 
-#ifndef NX_STM32_CUSTOM_DRIVER_H
-#define NX_STM32_CUSTOM_DRIVER_H
+/* Define to prevent recursive inclusion -------------------------------------*/
+#ifndef NX_STM32_ETH_CONFIG_H
+#define NX_STM32_ETH_CONFIG_H
 
-#ifdef   __cplusplus
-
-extern   "C" {
+#ifdef __cplusplus
+ extern "C" {
 #endif
 
 /* Includes ------------------------------------------------------------------*/
-#include "nx_api.h"
+#include "stm32h5xx_hal.h"
 
 /* USER CODE BEGIN Includes */
 
@@ -30,6 +30,10 @@ extern   "C" {
 /* USER CODE END ET */
 
 /* Exported constants --------------------------------------------------------*/
+
+/* This define enables the call of nx_eth_init() from the interface layer.*/
+/* #define NX_DRIVER_ETH_HW_IP_INIT */
+
 /* USER CODE BEGIN EC */
 
 /* USER CODE END EC */
@@ -40,14 +44,15 @@ extern   "C" {
 /* USER CODE END EM */
 
 /* Exported functions prototypes ---------------------------------------------*/
-/* Define global driver entry function. */
 
-/* USER CODE BEGIN SAMPLE_NX_ENTRY_FUNCTION */
-/* the function name below can be modified */
+extern ETH_HandleTypeDef heth;
 
-VOID  nx_stm32_custom_driver(NX_IP_DRIVER *driver_req_ptr);
+#define eth_handle  heth
 
-/* USER CODE END SAMPLE_NX_ENTRY_FUNCTION */
+#ifdef NX_DRIVER_ETH_HW_IP_INIT
+extern void MX_ETH_Init(void);
+#define nx_eth_init MX_ETH_Init
+#endif /* #define NX_DRIVER_ETH_HW_IP_INIT */
 
 /* USER CODE BEGIN EFP */
 
@@ -58,11 +63,12 @@ VOID  nx_stm32_custom_driver(NX_IP_DRIVER *driver_req_ptr);
 
 /* USER CODE END PD */
 
-/* USER CODE BEGIN 1 */
+/* USER CODE BEGIN 0 */
 
-/* USER CODE END 1 */
+/* USER CODE END 0 */
 
-#ifdef   __cplusplus
-    }
+#ifdef __cplusplus
+}
 #endif
-#endif /* NX_STM32_CUSTOM_DRIVER_H */
+
+#endif /* NX_STM32_ETH_CONFIG_H */
