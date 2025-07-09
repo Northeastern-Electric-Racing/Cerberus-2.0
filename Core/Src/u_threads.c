@@ -1,27 +1,5 @@
 #include "u_threads.h"
 
-/* Helper function. Creates a ThreadX thread. */
-static uint8_t _create_thread(TX_BYTE_POOL *byte_pool, const thread_t *thread) {
-    CHAR *pointer;
-    uint8_t status;
-
-    /* Allocate the stack for the thread. */
-    status = tx_byte_allocate(byte_pool, (VOID**) &pointer, thread->size, TX_NO_WAIT);
-    if(status != TX_SUCCESS) {
-        printf("[u_threads.c/_create_thread()] ERROR: Failed to allocate stack before creating thread (Status: %d, Thread: %s).\n", status, thread->name);
-        return U_ERROR;
-    }
-
-    /* Create the thread. */
-    status = tx_thread_create(thread->thread, thread->name, thread->function, thread->thread_input, pointer, thread->size, thread->priority, thread->threshold, thread->time_slice, thread->auto_start);
-    if(status != TX_SUCCESS) {
-        printf("[u_threads.c/_create_thread()] ERROR: Failed to create thread (Status: %d, Thread: %s).\n", status, thread->name);
-        return U_ERROR;
-    }
-    
-    return U_SUCCESS;
-}
-
 /* Template Thread */
 static TX_THREAD _template;
 static const thread_t _template_config = {
@@ -44,6 +22,28 @@ VOID thread_template(ULONG thread_input) {
         /* Sleep Thread for specified number of ticks. */
         tx_thread_sleep(_template_config.sleep);
     }
+}
+
+/* Helper function. Creates a ThreadX thread. */
+static uint8_t _create_thread(TX_BYTE_POOL *byte_pool, const thread_t *thread) {
+    CHAR *pointer;
+    uint8_t status;
+
+    /* Allocate the stack for the thread. */
+    status = tx_byte_allocate(byte_pool, (VOID**) &pointer, thread->size, TX_NO_WAIT);
+    if(status != TX_SUCCESS) {
+        printf("[u_threads.c/_create_thread()] ERROR: Failed to allocate stack before creating thread (Status: %d, Thread: %s).\n", status, thread->name);
+        return U_ERROR;
+    }
+
+    /* Create the thread. */
+    status = tx_thread_create(thread->thread, thread->name, thread->function, thread->thread_input, pointer, thread->size, thread->priority, thread->threshold, thread->time_slice, thread->auto_start);
+    if(status != TX_SUCCESS) {
+        printf("[u_threads.c/_create_thread()] ERROR: Failed to create thread (Status: %d, Thread: %s).\n", status, thread->name);
+        return U_ERROR;
+    }
+    
+    return U_SUCCESS;
 }
 
 /* Initializes all ThreadX threads. 
