@@ -1,7 +1,6 @@
 #ifndef __U_ETHERNET_H
 #define __U_ETHERNET_H
 
-#include "nx_api.h"
 #include "u_config.h"
 #include "u_queues.h"
 #include <stdint.h>
@@ -13,13 +12,10 @@
 *   Author: Blake Jackson
 */
 
-/* CONFIG
-*  (This stuff should be consistent across the whole network.)
-*/
+/* CONFIG */
 #define ETH_UDP_PORT  		2006 /* UDP port for communication */
-#define ETH_MAX_PACKET_SIZE	8 /* Maximum ethernet packet size */ // u_TODO - i made this 8 bytes for consistency with CAN, but obv it can be a lot larger.
-#define ETH_QUEUE_SIZE 		10 /* Number of packets to queue */
-#define ETH_THREAD_DELAY  	10 /* Delay for the NetX thread (in ticks) */
+#define ETH_MESSAGE_SIZE	8    /* Maximum ethernet message size */ // u_TODO - i made this 8 bytes for consistency with CAN, but obv it can be a lot larger.
+#define ETH_MAX_PACKETS     10   /* Maximum number of packets we wanna handle simultaneously */
 
 typedef enum {
     VCU         = (1 << 0), // 0b00000001
@@ -32,28 +28,25 @@ typedef enum {
     NODE8       = (1 << 7), // 0b10000000
 } ethernet_node_t;
 #define ETH_IP(node) IP_ADDRESS(239,0,0,node) // u_TODO - you can configure ethernet IPs in CubeMX apparently. probably should look into that, not sure how that works w/ this
-/* END CONFIG
-*/
+/* END CONFIG */
 
 typedef struct {
 	uint8_t sender_id;
 	uint8_t recipient_id;
 	uint8_t message_id;
 	uint8_t data_length;
-	uint8_t data[ETH_MAX_PACKET_SIZE];
+	uint8_t data[ETH_MESSAGE_SIZE];
 } ethernet_message_t;
 
-typedef void (*Ethernet_MessageHandler)(ethernet_message_t *message);
+typedef void (*ETH_MessageHandler)(ethernet_message_t *message);
 
 /**
  * @brief Initializes the NetX ethernet system in a repo. Inteded to be called from nx_app_thread_entry() in app_netxduo.c
- * @param ip Pointer to the NetX IP instance.
- * @param packet_pool Pointer to the NetX packet pool instance.
  * @param node_id The ID (ethernet_node_t) of this node.
  * @param function The function to be called when a message is recieved. See the Ethernet_MessageHandler function prototype above.
  * @return Status.
  */
-uint8_t ethernet_init(NX_IP *ip, NX_PACKET_POOL *packet_pool, ethernet_node_t node_id, Ethernet_MessageHandler function);
+uint8_t ethernet_init(ethernet_node_t node_id, ETH_MessageHandler function);
 
 /**
  * @brief Places an ethernet message in the outgoing queue (which will send the message).

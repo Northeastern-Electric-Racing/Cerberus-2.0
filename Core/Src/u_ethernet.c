@@ -1,24 +1,38 @@
 #include "u_ethernet.h"
+#include "nx_api.h"
+#include "nx_stm32_eth_driver.h"
 #include <string.h>
 #include <stdio.h>
 
-/* PRIVATE STRUCTS */
+/* PRIVATE MACROS */
+#define _PACKET_POOL_SIZE      ((sizeof(ethernet_message_t) + sizeof(NX_PACKET)) * ETH_MAX_PACKETS)
+#define _IP_THREAD_STACK_SIZE  2048
+#define _ARP_CACHE_SIZE        1024
+#define _IP_THREAD_PRIORITY    1
+#define _IP_NETWORK_MASK       IP_ADDRESS(255, 255, 255, 0)
+#define _UDP_QUEUE_MAXIMUM     12
+
+/* DEVICE INFO */
 typedef struct {
-	bool is_initialized;
-	uint8_t node_id;
-    Ethernet_MessageHandler function; // Function to process messages when they get recieved.
+    /* NetX Objects */
+    NX_UDP_SOCKET  socket;
+    NX_PACKET_POOL packet_pool;
+    NX_IP          ip;
 
-	/* NetX/ThreadX Stuff */
-	NX_IP *ip;
-	NX_PACKET_POOL *packet_pool;
+    /* Static memory for NetX stuff */
+    UCHAR           packet_pool_memory[_PACKET_POOL_SIZE];
+    UCHAR           ip_memory[_IP_THREAD_STACK_SIZE];
+    UCHAR           arp_cache_memory[_ARP_CACHE_SIZE];
+
+    /* Device config variables */
+	bool           is_initialized;
+	uint8_t        node_id;
+    ETH_MessageHandler function; /* Function to process messages when they get recieved. */
 } _ethernet_device_t;
-
-/* GLOBALS */
-static _ethernet_device_t device = {0};
-NX_UDP_SOCKET socket;
+_ethernet_device_t device = {0};
 
 /* Callback function. Called when an ethernet message is recieved. */
-static void _recieve_message(NX_UDP_SOCKET *socket) {
+static void _receive_message(NX_UDP_SOCKET *socket) {
     NX_PACKET *packet;
     ULONG bytes_copied;
     uint8_t status;
@@ -64,7 +78,7 @@ static uint8_t _send_message(uint8_t message_id, ethernet_node_t recipient_id, u
     }
 
     /* Check data length */
-    if (data_length > ETH_MAX_PACKET_SIZE) {
+    if (data_length > ETH_MESSAGE_SIZE) {
         printf("[u_ethernet.c/_send_message()] ERROR: Data length exceeds maximum.\n");
         return U_ERROR;
     }
@@ -78,7 +92,7 @@ static uint8_t _send_message(uint8_t message_id, ethernet_node_t recipient_id, u
 
     /* Allocate a packet */
     status = nx_packet_allocate(
-        device.packet_pool,         // Packet pool
+        &device.packet_pool,        // Packet pool
         &packet,                    // Packet
         NX_UDP_PACKET,              // Packet type
         TX_WAIT_FOREVER             // Wait indefinitely until a packet is available
@@ -93,7 +107,7 @@ static uint8_t _send_message(uint8_t message_id, ethernet_node_t recipient_id, u
         packet,                     // Packet
         &message,                   // Data to append
         sizeof(ethernet_message_t), // Size of data
-        device.packet_pool,         // Packet pool
+        &device.packet_pool,        // Packet pool
         TX_WAIT_FOREVER             // Wait indefinitely
     );
     if(status != NX_SUCCESS) {
@@ -104,7 +118,7 @@ static uint8_t _send_message(uint8_t message_id, ethernet_node_t recipient_id, u
 
     /* Send message */
     status = nx_udp_socket_send(
-        &socket,
+        &device.socket,
         packet,
         ETH_IP(recipient_id),
         ETH_UDP_PORT
@@ -121,15 +135,9 @@ static uint8_t _send_message(uint8_t message_id, ethernet_node_t recipient_id, u
 
 /* API FUNCTIONS */
 
-uint8_t ethernet_init(NX_IP *ip, NX_PACKET_POOL *packet_pool, ethernet_node_t node_id, Ethernet_MessageHandler function) {
+uint8_t ethernet_init(ethernet_node_t node_id, ETH_MessageHandler function) {
     
     uint8_t status;
-
-    /* Make sure pointers are real instead of fake */
-    if(!ip || !packet_pool) {
-        printf("[u_ethernet.c/ethernet_init()] ERROR: Invalid pointer parameters.\n");
-        return U_ERROR;
-    }
 
     /* Make sure device isn't already initialized */
     if(device.is_initialized) {
@@ -139,22 +147,62 @@ uint8_t ethernet_init(NX_IP *ip, NX_PACKET_POOL *packet_pool, ethernet_node_t no
 
     /* Store device info */
     device.node_id = node_id;
-    device.ip = ip;
-    device.packet_pool = packet_pool;
     device.function = function;
 
+    /* Create packet pool */
+    status = nx_packet_pool_create(
+        &device.packet_pool,        // Pointer to the packet pool instance
+        "Ethernet Packet Pool",     // Name
+        sizeof(ethernet_message_t), // Payload size (i.e. the size of each packet)
+        device.packet_pool_memory,  // Pointer to the pool's memory area
+        _PACKET_POOL_SIZE           // Size of the pool's memory area
+    );
+    if(status != NX_SUCCESS) {
+        printf("[u_ethernet.c/ethernet_init()] ERROR: Failed to create packet pool (Status: %d).\n", status);
+        return status;
+    }
+
+    /* Create IP instance */
+    status = nx_ip_create(
+        &device.ip,                          // Pointer to the IP instance
+        "Ethernet IP Instance",              // Name
+        IP_ADDRESS(5, 5, 5, device.node_id), // Dummy unicast IP (we shouldn't have to use this if we're just using multicast for everything)
+        _IP_NETWORK_MASK,                    // Network mask
+        &device.packet_pool,                 // Pointer to the packet pool
+        nx_stm32_eth_driver,                 // Pointer to the Ethernet driver function
+        device.ip_memory,                    // Pointer to the memory for the IP instance
+        _IP_THREAD_STACK_SIZE,               // Size of the IP thread stack
+        _IP_THREAD_PRIORITY                  // Priority of the IP thread
+    );
+    if(status != NX_SUCCESS) {
+        printf("[u_ethernet.c/ethernet_init()] ERROR: Failed to create IP instance (Status: %d).\n", status);
+        return status;
+    }
+
+    /* Enable ARP */
+    status = nx_arp_enable(
+        &device.ip,                // IP instance
+        device.arp_cache_memory,   // Memory for ARP cache
+        _ARP_CACHE_SIZE            // Size of ARP cache
+    );
+    if(status != NX_SUCCESS) {
+        printf("[u_ethernet.c/ethernet_init()] ERROR: Failed to enable ARP (Status: %d).\n", status);
+        return status;
+    }
+
+
     /* Enable UDP */
-    status = nx_udp_enable(device.ip);
+    status = nx_udp_enable(&device.ip);
     if (status != NX_SUCCESS) {
         printf("[u_ethernet.c/ethernet_init()] ERROR: Failed to enable UDP (Status: %d).\n", status);
-        return U_ERROR;
+        return status;
     }
 
     /* Enable igmp */
-    status = nx_igmp_enable(ip);
+    status = nx_igmp_enable(&device.ip);
     if (status != NX_SUCCESS) {
         printf("[u_ethernet.c/ethernet_init()] ERROR: Failed to enable igmp (Status: %d).\n", status);
-        return U_ERROR;
+        return status;
     }
 
     /* Set up multicast groups. 
@@ -169,7 +217,7 @@ uint8_t ethernet_init(NX_IP *ip, NX_PACKET_POOL *packet_pool, ethernet_node_t no
     for(int i = (1 << 0); i < (1 << 8); i++) {
         if((i & device.node_id) == device.node_id) {
             ULONG address = ETH_IP(i);
-            status = nx_igmp_multicast_join(device.ip, address);
+            status = nx_igmp_multicast_join(&device.ip, address);
             if(status != NX_SUCCESS) {
                 printf("[u_ethernet.c/ethernet_init()] ERROR: Failed to join multicast group (Status: %d, Address: %lu).\n", status, address);
             }
@@ -178,48 +226,48 @@ uint8_t ethernet_init(NX_IP *ip, NX_PACKET_POOL *packet_pool, ethernet_node_t no
 
     /* Create UDP socket for broadcasting */
     status = nx_udp_socket_create(
-        ip,                         // IP instance
-        &socket,                    // Socket to create
+        &device.ip,                 // IP instance
+        &device.socket,             // Socket to create
         "Ethernet Broadcast",       // Socket name
         NX_IP_NORMAL,               // Type of service
         NX_FRAGMENT_OKAY,           // Fragment flag
         NX_IP_TIME_TO_LIVE,         // Time to live
-        ETH_QUEUE_SIZE + 2          // Queue size (slightly larger than the application-level queue just in case processing takes a while or something.)
+        _UDP_QUEUE_MAXIMUM          // UDP queue maximum
     );
     if(status != NX_SUCCESS) {
         printf("[u_ethernet.c/ethernet_init()] ERROR: Failed to create UDP socket (Status: %d).\n", status);
-        return U_ERROR;
+        return status;
     }
 
     /* Bind socket to broadcast port */
     status = nx_udp_socket_bind(
-        &socket,                     // Socket to bind
+        &device.socket,              // Socket to bind
         ETH_UDP_PORT,                // Port
         TX_WAIT_FOREVER              // Wait forever
     );
     if(status != NX_SUCCESS) {
         printf("[u_ethernet.c/ethernet_init()] ERROR: Failed to bind UDP socket (Status: %d).\n", status);
-        nx_udp_socket_delete(&socket);
-        return U_ERROR;
+        nx_udp_socket_delete(&device.socket);
+        return status;
     }
 
     /* Enable UDP recieve callback */
     status = nx_udp_socket_receive_notify(
-        &socket,                      // Socket to set callback for
-        &_recieve_message             // Callback function
+        &device.socket,               // Socket to set callback for
+        &_receive_message             // Callback function
     );
     if(status != NX_SUCCESS) {
         printf("[u_ethernet.c/ethernet_init()] ERROR: Failed to set recieve callback (Status: %d).\n", status);
-        nx_udp_socket_unbind(&socket);
-        nx_udp_socket_delete(&socket);
-        return U_ERROR;
+        nx_udp_socket_unbind(&device.socket);
+        nx_udp_socket_delete(&device.socket);
+        return status;
     }
 
     /* Mark device as initialized. */
     device.is_initialized = true;
 
     printf("[u_ethernet.c/ethernet_init()] Ethernet initialized successfully!\n");
-    return U_SUCCESS;
+    return NX_SUCCESS;
 }
 
 uint8_t ethernet_queue_message(uint8_t message_id, ethernet_node_t recipient_id, uint8_t *data, uint8_t data_length) {
