@@ -39,7 +39,7 @@ VOID thread_template(ULONG thread_input) {
     
     while(1) {
 
-        // TODO - make thread do stuff
+        // u_TODO - make thread do stuff
 
         /* Sleep Thread for specified number of ticks. */
         tx_thread_sleep(_template_config.sleep);

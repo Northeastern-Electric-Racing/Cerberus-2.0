@@ -1,6 +1,6 @@
 #include "u_statemachine.h"
 
-// TODO - this whole file is a todo. i dunno how state machines are supposed to work
+// u_TODO - this whole file is a todo. i dunno how state machines are supposed to work
 
 static state_t current_state = STATE_READY; // Stores the car's current state. The car's initial state on startup can be set here.
 
@@ -15,8 +15,8 @@ static uint8_t _button(uint8_t *data) {
             // Do thing
             return U_SUCCESS;
 
-        // TODO - add more states here as needed.
-        // TODO - if EVENT_BUTTON doesn't need to do anything in a state, prolly just don't add a case for it
+        // u_TODO - add more states here as needed.
+        // u_TODO - if EVENT_BUTTON doesn't need to do anything in a state, prolly just don't add a case for it
 
         /* Do nothing by default. */
         default:
@@ -33,8 +33,8 @@ static uint8_t _dial(uint8_t *data) {
             // Do thing
             return U_SUCCESS;
         
-        // TODO - add more states here as needed.
-        // TODO - if EVENT_DIAL doesn't need to do anything in a state, prolly just don't add a case for it
+        // u_TODO - add more states here as needed.
+        // u_TODO - if EVENT_DIAL doesn't need to do anything in a state, prolly just don't add a case for it
 
         /* Do nothing by default. */
         default:
@@ -48,7 +48,7 @@ uint8_t statemachine_process_event(event_t event, uint8_t *data) {
         /* Call the function corresponding to the event that occured. */
         case EVENT_BUTTON:       return _button(data);
         case EVENT_DIAL:         return _dial(data);
-        // TODO - probably add more events as needed
+        // u_TODO - probably add more events as needed
         
         /* If an invalid event is passed in, return an error. */
         default: 
