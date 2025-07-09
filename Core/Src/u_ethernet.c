@@ -40,7 +40,6 @@ static void _receive_message(NX_UDP_SOCKET *socket) {
 
     /* Recieve the packet */
     status = nx_udp_socket_receive(socket, &packet, TX_NO_WAIT);
-
     if(status == NX_SUCCESS) {
         /* Extract message from packet */
         status = nx_packet_data_extract_offset(
@@ -215,7 +214,7 @@ uint8_t ethernet_init(ethernet_node_t node_id, ETH_MessageHandler function) {
     *        but if this setup ends up being too slow or something, feel free to get rid of it.
     */
     for(int i = (1 << 0); i < (1 << 8); i++) {
-        if((i & device.node_id) == device.node_id) {
+        if(i & device.node_id) {
             ULONG address = ETH_IP(i);
             status = nx_igmp_multicast_join(&device.ip, address);
             if(status != NX_SUCCESS) {
