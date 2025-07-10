@@ -25,9 +25,9 @@ typedef struct {
     UCHAR           arp_cache_memory[_ARP_CACHE_SIZE];
 
     /* Device config variables */
-	bool           is_initialized;
-	uint8_t        node_id;
-    ETH_MessageHandler function; /* Function to process messages when they get recieved. */
+	bool                    is_initialized;
+	uint8_t                 node_id;
+    ethernet_inbox_function function; /* Function to process received messages. */
 } _ethernet_device_t;
 _ethernet_device_t device = {0};
 
@@ -134,7 +134,7 @@ static uint8_t _send_message(uint8_t message_id, ethernet_node_t recipient_id, u
 
 /* API FUNCTIONS */
 
-uint8_t ethernet_init(ethernet_node_t node_id, ETH_MessageHandler function) {
+uint8_t ethernet_init(ethernet_node_t node_id, ethernet_inbox_function function) {
     
     uint8_t status;
 

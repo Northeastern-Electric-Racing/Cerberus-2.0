@@ -24,7 +24,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "u_ethernet.h"
-#include "u_messages.h"
+#include "u_inbox.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -65,7 +65,7 @@ UINT MX_NetXDuo_Init(VOID *memory_ptr)
   /* USER CODE END App_NetXDuo_MEM_POOL */
   /* USER CODE BEGIN 0 */
 
-  return ethernet_init(VCU, messages_handler);
+  return ethernet_init(VCU, ethernet_inbox);
 
   /* USER CODE END 0 */
 

@@ -38,15 +38,15 @@ typedef struct {
 	uint8_t data[ETH_MESSAGE_SIZE];
 } ethernet_message_t;
 
-typedef void (*ETH_MessageHandler)(ethernet_message_t *message);
+typedef void (*ethernet_inbox_function)(ethernet_message_t *message); /* Function to process received messages. */
 
 /**
  * @brief Initializes the NetX ethernet system in a repo. Inteded to be called from nx_app_thread_entry() in app_netxduo.c
  * @param node_id The ID (ethernet_node_t) of this node.
- * @param function The function to be called when a message is recieved. See the Ethernet_MessageHandler function prototype above.
+ * @param function The function to be called when a message is received. See the ethernet_inbox_function function prototype above.
  * @return Status.
  */
-uint8_t ethernet_init(ethernet_node_t node_id, ETH_MessageHandler function);
+uint8_t ethernet_init(ethernet_node_t node_id, ethernet_inbox_function function);
 
 /**
  * @brief Places an ethernet message in the outgoing queue (which will send the message).
