@@ -20,7 +20,7 @@ static uint8_t _button(uint8_t *data) {
 
         /* Do nothing by default. */
         default:
-            printf("[u_statemachine.c/_button()] NOTE: EVENT_BUTTON was triggered, but no action was taken based on the car's state (current_state=%d).\n", current_state);
+            DEBUG_PRINT("NOTE: EVENT_BUTTON was triggered, but no action was taken based on the car's state (current_state=%d).", current_state);
             return U_SUCCESS;
     }
 }
@@ -38,7 +38,7 @@ static uint8_t _dial(uint8_t *data) {
 
         /* Do nothing by default. */
         default:
-            printf("[u_statemachine.c/_dial()] NOTE: EVENT_DIAL was triggered, but no action was taken based on the car's state (current_state=%d).\n", current_state);
+            DEBUG_PRINT("NOTE: EVENT_DIAL was triggered, but no action was taken based on the car's state (current_state=%d).", current_state);
             return U_SUCCESS;
     }
 }
@@ -52,7 +52,7 @@ uint8_t statemachine_process_event(event_t event, uint8_t *data) {
         
         /* If an invalid event is passed in, return an error. */
         default: 
-            printf("[u_statemachine.c/statemachine_process_event()] Invalid event passed into function: %d\n", current_state);
+            DEBUG_PRINT("Invalid event passed into function. (EventL %d)", event);
             return U_ERROR;
     }
 }

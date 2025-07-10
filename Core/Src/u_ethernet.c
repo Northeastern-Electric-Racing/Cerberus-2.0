@@ -1,5 +1,6 @@
 #include "u_ethernet.h"
 #include "u_queues.h"
+#include "u_config.h"
 #include "nx_api.h"
 #include "nx_stm32_eth_driver.h"
 #include <string.h>
@@ -50,12 +51,12 @@ static void _receive_message(NX_UDP_SOCKET *socket) {
             &bytes_copied                   // Stores how many bytes were actually copied to &message
         );
         if(bytes_copied < sizeof(ethernet_message_t)) {
-            printf("[u_ethernet.c/_recieve_message()] WARNING: Received ethernet message was smaller than expected (only recieved %lu of %u expected bytes).\n", bytes_copied, sizeof(ethernet_message_t));
+            DEBUG_PRINT("WARNING: Received ethernet message was smaller than expected (only recieved %lu of %u expected bytes).", bytes_copied, sizeof(ethernet_message_t));
         }
 
         /* Process recieved message */
         if(status == NX_SUCCESS) {
-            printf("[u_ethernet.c/_recieve_message()] Recieved ethernet message! (Sender ID: %d, Message ID: %d).\n", message.sender_id, message.message_id);
+            DEBUG_PRINT("Recieved ethernet message! (Sender ID: %d, Message ID: %d).", message.sender_id, message.message_id);
             queue_send(&eth_incoming, &message);
         }
     }
@@ -72,7 +73,7 @@ uint8_t ethernet_init(ethernet_node_t node_id) {
 
     /* Make sure device isn't already initialized */
     if(device.is_initialized) {
-        printf("[u_ethernet.c/ethernet_init()] ERROR: Ethernet is already initialized.\n");
+        DEBUG_PRINT("ERROR: Ethernet is already initialized.");
         return U_ERROR;
     }
 
@@ -88,7 +89,7 @@ uint8_t ethernet_init(ethernet_node_t node_id) {
         _PACKET_POOL_SIZE           // Size of the pool's memory area
     );
     if(status != NX_SUCCESS) {
-        printf("[u_ethernet.c/ethernet_init()] ERROR: Failed to create packet pool (Status: %d).\n", status);
+        DEBUG_PRINT("ERROR: Failed to create packet pool (Status: %d).", status);
         return status;
     }
 
@@ -105,7 +106,7 @@ uint8_t ethernet_init(ethernet_node_t node_id) {
         _IP_THREAD_PRIORITY                  // Priority of the IP thread
     );
     if(status != NX_SUCCESS) {
-        printf("[u_ethernet.c/ethernet_init()] ERROR: Failed to create IP instance (Status: %d).\n", status);
+        DEBUG_PRINT("ERROR: Failed to create IP instance (Status: %d).", status);
         return status;
     }
 
@@ -116,7 +117,7 @@ uint8_t ethernet_init(ethernet_node_t node_id) {
         _ARP_CACHE_SIZE            // Size of ARP cache
     );
     if(status != NX_SUCCESS) {
-        printf("[u_ethernet.c/ethernet_init()] ERROR: Failed to enable ARP (Status: %d).\n", status);
+        DEBUG_PRINT("ERROR: Failed to enable ARP (Status: %d).", status);
         return status;
     }
 
@@ -124,14 +125,14 @@ uint8_t ethernet_init(ethernet_node_t node_id) {
     /* Enable UDP */
     status = nx_udp_enable(&device.ip);
     if (status != NX_SUCCESS) {
-        printf("[u_ethernet.c/ethernet_init()] ERROR: Failed to enable UDP (Status: %d).\n", status);
+        DEBUG_PRINT("ERROR: Failed to enable UDP (Status: %d).", status);
         return status;
     }
 
     /* Enable igmp */
     status = nx_igmp_enable(&device.ip);
     if (status != NX_SUCCESS) {
-        printf("[u_ethernet.c/ethernet_init()] ERROR: Failed to enable igmp (Status: %d).\n", status);
+        DEBUG_PRINT("ERROR: Failed to enable igmp (Status: %d).", status);
         return status;
     }
 
@@ -149,7 +150,7 @@ uint8_t ethernet_init(ethernet_node_t node_id) {
             ULONG address = ETH_IP(i);
             status = nx_igmp_multicast_join(&device.ip, address);
             if(status != NX_SUCCESS) {
-                printf("[u_ethernet.c/ethernet_init()] ERROR: Failed to join multicast group (Status: %d, Address: %lu).\n", status, address);
+                DEBUG_PRINT("ERROR: Failed to join multicast group (Status: %d, Address: %lu).", status, address);
             }
         }
     }
@@ -165,7 +166,7 @@ uint8_t ethernet_init(ethernet_node_t node_id) {
         _UDP_QUEUE_MAXIMUM          // UDP queue maximum
     );
     if(status != NX_SUCCESS) {
-        printf("[u_ethernet.c/ethernet_init()] ERROR: Failed to create UDP socket (Status: %d).\n", status);
+        DEBUG_PRINT("ERROR: Failed to create UDP socket (Status: %d).", status);
         return status;
     }
 
@@ -176,7 +177,7 @@ uint8_t ethernet_init(ethernet_node_t node_id) {
         TX_WAIT_FOREVER              // Wait forever
     );
     if(status != NX_SUCCESS) {
-        printf("[u_ethernet.c/ethernet_init()] ERROR: Failed to bind UDP socket (Status: %d).\n", status);
+        DEBUG_PRINT("ERROR: Failed to bind UDP socket (Status: %d).", status);
         nx_udp_socket_delete(&device.socket);
         return status;
     }
@@ -187,7 +188,7 @@ uint8_t ethernet_init(ethernet_node_t node_id) {
         &_receive_message             // Callback function
     );
     if(status != NX_SUCCESS) {
-        printf("[u_ethernet.c/ethernet_init()] ERROR: Failed to set recieve callback (Status: %d).\n", status);
+        DEBUG_PRINT("ERROR: Failed to set recieve callback (Status: %d).", status);
         nx_udp_socket_unbind(&device.socket);
         nx_udp_socket_delete(&device.socket);
         return status;
@@ -196,7 +197,7 @@ uint8_t ethernet_init(ethernet_node_t node_id) {
     /* Mark device as initialized. */
     device.is_initialized = true;
 
-    printf("[u_ethernet.c/ethernet_init()] Ethernet initialized successfully!\n");
+    DEBUG_PRINT("Ethernet initialized successfully!");
     return NX_SUCCESS;
 }
 
@@ -206,7 +207,7 @@ ethernet_message_t ethernet_create_message(uint8_t message_id, ethernet_node_t r
 
     /* Check data length */
     if (data_length > ETH_MESSAGE_SIZE) {
-        printf("[u_ethernet.c/ethernet_create_message()] ERROR: Data length exceeds maximum (message_id: %d).\n", message_id);
+        DEBUG_PRINT("ERROR: Data length exceeds maximum (message_id: %d).", message_id);
         return message; // Return empty message.
     }
 
@@ -227,13 +228,13 @@ uint8_t ethernet_send_message(ethernet_message_t *message) {
 
     /* Check if ethernet is initialized */
     if(!device.is_initialized) {
-        printf("[u_ethernet.c/ethernet_send_message()] ERROR: Ethernet device is not initialized, so ethernet_send_message() will not work.\n");
+        DEBUG_PRINT("ERROR: Ethernet device is not initialized, so ethernet_send_message() will not work.");
         return U_ERROR;
     }
 
     /* Check data length */
     if (message->data_length > ETH_MESSAGE_SIZE) {
-        printf("[u_ethernet.c/ethernet_send_message()] ERROR: Data length exceeds maximum (Message ID: %d).\n", message->message_id);
+        DEBUG_PRINT("ERROR: Data length exceeds maximum (Message ID: %d).", message->message_id);
         return U_ERROR;
     }
 
@@ -245,7 +246,7 @@ uint8_t ethernet_send_message(ethernet_message_t *message) {
         TX_WAIT_FOREVER             // Wait indefinitely until a packet is available
     );
     if(status != NX_SUCCESS) {
-        printf("[u_ethernet.c/ethernet_send_message()] ERROR: Failed to allocate packet (Status: %d, Message ID: %d).\n", status, message->message_id);
+        DEBUG_PRINT("ERROR: Failed to allocate packet (Status: %d, Message ID: %d).", status, message->message_id);
         return U_ERROR;
     }
 
@@ -258,7 +259,7 @@ uint8_t ethernet_send_message(ethernet_message_t *message) {
         TX_WAIT_FOREVER             // Wait indefinitely
     );
     if(status != NX_SUCCESS) {
-        printf("[u_ethernet.c/ethernet_send_message()] ERROR: Failed to append data to packet (Status: %d, Message ID: %d).\n", status, message->message_id);
+        DEBUG_PRINT("ERROR: Failed to append data to packet (Status: %d, Message ID: %d).", status, message->message_id);
         nx_packet_release(packet);
         return U_ERROR;
     }
@@ -271,11 +272,11 @@ uint8_t ethernet_send_message(ethernet_message_t *message) {
         ETH_UDP_PORT
     );
     if(status != NX_SUCCESS) {
-        printf("[u_ethernet.c/ethernet_send_message()] ERROR: Failed to send packet (Status: %d, Message ID: %d).\n", status, message->message_id);
+        DEBUG_PRINT("ERROR: Failed to send packet (Status: %d, Message ID: %d).", status, message->message_id);
         nx_packet_release(packet);
         return U_ERROR;
     }
 
-    printf("[u_ethernet.c/ethernet_send_message()] Sent ethernet message (Recipient ID: %d, Message ID: %d).\n", message->recipient_id, message->message_id);
+    DEBUG_PRINT("Sent ethernet message (Recipient ID: %d, Message ID: %d).", message->recipient_id, message->message_id);
     return U_SUCCESS;
 }
