@@ -29,7 +29,7 @@ typedef struct {
 	bool                    is_initialized;
 	uint8_t                 node_id;
 } _ethernet_device_t;
-_ethernet_device_t device = {0};
+static _ethernet_device_t device = {0};
 
 /* Callback function. Called when an ethernet message is recieved. */
 static void _receive_message(NX_UDP_SOCKET *socket) {
