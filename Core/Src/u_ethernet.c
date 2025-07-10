@@ -264,7 +264,7 @@ uint8_t ethernet_send_message(uint8_t message_id, ethernet_node_t recipient_id, 
         return U_ERROR;
     }
 
-    printf("[u_ethernet.c/ethernet_send_message()] Sent ethernet message (Recipient ID: %d, Message ID: %d).\n", message.sender_id, message.message_id);
+    printf("[u_ethernet.c/ethernet_send_message()] Sent ethernet message (Recipient ID: %d, Message ID: %d).\n", message.recipient_id, message.message_id);
     return U_SUCCESS;
 }
 

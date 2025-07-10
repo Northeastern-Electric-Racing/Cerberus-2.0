@@ -39,7 +39,7 @@ typedef struct {
 } ethernet_message_t;
 
 /**
- * @brief Initializes the NetX ethernet system in a repo. Inteded to be called from nx_app_thread_entry() in app_netxduo.c
+ * @brief Initializes the NetX ethernet system in a repo.
  * @param node_id The ID (ethernet_node_t) of this node.
  * @return Status.
  */
@@ -48,7 +48,7 @@ uint8_t ethernet_init(ethernet_node_t node_id);
 /**
  * @brief Sends an ethernet message.
  * @param message_id The ID of the ethernet message.
- * @param recipient_id The ID(s) of the inteded recipients.
+ * @param recipient_id The ID(s) of the intended recipients.
  * @param data The data to be sent in the message.
  * @param data_length The length of the data, in bytes.
  * @return Status.
@@ -58,7 +58,7 @@ uint8_t ethernet_send_message(uint8_t message_id, ethernet_node_t recipient_id, 
 /**
  * @brief Places an ethernet message in the outgoing queue (which will send the message).
  * @param message_id The ID of the ethernet message.
- * @param recipient_id The ID(s) of the inteded recipients.
+ * @param recipient_id The ID(s) of the intended recipients.
  * @param data The data to be sent in the message.
  * @param data_length The length of the data, in bytes.
  * @return Status.
