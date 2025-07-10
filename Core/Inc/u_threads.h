@@ -29,6 +29,7 @@ typedef struct {
 } thread_t;
 
 /* Thread Functions */
-VOID thread_template(ULONG thread_input);
+void default_thread(ULONG thread_input);
+void ethernet_thread(ULONG thread_input);
 
 #endif /* u_threads.h */

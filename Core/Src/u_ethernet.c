@@ -1,5 +1,5 @@
 #include "u_ethernet.h"
-#include "u_inbox.h"
+#include "u_queues.h"
 #include "nx_api.h"
 #include "nx_stm32_eth_driver.h"
 #include <string.h>
@@ -200,22 +200,14 @@ uint8_t ethernet_init(ethernet_node_t node_id) {
     return NX_SUCCESS;
 }
 
-/* Sends an ethernet message (i.e. sends a UDP packet). */
-uint8_t ethernet_send_message(uint8_t message_id, ethernet_node_t recipient_id, uint8_t *data, uint8_t data_length) {
-    NX_PACKET *packet;
-    uint8_t status;
+/* Creates an ethernet message (i.e. returns an ethernet_message_t instance). */
+ethernet_message_t ethernet_create_message(uint8_t message_id, ethernet_node_t recipient_id, uint8_t *data, uint8_t data_length) {
     ethernet_message_t message = {0};
-
-    /* Check if ethernet is initialized */
-    if(!device.is_initialized) {
-        printf("[u_ethernet.c/ethernet_send_message()] ERROR: Ethernet device is not initialized, so ethernet_send_message() will not work.\n");
-        return U_ERROR;
-    }
 
     /* Check data length */
     if (data_length > ETH_MESSAGE_SIZE) {
-        printf("[u_ethernet.c/ethernet_send_message()] ERROR: Data length exceeds maximum.\n");
-        return U_ERROR;
+        printf("[u_ethernet.c/ethernet_create_message()] ERROR: Data length exceeds maximum (message_id: %d).\n", message_id);
+        return message; // Return empty message.
     }
 
     /* Prepare message */
@@ -225,6 +217,26 @@ uint8_t ethernet_send_message(uint8_t message_id, ethernet_node_t recipient_id, 
     message.data_length = data_length;
     memcpy(message.data, data, data_length);
 
+    return message;
+}
+
+/* Sends an ethernet message (i.e. sends a UDP packet). */
+uint8_t ethernet_send_message(ethernet_message_t *message) {
+    NX_PACKET *packet;
+    uint8_t status;
+
+    /* Check if ethernet is initialized */
+    if(!device.is_initialized) {
+        printf("[u_ethernet.c/ethernet_send_message()] ERROR: Ethernet device is not initialized, so ethernet_send_message() will not work.\n");
+        return U_ERROR;
+    }
+
+    /* Check data length */
+    if (message->data_length > ETH_MESSAGE_SIZE) {
+        printf("[u_ethernet.c/ethernet_send_message()] ERROR: Data length exceeds maximum (Message ID: %d).\n", message->message_id);
+        return U_ERROR;
+    }
+
     /* Allocate a packet */
     status = nx_packet_allocate(
         &device.packet_pool,        // Packet pool
@@ -233,7 +245,7 @@ uint8_t ethernet_send_message(uint8_t message_id, ethernet_node_t recipient_id, 
         TX_WAIT_FOREVER             // Wait indefinitely until a packet is available
     );
     if(status != NX_SUCCESS) {
-        printf("[u_ethernet.c/ethernet_send_message()] ERROR: Failed to allocate packet (Status: %d).\n", status);
+        printf("[u_ethernet.c/ethernet_send_message()] ERROR: Failed to allocate packet (Status: %d, Message ID: %d).\n", status, message->message_id);
         return U_ERROR;
     }
 
@@ -246,7 +258,7 @@ uint8_t ethernet_send_message(uint8_t message_id, ethernet_node_t recipient_id, 
         TX_WAIT_FOREVER             // Wait indefinitely
     );
     if(status != NX_SUCCESS) {
-        printf("[u_ethernet.c/ethernet_send_message()] ERROR: Failed to append data to packet (Status: %d).\n", status);
+        printf("[u_ethernet.c/ethernet_send_message()] ERROR: Failed to append data to packet (Status: %d, Message ID: %d).\n", status, message->message_id);
         nx_packet_release(packet);
         return U_ERROR;
     }
@@ -255,63 +267,15 @@ uint8_t ethernet_send_message(uint8_t message_id, ethernet_node_t recipient_id, 
     status = nx_udp_socket_send(
         &device.socket,
         packet,
-        ETH_IP(recipient_id),
+        ETH_IP(message->recipient_id),
         ETH_UDP_PORT
     );
     if(status != NX_SUCCESS) {
-        printf("[u_ethernet.c/ethernet_send_message()] ERROR: Failed to send packet (Status: %d).\n", status);
+        printf("[u_ethernet.c/ethernet_send_message()] ERROR: Failed to send packet (Status: %d, Message ID: %d).\n", status, message->message_id);
         nx_packet_release(packet);
         return U_ERROR;
     }
 
-    printf("[u_ethernet.c/ethernet_send_message()] Sent ethernet message (Recipient ID: %d, Message ID: %d).\n", message.recipient_id, message.message_id);
-    return U_SUCCESS;
-}
-
-uint8_t ethernet_queue_message(uint8_t message_id, ethernet_node_t recipient_id, uint8_t *data, uint8_t data_length) {
-    uint8_t status;
-    ethernet_message_t message = {0};
-
-    /* Prepare message */
-    message.sender_id = device.node_id;
-    message.recipient_id = recipient_id;
-    message.message_id = message_id;
-    message.data_length = data_length;
-    memcpy(message.data, data, data_length);
-
-    /* Place message in outgoing queue */
-    status = queue_send(&eth_outgoing, &message);
-    if(status != U_SUCCESS) {
-        printf("[u_ethernet.c/ethernet_queue_message()] ERROR: Failed to place message in outgoing queue (Message ID: %d).\n", message.message_id);
-        return U_ERROR;
-    }
-
-    return U_SUCCESS;
-}
-
-/* This function should be called repeatedly by the ethernet thread. */
-uint8_t ethernet_process(void) {
-    ethernet_message_t message;
-    uint8_t status;
-
-    if(!device.is_initialized) {
-        printf("[u_ethernet.c/ethernet_process()] ERROR: Ethernet device is not initialized. Skipping ethernet thread stuff until then...\n");
-        return U_ERROR;
-    }
-
-    /* Process outgoing messages */
-    while(queue_receive(&eth_outgoing, &message) == U_SUCCESS) {
-        status = ethernet_send_message(message.message_id, message.recipient_id, message.data, message.data_length);
-        if(status != U_SUCCESS) {
-            printf("[u_ethernet.c/ethernet_process()] WARNING: Failed to send message after removing from outgoing queue (Message ID: %d).\n", message.message_id);
-            // u_TODO - maybe add the message back into the queue if it fails to send? not sure if this is a good idea tho
-        }
-    }
-
-    /* Process incoming messages */
-    while(queue_receive(&eth_incoming, &message) == U_SUCCESS) {
-        ethernet_inbox(&message);
-    }
-
+    printf("[u_ethernet.c/ethernet_send_message()] Sent ethernet message (Recipient ID: %d, Message ID: %d).\n", message->recipient_id, message->message_id);
     return U_SUCCESS;
 }
