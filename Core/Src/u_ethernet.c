@@ -32,7 +32,7 @@ typedef struct {
 } _ethernet_device_t;
 static _ethernet_device_t device = {0};
 
-/* Callback function. Called when an ethernet message is recieved. */
+/* Callback function. Called when an ethernet message is received. */
 static void _receive_message(NX_UDP_SOCKET *socket) {
     NX_PACKET *packet;
     ULONG bytes_copied;
@@ -51,12 +51,12 @@ static void _receive_message(NX_UDP_SOCKET *socket) {
             &bytes_copied                   // Stores how many bytes were actually copied to &message
         );
         if(bytes_copied < sizeof(ethernet_message_t)) {
-            DEBUG_PRINT("WARNING: Received ethernet message was smaller than expected (only recieved %lu of %u expected bytes).", bytes_copied, sizeof(ethernet_message_t));
+            DEBUG_PRINT("WARNING: Received ethernet message was smaller than expected (only received %lu of %u expected bytes).", bytes_copied, sizeof(ethernet_message_t));
         }
 
-        /* Process recieved message */
+        /* Process received message */
         if(status == NX_SUCCESS) {
-            DEBUG_PRINT("Recieved ethernet message! (Sender ID: %d, Message ID: %d).", message.sender_id, message.message_id);
+            DEBUG_PRINT("Received ethernet message! (Sender ID: %d, Message ID: %d).", message.sender_id, message.message_id);
             queue_send(&eth_incoming, &message);
         }
     }

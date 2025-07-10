@@ -52,7 +52,7 @@ uint8_t statemachine_process_event(event_t event, uint8_t *data) {
         
         /* If an invalid event is passed in, return an error. */
         default: 
-            DEBUG_PRINT("Invalid event passed into function. (EventL %d)", event);
+            DEBUG_PRINT("Invalid event passed into function. (Event: %d)", event);
             return U_ERROR;
     }
 }
