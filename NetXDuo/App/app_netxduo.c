@@ -65,7 +65,7 @@ UINT MX_NetXDuo_Init(VOID *memory_ptr)
   /* USER CODE END App_NetXDuo_MEM_POOL */
   /* USER CODE BEGIN 0 */
 
-  return ethernet_init(VCU, ethernet_inbox);
+  ret = ethernet_init(VCU);
 
   /* USER CODE END 0 */
 

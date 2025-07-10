@@ -1,4 +1,5 @@
 #include "u_ethernet.h"
+#include "u_inbox.h"
 #include "nx_api.h"
 #include "nx_stm32_eth_driver.h"
 #include <string.h>
@@ -27,7 +28,6 @@ typedef struct {
     /* Device config variables */
 	bool                    is_initialized;
 	uint8_t                 node_id;
-    ethernet_inbox_function function; /* Function to process received messages. */
 } _ethernet_device_t;
 _ethernet_device_t device = {0};
 
@@ -134,7 +134,7 @@ static uint8_t _send_message(uint8_t message_id, ethernet_node_t recipient_id, u
 
 /* API FUNCTIONS */
 
-uint8_t ethernet_init(ethernet_node_t node_id, ethernet_inbox_function function) {
+uint8_t ethernet_init(ethernet_node_t node_id) {
     
     uint8_t status;
 
@@ -144,9 +144,8 @@ uint8_t ethernet_init(ethernet_node_t node_id, ethernet_inbox_function function)
         return U_ERROR;
     }
 
-    /* Store device info */
+    /* Store node id */
     device.node_id = node_id;
-    device.function = function;
 
     /* Create packet pool */
     status = nx_packet_pool_create(
@@ -311,7 +310,7 @@ uint8_t ethernet_process(void) {
 
     /* Process incoming messages */
     while(queue_receive(&eth_incoming, &message) == U_SUCCESS) {
-        device.function(&message);
+        ethernet_inbox(&message);
     }
 
     return U_SUCCESS;
