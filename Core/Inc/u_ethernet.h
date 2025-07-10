@@ -46,6 +46,16 @@ typedef struct {
 uint8_t ethernet_init(ethernet_node_t node_id);
 
 /**
+ * @brief Sends an ethernet message.
+ * @param message_id The ID of the ethernet message.
+ * @param recipient_id The ID(s) of the inteded recipients.
+ * @param data The data to be sent in the message.
+ * @param data_length The length of the data, in bytes.
+ * @return Status.
+ */
+uint8_t ethernet_send_message(uint8_t message_id, ethernet_node_t recipient_id, uint8_t *data, uint8_t data_length);
+
+/**
  * @brief Places an ethernet message in the outgoing queue (which will send the message).
  * @param message_id The ID of the ethernet message.
  * @param recipient_id The ID(s) of the inteded recipients.
