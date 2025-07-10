@@ -51,7 +51,7 @@ void ethernet_thread(ULONG thread_input) {
         while(queue_receive(&eth_outgoing, &message) == U_SUCCESS) {
             status = ethernet_send_message(&message);
             if(status != U_SUCCESS) {
-                printf("[u_ethernet.c/ethernet_process()] WARNING: Failed to send message after removing from outgoing queue (Message ID: %d).\n", message.message_id);
+                DEBUG_PRINT("WARNING: Failed to send message after removing from outgoing queue (Message ID: %d).", message.message_id);
                 // u_TODO - maybe add the message back into the queue if it fails to send? not sure if this is a good idea tho
                 }
         }
@@ -74,14 +74,14 @@ static uint8_t _create_thread(TX_BYTE_POOL *byte_pool, const thread_t *thread) {
     /* Allocate the stack for the thread. */
     status = tx_byte_allocate(byte_pool, (VOID**) &pointer, thread->size, TX_NO_WAIT);
     if(status != TX_SUCCESS) {
-        printf("[u_threads.c/_create_thread()] ERROR: Failed to allocate stack before creating thread (Status: %d, Thread: %s).\n", status, thread->name);
+        DEBUG_PRINT("ERROR: Failed to allocate stack before creating thread (Status: %d, Thread: %s).", status, thread->name);
         return U_ERROR;
     }
 
     /* Create the thread. */
     status = tx_thread_create(thread->thread, thread->name, thread->function, thread->thread_input, pointer, thread->size, thread->priority, thread->threshold, thread->time_slice, thread->auto_start);
     if(status != TX_SUCCESS) {
-        printf("[u_threads.c/_create_thread()] ERROR: Failed to create thread (Status: %d, Thread: %s).\n", status, thread->name);
+        DEBUG_PRINT("ERROR: Failed to create thread (Status: %d, Thread: %s).", status, thread->name);
         return U_ERROR;
     }
     
@@ -98,6 +98,6 @@ uint8_t threads_init(TX_BYTE_POOL *byte_pool) {
     _create_thread(byte_pool, &_ethernet_thread_config); // Create Ethernet thread.
     // add more threads here if need eventually
 
-    printf("[u_threads.c/threads_init()] Ran threads_init().\n");
+    DEBUG_PRINT("Ran threads_init().");
     return U_SUCCESS;
 }
