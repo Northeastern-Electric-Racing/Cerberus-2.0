@@ -289,7 +289,7 @@ uint8_t ethernet_queue_message(uint8_t message_id, ethernet_node_t recipient_id,
     return U_SUCCESS;
 }
 
-/* This function is basically just the Ethernet thread. It gets called repeatedly by the NetX thread in app_netxduo.c */
+/* This function should be called repeatedly by the ethernet thread. */
 uint8_t ethernet_process(void) {
     ethernet_message_t message;
     uint8_t status;
