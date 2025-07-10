@@ -1,6 +1,5 @@
 #include "u_ethernet.h"
 #include "u_queues.h"
-#include "u_inbox.h"
 #include "nx_api.h"
 #include "nx_stm32_eth_driver.h"
 #include <string.h>
