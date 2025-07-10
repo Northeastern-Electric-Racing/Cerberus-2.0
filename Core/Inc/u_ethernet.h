@@ -2,7 +2,6 @@
 #define __U_ETHERNET_H
 
 #include "u_config.h"
-#include "u_queues.h"
 #include <stdint.h>
 #include <stdbool.h>
 
@@ -46,29 +45,20 @@ typedef struct {
 uint8_t ethernet_init(ethernet_node_t node_id);
 
 /**
+ * @brief Creates an ethernet message. Can be send with ethernet_send_message(), or added to a queue.
+ * @param recipient_id The ID of the recipient node.
+ * @param message_id The ID of the message.
+ * @param data Pointer to the data to include in the message.
+ * @param data_length Length of the data in bytes.
+ * @return The created ethernet message.
+ */
+ethernet_message_t ethernet_create_message(uint8_t message_id, ethernet_node_t recipient_id, uint8_t *data, uint8_t data_length);
+
+/**
  * @brief Sends an ethernet message.
- * @param message_id The ID of the ethernet message.
- * @param recipient_id The ID(s) of the intended recipients.
- * @param data The data to be sent in the message.
- * @param data_length The length of the data, in bytes.
+ * @param message The message to send.
  * @return Status.
  */
-uint8_t ethernet_send_message(uint8_t message_id, ethernet_node_t recipient_id, uint8_t *data, uint8_t data_length);
-
-/**
- * @brief Places an ethernet message in the outgoing queue (which will send the message).
- * @param message_id The ID of the ethernet message.
- * @param recipient_id The ID(s) of the intended recipients.
- * @param data The data to be sent in the message.
- * @param data_length The length of the data, in bytes.
- * @return Status.
- */
-uint8_t ethernet_queue_message(uint8_t message_id, ethernet_node_t recipient_id, uint8_t *data, uint8_t data_length);
-
-/**
- * @brief Handles all ethernet processing (sending outgoing messages, recieving incoming messages, etc.).
- *        This function is intended to be called repeatetly by the NetX thread.
- */
-uint8_t ethernet_process(void);
+uint8_t ethernet_send_message(ethernet_message_t *message);
 
 #endif /* u_ethernet.h */
