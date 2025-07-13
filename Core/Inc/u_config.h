@@ -17,4 +17,18 @@
     #define DEBUG_PRINT(message, ...) /* If debugging is turned off, macro doesn't need to expand to anything. */
 #endif
 
+/**
+ * @brief Checks if a function is successful when called.
+ * @param function_call The function to call.
+ * @param success The function's success code/macro (e.g., U_SUCCESS, TX_SUCCESS, etc.).
+ */
+#define CATCH_ERROR(function_call, success) do { \
+    int result = (function_call); \
+    if (result != success) { \
+        DEBUG_PRINT("Function failed: %s (code %d)", #function_call, result); \
+        return result; \
+    } \
+} while(0)
+
+
 #endif /* u_config.h */
