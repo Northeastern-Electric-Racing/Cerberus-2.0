@@ -1,4 +1,5 @@
 #include "u_queues.h"
+#include "u_config.h"
 #include <stdio.h>
 
 /* Helper function. Creates a ThreadX queue. */
@@ -44,8 +45,8 @@ static const queue_t _eth_outgoing_config = {
 uint8_t queues_init() {
 
     /* Create Queues */
-    _create_queue(&_eth_incoming_config); // Create Incoming Ethernet Queue.
-    _create_queue(&_eth_outgoing_config); // Create Outgoing Ethernet Queue.
+    CATCH_ERROR(_create_queue(&_eth_incoming_config), U_SUCCESS); // Create Incoming Ethernet Queue.
+    CATCH_ERROR(_create_queue(&_eth_outgoing_config), U_SUCCESS); // Create Outgoing Ethernet Queue.
     // add more queues here if need eventually
 
     DEBUG_PRINT("Ran queues_init().");

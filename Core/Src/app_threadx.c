@@ -64,8 +64,8 @@ UINT App_ThreadX_Init(VOID *memory_ptr)
   TX_BYTE_POOL *byte_pool = (TX_BYTE_POOL*)memory_ptr;
 
   /* Init user-written code that uses ThreadX stuff here. */
-  queues_init(); // u_TODO - should probably check for errors for all init stuff. wait until the CAN error-reporting thing is setup to see how this could work best.
-  threads_init(byte_pool);
+  CATCH_ERROR(queues_init(), U_SUCCESS);
+  CATCH_ERROR(threads_init(byte_pool), U_SUCCESS);
 
   /* USER CODE END App_ThreadX_MEM_POOL */
   /* USER CODE BEGIN App_ThreadX_Init */
