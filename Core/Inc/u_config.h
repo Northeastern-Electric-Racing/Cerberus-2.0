@@ -18,14 +18,14 @@
 #endif
 
 /**
- * @brief Checks if a function is successful when called.
+ * @brief Checks if a function is successful when called. DEBUG_PRINTs an error message if it fails.
  * @param function_call The function to call.
  * @param success The function's success code/macro (e.g., U_SUCCESS, TX_SUCCESS, etc.).
  */
 #define CATCH_ERROR(function_call, success) do { \
     int result = (function_call); \
     if (result != success) { \
-        DEBUG_PRINT("Function failed: %s (code %d)", #function_call, result); \
+        DEBUG_PRINT("Function failed: %s (Status: %d)", #function_call, result); \
         return result; \
     } \
 } while(0)
