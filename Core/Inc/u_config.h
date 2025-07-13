@@ -26,10 +26,10 @@
  *       require a custom message, the error should probably be checked manually and DEBUG_PRINT() called directly.
  */
 #define CATCH_ERROR(function_call, success) do { \
-    int result = (function_call); \
-    if (result != success) { \
-        DEBUG_PRINT("CATCH_ERROR(): Function failed: %s (Status: %d)", #function_call, result); \
-        return result; \
+    int _function_status = (function_call); \
+    if (_function_status != success) { \
+        DEBUG_PRINT("CATCH_ERROR(): Function failed: %s (Status: %d)", #function_call, _function_status); \
+        return _function_status; \
     } \
 } while(0)
 
