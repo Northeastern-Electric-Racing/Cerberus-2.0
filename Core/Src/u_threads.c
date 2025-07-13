@@ -94,8 +94,8 @@ static uint8_t _create_thread(TX_BYTE_POOL *byte_pool, const thread_t *thread) {
 uint8_t threads_init(TX_BYTE_POOL *byte_pool) {
 
     /* Create Threads */
-    _create_thread(byte_pool, &_default_thread_config); // Create Default thread.
-    _create_thread(byte_pool, &_ethernet_thread_config); // Create Ethernet thread.
+    CATCH_ERROR(_create_thread(byte_pool, &_default_thread_config), U_SUCCESS);  // Create Default thread.
+    CATCH_ERROR(_create_thread(byte_pool, &_ethernet_thread_config), U_SUCCESS); // Create Ethernet thread.
     // add more threads here if need eventually
 
     DEBUG_PRINT("Ran threads_init().");
