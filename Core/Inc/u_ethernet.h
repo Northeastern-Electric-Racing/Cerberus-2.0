@@ -15,6 +15,7 @@
 #define ETH_UDP_PORT  		2006 /* UDP port for communication */
 #define ETH_MESSAGE_SIZE	8    /* Maximum ethernet message size */ // u_TODO - i made this 8 bytes for consistency with CAN, but obv it can be a lot larger.
 #define ETH_MAX_PACKETS     10   /* Maximum number of packets we wanna handle simultaneously */
+#define ETH_NUMBER_OF_NODES 8    /* Number of nodes in the network. */
 
 typedef enum {
     VCU         = (1 << 0), // 0b00000001
@@ -26,7 +27,7 @@ typedef enum {
     NODE7       = (1 << 6), // 0b01000000
     NODE8       = (1 << 7), // 0b10000000
 } ethernet_node_t;
-#define ETH_IP(node) IP_ADDRESS(239,0,0,node) // u_TODO - you can configure ethernet IPs in CubeMX apparently. probably should look into that, not sure how that works w/ this
+#define ETH_IP(node) IP_ADDRESS(239,0,0,node)
 /* END CONFIG */
 
 typedef struct {

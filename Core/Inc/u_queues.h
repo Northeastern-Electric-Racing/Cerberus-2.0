@@ -2,6 +2,7 @@
 #define __U_QUEUES_H
 
 #include "tx_api.h"
+#include "u_config.h"
 #include "u_ethernet.h"
 #include <stdint.h>
 
@@ -10,6 +11,9 @@
 *   
 *   Author: Blake Jackson
 */
+
+/* Queue Config Macros */
+#define QUEUE_WAIT_TIME     MS_TO_TICKS(100) // Wait 100ms for queue stuff before timing out
 
 typedef struct {
     TX_QUEUE *queue;           /* Pointer to the queue */

@@ -40,7 +40,7 @@ static void _receive_message(NX_UDP_SOCKET *socket) {
     ethernet_message_t message = {0};
 
     /* Recieve the packet */
-    status = nx_udp_socket_receive(socket, &packet, TX_NO_WAIT);
+    status = nx_udp_socket_receive(socket, &packet, NX_NO_WAIT);
     if(status == NX_SUCCESS) {
         /* Extract message from packet */
         status = nx_packet_data_extract_offset(

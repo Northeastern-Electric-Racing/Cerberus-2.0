@@ -33,5 +33,9 @@
     } \
 } while(0)
 
+/* Time and tick conversions */
+#define MS_TO_TICKS(ms)     ((ms) * TX_TIMER_TICKS_PER_SECOND / 1000) // u_TODO - i think this truncates if ms < 10. dunno if that will be an issue
+#define TICKS_TO_MS(ticks)  ((ticks) * 1000 / TX_TIMER_TICKS_PER_SECOND)
+
 
 #endif /* u_config.h */
