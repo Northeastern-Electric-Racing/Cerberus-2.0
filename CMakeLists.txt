@@ -31,6 +31,12 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
 project(${CMAKE_PROJECT_NAME})
 message("Build type: " ${CMAKE_BUILD_TYPE})
 
+# Display ASCII art at start of build
+if(EXISTS "${CMAKE_SOURCE_DIR}/art")
+    file(READ "${CMAKE_SOURCE_DIR}/art" ASCII_ART)
+    message("${ASCII_ART}")
+endif()
+
 # Enable CMake support for ASM and C languages
 enable_language(C ASM)
 
