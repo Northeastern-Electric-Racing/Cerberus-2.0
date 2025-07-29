@@ -57,7 +57,7 @@ uint8_t queue_send(TX_QUEUE *queue, void *message) {
     UINT status;
 
     /* Send message to the queue. */
-    status = tx_queue_send(queue, message, TX_NO_WAIT);
+    status = tx_queue_send(queue, message, QUEUE_WAIT_TIME);
     if(status != TX_SUCCESS) {
         DEBUG_PRINT("ERROR: Failed to send message to queue (Status: %d, Queue: %s).", status, queue->tx_queue_name);
         return U_ERROR;
@@ -70,7 +70,7 @@ uint8_t  queue_receive(TX_QUEUE *queue, void *message) {
     UINT status;
 
     /* Receive message from the queue. */
-    status = tx_queue_receive(queue, message, TX_NO_WAIT);
+    status = tx_queue_receive(queue, message, QUEUE_WAIT_TIME);
     if(status != TX_SUCCESS) {
         DEBUG_PRINT("ERROR: Failed to receive message from queue (Status: %d, Queue: %s).", status, queue->tx_queue_name);
         return U_ERROR;

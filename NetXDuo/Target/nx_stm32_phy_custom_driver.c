@@ -15,6 +15,7 @@
 
 /* USER CODE BEGIN Includes */
 #include "lan8670.h"
+#include "u_ethernet.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -103,13 +104,13 @@ int32_t nx_eth_phy_init(void)
     }
 
     /* Set PLCA node count and ID */
-    ret = LAN8670_PLCA_Set_Node_Count(&lan8670, 2); // u_TODO - Actually configure this stuff based on what the network looks like
+    ret = LAN8670_PLCA_Set_Node_Count(&lan8670, ETH_NUMBER_OF_NODES);
     if (ret != LAN8670_STATUS_OK)
     {
         return ETH_PHY_STATUS_ERROR;
     }
 
-    ret = LAN8670_PLCA_Set_Node_Id(&lan8670, 0); // u_TODO - Actually configure this stuff based on what the network looks like
+    ret = LAN8670_PLCA_Set_Node_Id(&lan8670, VCU);
     if (ret != LAN8670_STATUS_OK)
     {
         return ETH_PHY_STATUS_ERROR;
