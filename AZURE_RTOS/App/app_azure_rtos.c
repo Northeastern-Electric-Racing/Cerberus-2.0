@@ -22,7 +22,7 @@
 #include "app_azure_rtos.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "u_config.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -87,7 +87,7 @@ VOID tx_application_define(VOID *first_unused_memory)
   if (tx_byte_pool_create(&tx_app_byte_pool, "Tx App memory pool", tx_byte_pool_buffer, TX_APP_MEM_POOL_SIZE) != TX_SUCCESS)
   {
     /* USER CODE BEGIN TX_Byte_Pool_Error */
-
+    DEBUG_PRINT("ERROR: Failed to create ThreadX byte pool.");
     /* USER CODE END TX_Byte_Pool_Error */
   }
   else
@@ -101,8 +101,10 @@ VOID tx_application_define(VOID *first_unused_memory)
     if (status != TX_SUCCESS)
     {
       /* USER CODE BEGIN  App_ThreadX_Init_Error */
+      DEBUG_PRINT("ERROR: Failed to initialize ThreadX application (Status: %d).", status);
       while(1)
       {
+        // fatal error so loop forever
       }
       /* USER CODE END  App_ThreadX_Init_Error */
     }
@@ -115,7 +117,7 @@ VOID tx_application_define(VOID *first_unused_memory)
   if (tx_byte_pool_create(&nx_app_byte_pool, "Nx App memory pool", nx_byte_pool_buffer, NX_APP_MEM_POOL_SIZE) != TX_SUCCESS)
   {
     /* USER CODE BEGIN NX_Byte_Pool_Error */
-
+    DEBUG_PRINT("ERROR: Failed to create NetXDuo byte pool.");
     /* USER CODE END NX_Byte_Pool_Error */
   }
   else
@@ -129,8 +131,10 @@ VOID tx_application_define(VOID *first_unused_memory)
     if (status != NX_SUCCESS)
     {
       /* USER CODE BEGIN  MX_NetXDuo_Init_Error */
+      DEBUG_PRINT("ERROR: Failed to initialize NetXDuo application (Status: %d).", status);
       while(1)
       {
+        // fatal error so loop forever. unless we just don't want to use NetX/ethernet stuff.
       }
       /* USER CODE END  MX_NetXDuo_Init_Error */
     }
