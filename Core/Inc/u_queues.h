@@ -20,7 +20,6 @@ typedef struct {
     CHAR     *name;            /* Name of the queue */
     UINT      message_size;    /* Size of each message in the queue, in bytes. */
     UINT      capacity;        /* Maximum number of messages in the queue */
-    UCHAR    *memory;          /* Pointer to the queue's memory */
 } queue_t;
 
 /* Queue List */
