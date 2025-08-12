@@ -27,7 +27,7 @@ extern queue_t eth_outgoing; // Outgoing Ethernet Queue
 // add more as necessary
 
 /* API */
-uint8_t queues_init(); // Initializes all queues. Called from app_threadx.c
+uint8_t queues_init(TX_BYTE_POOL *byte_pool); // Initializes all queues. Called from app_threadx.c
 uint8_t queue_send(queue_t *queue, void *message); // Sends a message to the specified queue.
 uint8_t queue_receive(queue_t *queue, void *message); // Receives a message from the specified queue.
 
