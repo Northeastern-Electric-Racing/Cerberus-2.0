@@ -78,15 +78,17 @@ static uint8_t _create_queue(TX_BYTE_POOL *byte_pool, const QUEUE_CONFIG *config
 */
 uint8_t queues_init(TX_BYTE_POOL *byte_pool) {
 
+    uint8_t status;
+
     /* Create Incoming Ethernet Queue */
-    uint8_t status = _create_queue(byte_pool, &_eth_incoming_config);
+    status = _create_queue(byte_pool, &_eth_incoming_config);
     if (status != U_SUCCESS) {
         DEBUG_PRINT("ERROR: Failed to create Incoming Ethernet Queue.");
         return status;
     }
 
     /* Create Outgoing Ethernet Queue */
-    uint8_t status = _create_queue(byte_pool, &_eth_outgoing_config);
+    status = _create_queue(byte_pool, &_eth_outgoing_config);
     if (status != U_SUCCESS) {
         DEBUG_PRINT("ERROR: Failed to create Outgoing Ethernet Queue.");
         return status;
