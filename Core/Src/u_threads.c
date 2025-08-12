@@ -82,6 +82,7 @@ static uint8_t _create_thread(TX_BYTE_POOL *byte_pool, const thread_t *thread) {
     status = tx_thread_create(thread->thread, thread->name, thread->function, thread->thread_input, pointer, thread->size, thread->priority, thread->threshold, thread->time_slice, thread->auto_start);
     if(status != TX_SUCCESS) {
         DEBUG_PRINT("ERROR: Failed to create thread (Status: %d, Thread: %s).", status, thread->name);
+        tx_byte_release(pointer); // Free allocated memory if thread creation fails
         return U_ERROR;
     }
     
