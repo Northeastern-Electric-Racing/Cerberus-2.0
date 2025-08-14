@@ -127,7 +127,12 @@ uint8_t  queue_receive(queue_t *queue, void *message) {
 
     /* Receive message from the queue. */
     status = tx_queue_receive(&queue->_TX_QUEUE, buffer, QUEUE_WAIT_TIME);
-    if((status != TX_SUCCESS) || (status != TX_QUEUE_EMPTY)) {
+    if(status == TX_QUEUE_EMPTY) {
+        DEBUG_PRINT("Did not receive from queue because it was full (Queue: %s).", queue->_TX_QUEUE.tx_queue_name);
+        return U_ERROR;
+    }
+
+    if((status != TX_SUCCESS)) {
         DEBUG_PRINT("ERROR: Failed to receive message from queue (Status: %d, Queue: %s).", status, queue->_TX_QUEUE.tx_queue_name);
         return U_ERROR;
     }
