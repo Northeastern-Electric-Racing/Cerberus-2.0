@@ -61,13 +61,12 @@ int32_t nx_eth_phy_init(void)
 
 /* USER CODE BEGIN PHY_INIT_0 */
 
-
 /* USER CODE END PHY_INIT_0 */
 
     int32_t ret = ETH_PHY_STATUS_OK;
 
 /* USER CODE BEGIN PHY_INIT_1 */
-  /* Set up LAN8670 IO */
+    /* Set up LAN8670 IO */
     lan8670_io_ctx.Init = NULL;
     lan8670_io_ctx.DeInit = NULL;
     lan8670_io_ctx.WriteReg = ETH_WritePHYRegister;  // STM32 ETH write function
