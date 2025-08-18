@@ -25,6 +25,10 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdint.h>
+
+#include "fdcan.h"
+#include "u_inbox.h"
+#include "u_can.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -70,6 +74,7 @@ static void MX_USART3_UART_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+
 /* Snippet of code from Digikey Example of printf redirection */
 /* i stole this code from Cerberus 1.0 */
 #ifdef __GNUC__
@@ -92,6 +97,37 @@ int _write(int file, char* ptr, int len) {
   }
   return len;
 }
+
+/* FDCAN FIFO0 Interrupt Callback */
+/* Callback for any FIFO0 interrupt stuff */
+void HAL_FDCAN_RxFifo0Callback(FDCAN_HandleTypeDef *hfdcan, uint32_t RxFifo0ITs)
+{
+
+	/* If a message has just been recieved... */
+	if (RxFifo0ITs & FDCAN_IT_RX_FIFO0_NEW_MESSAGE)
+	{
+		can_msg_t message;
+		FDCAN_RxHeaderTypeDef rx_header;
+
+		if (HAL_FDCAN_GetRxMessage(hfdcan, FDCAN_RX_FIFO0, &rx_header, message.data) == HAL_OK)
+		{
+			message.id = rx_header.Identifier;
+			message.id_is_extended = (rx_header.IdType == FDCAN_EXTENDED_ID);
+			message.len = (uint8_t)rx_header.DataLength;
+
+			/* Check size */
+			if (rx_header.DataLength > 8)
+			{
+				printf("[main.c/HAL_FDCAN_RxFifo0Callback()] ERROR: Recieved message is larger than 8 bytes.\n");
+				return;
+			}
+
+			/* Send message to inbox for proccessing */
+      inbox_can(&message);
+		}
+	}
+}
+
 /* USER CODE END 0 */
 
 /**
@@ -128,6 +164,9 @@ int main(void)
   MX_ICACHE_Init();
   MX_USART3_UART_Init();
   /* USER CODE BEGIN 2 */
+
+  /* Init CAN */
+  can1_init(&hfdcan1);
 
   /* USER CODE END 2 */
 

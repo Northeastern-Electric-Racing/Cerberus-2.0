@@ -1,8 +1,24 @@
+#include "fdcan.h"
 #include "u_ethernet.h"
 
 /* Processes received ethernet messages. */
 void inbox_ethernet(ethernet_message_t *message) {
     switch(message->message_id) {
+        case 0x01:
+            // do thing
+            break;
+        case 0x02:
+            // do thing
+            break;
+        case 0x03:
+            // etc
+            break;
+    }
+}
+
+/* Processes received CAN messages. */
+void inbox_can(can_msg_t *message) {
+    switch(message->id) {
         case 0x01:
             // do thing
             break;
