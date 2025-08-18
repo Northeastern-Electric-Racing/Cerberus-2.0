@@ -13,23 +13,23 @@ uint8_t can1_init(FDCAN_HandleTypeDef *hcan) {
     /* Init CAN interface */
     HAL_StatusTypeDef status = can_init(&can1, hcan);
     if(status != HAL_OK) {
-        DEBUG_PRINT("Failed to execute can_init() when initializing can1 (Status: %d).\n", status);
+        DEBUG_PRINT("Failed to execute can_init() when initializing can1 (Status: %d).", status);
         return U_ERROR;
     }
 
-    /* Add filters */
+    /* Add filters for standard IDs */
     uint16_t standard[] = {0x00, 0x00};
-    uint32_t extended[] = {0x00, 0x00};
-
     status = can_add_filter_standard(&can1, standard);
     if(status != HAL_OK) {
-        DEBUG_PRINT("Failed to add standard filter to can1 (Status: %d, ID1: %d, ID2: %d).\n", status, standard[0], standard[1]);
+        DEBUG_PRINT("Failed to add standard filter to can1 (Status: %d, ID1: %d, ID2: %d).", status, standard[0], standard[1]);
         return U_ERROR;
     }
 
+    /* Add fitlers for extended IDs */
+    uint32_t extended[] = {0x00, 0x00};
     status = can_add_filter_extended(&can1, extended);
     if (status != HAL_OK) {
-        DEBUG_PRINT("Failed to add extended filter to can1 (Status: %d, ID1: %ld, ID2: %ld).\n", status, extended[0], extended[1]);
+        DEBUG_PRINT("Failed to add extended filter to can1 (Status: %d, ID1: %ld, ID2: %ld).", status, extended[0], extended[1]);
         return U_ERROR;
     }
 

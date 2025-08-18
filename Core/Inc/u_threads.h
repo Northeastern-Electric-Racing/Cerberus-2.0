@@ -31,5 +31,6 @@ typedef struct {
 /* Thread Functions */
 void default_thread(ULONG thread_input);
 void ethernet_thread(ULONG thread_input);
+void can1_thread(ULONG thread_input);
 
 #endif /* u_threads.h */
