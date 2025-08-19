@@ -1,6 +1,7 @@
 #include "u_threads.h"
 #include "u_queues.h"
 #include "u_inbox.h"
+#include "u_can.h"
 #include "u_ethernet.h"
 
 /* Default Thread */
@@ -51,7 +52,7 @@ void ethernet_thread(ULONG thread_input) {
         while(queue_receive(&eth_outgoing, &message) == U_SUCCESS) {
             status = ethernet_send_message(&message);
             if(status != U_SUCCESS) {
-                DEBUG_PRINT("WARNING: Failed to send message after removing from outgoing queue (Message ID: %d).", message.message_id);
+                DEBUG_PRINT("WARNING: Failed to send Ethernet message after removing from outgoing queue (Message ID: %d).", message.message_id);
                 // u_TODO - maybe add the message back into the queue if it fails to send? not sure if this is a good idea tho
                 }
         }
@@ -63,6 +64,45 @@ void ethernet_thread(ULONG thread_input) {
 
         /* Sleep Thread for specified number of ticks. */
         tx_thread_sleep(_ethernet_thread_config.sleep);
+    }
+}
+
+/* CAN Thread. Sends outgoing messages and processes incoming messages. */
+static TX_THREAD _can;
+static const thread_t _can_thread_config = {
+        .thread     = &_can,            /* Thread */
+        .name       = "CAN Thread",     /* Name */
+        .function   = can_thread,       /* Thread Function */
+        .size       = 512,              /* Stack Size (in bytes) */
+        .priority   = 9,                /* Priority */
+        .threshold  = 9,                /* Preemption Threshold */
+        .time_slice = TX_NO_TIME_SLICE, /* Time Slice */
+        .auto_start = TX_AUTO_START,    /* Auto Start */
+        .sleep      = 500               /* Sleep (in ticks) */
+    };
+void can_thread(ULONG thread_input) {
+    
+    while(1) {
+
+        can_msg_t message;
+        uint8_t status;
+
+        /* Process outgoing messages */
+        while(queue_receive(&can_outgoing, &message) == U_SUCCESS) {
+            status = can_send_msg(&can1, &message);
+            if(status != U_SUCCESS) {
+                DEBUG_PRINT("WARNING: Failed to send message (on can1) after removing from outgoing queue (Message ID: %ld).", message.id);
+                // u_TODO - maybe add the message back into the queue if it fails to send? not sure if this is a good idea tho
+                }
+        }
+
+        /* Process incoming messages */
+        while(queue_receive(&can_incoming, &message) == U_SUCCESS) {
+            inbox_can(&message);
+        }
+
+        /* Sleep Thread for specified number of ticks. */
+        tx_thread_sleep(_can_thread_config.sleep);
     }
 }
 
@@ -97,6 +137,7 @@ uint8_t threads_init(TX_BYTE_POOL *byte_pool) {
     /* Create Threads */
     CATCH_ERROR(_create_thread(byte_pool, &_default_thread_config), U_SUCCESS);  // Create Default thread.
     CATCH_ERROR(_create_thread(byte_pool, &_ethernet_thread_config), U_SUCCESS); // Create Ethernet thread.
+    CATCH_ERROR(_create_thread(byte_pool, &_can_thread_config), U_SUCCESS);      // Create CAN thread.
     // add more threads here if need eventually
 
     DEBUG_PRINT("Ran threads_init().");
