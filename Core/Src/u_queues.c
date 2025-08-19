@@ -33,22 +33,22 @@ static const QUEUE_CONFIG _eth_outgoing_config = {
     .capacity = 10                               /* Number of messages the queue can hold. */
 };
 
-/* Incoming CAN1 Queue */
-queue_t can1_incoming;
-static const QUEUE_CONFIG _can1_incoming_config = {
-    .queue = &can1_incoming,                 /* Pointer to the queue. */
-    .name = "Incoming CAN1 Queue",           /* Name of the queue. */
-    .message_size = sizeof(can_msg_t),       /* Size of each queue message, in bytes. */
-    .capacity = 10                           /* Number of messages the queue can hold. */
-};
-
-/* Outgoing CAN1 Queue */
-queue_t can1_outgoing;
-static const QUEUE_CONFIG _can1_outgoing_config = {
-    .queue = &can1_outgoing,                /* Pointer to the queue. */
-    .name = "Outgoing CAN1 Queue",          /* Name of the queue. */
+/* Incoming CAN Queue */
+queue_t can_incoming;
+static const QUEUE_CONFIG _can_incoming_config = {
+    .queue = &can_incoming,                 /* Pointer to the queue. */
+    .name = "Incoming CAN Queue",           /* Name of the queue. */
     .message_size = sizeof(can_msg_t),      /* Size of each queue message, in bytes. */
     .capacity = 10                          /* Number of messages the queue can hold. */
+};
+
+/* Outgoing CAN Queue */
+queue_t can_outgoing;
+static const QUEUE_CONFIG _can_outgoing_config = {
+    .queue = &can_outgoing,                /* Pointer to the queue. */
+    .name = "Outgoing CAN Queue",          /* Name of the queue. */
+    .message_size = sizeof(can_msg_t),     /* Size of each queue message, in bytes. */
+    .capacity = 10                         /* Number of messages the queue can hold. */
 };
 
 /* Helper function. Creates a ThreadX queue. */
@@ -100,8 +100,8 @@ uint8_t queues_init(TX_BYTE_POOL *byte_pool) {
     /* Create Queues */
     CATCH_ERROR(_create_queue(byte_pool, &_eth_incoming_config), U_SUCCESS); // Create Incoming Ethernet Queue
     CATCH_ERROR(_create_queue(byte_pool, &_eth_outgoing_config), U_SUCCESS); // Create Outgoing Ethernet Queue
-    CATCH_ERROR(_create_queue(byte_pool, &_can1_incoming_config), U_SUCCESS); // Create Incoming CAN Queue
-    CATCH_ERROR(_create_queue(byte_pool, &_can1_outgoing_config), U_SUCCESS); // Create Outgoing CAN Queue
+    CATCH_ERROR(_create_queue(byte_pool, &_can_incoming_config), U_SUCCESS); // Create Incoming CAN Queue
+    CATCH_ERROR(_create_queue(byte_pool, &_can_outgoing_config), U_SUCCESS); // Create Outgoing CAN Queue
 
     DEBUG_PRINT("Ran queues_init().");
     return U_SUCCESS;

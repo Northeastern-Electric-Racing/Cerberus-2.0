@@ -29,6 +29,7 @@
 #include "fdcan.h"
 #include "u_inbox.h"
 #include "u_can.h"
+#include "u_queues.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -122,8 +123,8 @@ void HAL_FDCAN_RxFifo0Callback(FDCAN_HandleTypeDef *hfdcan, uint32_t RxFifo0ITs)
 				return;
 			}
 
-			/* Send message to inbox for proccessing */
-      inbox_can(&message);
+			/* Send message to incoming CAN queue */
+      queue_send(&can_incoming, &message);
 		}
 	}
 }
