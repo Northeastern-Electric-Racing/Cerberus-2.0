@@ -55,7 +55,7 @@ void ethernet_thread(ULONG thread_input) {
         while(queue_receive(&eth_outgoing, &message) == U_SUCCESS) {
             status = ethernet_send_message(&message);
             if(status != U_SUCCESS) {
-                DEBUG_PRINT("WARNING: Failed to send Ethernet message after removing from outgoing queue (Message ID: %d).", message.message_id);
+                DEBUG_PRINTLN("WARNING: Failed to send Ethernet message after removing from outgoing queue (Message ID: %d).", message.message_id);
                 // u_TODO - maybe add the message back into the queue if it fails to send? not sure if this is a good idea tho
                 }
         }
@@ -94,7 +94,7 @@ void can_thread(ULONG thread_input) {
         while(queue_receive(&can_outgoing, &message) == U_SUCCESS) {
             status = can_send_msg(&can1, &message);
             if(status != U_SUCCESS) {
-                DEBUG_PRINT("WARNING: Failed to send message (on can1) after removing from outgoing queue (Message ID: %ld).", message.id);
+                DEBUG_PRINTLN("WARNING: Failed to send message (on can1) after removing from outgoing queue (Message ID: %ld).", message.id);
                 // u_TODO - maybe add the message back into the queue if it fails to send? not sure if this is a good idea tho
                 }
         }
@@ -117,14 +117,14 @@ static uint8_t _create_thread(TX_BYTE_POOL *byte_pool, const thread_t *thread) {
     /* Allocate the stack for the thread. */
     status = tx_byte_allocate(byte_pool, (VOID**) &pointer, thread->size, TX_NO_WAIT);
     if(status != TX_SUCCESS) {
-        DEBUG_PRINT("ERROR: Failed to allocate stack before creating thread (Status: %d, Thread: %s).", status, thread->name);
+        DEBUG_PRINTLN("ERROR: Failed to allocate stack before creating thread (Status: %d, Thread: %s).", status, thread->name);
         return U_ERROR;
     }
 
     /* Create the thread. */
     status = tx_thread_create(thread->thread, thread->name, thread->function, thread->thread_input, pointer, thread->size, thread->priority, thread->threshold, thread->time_slice, thread->auto_start);
     if(status != TX_SUCCESS) {
-        DEBUG_PRINT("ERROR: Failed to create thread (Status: %d, Thread: %s).", status, thread->name);
+        DEBUG_PRINTLN("ERROR: Failed to create thread (Status: %d, Thread: %s).", status, thread->name);
         tx_byte_release(pointer); // Free allocated memory if thread creation fails
         return U_ERROR;
     }
@@ -143,6 +143,6 @@ uint8_t threads_init(TX_BYTE_POOL *byte_pool) {
     CATCH_ERROR(_create_thread(byte_pool, &_can_thread_config), U_SUCCESS);      // Create CAN thread.
     // add more threads here if need eventually
 
-    DEBUG_PRINT("Ran threads_init().");
+    DEBUG_PRINTLN("Ran threads_init().");
     return U_SUCCESS;
 }
