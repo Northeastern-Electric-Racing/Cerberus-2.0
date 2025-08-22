@@ -61,7 +61,7 @@ static uint8_t _create_queue(TX_BYTE_POOL *byte_pool, const QUEUE_CONFIG *config
     /* Basically, queue messages have to be a multiple of 4 bytes? Kinda weird but this should handle it. */
     UINT message_size_words = (config->message_size + 3) / 4;
     if (message_size_words < 1 || message_size_words > 16) {
-        DEBUG_PRINT("ERROR: Invalid message size %d bytes (must be 1-64 bytes). Queue: %s", 
+        DEBUG_PRINTLN("ERROR: Invalid message size %d bytes (must be 1-64 bytes). Queue: %s", 
                     config->message_size, config->name);
         return U_ERROR;
     }
@@ -76,14 +76,14 @@ static uint8_t _create_queue(TX_BYTE_POOL *byte_pool, const QUEUE_CONFIG *config
     /* Allocate the stack for the queue. */
     status = tx_byte_allocate(byte_pool, (VOID**) &pointer, queue_size_bytes, TX_NO_WAIT);
     if(status != TX_SUCCESS) {
-        DEBUG_PRINT("ERROR: Failed to allocate memory before creating queue (Status: %d, Queue: %s).", status, config->name);
+        DEBUG_PRINTLN("ERROR: Failed to allocate memory before creating queue (Status: %d, Queue: %s).", status, config->name);
         return U_ERROR;
     }
 
     /* Create the queue */
     status = tx_queue_create(&config->queue->_TX_QUEUE, config->name, message_size_words, pointer, queue_size_bytes);
     if (status != TX_SUCCESS) {
-        DEBUG_PRINT("ERROR: Failed to create queue (Status: %d, Queue: %s).", status, config->name);
+        DEBUG_PRINTLN("ERROR: Failed to create queue (Status: %d, Queue: %s).", status, config->name);
         tx_byte_release(pointer); // Free allocated memory if queue creation fails
         return U_ERROR;
     }
@@ -103,7 +103,7 @@ uint8_t queues_init(TX_BYTE_POOL *byte_pool) {
     CATCH_ERROR(_create_queue(byte_pool, &_can_incoming_config), U_SUCCESS); // Create Incoming CAN Queue
     CATCH_ERROR(_create_queue(byte_pool, &_can_outgoing_config), U_SUCCESS); // Create Outgoing CAN Queue
 
-    DEBUG_PRINT("Ran queues_init().");
+    DEBUG_PRINTLN("Ran queues_init().");
     return U_SUCCESS;
 }
 
@@ -120,7 +120,7 @@ uint8_t queue_send(queue_t *queue, void *message) {
     /* Send message (buffer) to the queue. */
     status = tx_queue_send(&queue->_TX_QUEUE, buffer, QUEUE_WAIT_TIME);
     if(status != TX_SUCCESS) {
-        DEBUG_PRINT("ERROR: Failed to send message to queue (Status: %d, Queue: %s).", status, queue->_TX_QUEUE.tx_queue_name);
+        DEBUG_PRINTLN("ERROR: Failed to send message to queue (Status: %d, Queue: %s).", status, queue->_TX_QUEUE.tx_queue_name);
         return U_ERROR;
     }
 
@@ -141,7 +141,7 @@ uint8_t  queue_receive(queue_t *queue, void *message) {
     }
 
     if((status != TX_SUCCESS)) {
-        DEBUG_PRINT("ERROR: Failed to receive message from queue (Status: %d, Queue: %s).", status, queue->_TX_QUEUE.tx_queue_name);
+        DEBUG_PRINTLN("ERROR: Failed to receive message from queue (Status: %d, Queue: %s).", status, queue->_TX_QUEUE.tx_queue_name);
         return U_ERROR;
     }
 

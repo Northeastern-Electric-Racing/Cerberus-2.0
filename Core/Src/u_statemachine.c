@@ -20,7 +20,7 @@ static uint8_t _button(uint8_t *data) {
 
         /* Do nothing by default. */
         default:
-            DEBUG_PRINT("NOTE: EVENT_BUTTON was triggered, but no action was taken based on the car's state (current_state=%d).", current_state);
+            DEBUG_PRINTLN("NOTE: EVENT_BUTTON was triggered, but no action was taken based on the car's state (current_state=%d).", current_state);
             return U_SUCCESS;
     }
 }
@@ -38,7 +38,7 @@ static uint8_t _dial(uint8_t *data) {
 
         /* Do nothing by default. */
         default:
-            DEBUG_PRINT("NOTE: EVENT_DIAL was triggered, but no action was taken based on the car's state (current_state=%d).", current_state);
+            DEBUG_PRINTLN("NOTE: EVENT_DIAL was triggered, but no action was taken based on the car's state (current_state=%d).", current_state);
             return U_SUCCESS;
     }
 }
@@ -52,7 +52,7 @@ uint8_t statemachine_process_event(event_t event, uint8_t *data) {
         
         /* If an invalid event is passed in, return an error. */
         default: 
-            DEBUG_PRINT("Invalid event passed into function. (Event: %d)", event);
+            DEBUG_PRINTLN("Invalid event passed into function. (Event: %d)", event);
             return U_ERROR;
     }
 }
