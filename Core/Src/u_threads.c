@@ -1,3 +1,4 @@
+#include "main.h"
 #include "u_threads.h"
 #include "u_queues.h"
 #include "u_inbox.h"
@@ -21,7 +22,9 @@ void default_thread(ULONG thread_input) {
     
     while(1) {
 
-        // u_TODO - make thread do stuff
+        /* Kick the watchdogs (sad) )*/
+        HAL_IWDG_Refresh(&hiwdg); // Internal Watchdog
+        HAL_GPIO_TogglePin(WATCHDOG_GPIO_Port, WATCHDOG_Pin); // External Watchdog
 
         /* Sleep Thread for specified number of ticks. */
         tx_thread_sleep(_default_thread_config.sleep);

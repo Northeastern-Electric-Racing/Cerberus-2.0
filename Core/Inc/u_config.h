@@ -5,8 +5,9 @@
 #include <stdio.h>
 
 /* General-purpose macros that can be used throughout the project. */
-#define U_SUCCESS   0
-#define U_ERROR     1
+#define U_SUCCESS     0
+#define U_ERROR       1
+#define U_QUEUE_EMPTY 2
 
 /* Debugging Macros */
 #define __FILENAME__ (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__) /* Gets the name of the file. */
