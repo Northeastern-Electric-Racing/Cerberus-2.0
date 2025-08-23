@@ -40,7 +40,7 @@ static const metadata faults[] = {
 /* Fault Globals*/
 static TX_TIMER timers[NUM_FAULTS]; // Array of fault timers. One timer per fault.
 static uint64_t severity_mask; // Mask that stores the severity configuration for each fault (0=NON_CRITICAL, 1=CRITICAL).
-static uint64_t fault_flags; // Each bit is a separate fault (0=Not Faulted, 1=Faulted).
+static volatile uint64_t fault_flags; // Each bit is a separate fault (0=Not Faulted, 1=Faulted).
 
 /* Getter function for accessing faults in other files. */
 uint64_t get_faults(void) {
