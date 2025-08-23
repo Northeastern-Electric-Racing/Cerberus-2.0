@@ -26,6 +26,7 @@ extern queue_t eth_incoming; // Incoming Ethernet Queue
 extern queue_t eth_outgoing; // Outgoing Ethernet Queue
 extern queue_t can_incoming; // Incoming CAN Queue
 extern queue_t can_outgoing; // Outgoing CAN Queue
+extern queue_t faults;       // Faults Queue
 // add more as necessary
 
 /* API */

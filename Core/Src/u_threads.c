@@ -4,6 +4,7 @@
 #include "u_inbox.h"
 #include "u_can.h"
 #include "u_ethernet.h"
+#include "u_faults.h"
 
 /* Default Thread */
 static TX_THREAD _default;
@@ -109,6 +110,40 @@ void can_thread(ULONG thread_input) {
     }
 }
 
+/* Faults Thread. */
+static TX_THREAD _faults;
+static const thread_t _faults_thread_config = {
+        .thread     = &_faults,         /* Thread */
+        .name       = "Faults Thread",  /* Name */
+        .function   = faults_thread,    /* Thread Function */
+        .size       = 512,              /* Stack Size (in bytes) */
+        .priority   = 9,                /* Priority */
+        .threshold  = 9,                /* Preemption Threshold */
+        .time_slice = TX_NO_TIME_SLICE, /* Time Slice */
+        .auto_start = TX_AUTO_START,    /* Auto Start */
+        .sleep      = 500               /* Sleep (in ticks) */
+    };
+void faults_thread(ULONG thread_input) {
+    
+    while(1) {
+
+        /* Process queued faults */
+        fault_t fault_id;
+        while(queue_receive(&faults, &fault_id) == U_SUCCESS) {
+            trigger_fault(fault_id);
+        }
+
+        /* Send a CAN message containing the current fault statuses. */
+        uint64_t faults = get_faults();
+        can_msg_t msg = {.id = CANID_FAULT_MSG, .len = 8, .data = {0}};
+        memcpy(msg.data, &faults, sizeof(faults));
+        queue_send(&can_outgoing, &msg);
+
+        /* Sleep Thread for specified number of ticks. */
+        tx_thread_sleep(_faults_thread_config.sleep);
+    }
+}
+
 /* Helper function. Creates a ThreadX thread. */
 static uint8_t _create_thread(TX_BYTE_POOL *byte_pool, const thread_t *thread) {
     CHAR *pointer;
@@ -141,6 +176,7 @@ uint8_t threads_init(TX_BYTE_POOL *byte_pool) {
     CATCH_ERROR(_create_thread(byte_pool, &_default_thread_config), U_SUCCESS);  // Create Default thread.
     CATCH_ERROR(_create_thread(byte_pool, &_ethernet_thread_config), U_SUCCESS); // Create Ethernet thread.
     CATCH_ERROR(_create_thread(byte_pool, &_can_thread_config), U_SUCCESS);      // Create CAN thread.
+    CATCH_ERROR(_create_thread(byte_pool, &_faults_thread_config), U_SUCCESS);   // Create Faults thread.
     // add more threads here if need eventually
 
     DEBUG_PRINTLN("Ran threads_init().");

@@ -10,4 +10,8 @@ uint8_t can1_init(FDCAN_HandleTypeDef *hcan);
 extern can_t can1;
 // add more as necessary
 
+/* List of CAN IDs */
+#define CANID_FAULT_MSG	       0x502
+// add more as necessary
+
 #endif /* u_can.h */
