@@ -27,4 +27,8 @@ typedef enum {
 
 } fault_t;
 
+int faults_init(void);
+int trigger_fault(fault_t fault_id);
+uint64_t get_faults(void);
+
 #endif /* u_faults.h */

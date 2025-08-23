@@ -39,32 +39,12 @@ static const metadata faults[] = {
 
 /* Fault Globals*/
 static TX_TIMER timers[NUM_FAULTS]; // Array of fault timers. One timer per fault.
+static uint64_t severity_mask; // Mask that stores the severity configuration for each fault (0=NON_CRITICAL, 1=CRITICAL).
 static uint64_t fault_flags; // Each bit is a separate fault (0=Not Faulted, 1=Faulted).
 
-static uint64_t severity_mask; // Mask that stores the severity configuration for each fault (0=NON_CRITICAL, 1=CRITICAL).
-int faults_init(void) {
-    for(int fault_id = 0; fault_id < NUM_FAULTS; fault_id++) {
-
-        /* Initialize severity_mask. */
-        if(faults[fault_id].severity == CRITICAL) {
-            severity_mask |= ((uint64_t)1 << fault_id);
-        }
-
-        /* Initialize all timers. */
-        int status = tx_timer_create(
-            &timers[fault_id],        /* Timer Instance */
-            "Fault Timer",            /* Timer Name */
-            timer_callback,           /* Timer Expiration Callback */
-            fault_id,                 /* Callback Input */
-            faults[fault_id].timeout, /* Ticks until timer expiration. */
-            0,                        /* Number of ticks for all timer expirations after the first (0 makes this a one-shot timer). */
-            TX_NO_ACTIVATE            /* Auto-activate the timer. */
-        );
-        if(status != TX_SUCCESS) {
-            DEBUG_PRINTLN("ERROR: Failed to create fault timer (Status: %d, Fault: %s).", status, faults[fault_id].name);
-            return U_ERROR;
-        }
-    }
+/* Getter function for accessing faults in other files. */
+uint64_t get_faults(void) {
+    return fault_flags;
 }
 
 /* Callback function. Clears fault after timer expires. */
@@ -83,7 +63,37 @@ static void timer_callback(ULONG args) {
     }
 }
 
-int process_fault(fault_t fault_id) {
+/* Initializes the fault seveity mask, and creates all timers. */
+int faults_init(void) {
+    for(int fault_id = 0; fault_id < NUM_FAULTS; fault_id++) {
+
+        /* Initialize severity_mask. */
+        if(faults[fault_id].severity == CRITICAL) {
+            severity_mask |= ((uint64_t)1 << fault_id);
+        }
+
+        /* Initialize all timers. */
+        int status = tx_timer_create(
+            &timers[fault_id],        /* Timer Instance */
+            "Fault Timer",            /* Timer Name */
+            timer_callback,           /* Timer Expiration Callback */
+            fault_id,                 /* Callback Input */
+            faults[fault_id].timeout, /* Ticks until timer expiration. */
+            0,                        /* Number of ticks for all timer expirations after the first (0 makes this a one-shot timer). */
+            TX_NO_ACTIVATE            /* Make the timer dormant until it is activated. */
+        );
+        if(status != TX_SUCCESS) {
+            DEBUG_PRINTLN("ERROR: Failed to create fault timer (Status: %d, Fault: %s).", status, faults[fault_id].name);
+            return U_ERROR;
+        }
+    }
+
+    return U_SUCCESS;
+}
+
+/* Triggers a fault. */
+/* If the fault is already triggered, this just resets the fault's timer. */
+int trigger_fault(fault_t fault_id) {
     int index = fault_id;
     fault_flags |= (uint64_t)(1 << index);
 
@@ -91,9 +101,11 @@ int process_fault(fault_t fault_id) {
         case CRITICAL:
             DEBUG_PRINTLN("CRITICAL FAULT OCCURED: %s.", faults[fault_id].name);
             // fault(); u_TODO - this has to be implemented in the statemachine. if the cerberus statemachine is just copied over, this function should be in there.
+            break;
         case NON_CRITICAL:
             DEBUG_PRINTLN("NON_CRITICAL FAULT OCCURED: %s.", faults[fault_id].name);
             // If the fault is non-critical, the car doesn't need to be put in its faulted state.
+            break;
     }
 
     /* Deactivate the fault timer. */
@@ -116,9 +128,6 @@ int process_fault(fault_t fault_id) {
         DEBUG_PRINTLN("ERROR: Failed to activate fault timer (Status: %d, Fault: %s).", status, faults[fault_id].name);
         return U_ERROR;
     }
-
-    /* Set fault bit. */
-    fault_flags |= (uint64_t)(1 << fault_id);
 
     return U_SUCCESS;
 }

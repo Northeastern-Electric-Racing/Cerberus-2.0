@@ -127,7 +127,17 @@ void faults_thread(ULONG thread_input) {
     
     while(1) {
 
-        /* uhh */
+        /* Process queued faults */
+        fault_t fault_id;
+        while(queue_receive(&faults, &fault_id) == U_SUCCESS) {
+            trigger_fault(fault_id);
+        }
+
+        /* Send a CAN message containing the current fault statuses. */
+        uint64_t faults = get_faults();
+        can_msg_t msg = {.id = CANID_FAULT_MSG, .len = 8, .data = {0}};
+        memcpy(msg.data, &faults, sizeof(faults));
+        queue_send(&can_outgoing, &msg);
 
         /* Sleep Thread for specified number of ticks. */
         tx_thread_sleep(_faults_thread_config.sleep);
