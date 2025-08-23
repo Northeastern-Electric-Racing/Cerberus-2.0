@@ -125,7 +125,7 @@ static const thread_t _faults_thread_config = {
     };
 void faults_thread(ULONG thread_input) {
 
-    TX_TIMER timers[(MAX_NON_CRITICAL_FAULT - 1)];
+    TX_TIMER timers[NUM_FAULTS];
     
     while(1) {
 

@@ -62,6 +62,7 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     "./Core/Src/u_statemachine.c"
     "./Core/Src/u_queues.c"
     "./Core/Src/u_can.c"
+    "./Core/Src/u_faults.c"
 )
 
 # Add include paths
