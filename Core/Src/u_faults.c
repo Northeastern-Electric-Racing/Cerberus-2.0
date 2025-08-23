@@ -41,9 +41,16 @@ static const metadata faults[] = {
 static TX_TIMER timers[NUM_FAULTS]; // Array of fault timers. One timer per fault.
 static uint64_t fault_flags; // Each bit is a separate fault (0=Not Faulted, 1=Faulted).
 
+static uint64_t severity_mask; // Mask that stores the severity configuration for each fault (0=NON_CRITICAL, 1=CRITICAL).
 int faults_init(void) {
-    /* Initialize all timers. */
     for(int fault_id = 0; fault_id < NUM_FAULTS; fault_id++) {
+
+        /* Initialize severity_mask. */
+        if(faults[fault_id].severity == CRITICAL) {
+            severity_mask |= ((uint64_t)1 << fault_id);
+        }
+
+        /* Initialize all timers. */
         int status = tx_timer_create(
             &timers[fault_id],        /* Timer Instance */
             "Fault Timer",            /* Timer Name */
@@ -58,8 +65,6 @@ int faults_init(void) {
             return U_ERROR;
         }
     }
-
-    /* Initialize CRITICAL fault bitmask */
 }
 
 /* Callback function. Clears fault after timer expires. */
@@ -68,20 +73,14 @@ static void timer_callback(ULONG args) {
     fault_flags &= ~((uint64_t)(1 << fault_id)); // Clear the fault.
 
     /* Check if there are any active critical faults. If not, unfault the car. */
-    uint64_t remaining = fault_flags;
-    while(remaining) {
-        int bit = __builtin_ctzll(remaining); // Returns the first set bit position in 'remaining'.
-        if(faults[bit].severity == CRITICAL) return; // If a critical fault is active, return.
-        remaining &= remaining - 1; // Clear the bit at position 'bit', so the loop can keep iterating.
+    if((fault_flags & severity_mask) == 0) {
+        // u_TODO - implement this when statemachine is done. should be something like based on Cerberus-1.0 fault.c: 
+        //
+        // if(get_func_state() == FAULTED) {
+        //      set_ready_mode();
+        // }
+        //
     }
-
-    /* If we get here, no critical faults remain. So, we can unfault. */
-    // u_TODO - implement this when statemachine is done. should be something like based on Cerberus-1.0 fault.c: 
-    //
-    // if(get_func_state() == FAULTED) {
-    //      set_ready_mode();
-    // }
-    //
 }
 
 int process_fault(fault_t fault_id) {
