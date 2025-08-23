@@ -1,6 +1,7 @@
 #include "u_queues.h"
 #include "u_can.h"
 #include "u_config.h"
+#include "u_faults.h"
 #include <stdio.h>
 
 /* 
@@ -48,6 +49,15 @@ static const QUEUE_CONFIG _can_outgoing_config = {
     .queue = &can_outgoing,                /* Pointer to the queue. */
     .name = "Outgoing CAN Queue",          /* Name of the queue. */
     .message_size = sizeof(can_msg_t),     /* Size of each queue message, in bytes. */
+    .capacity = 10                         /* Number of messages the queue can hold. */
+};
+
+/* Faults Queue */
+queue_t faults;
+static const QUEUE_CONFIG _faults_config = {
+    .queue = &faults,                      /* Pointer to the queue. */
+    .name = "Faults Queue",                /* Name of the queue. */
+    .message_size = sizeof(fault_t),       /* Size of each queue message, in bytes. */
     .capacity = 10                         /* Number of messages the queue can hold. */
 };
 
@@ -102,6 +112,7 @@ uint8_t queues_init(TX_BYTE_POOL *byte_pool) {
     CATCH_ERROR(_create_queue(byte_pool, &_eth_outgoing_config), U_SUCCESS); // Create Outgoing Ethernet Queue
     CATCH_ERROR(_create_queue(byte_pool, &_can_incoming_config), U_SUCCESS); // Create Incoming CAN Queue
     CATCH_ERROR(_create_queue(byte_pool, &_can_outgoing_config), U_SUCCESS); // Create Outgoing CAN Queue
+    CATCH_ERROR(_create_queue(byte_pool, &_faults_config), U_SUCCESS);       // Create Faults Queue
 
     DEBUG_PRINTLN("Ran queues_init().");
     return U_SUCCESS;

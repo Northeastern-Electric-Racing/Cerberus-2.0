@@ -22,9 +22,9 @@ typedef enum {
 	PUMP_SENSORS_FAULT,
 	PDU_CURRENT_FAULT,
 
-    /* Total number of faults */
+    /* Total number of faults (cannot exceed 64.) */
     NUM_FAULTS
 
-} fault_id_t;
+} fault_t;
 
 #endif /* u_faults.h */

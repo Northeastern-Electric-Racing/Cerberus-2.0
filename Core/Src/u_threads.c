@@ -124,8 +124,6 @@ static const thread_t _faults_thread_config = {
         .sleep      = 500               /* Sleep (in ticks) */
     };
 void faults_thread(ULONG thread_input) {
-
-    TX_TIMER timers[NUM_FAULTS];
     
     while(1) {
 
