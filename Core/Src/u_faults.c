@@ -94,8 +94,7 @@ int faults_init(void) {
 /* Triggers a fault. */
 /* If the fault is already triggered, this just resets the fault's timer. */
 int trigger_fault(fault_t fault_id) {
-    int index = fault_id;
-    fault_flags |= (uint64_t)(1 << index);
+    fault_flags |= (uint64_t)(1 << fault_id);
 
     switch(faults[fault_id].severity) {
         case CRITICAL:
