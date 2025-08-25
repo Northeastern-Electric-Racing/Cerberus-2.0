@@ -7,9 +7,7 @@
 #include "u_faults.h"
 
 /* Default Thread */
-static TX_THREAD _default;
-static const thread_t _default_thread_config = {
-        .thread     = &_default,         /* Thread */
+static thread_t _default_thread = {
         .name       = "Default Thread",  /* Name */
         .function   = default_thread,    /* Thread Function */
         .size       = 512,               /* Stack Size (in bytes) */
@@ -28,14 +26,12 @@ void default_thread(ULONG thread_input) {
         HAL_GPIO_TogglePin(WATCHDOG_GPIO_Port, WATCHDOG_Pin); // External Watchdog
 
         /* Sleep Thread for specified number of ticks. */
-        tx_thread_sleep(_default_thread_config.sleep);
+        tx_thread_sleep(_default_thread.sleep);
     }
 }
 
 /* Ethernet Thread. Sends outgoing messages and processes incoming messages. */
-static TX_THREAD _ethernet;
-static const thread_t _ethernet_thread_config = {
-        .thread     = &_ethernet,        /* Thread */
+static thread_t _ethernet_thread = {
         .name       = "Ethernet Thread", /* Name */
         .function   = ethernet_thread,   /* Thread Function */
         .size       = 512,               /* Stack Size (in bytes) */
@@ -67,14 +63,12 @@ void ethernet_thread(ULONG thread_input) {
         }
 
         /* Sleep Thread for specified number of ticks. */
-        tx_thread_sleep(_ethernet_thread_config.sleep);
+        tx_thread_sleep(_ethernet_thread.sleep);
     }
 }
 
 /* CAN Thread. Sends outgoing messages and processes incoming messages. */
-static TX_THREAD _can;
-static const thread_t _can_thread_config = {
-        .thread     = &_can,            /* Thread */
+static thread_t _can_thread = {
         .name       = "CAN Thread",     /* Name */
         .function   = can_thread,       /* Thread Function */
         .size       = 512,              /* Stack Size (in bytes) */
@@ -106,14 +100,12 @@ void can_thread(ULONG thread_input) {
         }
 
         /* Sleep Thread for specified number of ticks. */
-        tx_thread_sleep(_can_thread_config.sleep);
+        tx_thread_sleep(_can_thread.sleep);
     }
 }
 
 /* Faults Thread. */
-static TX_THREAD _faults;
-static const thread_t _faults_thread_config = {
-        .thread     = &_faults,         /* Thread */
+static thread_t _faults_thread = {
         .name       = "Faults Thread",  /* Name */
         .function   = faults_thread,    /* Thread Function */
         .size       = 512,              /* Stack Size (in bytes) */
@@ -140,12 +132,12 @@ void faults_thread(ULONG thread_input) {
         queue_send(&can_outgoing, &msg);
 
         /* Sleep Thread for specified number of ticks. */
-        tx_thread_sleep(_faults_thread_config.sleep);
+        tx_thread_sleep(_faults_thread.sleep);
     }
 }
 
 /* Helper function. Creates a ThreadX thread. */
-static uint8_t _create_thread(TX_BYTE_POOL *byte_pool, const thread_t *thread) {
+static uint8_t _create_thread(TX_BYTE_POOL *byte_pool, thread_t *thread) {
     CHAR *pointer;
     uint8_t status;
 
@@ -157,7 +149,7 @@ static uint8_t _create_thread(TX_BYTE_POOL *byte_pool, const thread_t *thread) {
     }
 
     /* Create the thread. */
-    status = tx_thread_create(thread->thread, thread->name, thread->function, thread->thread_input, pointer, thread->size, thread->priority, thread->threshold, thread->time_slice, thread->auto_start);
+    status = tx_thread_create(&thread->_TX_THREAD, thread->name, thread->function, thread->thread_input, pointer, thread->size, thread->priority, thread->threshold, thread->time_slice, thread->auto_start);
     if(status != TX_SUCCESS) {
         DEBUG_PRINTLN("ERROR: Failed to create thread (Status: %d, Thread: %s).", status, thread->name);
         tx_byte_release(pointer); // Free allocated memory if thread creation fails
@@ -173,10 +165,10 @@ static uint8_t _create_thread(TX_BYTE_POOL *byte_pool, const thread_t *thread) {
 uint8_t threads_init(TX_BYTE_POOL *byte_pool) {
 
     /* Create Threads */
-    CATCH_ERROR(_create_thread(byte_pool, &_default_thread_config), U_SUCCESS);  // Create Default thread.
-    CATCH_ERROR(_create_thread(byte_pool, &_ethernet_thread_config), U_SUCCESS); // Create Ethernet thread.
-    CATCH_ERROR(_create_thread(byte_pool, &_can_thread_config), U_SUCCESS);      // Create CAN thread.
-    CATCH_ERROR(_create_thread(byte_pool, &_faults_thread_config), U_SUCCESS);   // Create Faults thread.
+    CATCH_ERROR(_create_thread(byte_pool, &_default_thread), U_SUCCESS);  // Create Default thread.
+    CATCH_ERROR(_create_thread(byte_pool, &_ethernet_thread), U_SUCCESS); // Create Ethernet thread.
+    CATCH_ERROR(_create_thread(byte_pool, &_can_thread), U_SUCCESS);      // Create CAN thread.
+    CATCH_ERROR(_create_thread(byte_pool, &_faults_thread), U_SUCCESS);   // Create Faults thread.
     // add more threads here if need eventually
 
     DEBUG_PRINTLN("Ran threads_init().");
