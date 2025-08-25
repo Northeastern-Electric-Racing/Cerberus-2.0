@@ -23,6 +23,7 @@ typedef enum {
 	PDU_CURRENT_FAULT,
 
     /* Total number of faults (cannot exceed 64.) */
+	/* (always keep this at the end) */
     NUM_FAULTS
 
 } fault_t;

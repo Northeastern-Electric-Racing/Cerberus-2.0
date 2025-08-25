@@ -33,5 +33,7 @@ uint8_t can1_init(FDCAN_HandleTypeDef *hcan) {
         return U_ERROR;
     }
 
+    DEBUG_PRINTLN("Ran can1_init().");
+
     return U_SUCCESS;
 }

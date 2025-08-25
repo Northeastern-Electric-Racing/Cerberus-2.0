@@ -197,7 +197,7 @@ uint8_t ethernet_init(ethernet_node_t node_id) {
     /* Mark device as initialized. */
     device.is_initialized = true;
 
-    DEBUG_PRINTLN("Ethernet initialized successfully!");
+    DEBUG_PRINTLN("Ran ethernet_init().");
     return NX_SUCCESS;
 }
 
