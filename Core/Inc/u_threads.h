@@ -16,16 +16,20 @@
 uint8_t threads_init(TX_BYTE_POOL *byte_pool);
 
 typedef struct {
-    TX_THREAD *thread;                    /* Thread */
-    CHAR      *name;                      /* Name of Thread */
-    VOID      (*function)(ULONG);         /* Thread Function */
-    ULONG     thread_input;               /* Thread Input. You can put whatever you want in here. Defaults to zero. */
-    ULONG     size;                       /* Stack Size (in bytes) */
-    UINT      priority;                   /* Priority */
-    UINT      threshold;                  /* Preemption Threshold */
-    ULONG     time_slice;                 /* Time Slice */
-    UINT      auto_start;                 /* Auto Start */
-    UINT      sleep;                      /* Sleep (in ticks) */
+    /* Thread configuration settings. Set when defining an instance of this struct. */
+    CHAR            *name;                /* Name of Thread */
+    VOID            (*function)(ULONG);   /* Thread Function */
+    const ULONG     thread_input;         /* Thread Input. You can put whatever you want in here. Defaults to zero. */
+    const ULONG     size;                 /* Stack Size (in bytes) */
+    const UINT      priority;             /* Priority */
+    const UINT      threshold;            /* Preemption Threshold */
+    const ULONG     time_slice;           /* Time Slice */
+    const UINT      auto_start;           /* Auto Start */
+    const UINT      sleep;                /* Sleep (in ticks) */
+
+    /* The actual thread instance. */
+    /* Since this is an internal ThreadX thing, it should only be modified using the ThreadX API functions. */
+    TX_THREAD _TX_THREAD;
 } thread_t;
 
 /* Thread Functions */
