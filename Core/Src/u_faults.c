@@ -51,6 +51,7 @@ uint64_t get_faults(void) {
 static void timer_callback(ULONG args) {
     fault_t fault_id = (fault_t)args;
     fault_flags &= ~((uint64_t)(1 << fault_id)); // Clear the fault.
+    DEBUG_PRINTLN("UNFAULTED: %s.", faults[fault_id].name);
 
     /* Check if there are any active critical faults. If not, unfault the car. */
     if((fault_flags & severity_mask) == 0) {
@@ -87,6 +88,8 @@ int faults_init(void) {
             return U_ERROR;
         }
     }
+
+    DEBUG_PRINTLN("Ran faults_init().");
 
     return U_SUCCESS;
 }
