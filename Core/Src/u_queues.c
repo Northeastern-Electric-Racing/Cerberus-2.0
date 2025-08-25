@@ -17,83 +17,73 @@
 */
 
 /* Incoming Ethernet Queue */
-queue_t eth_incoming;
-static const QUEUE_CONFIG _eth_incoming_config = {
-    .queue = &eth_incoming,                      /* Pointer to the queue. */
-    .name = "Incoming Ethernet Queue",           /* Name of the queue. */
-    .message_size = sizeof(ethernet_message_t),  /* Size of each queue message, in bytes. */
-    .capacity = 10                               /* Number of messages the queue can hold. */
+queue_t eth_incoming = {
+    .name = "Incoming Ethernet Queue",          /* Name of the queue. */
+    .message_size = sizeof(ethernet_message_t), /* Size of each queue message, in bytes. */
+    .capacity = 10                              /* Number of messages the queue can hold. */
 };
 
 /* Outgoing Ethernet Queue */
-queue_t eth_outgoing;
-static const QUEUE_CONFIG _eth_outgoing_config = {
-    .queue = &eth_outgoing,                      /* Pointer to the queue. */
+queue_t eth_outgoing = {
     .name = "Outgoing Ethernet Queue",           /* Name of the queue. */
     .message_size = sizeof(ethernet_message_t),  /* Size of each queue message, in bytes. */
     .capacity = 10                               /* Number of messages the queue can hold. */
 };
 
 /* Incoming CAN Queue */
-queue_t can_incoming;
-static const QUEUE_CONFIG _can_incoming_config = {
-    .queue = &can_incoming,                 /* Pointer to the queue. */
+queue_t can_incoming = {
     .name = "Incoming CAN Queue",           /* Name of the queue. */
     .message_size = sizeof(can_msg_t),      /* Size of each queue message, in bytes. */
     .capacity = 10                          /* Number of messages the queue can hold. */
 };
 
 /* Outgoing CAN Queue */
-queue_t can_outgoing;
-static const QUEUE_CONFIG _can_outgoing_config = {
-    .queue = &can_outgoing,                /* Pointer to the queue. */
+queue_t can_outgoing = {
     .name = "Outgoing CAN Queue",          /* Name of the queue. */
     .message_size = sizeof(can_msg_t),     /* Size of each queue message, in bytes. */
     .capacity = 10                         /* Number of messages the queue can hold. */
 };
 
 /* Faults Queue */
-queue_t faults;
-static const QUEUE_CONFIG _faults_config = {
-    .queue = &faults,                      /* Pointer to the queue. */
+queue_t faults = {
     .name = "Faults Queue",                /* Name of the queue. */
     .message_size = sizeof(fault_t),       /* Size of each queue message, in bytes. */
     .capacity = 10                         /* Number of messages the queue can hold. */
 };
 
 /* Helper function. Creates a ThreadX queue. */
-static uint8_t _create_queue(TX_BYTE_POOL *byte_pool, const QUEUE_CONFIG *config) {
+static uint8_t _create_queue(TX_BYTE_POOL *byte_pool, queue_t *queue) {
     uint8_t status;
     void *pointer;
 
     /* Calculate message size in 32-bit words (round up), and then validate it. */
     /* According to the Azure RTOS ThreadX Docs, "message sizes range from 1 32-bit word to 16 32-bit words". */
     /* Basically, queue messages have to be a multiple of 4 bytes? Kinda weird but this should handle it. */
-    UINT message_size_words = (config->message_size + 3) / 4;
+    UINT message_size_words = (queue->message_size + 3) / 4;
     if (message_size_words < 1 || message_size_words > 16) {
         DEBUG_PRINTLN("ERROR: Invalid message size %d bytes (must be 1-64 bytes). Queue: %s", 
-                    config->message_size, config->name);
+                    queue->message_size, queue->name);
         return U_ERROR;
     }
 
     /* Store metadata */
-    config->queue->bytes = config->message_size;
-    config->queue->words = message_size_words;
+    queue->_bytes = queue->message_size;
+    queue->_words = message_size_words;
 
     /* Calculate total queue size in bytes. */
-    int queue_size_bytes = message_size_words * 4 * config->capacity;
+    int queue_size_bytes = message_size_words * 4 * queue->capacity;
 
     /* Allocate the stack for the queue. */
     status = tx_byte_allocate(byte_pool, (VOID**) &pointer, queue_size_bytes, TX_NO_WAIT);
     if(status != TX_SUCCESS) {
-        DEBUG_PRINTLN("ERROR: Failed to allocate memory before creating queue (Status: %d, Queue: %s).", status, config->name);
+        DEBUG_PRINTLN("ERROR: Failed to allocate memory before creating queue (Status: %d, Queue: %s).", status, queue->name);
         return U_ERROR;
     }
 
     /* Create the queue */
-    status = tx_queue_create(&config->queue->_TX_QUEUE, config->name, message_size_words, pointer, queue_size_bytes);
+    status = tx_queue_create(&queue->_TX_QUEUE, queue->name, message_size_words, pointer, queue_size_bytes);
     if (status != TX_SUCCESS) {
-        DEBUG_PRINTLN("ERROR: Failed to create queue (Status: %d, Queue: %s).", status, config->name);
+        DEBUG_PRINTLN("ERROR: Failed to create queue (Status: %d, Queue: %s).", status, queue->name);
         tx_byte_release(pointer); // Free allocated memory if queue creation fails
         return U_ERROR;
     }
@@ -108,11 +98,11 @@ static uint8_t _create_queue(TX_BYTE_POOL *byte_pool, const QUEUE_CONFIG *config
 uint8_t queues_init(TX_BYTE_POOL *byte_pool) {
 
     /* Create Queues */
-    CATCH_ERROR(_create_queue(byte_pool, &_eth_incoming_config), U_SUCCESS); // Create Incoming Ethernet Queue
-    CATCH_ERROR(_create_queue(byte_pool, &_eth_outgoing_config), U_SUCCESS); // Create Outgoing Ethernet Queue
-    CATCH_ERROR(_create_queue(byte_pool, &_can_incoming_config), U_SUCCESS); // Create Incoming CAN Queue
-    CATCH_ERROR(_create_queue(byte_pool, &_can_outgoing_config), U_SUCCESS); // Create Outgoing CAN Queue
-    CATCH_ERROR(_create_queue(byte_pool, &_faults_config), U_SUCCESS);       // Create Faults Queue
+    CATCH_ERROR(_create_queue(byte_pool, &eth_incoming), U_SUCCESS); // Create Incoming Ethernet Queue
+    CATCH_ERROR(_create_queue(byte_pool, &eth_outgoing), U_SUCCESS); // Create Outgoing Ethernet Queue
+    CATCH_ERROR(_create_queue(byte_pool, &can_incoming), U_SUCCESS); // Create Incoming CAN Queue
+    CATCH_ERROR(_create_queue(byte_pool, &can_outgoing), U_SUCCESS); // Create Outgoing CAN Queue
+    CATCH_ERROR(_create_queue(byte_pool, &faults), U_SUCCESS);       // Create Faults Queue
 
     DEBUG_PRINTLN("Ran queues_init().");
     return U_SUCCESS;
@@ -122,11 +112,11 @@ uint8_t queue_send(queue_t *queue, void *message) {
     UINT status;
 
     /* Create a buffer. */
-    uint32_t buffer[queue->words];     // Max size is 16 words (64 bytes).
+    uint32_t buffer[queue->_words];     // Max size is 16 words (64 bytes).
     memset(buffer, 0, sizeof(buffer)); // Initialize buffer to zero
 
     /* Copy message into the buffer. The buffer is what actually gets sent to the queue. */
-    memcpy(buffer, message, queue->bytes);
+    memcpy(buffer, message, queue->_bytes);
 
     /* Send message (buffer) to the queue. */
     status = tx_queue_send(&queue->_TX_QUEUE, buffer, QUEUE_WAIT_TIME);
@@ -142,7 +132,7 @@ uint8_t  queue_receive(queue_t *queue, void *message) {
     UINT status;
 
     /* Create a buffer */
-    uint32_t buffer[queue->words];     // Max size is 16 words (64 bytes).
+    uint32_t buffer[queue->_words];     // Max size is 16 words (64 bytes).
     memset(buffer, 0, sizeof(buffer)); // Initialize buffer to zero
 
     /* Receive message from the queue. */
@@ -157,7 +147,7 @@ uint8_t  queue_receive(queue_t *queue, void *message) {
     }
 
     /* Copy the data from the buffer into the message pointer. Using memcpy() here prevents memory overflow. */
-    memcpy(message, buffer, queue->bytes);
+    memcpy(message, buffer, queue->_bytes);
 
     return U_SUCCESS;
 }
