@@ -101,11 +101,11 @@ int trigger_fault(fault_t fault_id) {
 
     switch(faults[fault_id].severity) {
         case CRITICAL:
-            DEBUG_PRINTLN("CRITICAL FAULT OCCURED: %s.", faults[fault_id].name);
+            DEBUG_PRINTLN("CRITICAL FAULT TRIGGERED: %s.", faults[fault_id].name);
             // fault(); u_TODO - this has to be implemented in the statemachine. if the cerberus statemachine is just copied over, this function should be in there.
             break;
         case NON_CRITICAL:
-            DEBUG_PRINTLN("NON_CRITICAL FAULT OCCURED: %s.", faults[fault_id].name);
+            DEBUG_PRINTLN("NON_CRITICAL FAULT TRIGGERED: %s.", faults[fault_id].name);
             // If the fault is non-critical, the car doesn't need to be put in its faulted state.
             break;
     }
