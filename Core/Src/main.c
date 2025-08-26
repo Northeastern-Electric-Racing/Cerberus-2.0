@@ -580,17 +580,17 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOD_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOF, PF2_IO_Pin|PF4_IO_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOF, EF_BATTBOX_EN_Pin|EF_MC_EN_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(PE10_IO_GPIO_Port, PE10_IO_Pin, GPIO_PIN_SET);
+  HAL_GPIO_WritePin(PHY_RESET_GPIO_Port, PHY_RESET_Pin, GPIO_PIN_SET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOE, PE12_IO_Pin|RTDS_GPIO_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOE, EF_SPARE_EN_Pin|RTDS_GPIO_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOD, PD8_IO_Pin|PD10_IO_Pin|PD12_IO_Pin|PD14_IO_Pin
-                          |PD0_IO_Pin|PD2_IO_Pin|PD4_IO_Pin|PD6_IO_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOD, EF_RADFAN_EN_Pin|EF_FANBATT_EN_Pin|EF_PUMP1_EN_Pin|EF_PUMP2_EN_Pin
+                          |EF_DASH_EN_Pin|EF_BREAK_EN_Pin|EF_SHUTDOWN_EN_Pin|EF_LV_EN_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(WATCHDOG_GPIO_Port, WATCHDOG_Pin, GPIO_PIN_RESET);
@@ -598,16 +598,16 @@ static void MX_GPIO_Init(void)
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(FAULT_MCU_GPIO_Port, FAULT_MCU_Pin, GPIO_PIN_SET);
 
-  /*Configure GPIO pins : PE2_IO_Pin PE3_IO_Pin PE4_IO_Pin PE8_IO_Pin
-                           PE9_IO_Pin PE11_IO_Pin PE13_IO_Pin PE0_IO_Pin */
-  GPIO_InitStruct.Pin = PE2_IO_Pin|PE3_IO_Pin|PE4_IO_Pin|PE8_IO_Pin
-                          |PE9_IO_Pin|PE11_IO_Pin|PE13_IO_Pin|PE0_IO_Pin;
+  /*Configure GPIO pins : CKPT_GPIO_Pin INERTIA_SW_GPIO_Pin TSMS_GPIO_Pin PHY_RX_ER_Pin
+                           PHY_RX_DV_Pin PHY_GPIO_Pin EF_SPARE_ER_Pin IMD_GPIO_Pin */
+  GPIO_InitStruct.Pin = CKPT_GPIO_Pin|INERTIA_SW_GPIO_Pin|TSMS_GPIO_Pin|PHY_RX_ER_Pin
+                          |PHY_RX_DV_Pin|PHY_GPIO_Pin|EF_SPARE_ER_Pin|IMD_GPIO_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : PE5_IO_Pin PE6_IO_Pin PHY_IRQ_Pin */
-  GPIO_InitStruct.Pin = PE5_IO_Pin|PE6_IO_Pin|PHY_IRQ_Pin;
+  /*Configure GPIO pins : IMU_INT1_Pin IMU_INT2_Pin PHY_IRQ_Pin */
+  GPIO_InitStruct.Pin = IMU_INT1_Pin|IMU_INT2_Pin|PHY_IRQ_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
@@ -620,17 +620,17 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Alternate = GPIO_AF4_I2C2;
   HAL_GPIO_Init(GPIOF, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : PF2_IO_Pin PF4_IO_Pin */
-  GPIO_InitStruct.Pin = PF2_IO_Pin|PF4_IO_Pin;
+  /*Configure GPIO pins : EF_BATTBOX_EN_Pin EF_MC_EN_Pin */
+  GPIO_InitStruct.Pin = EF_BATTBOX_EN_Pin|EF_MC_EN_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOF, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : PF3_IO_Pin PF5_IO_Pin PF6_IO_Pin PF7_IO_Pin
-                           PF8_IO_Pin PF9_IO_Pin PF10_IO_Pin PF15_IO_Pin */
-  GPIO_InitStruct.Pin = PF3_IO_Pin|PF5_IO_Pin|PF6_IO_Pin|PF7_IO_Pin
-                          |PF8_IO_Pin|PF9_IO_Pin|PF10_IO_Pin|PF15_IO_Pin;
+  /*Configure GPIO pins : EF_BATTBOX_ER_Pin EF_MC_ER_Pin BMS_GPIO_Pin BOTS_GPIO_Pin
+                           SPARE_GPIO_Pin BSPD_GPIO_Pin HV_C_GPIO_Pin HVD_GPIO_Pin */
+  GPIO_InitStruct.Pin = EF_BATTBOX_ER_Pin|EF_MC_ER_Pin|BMS_GPIO_Pin|BOTS_GPIO_Pin
+                          |SPARE_GPIO_Pin|BSPD_GPIO_Pin|HV_C_GPIO_Pin|HVD_GPIO_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOF, &GPIO_InitStruct);
@@ -643,8 +643,8 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Alternate = GPIO_AF7_SPI2;
   HAL_GPIO_Init(GPIOG, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : PE10_IO_Pin PE12_IO_Pin RTDS_GPIO_Pin */
-  GPIO_InitStruct.Pin = PE10_IO_Pin|PE12_IO_Pin|RTDS_GPIO_Pin;
+  /*Configure GPIO pins : PHY_RESET_Pin EF_SPARE_EN_Pin RTDS_GPIO_Pin */
+  GPIO_InitStruct.Pin = PHY_RESET_Pin|EF_SPARE_EN_Pin|RTDS_GPIO_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
@@ -658,22 +658,28 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Alternate = GPIO_AF5_SPI2;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : PD8_IO_Pin PD10_IO_Pin PD12_IO_Pin PD14_IO_Pin
-                           PD0_IO_Pin PD2_IO_Pin PD4_IO_Pin PD6_IO_Pin */
-  GPIO_InitStruct.Pin = PD8_IO_Pin|PD10_IO_Pin|PD12_IO_Pin|PD14_IO_Pin
-                          |PD0_IO_Pin|PD2_IO_Pin|PD4_IO_Pin|PD6_IO_Pin;
+  /*Configure GPIO pins : EF_RADFAN_EN_Pin EF_FANBATT_EN_Pin EF_PUMP1_EN_Pin EF_PUMP2_EN_Pin
+                           EF_DASH_EN_Pin EF_BREAK_EN_Pin EF_SHUTDOWN_EN_Pin EF_LV_EN_Pin */
+  GPIO_InitStruct.Pin = EF_RADFAN_EN_Pin|EF_FANBATT_EN_Pin|EF_PUMP1_EN_Pin|EF_PUMP2_EN_Pin
+                          |EF_DASH_EN_Pin|EF_BREAK_EN_Pin|EF_SHUTDOWN_EN_Pin|EF_LV_EN_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : PD9_IO_Pin PD11_IO_Pin PD13_IO_Pin PD15_IO_Pin
-                           PD1_IO_Pin PD3_IO_Pin PD5_IO_Pin PD7_IO_Pin */
-  GPIO_InitStruct.Pin = PD9_IO_Pin|PD11_IO_Pin|PD13_IO_Pin|PD15_IO_Pin
-                          |PD1_IO_Pin|PD3_IO_Pin|PD5_IO_Pin|PD7_IO_Pin;
+  /*Configure GPIO pins : EF_RADFAN_ER_Pin EF_FANBATT_ER_Pin EF_PUMP1_ER_Pin EF_PUMP2_ER_Pin
+                           EF_DASH_ER_Pin EF_BREAK_ER_Pin EF_SHUTDOWN_ER_Pin EF_LV_ER_Pin */
+  GPIO_InitStruct.Pin = EF_RADFAN_ER_Pin|EF_FANBATT_ER_Pin|EF_PUMP1_ER_Pin|EF_PUMP2_ER_Pin
+                          |EF_DASH_ER_Pin|EF_BREAK_ER_Pin|EF_SHUTDOWN_ER_Pin|EF_LV_ER_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : LTC4376_FAULT_Pin */
+  GPIO_InitStruct.Pin = LTC4376_FAULT_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(LTC4376_FAULT_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pins : WATCHDOG_Pin FAULT_MCU_Pin */
   GPIO_InitStruct.Pin = WATCHDOG_Pin|FAULT_MCU_Pin;
