@@ -26,6 +26,7 @@
 #include "u_queues.h"
 #include "u_threads.h"
 #include "u_faults.h"
+#include "u_mutexes.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -68,6 +69,7 @@ UINT App_ThreadX_Init(VOID *memory_ptr)
   CATCH_ERROR(queues_init(byte_pool), U_SUCCESS);
   CATCH_ERROR(threads_init(byte_pool), U_SUCCESS);
   CATCH_ERROR(faults_init(), U_SUCCESS);
+  CATCH_ERROR(mutexes_init(), U_SUCCESS);
 
   /* USER CODE END App_ThreadX_MEM_POOL */
   /* USER CODE BEGIN App_ThreadX_Init */
