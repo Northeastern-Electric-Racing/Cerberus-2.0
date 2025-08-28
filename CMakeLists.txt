@@ -63,6 +63,7 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     "./Core/Src/u_queues.c"
     "./Core/Src/u_can.c"
     "./Core/Src/u_faults.c"
+    "./Core/Src/u_mutexes.c"
     "./Drivers/Embedded-Base/middleware/src/bitstream.c"
 )
 
