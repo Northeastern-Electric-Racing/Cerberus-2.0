@@ -5,6 +5,7 @@
 #include "u_can.h"
 #include "u_ethernet.h"
 #include "u_faults.h"
+#include "bitstream.h"
 
 /* Default Thread */
 static thread_t _default_thread = {
@@ -136,6 +137,49 @@ void faults_thread(ULONG thread_input) {
     }
 }
 
+/* Shutdown Thread. Reads the shutdown (aka. "External Faults") pins and sends them in a CAN message. */
+static thread_t _shutdown_thread = {
+        .name       = "Shutdown Thread", /* Name */
+        .function   = shutdown_thread,   /* Thread Function */
+        .size       = 512,               /* Stack Size (in bytes) */
+        .priority   = 9,                 /* Priority */
+        .threshold  = 9,                 /* Preemption Threshold */
+        .time_slice = TX_NO_TIME_SLICE,  /* Time Slice */
+        .auto_start = TX_AUTO_START,     /* Auto Start */
+        .sleep      = 500                /* Sleep (in ticks) */
+    };
+void shutdown_thread(ULONG thread_input) {
+    
+    while(1) {
+
+        /* Create bitstream. */
+        bitstream_t bitstream;
+        uint8_t bitstream_data[2];
+        bitstream_init(&bitstream, &bitstream_data, 2);
+
+        /* Read the shutdown pins and add them to the bitstream. */
+        bitstream_add(&bitstream, (HAL_GPIO_ReadPin(BMS_GPIO_GPIO_Port, BMS_GPIO_Pin) == GPIO_PIN_SET), 1);               // Read BMS_GPIO pin.
+        bitstream_add(&bitstream, (HAL_GPIO_ReadPin(BOTS_GPIO_GPIO_Port, BOTS_GPIO_Pin) == GPIO_PIN_SET), 1);             // Read BOTS_GPIO pin.
+        bitstream_add(&bitstream, (HAL_GPIO_ReadPin(SPARE_GPIO_GPIO_Port, SPARE_GPIO_Pin) == GPIO_PIN_SET), 1);           // Read SPARE_GPIO pin.
+        bitstream_add(&bitstream, (HAL_GPIO_ReadPin(BSPD_GPIO_GPIO_Port, BSPD_GPIO_Pin) == GPIO_PIN_SET), 1);             // Read BSPD_GPIO pin.
+        bitstream_add(&bitstream, (HAL_GPIO_ReadPin(HV_C_GPIO_GPIO_Port, HV_C_GPIO_Pin) == GPIO_PIN_SET), 1);             // Read HV_C_GPIO pin.
+        bitstream_add(&bitstream, (HAL_GPIO_ReadPin(HVD_GPIO_GPIO_Port, HVD_GPIO_Pin) == GPIO_PIN_SET), 1);               // Read HVD_GPIO pin.
+        bitstream_add(&bitstream, (HAL_GPIO_ReadPin(IMD_GPIO_GPIO_Port, IMD_GPIO_Pin) == GPIO_PIN_SET), 1);               // Read IMD_GPIO pin.
+        bitstream_add(&bitstream, (HAL_GPIO_ReadPin(CKPT_GPIO_GPIO_Port, CKPT_GPIO_Pin) == GPIO_PIN_SET), 1);             // Read CKPT_GPIO pin.
+        bitstream_add(&bitstream, (HAL_GPIO_ReadPin(INERTIA_SW_GPIO_GPIO_Port, INERTIA_SW_GPIO_Pin) == GPIO_PIN_SET), 1); // Read INERTIA_SW_GPIO pin.
+        bitstream_add(&bitstream, (HAL_GPIO_ReadPin(TSMS_GPIO_GPIO_Port, TSMS_GPIO_Pin) == GPIO_PIN_SET), 1);             // Read TSMS_GPIO pin.
+        bitstream_add(&bitstream, 0, 6); // Extra (6 bits).
+
+        /* Send CAN message. */
+        can_msg_t msg = {.id = CANID_SHUTDOWN_MSG, .len = 2, .data = {0}};
+        memcpy(msg.data, &bitstream_data, sizeof(bitstream_data));
+        queue_send(&can_outgoing, &msg);
+
+        /* Sleep Thread for specified number of ticks. */
+        tx_thread_sleep(_shutdown_thread.sleep);
+    }
+}
+
 /* Helper function. Creates a ThreadX thread. */
 static uint8_t _create_thread(TX_BYTE_POOL *byte_pool, thread_t *thread) {
     CHAR *pointer;
@@ -169,7 +213,8 @@ uint8_t threads_init(TX_BYTE_POOL *byte_pool) {
     CATCH_ERROR(_create_thread(byte_pool, &_ethernet_thread), U_SUCCESS); // Create Ethernet thread.
     CATCH_ERROR(_create_thread(byte_pool, &_can_thread), U_SUCCESS);      // Create CAN thread.
     CATCH_ERROR(_create_thread(byte_pool, &_faults_thread), U_SUCCESS);   // Create Faults thread.
-    // add more threads here if need eventually
+    CATCH_ERROR(_create_thread(byte_pool, &_shutdown_thread), U_SUCCESS); // Create Shutdown thread.
+    // add more threads here if need
 
     DEBUG_PRINTLN("Ran threads_init().");
     return U_SUCCESS;

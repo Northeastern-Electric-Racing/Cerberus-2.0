@@ -12,6 +12,7 @@ extern can_t can1;
 
 /* List of CAN IDs */
 #define CANID_FAULT_MSG	       0x502
+#define CANID_SHUTDOWN_MSG	   0x123
 // add more as necessary
 
 #endif /* u_can.h */
