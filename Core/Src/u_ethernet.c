@@ -1,6 +1,6 @@
 #include "u_ethernet.h"
 #include "u_queues.h"
-#include "u_config.h"
+#include "u_general.h"
 #include "nx_api.h"
 #include "nx_stm32_eth_driver.h"
 #include <string.h>
@@ -89,7 +89,7 @@ uint8_t ethernet_init(ethernet_node_t node_id) {
         _PACKET_POOL_SIZE           // Size of the pool's memory area
     );
     if(status != NX_SUCCESS) {
-        DEBUG_PRINTLN("ERROR: Failed to create packet pool (Status: %d).", status);
+        DEBUG_PRINTLN("ERROR: Failed to create packet pool (Status: %d/%s).", status, nx_status_toString(status));
         return status;
     }
 
@@ -106,7 +106,7 @@ uint8_t ethernet_init(ethernet_node_t node_id) {
         _IP_THREAD_PRIORITY                  // Priority of the IP thread
     );
     if(status != NX_SUCCESS) {
-        DEBUG_PRINTLN("ERROR: Failed to create IP instance (Status: %d).", status);
+        DEBUG_PRINTLN("ERROR: Failed to create IP instance (Status: %d/%s).", status, nx_status_toString(status));
         return status;
     }
 
@@ -117,7 +117,7 @@ uint8_t ethernet_init(ethernet_node_t node_id) {
         _ARP_CACHE_SIZE            // Size of ARP cache
     );
     if(status != NX_SUCCESS) {
-        DEBUG_PRINTLN("ERROR: Failed to enable ARP (Status: %d).", status);
+        DEBUG_PRINTLN("ERROR: Failed to enable ARP (Status: %d/%s).", status, nx_status_toString(status));
         return status;
     }
 
@@ -125,14 +125,14 @@ uint8_t ethernet_init(ethernet_node_t node_id) {
     /* Enable UDP */
     status = nx_udp_enable(&device.ip);
     if (status != NX_SUCCESS) {
-        DEBUG_PRINTLN("ERROR: Failed to enable UDP (Status: %d).", status);
+        DEBUG_PRINTLN("ERROR: Failed to enable UDP (Status: %d/%s).", status, nx_status_toString(status));
         return status;
     }
 
     /* Enable igmp */
     status = nx_igmp_enable(&device.ip);
     if (status != NX_SUCCESS) {
-        DEBUG_PRINTLN("ERROR: Failed to enable igmp (Status: %d).", status);
+        DEBUG_PRINTLN("ERROR: Failed to enable igmp (Status: %d/%s).", status, nx_status_toString(status));
         return status;
     }
 
@@ -150,7 +150,7 @@ uint8_t ethernet_init(ethernet_node_t node_id) {
             ULONG address = ETH_IP(i);
             status = nx_igmp_multicast_join(&device.ip, address);
             if(status != NX_SUCCESS) {
-                DEBUG_PRINTLN("ERROR: Failed to join multicast group (Status: %d, Address: %lu).", status, address);
+                DEBUG_PRINTLN("ERROR: Failed to join multicast group (Status: %d/%s, Address: %lu).", status, nx_status_toString(status), address);
             }
         }
     }
@@ -166,7 +166,7 @@ uint8_t ethernet_init(ethernet_node_t node_id) {
         _UDP_QUEUE_MAXIMUM          // UDP queue maximum
     );
     if(status != NX_SUCCESS) {
-        DEBUG_PRINTLN("ERROR: Failed to create UDP socket (Status: %d).", status);
+        DEBUG_PRINTLN("ERROR: Failed to create UDP socket (Status: %d/%s).", status, nx_status_toString(status));
         return status;
     }
 
@@ -177,7 +177,7 @@ uint8_t ethernet_init(ethernet_node_t node_id) {
         TX_WAIT_FOREVER              // Wait forever
     );
     if(status != NX_SUCCESS) {
-        DEBUG_PRINTLN("ERROR: Failed to bind UDP socket (Status: %d).", status);
+        DEBUG_PRINTLN("ERROR: Failed to bind UDP socket (Status: %d/%s).", status, nx_status_toString(status));
         nx_udp_socket_delete(&device.socket);
         return status;
     }
@@ -188,7 +188,7 @@ uint8_t ethernet_init(ethernet_node_t node_id) {
         &_receive_message             // Callback function
     );
     if(status != NX_SUCCESS) {
-        DEBUG_PRINTLN("ERROR: Failed to set recieve callback (Status: %d).", status);
+        DEBUG_PRINTLN("ERROR: Failed to set recieve callback (Status: %d/%s).", status, nx_status_toString(status));
         nx_udp_socket_unbind(&device.socket);
         nx_udp_socket_delete(&device.socket);
         return status;
@@ -246,7 +246,7 @@ uint8_t ethernet_send_message(ethernet_message_t *message) {
         TX_WAIT_FOREVER             // Wait indefinitely until a packet is available
     );
     if(status != NX_SUCCESS) {
-        DEBUG_PRINTLN("ERROR: Failed to allocate packet (Status: %d, Message ID: %d).", status, message->message_id);
+        DEBUG_PRINTLN("ERROR: Failed to allocate packet (Status: %d/%s, Message ID: %d).", status, nx_status_toString(status), message->message_id);
         return U_ERROR;
     }
 
@@ -259,7 +259,7 @@ uint8_t ethernet_send_message(ethernet_message_t *message) {
         TX_WAIT_FOREVER             // Wait indefinitely
     );
     if(status != NX_SUCCESS) {
-        DEBUG_PRINTLN("ERROR: Failed to append data to packet (Status: %d, Message ID: %d).", status, message->message_id);
+        DEBUG_PRINTLN("ERROR: Failed to append data to packet (Status: %d/%s, Message ID: %d).", status, nx_status_toString(status), message->message_id);
         nx_packet_release(packet);
         return U_ERROR;
     }
@@ -272,7 +272,7 @@ uint8_t ethernet_send_message(ethernet_message_t *message) {
         ETH_UDP_PORT
     );
     if(status != NX_SUCCESS) {
-        DEBUG_PRINTLN("ERROR: Failed to send packet (Status: %d, Message ID: %d).", status, message->message_id);
+        DEBUG_PRINTLN("ERROR: Failed to send packet (Status: %d/%s, Message ID: %d).", status, nx_status_toString(status), message->message_id);
         nx_packet_release(packet);
         return U_ERROR;
     }

@@ -1,6 +1,6 @@
 #include "u_queues.h"
 #include "u_can.h"
-#include "u_config.h"
+#include "u_general.h"
 #include "u_faults.h"
 #include <stdio.h>
 
@@ -76,14 +76,14 @@ static uint8_t _create_queue(TX_BYTE_POOL *byte_pool, queue_t *queue) {
     /* Allocate the stack for the queue. */
     status = tx_byte_allocate(byte_pool, (VOID**) &pointer, queue_size_bytes, TX_NO_WAIT);
     if(status != TX_SUCCESS) {
-        DEBUG_PRINTLN("ERROR: Failed to allocate memory before creating queue (Status: %d, Queue: %s).", status, queue->name);
+        DEBUG_PRINTLN("ERROR: Failed to allocate memory before creating queue (Status: %d/%s, Queue: %s).", status, tx_status_toString(status), queue->name);
         return U_ERROR;
     }
 
     /* Create the queue */
     status = tx_queue_create(&queue->_TX_QUEUE, queue->name, message_size_words, pointer, queue_size_bytes);
     if (status != TX_SUCCESS) {
-        DEBUG_PRINTLN("ERROR: Failed to create queue (Status: %d, Queue: %s).", status, queue->name);
+        DEBUG_PRINTLN("ERROR: Failed to create queue (Status: %d/%s, Queue: %s).", status, tx_status_toString(status), queue->name);
         tx_byte_release(pointer); // Free allocated memory if queue creation fails
         return U_ERROR;
     }
@@ -121,7 +121,7 @@ uint8_t queue_send(queue_t *queue, void *message) {
     /* Send message (buffer) to the queue. */
     status = tx_queue_send(&queue->_TX_QUEUE, buffer, QUEUE_WAIT_TIME);
     if(status != TX_SUCCESS) {
-        DEBUG_PRINTLN("ERROR: Failed to send message to queue (Status: %d, Queue: %s).", status, queue->_TX_QUEUE.tx_queue_name);
+        DEBUG_PRINTLN("ERROR: Failed to send message to queue (Status: %d/%s, Queue: %s).", status, tx_status_toString(status), queue->_TX_QUEUE.tx_queue_name);
         return U_ERROR;
     }
 
@@ -142,7 +142,7 @@ uint8_t  queue_receive(queue_t *queue, void *message) {
     }
 
     if((status != TX_SUCCESS)) {
-        DEBUG_PRINTLN("ERROR: Failed to receive message from queue (Status: %d, Queue: %s).", status, queue->_TX_QUEUE.tx_queue_name);
+        DEBUG_PRINTLN("ERROR: Failed to receive message from queue (Status: %d/%s, Queue: %s).", status, tx_status_toString(status), queue->_TX_QUEUE.tx_queue_name);
         return U_ERROR;
     }
 
