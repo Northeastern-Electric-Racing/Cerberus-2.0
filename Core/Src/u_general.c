@@ -47,7 +47,7 @@ const char* tx_status_toString(UINT status) {
         case TX_FEATURE_NOT_ENABLED: return "TX_FEATURE_NOT_ENABLED";
         default:
             /* Default is reached if the status code doesn't match any of the macros. */
-            static char status_string[16]; // Buffer to hold the status UINT as a string.
+            char status_string[16]; // Buffer to hold the status UINT as a string.
             snprintf(status_string, sizeof(status_string), "0x%02X", status);
             return status_string;
     }
@@ -125,7 +125,7 @@ const char* nx_status_toString(UINT status) {
         case NX_TCPIP_OFFLOAD_ERROR: return "NX_TCPIP_OFFLOAD_ERROR";
         default:
             /* Default is reached if the status code doesn't match any of the macros. */
-            static char status_string[16]; // Buffer to hold the status UINT as a string.
+            char status_string[16]; // Buffer to hold the status UINT as a string.
             snprintf(status_string, sizeof(status_string), "0x%02X", status);
             return status_string;
     }
@@ -142,7 +142,7 @@ const char* hal_status_toString(HAL_StatusTypeDef status) {
         case HAL_TIMEOUT: return "HAL_TIMEOUT";
         default:
             /* Default is reached if the status code doesn't match any of the macros. */
-            static char status_string[16]; // Buffer to hold the status HAL_StatusTypeDef as a string.
+            char status_string[16]; // Buffer to hold the status HAL_StatusTypeDef as a string.
             snprintf(status_string, sizeof(status_string), "0x%02X", status);
             return status_string;
     }

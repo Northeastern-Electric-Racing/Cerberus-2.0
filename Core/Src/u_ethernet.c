@@ -3,7 +3,6 @@
 #include "u_general.h"
 #include "nx_api.h"
 #include "nx_stm32_eth_driver.h"
-#include "u_general.h"
 #include <string.h>
 #include <stdio.h>
 
