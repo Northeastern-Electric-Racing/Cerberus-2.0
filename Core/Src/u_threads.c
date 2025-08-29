@@ -155,7 +155,7 @@ void shutdown_thread(ULONG thread_input) {
         /* Create bitstream. */
         bitstream_t bitstream;
         uint8_t bitstream_data[2];
-        bitstream_init(&bitstream, &bitstream_data, 2);
+        bitstream_init(&bitstream, bitstream_data, 2);
 
         /* Read the shutdown pins and add them to the bitstream. */
         bitstream_add(&bitstream, (HAL_GPIO_ReadPin(BMS_GPIO_GPIO_Port, BMS_GPIO_Pin) == GPIO_PIN_SET), 1);               // Read BMS_GPIO pin.
@@ -188,14 +188,14 @@ static uint8_t _create_thread(TX_BYTE_POOL *byte_pool, thread_t *thread) {
     /* Allocate the stack for the thread. */
     status = tx_byte_allocate(byte_pool, (VOID**) &pointer, thread->size, TX_NO_WAIT);
     if(status != TX_SUCCESS) {
-        DEBUG_PRINTLN("ERROR: Failed to allocate stack before creating thread (Status: %d, Thread: %s).", status, thread->name);
+        DEBUG_PRINTLN("ERROR: Failed to allocate stack before creating thread (Status: %s, Thread: %s).", tx_status_toString(status), thread->name);
         return U_ERROR;
     }
 
     /* Create the thread. */
     status = tx_thread_create(&thread->_TX_THREAD, thread->name, thread->function, thread->thread_input, pointer, thread->size, thread->priority, thread->threshold, thread->time_slice, thread->auto_start);
     if(status != TX_SUCCESS) {
-        DEBUG_PRINTLN("ERROR: Failed to create thread (Status: %d, Thread: %s).", status, thread->name);
+        DEBUG_PRINTLN("ERROR: Failed to create thread (Status: %s, Thread: %s).", tx_status_toString(status), thread->name);
         tx_byte_release(pointer); // Free allocated memory if thread creation fails
         return U_ERROR;
     }

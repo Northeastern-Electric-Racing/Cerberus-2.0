@@ -1,7 +1,7 @@
 #ifndef __U_ETHERNET_H
 #define __U_ETHERNET_H
 
-#include "u_config.h"
+#include "u_general.h"
 #include <stdint.h>
 #include <stdbool.h>
 

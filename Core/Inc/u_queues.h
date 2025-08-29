@@ -2,7 +2,7 @@
 #define __U_QUEUES_H
 
 #include "tx_api.h"
-#include "u_config.h"
+#include "u_general.h"
 #include "u_ethernet.h"
 #include <stdint.h>
 

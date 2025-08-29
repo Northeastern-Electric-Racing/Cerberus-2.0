@@ -1,7 +1,7 @@
 #include <stdint.h>
 #include "tx_api.h"
 #include "u_faults.h"
-#include "u_config.h"
+#include "u_general.h"
 
 typedef enum {
     CRITICAL,
@@ -84,7 +84,7 @@ int faults_init(void) {
             TX_NO_ACTIVATE            /* Make the timer dormant until it is activated. */
         );
         if(status != TX_SUCCESS) {
-            DEBUG_PRINTLN("ERROR: Failed to create fault timer (Status: %d, Fault: %s).", status, faults[fault_id].name);
+            DEBUG_PRINTLN("ERROR: Failed to create fault timer (Status: %s, Fault: %s).", tx_status_toString(status), faults[fault_id].name);
             return U_ERROR;
         }
     }
@@ -113,21 +113,21 @@ int trigger_fault(fault_t fault_id) {
     /* Deactivate the fault timer. */
     int status = tx_timer_deactivate(&timers[fault_id]);
     if(status != TX_SUCCESS) {
-        DEBUG_PRINTLN("ERROR: Failed to deactivate fault timer (Status: %d, Fault: %s).", status, faults[fault_id].name);
+        DEBUG_PRINTLN("ERROR: Failed to deactivate fault timer (Status: %s, Fault: %s).", tx_status_toString(status), faults[fault_id].name);
         return U_ERROR;
     }
 
     /* Change the fault timer. */
     status = tx_timer_change(&timers[fault_id], faults[fault_id].timeout, 0);
     if(status != TX_SUCCESS) {
-        DEBUG_PRINTLN("ERROR: Failed to change fault timer (Status: %d, Fault: %s).", status, faults[fault_id].name);
+        DEBUG_PRINTLN("ERROR: Failed to change fault timer (Status: %s, Fault: %s).", tx_status_toString(status), faults[fault_id].name);
         return U_ERROR;
     }
 
     /* Activate the fault timer. */
     status = tx_timer_activate(&timers[fault_id]);
     if(status != TX_SUCCESS) {
-        DEBUG_PRINTLN("ERROR: Failed to activate fault timer (Status: %d, Fault: %s).", status, faults[fault_id].name);
+        DEBUG_PRINTLN("ERROR: Failed to activate fault timer (Status: %s, Fault: %s).", tx_status_toString(status), faults[fault_id].name);
         return U_ERROR;
     }
 
