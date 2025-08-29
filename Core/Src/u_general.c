@@ -45,11 +45,7 @@ const char* tx_status_toString(UINT status) {
         case TX_CEILING_EXCEEDED: return "TX_CEILING_EXCEEDED";
         case TX_INVALID_CEILING: return "TX_INVALID_CEILING";
         case TX_FEATURE_NOT_ENABLED: return "TX_FEATURE_NOT_ENABLED";
-        default:
-            /* Default is reached if the status code doesn't match any of the macros. */
-            char status_string[16]; // Buffer to hold the status UINT as a string.
-            snprintf(status_string, sizeof(status_string), "0x%02X", status);
-            return status_string;
+        default: return "UNKNOWN_STATUS";
     }
 }
 
@@ -123,11 +119,7 @@ const char* nx_status_toString(UINT status) {
         case NX_OPTION_HEADER_ERROR: return "NX_OPTION_HEADER_ERROR";
         case NX_CONTINUE: return "NX_CONTINUE";
         case NX_TCPIP_OFFLOAD_ERROR: return "NX_TCPIP_OFFLOAD_ERROR";
-        default:
-            /* Default is reached if the status code doesn't match any of the macros. */
-            char status_string[16]; // Buffer to hold the status UINT as a string.
-            snprintf(status_string, sizeof(status_string), "0x%02X", status);
-            return status_string;
+        default: return "UNKNOWN_STATUS";
     }
 }
 
@@ -140,10 +132,6 @@ const char* hal_status_toString(HAL_StatusTypeDef status) {
         case HAL_ERROR: return "HAL_ERROR";
         case HAL_BUSY: return "HAL_BUSY";
         case HAL_TIMEOUT: return "HAL_TIMEOUT";
-        default:
-            /* Default is reached if the status code doesn't match any of the macros. */
-            char status_string[16]; // Buffer to hold the status HAL_StatusTypeDef as a string.
-            snprintf(status_string, sizeof(status_string), "0x%02X", status);
-            return status_string;
+        default: return "UNKNOWN_STATUS";
     }
 }
