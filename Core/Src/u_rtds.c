@@ -2,7 +2,6 @@
 #include "main.h"
 #include "u_rtds.h"
 #include "u_general.h"
-#include "u_general.h"
 
 static TX_TIMER rtds_timer; /* Timer for the RTDS. */
 
