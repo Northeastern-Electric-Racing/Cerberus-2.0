@@ -144,3 +144,23 @@ float efuse_getCurrent(efuse_t efuse) {
     const float v_imon = efuse_getVoltage(efuse);
     return v_imon * efuse.scale;
 }
+
+/* Returns the eFuse's fault status (true = faulted, false = not faulted). */
+bool efuse_getFaultStatus(efuse_t efuse) {
+    return (bool)(HAL_GPIO_ReadPin(efuse.er_port, efuse.er_pin) == GPIO_PIN_SET);
+}
+
+/* Enables an eFuse. */
+void efuse_enable(efuse_t efuse) {
+    HAL_GPIO_WritePin(efuse.en_port, efuse.en_pin, GPIO_PIN_SET);
+}
+
+/* Disables an eFuse. */
+void efuse_disable(efuse_t efuse) {
+    HAL_GPIO_WritePin(efuse.en_port, efuse.en_pin, GPIO_PIN_RESET);
+}
+
+/* Returns whether or not the eFuse is enabled (true = eFuse is enabled, false = eFuse is disabled). */
+bool efuse_getEnableStatus(efuse_t efuse) {
+    return (bool)(HAL_GPIO_ReadPin(efuse.en_port, efuse.en_pin) == GPIO_PIN_SET);
+}
