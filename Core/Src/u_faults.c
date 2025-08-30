@@ -6,17 +6,17 @@
 typedef enum {
     CRITICAL,
     NON_CRITICAL
-} severity;
+} _severity;
 
 typedef struct {
     const char* name;   /* Fault name. */
-    severity severity;  /* Fault severity. */
+    _severity severity; /* Fault severity. */
     int timeout;        /* Fault timeout (in ticks). */
-} metadata;
+} _metadata;
 
 /* Fault Table */
 /* This table should be kept in the same order as the fault_t enum in the header file. */
-static const metadata faults[] = {
+static const _metadata faults[] = {
     /* Critical Faults */
     [ONBOARD_PEDAL_OPEN_CIRCUIT_FAULT] = {"ONBOARD_PEDAL_OPEN_CIRCUIT_FAULT", CRITICAL, .timeout = 400},
     [ONBOARD_PEDAL_SHORT_CIRCUIT_FAULT] = {"ONBOARD_PEDAL_SHORT_CIRCUIT_FAULT", CRITICAL, .timeout = 400},
