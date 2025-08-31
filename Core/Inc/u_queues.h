@@ -17,13 +17,14 @@
 
 typedef struct {
 
-    /* Queue configuration settings. Set when defining an instance of this struct. */
-    CHAR            *name;         /* Name of the queue */
-    const UINT      message_size;  /* Size of each message in the queue, in bytes. */
-    const UINT      capacity;      /* Maximum number of messages in the queue */
+    /* PUBLIC: Queue Configuration Settings */
+    /* Set these when defining an instance of this struct. */
+    const CHAR *name;        /* Name of the queue */
+    const UINT message_size; /* Size of each message in the queue, in bytes. */
+    const UINT capacity;     /* Maximum number of messages in the queue */
 
-    /* Internal information */
-    /* (Should only be accessed/modified through the u_queues.c API functions.) */
+    /* PRIVATE: Internal implementation - DO NOT ACCESS DIRECTLY */
+    /* (should only be accessed by functions in u_queues.c) */
     TX_QUEUE _TX_QUEUE;      /* Queue instance. */
     size_t   _bytes;         /* Size of each queue message, in bytes. */
     size_t   _words;         /* Size of each queue message, in 32-bit words. */
