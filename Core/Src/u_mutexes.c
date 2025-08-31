@@ -11,7 +11,7 @@ mutex_t template_mutex = {
 
 /* Helper function. Creates a ThreadX mutex. */
 static uint8_t _create_mutex(mutex_t *mutex) {
-    uint8_t status = tx_mutex_create(&mutex->_TX_MUTEX, mutex->name, mutex->priority_inherit);
+    uint8_t status = tx_mutex_create(&mutex->_TX_MUTEX, (CHAR*)mutex->name, mutex->priority_inherit);
     if(status != TX_SUCCESS) {
         DEBUG_PRINTLN("ERROR: Failed to create mutex (Status: %d/%s, Name: %s).", status, tx_status_toString(status), mutex->name);
         return status;

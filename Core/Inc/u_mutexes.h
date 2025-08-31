@@ -6,12 +6,13 @@
 #include <stdbool.h>
 
 typedef struct {
-    /* Mutex configuration settings. Set when defining an instance of this struct. */
-    CHAR *name;                  /* Name of Mutex */
+    /* PUBLIC: Mutex Configuration Settings */
+    /* Set these when defining an instance of this struct. */
+    const CHAR *name;            /* Name of Mutex */
     const UINT priority_inherit; /* Specifies if the mutex supports priority inheritance. See page 55 of the "Azure RTOS ThreadX User Guide". */
 
-    /* The actual mutex instance. */
-    /* Since this is an internal ThreadX thing, it should only be modified using the ThreadX API functions. */
+    /* PRIVATE: Internal implementation - DO NOT ACCESS DIRECTLY */
+    /* (should only be accessed by functions in u_mutexes.c) */
     TX_MUTEX _TX_MUTEX;
 } mutex_t;
 

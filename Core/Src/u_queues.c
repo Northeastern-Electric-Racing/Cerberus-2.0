@@ -81,7 +81,7 @@ static uint8_t _create_queue(TX_BYTE_POOL *byte_pool, queue_t *queue) {
     }
 
     /* Create the queue */
-    status = tx_queue_create(&queue->_TX_QUEUE, queue->name, message_size_words, pointer, queue_size_bytes);
+    status = tx_queue_create(&queue->_TX_QUEUE, (CHAR*)queue->name, message_size_words, pointer, queue_size_bytes);
     if (status != TX_SUCCESS) {
         DEBUG_PRINTLN("ERROR: Failed to create queue (Status: %d/%s, Queue: %s).", status, tx_status_toString(status), queue->name);
         tx_byte_release(pointer); // Free allocated memory if queue creation fails
