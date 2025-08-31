@@ -27,8 +27,6 @@ void default_thread(ULONG thread_input) {
         HAL_IWDG_Refresh(&hiwdg); // Internal Watchdog
         HAL_GPIO_TogglePin(WATCHDOG_GPIO_Port, WATCHDOG_Pin); // External Watchdog
 
-        uint16_t raw = efuse_getRaw(ef_battbox);
-
         /* Sleep Thread for specified number of ticks. */
         tx_thread_sleep(_default_thread.sleep);
     }
