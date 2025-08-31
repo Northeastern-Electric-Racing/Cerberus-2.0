@@ -48,7 +48,7 @@ uint64_t get_faults(void) {
 }
 
 /* Callback function. Clears fault after timer expires. */
-static void timer_callback(ULONG args) {
+static void _timer_callback(ULONG args) {
     fault_t fault_id = (fault_t)args;
     fault_flags &= ~((uint64_t)(1 << fault_id)); // Clear the fault.
     DEBUG_PRINTLN("UNFAULTED: %s.", faults[fault_id].name);
@@ -77,7 +77,7 @@ int faults_init(void) {
         int status = tx_timer_create(
             &timers[fault_id],        /* Timer Instance */
             "Fault Timer",            /* Timer Name */
-            timer_callback,           /* Timer Expiration Callback */
+            _timer_callback,          /* Timer Expiration Callback */
             fault_id,                 /* Callback Input */
             faults[fault_id].timeout, /* Ticks until timer expiration. */
             0,                        /* Number of ticks for all timer expirations after the first (0 makes this a one-shot timer). */

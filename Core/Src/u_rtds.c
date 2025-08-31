@@ -6,7 +6,7 @@
 static TX_TIMER rtds_timer; /* Timer for the RTDS. */
 
 /* Callback function. Turns off the RTDS after the timer expires. */
-static void timer_callback(ULONG args) {
+static void _timer_callback(ULONG args) {
     HAL_GPIO_WritePin(RTDS_GPIO_GPIO_Port, RTDS_GPIO_Pin, GPIO_PIN_RESET); // Turn off RTDS pin.
     DEBUG_PRINTLN("Turned off RTDS pin.");
 }
@@ -16,7 +16,7 @@ int rtds_init(void) {
         int status = tx_timer_create(
             &rtds_timer,        /* Timer Instance */
             "RTDS Timer",       /* Timer Name */
-            timer_callback,     /* Timer Expiration Callback */
+            _timer_callback,    /* Timer Expiration Callback */
             0,                  /* Callback Input */
             RTDS_DURATION,      /* Ticks until timer expiration. */
             0,                  /* Number of ticks for all timer expirations after the first (0 makes this a one-shot timer). */

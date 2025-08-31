@@ -5,10 +5,11 @@
 #include "u_can.h"
 #include "u_ethernet.h"
 #include "u_faults.h"
+#include "u_efuses.h"
 #include "bitstream.h"
 
 /* Default Thread */
-static thread_t _default_thread = {
+static const thread_t _default_thread = {
         .name       = "Default Thread",  /* Name */
         .function   = default_thread,    /* Thread Function */
         .size       = 512,               /* Stack Size (in bytes) */
@@ -26,13 +27,15 @@ void default_thread(ULONG thread_input) {
         HAL_IWDG_Refresh(&hiwdg); // Internal Watchdog
         HAL_GPIO_TogglePin(WATCHDOG_GPIO_Port, WATCHDOG_Pin); // External Watchdog
 
+        uint16_t raw = efuse_getRaw(ef_battbox);
+
         /* Sleep Thread for specified number of ticks. */
         tx_thread_sleep(_default_thread.sleep);
     }
 }
 
 /* Ethernet Thread. Sends outgoing messages and processes incoming messages. */
-static thread_t _ethernet_thread = {
+static const thread_t _ethernet_thread = {
         .name       = "Ethernet Thread", /* Name */
         .function   = ethernet_thread,   /* Thread Function */
         .size       = 512,               /* Stack Size (in bytes) */
@@ -69,7 +72,7 @@ void ethernet_thread(ULONG thread_input) {
 }
 
 /* CAN Thread. Sends outgoing messages and processes incoming messages. */
-static thread_t _can_thread = {
+static const thread_t _can_thread = {
         .name       = "CAN Thread",     /* Name */
         .function   = can_thread,       /* Thread Function */
         .size       = 512,              /* Stack Size (in bytes) */
@@ -106,7 +109,7 @@ void can_thread(ULONG thread_input) {
 }
 
 /* Faults Thread. */
-static thread_t _faults_thread = {
+static const thread_t _faults_thread = {
         .name       = "Faults Thread",  /* Name */
         .function   = faults_thread,    /* Thread Function */
         .size       = 512,              /* Stack Size (in bytes) */
@@ -138,7 +141,7 @@ void faults_thread(ULONG thread_input) {
 }
 
 /* Shutdown Thread. Reads the shutdown (aka. "External Faults") pins and sends them in a CAN message. */
-static thread_t _shutdown_thread = {
+static const thread_t _shutdown_thread = {
         .name       = "Shutdown Thread", /* Name */
         .function   = shutdown_thread,   /* Thread Function */
         .size       = 512,               /* Stack Size (in bytes) */
