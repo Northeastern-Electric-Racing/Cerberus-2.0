@@ -7,7 +7,7 @@
 #include <stdbool.h>
 
 /* Mutex Config Macros */
-#define MUTEX_WAIT_TIME     MS_TO_TICKS(1000) // Wait time for mutex stuff before timing out
+#define MUTEX_WAIT_TIME TX_WAIT_FOREVER // Wait time for mutex stuff before timing out
 
 typedef struct {
     /* PUBLIC: Mutex Configuration Settings */
