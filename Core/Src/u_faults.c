@@ -55,20 +55,13 @@ static void _timer_callback(ULONG args) {
     /* Get faults mutex. */
     int status = mutex_get(&faults_mutex);
     if(status != TX_SUCCESS) {
-        DEBUG_PRINTLN("ERROR: Failed to get fault mutex. (Status: %d/%s, Relavent Fault: %s).", status, tx_status_toString(status), faults[fault_id].name);
+        DEBUG_PRINTLN("ERROR: Failed to get fault mutex. (Status: %d/%s, Relevant Fault: %s).", status, tx_status_toString(status), faults[fault_id].name);
         return;
     }
 
     /* Clear the fault. */
     fault_flags &= ~((uint64_t)(1 << fault_id));
     DEBUG_PRINTLN("UNFAULTED: %s.", faults[fault_id].name);
-
-    /* Put faults mutex. */
-    status = mutex_put(&faults_mutex);
-    if(status != TX_SUCCESS) {
-        DEBUG_PRINTLN("ERROR: Failed to put faults mutex. (Status: %d/%s, Relavent Fault: %s).", status, tx_status_toString(status), faults[fault_id].name);
-        return;
-    }
 
     /* Check if there are any active critical faults. If not, unfault the car. */
     if((fault_flags & severity_mask) == 0) {
@@ -78,6 +71,13 @@ static void _timer_callback(ULONG args) {
         //      set_ready_mode();
         // }
         //
+    }
+
+    /* Put faults mutex. */
+    status = mutex_put(&faults_mutex);
+    if(status != TX_SUCCESS) {
+        DEBUG_PRINTLN("ERROR: Failed to put faults mutex. (Status: %d/%s, Relevant Fault: %s).", status, tx_status_toString(status), faults[fault_id].name);
+        return;
     }
 }
 
@@ -118,16 +118,16 @@ int trigger_fault(fault_t fault_id) {
     /* Get faults mutex. */
     int status = mutex_get(&faults_mutex);
     if(status != TX_SUCCESS) {
-        DEBUG_PRINTLN("ERROR: Failed to get fault mutex. (Status: %d/%s, Relavent Fault: %s).", status, tx_status_toString(status), faults[fault_id].name);
+        DEBUG_PRINTLN("ERROR: Failed to get fault mutex. (Status: %d/%s, Relevant Fault: %s).", status, tx_status_toString(status), faults[fault_id].name);
         return U_ERROR;
     }
 
-    fault_flags |= (uint64_t)(1 << fault_id); // Set the relavent fault bit.
+    fault_flags |= (uint64_t)(1 << fault_id); // Set the relevant fault bit.
 
     /* Put faults mutex. */
     status = mutex_put(&faults_mutex);
     if(status != TX_SUCCESS) {
-        DEBUG_PRINTLN("ERROR: Failed to put faults mutex. (Status: %d/%s, Relavent Fault: %s).", status, tx_status_toString(status), faults[fault_id].name);
+        DEBUG_PRINTLN("ERROR: Failed to put faults mutex. (Status: %d/%s, Relevant Fault: %s).", status, tx_status_toString(status), faults[fault_id].name);
         return U_ERROR;
     }
 
