@@ -2,8 +2,12 @@
 #define __U_MUTEX_H
 
 #include "tx_api.h"
+#include "u_general.h"
 #include <stdint.h>
 #include <stdbool.h>
+
+/* Mutex Config Macros */
+#define MUTEX_WAIT_TIME TX_WAIT_FOREVER // Wait time for mutex stuff before timing out
 
 typedef struct {
     /* PUBLIC: Mutex Configuration Settings */
@@ -17,12 +21,12 @@ typedef struct {
 } mutex_t;
 
 /* Mutex List */
-extern mutex_t template_mutex; // Template Mutex
+extern mutex_t faults_mutex; // Faults Mutex
 // add more as necessary...
 
 /* API */
 uint8_t mutexes_init(); // Initializes all mutexes set up in u_mutexes.c
-uint8_t mutex_get(mutex_t *mutex, ULONG wait_option); // Gets a mutex. wait_option can be TX_NO_WAIT, TX_WAIT_FOREVER, or a specific number of ticks.
+uint8_t mutex_get(mutex_t *mutex); // Gets a mutex.
 uint8_t mutex_put(mutex_t *mutex); // Puts a mutex.
 
 #endif /* u_mutex.h */
