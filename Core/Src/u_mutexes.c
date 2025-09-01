@@ -2,10 +2,10 @@
 #include "u_mutexes.h"
 #include "u_general.h"
 
-/* Template Mutex */
-/* only exists to show how to create mutexes (since there aren't any as of writing this. can be removed once an actual real mutex is set up here. */
-mutex_t template_mutex = {
-    .name = "Template Mutex",      /* Name of the mutex. */
+/* Faults Mutex */
+/* Used to protect multiple threads attempting to write to the fault flags variable at once. */
+mutex_t faults_mutex = {
+    .name = "Faults Mutex",        /* Name of the mutex. */
     .priority_inherit = TX_INHERIT /* Priority inheritance setting. */
 };
 
@@ -25,7 +25,7 @@ static uint8_t _create_mutex(mutex_t *mutex) {
 */
 uint8_t mutexes_init() {
     /* Create Mutexes. */
-    CATCH_ERROR(_create_mutex(&template_mutex), U_SUCCESS);  // Create Template Mutex.
+    CATCH_ERROR(_create_mutex(&faults_mutex), U_SUCCESS);  // Create Faults Mutex.
     // add more as necessary.
 
     DEBUG_PRINTLN("Ran mutexes_init().");
@@ -33,8 +33,8 @@ uint8_t mutexes_init() {
 }
 
 /* Get a mutex. */
-uint8_t mutex_get(mutex_t *mutex, ULONG wait_option) {
-    uint8_t status = tx_mutex_get(&mutex->_TX_MUTEX, wait_option);
+uint8_t mutex_get(mutex_t *mutex) {
+    uint8_t status = tx_mutex_get(&mutex->_TX_MUTEX, MUTEX_WAIT_TIME);
     if(status != TX_SUCCESS) {
         DEBUG_PRINTLN("ERROR: Failed to get mutex (Status: %d/%s, Mutex: %s).", status, tx_status_toString(status), mutex->name);
         return status;

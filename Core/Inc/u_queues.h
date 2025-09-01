@@ -13,7 +13,7 @@
 */
 
 /* Queue Config Macros */
-#define QUEUE_WAIT_TIME     MS_TO_TICKS(100) // Wait 100ms for queue stuff before timing out
+#define QUEUE_WAIT_TIME     MS_TO_TICKS(100) // Wait time for queue stuff before timing out
 
 typedef struct {
 

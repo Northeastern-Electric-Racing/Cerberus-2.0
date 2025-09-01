@@ -2,6 +2,7 @@
 #include "tx_api.h"
 #include "u_faults.h"
 #include "u_general.h"
+#include "u_mutexes.h"
 
 typedef enum {
     CRITICAL,
@@ -50,8 +51,24 @@ uint64_t get_faults(void) {
 /* Callback function. Clears fault after timer expires. */
 static void _timer_callback(ULONG args) {
     fault_t fault_id = (fault_t)args;
-    fault_flags &= ~((uint64_t)(1 << fault_id)); // Clear the fault.
+
+    /* Get faults mutex. */
+    int status = mutex_get(&faults_mutex);
+    if(status != TX_SUCCESS) {
+        DEBUG_PRINTLN("ERROR: Failed to get fault mutex. (Status: %d/%s, Relavent Fault: %s).", status, tx_status_toString(status), faults[fault_id].name);
+        return;
+    }
+
+    /* Clear the fault. */
+    fault_flags &= ~((uint64_t)(1 << fault_id));
     DEBUG_PRINTLN("UNFAULTED: %s.", faults[fault_id].name);
+
+    /* Put faults mutex. */
+    status = mutex_put(&faults_mutex);
+    if(status != TX_SUCCESS) {
+        DEBUG_PRINTLN("ERROR: Failed to put faults mutex. (Status: %d/%s, Relavent Fault: %s).", status, tx_status_toString(status), faults[fault_id].name);
+        return;
+    }
 
     /* Check if there are any active critical faults. If not, unfault the car. */
     if((fault_flags & severity_mask) == 0) {
@@ -97,7 +114,22 @@ int faults_init(void) {
 /* Triggers a fault. */
 /* If the fault is already triggered, this just resets the fault's timer. */
 int trigger_fault(fault_t fault_id) {
-    fault_flags |= (uint64_t)(1 << fault_id);
+
+    /* Get faults mutex. */
+    int status = mutex_get(&faults_mutex);
+    if(status != TX_SUCCESS) {
+        DEBUG_PRINTLN("ERROR: Failed to get fault mutex. (Status: %d/%s, Relavent Fault: %s).", status, tx_status_toString(status), faults[fault_id].name);
+        return U_ERROR;
+    }
+
+    fault_flags |= (uint64_t)(1 << fault_id); // Set the relavent fault bit.
+
+    /* Put faults mutex. */
+    status = mutex_put(&faults_mutex);
+    if(status != TX_SUCCESS) {
+        DEBUG_PRINTLN("ERROR: Failed to put faults mutex. (Status: %d/%s, Relavent Fault: %s).", status, tx_status_toString(status), faults[fault_id].name);
+        return U_ERROR;
+    }
 
     switch(faults[fault_id].severity) {
         case CRITICAL:
@@ -111,7 +143,7 @@ int trigger_fault(fault_t fault_id) {
     }
 
     /* Deactivate the fault timer. */
-    int status = tx_timer_deactivate(&timers[fault_id]);
+    status = tx_timer_deactivate(&timers[fault_id]);
     if(status != TX_SUCCESS) {
         DEBUG_PRINTLN("ERROR: Failed to deactivate fault timer (Status: %d/%s, Fault: %s).", status, tx_status_toString(status), faults[fault_id].name);
         return U_ERROR;
