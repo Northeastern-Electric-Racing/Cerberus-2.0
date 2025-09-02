@@ -57,6 +57,7 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     "../Drivers/Embedded-Base/general/src/lan8670.c"
     "../Drivers/Embedded-Base/platforms/stm32h563/src/fdcan.c"
     "./Drivers/Embedded-Base/middleware/src/bitstream.c"
+    "./Drivers/Embedded-Base/middleware/src/debounce.c"
 
     # Cerberus-2.0 Source Files
     "./Core/Src/u_ethernet.c"
