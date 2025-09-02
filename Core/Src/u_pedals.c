@@ -1,18 +1,23 @@
+#include "main.h"
 #include "u_pedals.h"
 #include "u_queues.h"
 #include "u_faults.h"
+#include "u_general.h"
 
 /* =================================== */
-/*            CONFIG MACROS            */
+/*       CONFIG MACROS & GLOBALS       */
 /* =================================== */
+/* ADC Stuff */
+#define NUM_SENSORS 4                 // Number of Pedal Sensors. */
+#define MAX_ADC_VAL_12b    4096       // Maximum value for a 12-bit ADC.
+static uint32_t _buffer[NUM_SENSORS]; // Buffer to hold Pedal ADC readings. Each index corresponds to a different eFuse. */
 
 /* Motor Control Timing/Safety */
 #define MIN_COMMAND_FREQ     60                      // (Hz). Minimum frequency for sending torque commands.
 #define MAX_COMMAND_DELAY    1000 / MIN_COMMAND_FREQ // (ms). Maximum delay between torque commands.
 #define REGEN_INCREMENT_STEP 10                      // (AC Amps). Steo size for increasing/decreasing regenerative braking current.
 
-/* Voltage Conversion/ADC Stuff */
-#define MAX_ADC_VAL_12b    4096 // (Maximum value for a 12-bit ADC).
+/* Voltage Stuff */
 #define MAX_VOLTS          3.3  // (Volts). Maximum voltage for the ADC.
 #define MAX_VOLTS_UNSCALED 5.0  // (Volts). Actual sensor voltage before voltage divider scaling.
 
@@ -44,9 +49,25 @@
 #define BRAKE_THRESHOLD_TOLERANCE   0.25 // (Volts). Tolerance margin around the brake pedal.
 
 /* Fault Debounce Callbacks */
-static void _open_circuit_fault_callback(void *arg) {queue_send(&faults, &(fault_t){ONBOARD_PEDAL_OPEN_CIRCUIT_FAULT});}; // Queues the Open Circuit Fault.
+static void _open_circuit_fault_callback(void *arg) {queue_send(&faults, &(fault_t){ONBOARD_PEDAL_OPEN_CIRCUIT_FAULT});};   // Queues the Open Circuit Fault.
 static void _short_circuit_fault_callback(void *arg) {queue_send(&faults, &(fault_t){ONBOARD_PEDAL_SHORT_CIRCUIT_FAULT});}; // Queues the Short Circuit Fault.
-static void _pedal_difference_fault_callback(void *arg) (queue_send(&faults, &(fault_t){ONBOARD_PEDAL_DIFFERENCE_FAULT});); // Queues the Pedal Difference Fault.
+static void _pedal_difference_fault_callback(void *arg) {queue_send(&faults, &(fault_t){ONBOARD_PEDAL_DIFFERENCE_FAULT});}; // Queues the Pedal Difference Fault.
+
+int init_pedals(void) {
+    /* Start ADC DMA */
+    HAL_StatusTypeDef status = HAL_ADC_Start_DMA(&hadc1, _buffer, NUM_SENSORS); // u_TODO - gotta correct this once pedals ADC stuff is set up in CubeMX. hadc1 is for the efuses not pedals
+    if(status != HAL_OK) {
+        DEBUG_PRINTLN("ERROR: Failed to start ADC DMA for pedals (Status: %d/%s).", status, hal_status_toString(status));
+        return U_ERROR;
+    }
+
+    return U_SUCCESS;
+}
+
+/* Pedal Processing Function. Meant to be called by the pedals thread. */
+void pedals_process(void) {
+    return; // u_TODO - implement this. Maybe make stuff like calculate_brake_faults, calculate_pedal_faults, pedals_getRaw, pedals_getSensorVoltage, etc. static functions
+}
 
 /* Calculates brake faults. */
 void calculate_brake_faults(float voltage_brake1, float voltage_brake2) {
@@ -86,4 +107,22 @@ void calculate_pedal_faults(float voltage_accel1, float voltage_accel2, float pe
     /* Detects if the two accelerator pedal sensors give readings that differ by more than PEDAL_DIFF_THRESH. */
     bool pedal_difference_fault = fabs(percentage_accel1 - percentage_accel2) > PEDAL_DIFF_THRESH;
     debounce(pedal_difference_fault, &_pedal_difference_fault_callback, PEDAL_FAULT_DEBOUNCE, NULL);
-/}
+}
+
+/* Returns the raw ADC readings for a pedal sensor. */
+uint16_t pedals_getRaw(pedal_sensor_t pedal_sensor) {
+    return _buffer[pedal_sensor];
+}
+
+/* Converts the ADC to the voltage out of 5V (for rules). */
+float pedals_getSensorVoltage(pedal_sensor_t pedal_sensor) {
+    float v3_volts = _buffer[pedal_sensor] * MAX_VOLTS / MAX_ADC_VAL_12b;
+	// undo 2k + 3k voltage divider on APPS lines
+	return ((2000.0 + 3000) / 3000) * v3_volts;
+}
+
+/* Returns the percentage the pedal is pressed down. */
+float pedal_percent_pressed(float voltage, float offset, float max)
+{
+	return voltage - offset < 0 ? 0 : (voltage - offset) / (max - offset);
+}
