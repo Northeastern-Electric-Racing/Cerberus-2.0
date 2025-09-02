@@ -53,9 +53,12 @@ target_link_directories(${CMAKE_PROJECT_NAME} PRIVATE
 
 # Add sources to executable
 target_sources(${CMAKE_PROJECT_NAME} PRIVATE
-    # Add user sources here
+    # Embedded Base Stuff (drivers, middleware, utils, etc.)
     "../Drivers/Embedded-Base/general/src/lan8670.c"
     "../Drivers/Embedded-Base/platforms/stm32h563/src/fdcan.c"
+    "./Drivers/Embedded-Base/middleware/src/bitstream.c"
+
+    # Cerberus-2.0 Source Files
     "./Core/Src/u_ethernet.c"
     "./Core/Src/u_inbox.c"
     "./Core/Src/u_threads.c"
@@ -67,7 +70,7 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     "./Core/Src/u_general.c"
     "./Core/Src/u_efuses.c"
     "./Core/Src/u_rtds.c"
-    "./Drivers/Embedded-Base/middleware/src/bitstream.c"
+    "./Core/Src/u_pedals.c"
 )
 
 # Add include paths
