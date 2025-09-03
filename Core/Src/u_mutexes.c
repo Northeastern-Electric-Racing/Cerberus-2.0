@@ -9,6 +9,12 @@ mutex_t faults_mutex = {
     .priority_inherit = TX_INHERIT /* Priority inheritance setting. */
 };
 
+/* Brake State Mutex */
+mutex_t brake_state_mutex = {
+    .name = "Brake State Mutex",   /* Name of the mutex. */
+    .priority_inherit = TX_INHERIT /* Priority inheritance setting. */
+};
+
 /* Helper function. Creates a ThreadX mutex. */
 static uint8_t _create_mutex(mutex_t *mutex) {
     uint8_t status = tx_mutex_create(&mutex->_TX_MUTEX, (CHAR*)mutex->name, mutex->priority_inherit);
@@ -25,7 +31,8 @@ static uint8_t _create_mutex(mutex_t *mutex) {
 */
 uint8_t mutexes_init() {
     /* Create Mutexes. */
-    CATCH_ERROR(_create_mutex(&faults_mutex), U_SUCCESS);  // Create Faults Mutex.
+    CATCH_ERROR(_create_mutex(&faults_mutex), U_SUCCESS);       // Create Faults Mutex.
+    CATCH_ERROR(_create_mutex(&brake_state_mutex), U_SUCCESS);  // Create Faults Mutex.
     // add more as necessary.
 
     DEBUG_PRINTLN("Ran mutexes_init().");

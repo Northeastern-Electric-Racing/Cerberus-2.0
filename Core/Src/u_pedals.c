@@ -17,12 +17,30 @@ typedef enum {
 } pedal_sensor_t;
 // u_TODO - once pedal ADC stuff is set up in CubeMX, make sure this order is accurate.
 
+/* Globals. */
+static float torque_limit_percentage = 1.0;
+static uint16_t regen_limits[2] = { 0, 50 }; // [PERFORMANCE, ENDURANCE]
+static bool launch_control_enabled = false;
+static uint32_t _buffer[NUM_SENSORS];        // Buffer to hold Pedal ADC readings. Each index corresponds to a different eFuse.
+static const float MPH_TO_KMH = 1.609;       // Factor for converting MPH to KMH
+static bool brake_pressed = false;
+
+/* Pedal Data. */
+typedef struct {
+	float accel1_volts;
+	float accel2_volts;
+	float brake1_volts;
+	float brake2_volts;
+	float accel_norm;
+	float brake_norm;
+} pedal_data_t;
+static pedal_data_t pedal_data;
+
 /* =================================== */
-/*       CONFIG MACROS & GLOBALS       */
+/*            CONFIG MACROS            */
 /* =================================== */
 /* ADC Stuff */
 #define MAX_ADC_VAL_12b    4096       // Maximum value for a 12-bit ADC.
-static uint32_t _buffer[NUM_SENSORS]; // Buffer to hold Pedal ADC readings. Each index corresponds to a different eFuse. */
 
 /* Motor Control Timing/Safety */
 #define MIN_COMMAND_FREQ     60                      // (Hz). Minimum frequency for sending torque commands.

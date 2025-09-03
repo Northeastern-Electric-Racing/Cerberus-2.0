@@ -21,7 +21,8 @@ typedef struct {
 } mutex_t;
 
 /* Mutex List */
-extern mutex_t faults_mutex; // Faults Mutex
+extern mutex_t faults_mutex;      // Faults Mutex
+extern mutex_t brake_state_mutex; // Brake State Mutex
 // add more as necessary...
 
 /* API */
