@@ -4,11 +4,22 @@
 #include "u_faults.h"
 #include "u_general.h"
 
+/* Pedal sensors. This enum is ordered based on each sensor's ADC rank, which corresponds to the index of each sensor's data in the ADC buffer.  */
+typedef enum {
+    ACCEL_PEDAL_1, /* Sensor 1 for the Acceleration Pedal. */
+    ACCEL_PEDAL_2, /* Sensor 2 for the Acceleration Pedal. */
+    BRAKE_PEDAL_1, /* Sensor 1 for the Brake Pedal. */
+    BRAKE_PEDAL_2, /* Sensor 2 for the Brake Pedal. */
+    
+    /* Total number of pedal sensors. */
+    NUM_SENSORS
+} pedal_sensor_t;
+// u_TODO - once pedal ADC stuff is set up in CubeMX, make sure this order is accurate.
+
 /* =================================== */
 /*       CONFIG MACROS & GLOBALS       */
 /* =================================== */
 /* ADC Stuff */
-#define NUM_SENSORS 4                 // Number of Pedal Sensors. */
 #define MAX_ADC_VAL_12b    4096       // Maximum value for a 12-bit ADC.
 static uint32_t _buffer[NUM_SENSORS]; // Buffer to hold Pedal ADC readings. Each index corresponds to a different eFuse. */
 
@@ -53,24 +64,8 @@ static void _open_circuit_fault_callback(void *arg) {queue_send(&faults, &(fault
 static void _short_circuit_fault_callback(void *arg) {queue_send(&faults, &(fault_t){ONBOARD_PEDAL_SHORT_CIRCUIT_FAULT});}; // Queues the Short Circuit Fault.
 static void _pedal_difference_fault_callback(void *arg) {queue_send(&faults, &(fault_t){ONBOARD_PEDAL_DIFFERENCE_FAULT});}; // Queues the Pedal Difference Fault.
 
-int init_pedals(void) {
-    /* Start ADC DMA */
-    HAL_StatusTypeDef status = HAL_ADC_Start_DMA(&hadc1, _buffer, NUM_SENSORS); // u_TODO - gotta correct this once pedals ADC stuff is set up in CubeMX. hadc1 is for the efuses not pedals
-    if(status != HAL_OK) {
-        DEBUG_PRINTLN("ERROR: Failed to start ADC DMA for pedals (Status: %d/%s).", status, hal_status_toString(status));
-        return U_ERROR;
-    }
-
-    return U_SUCCESS;
-}
-
-/* Pedal Processing Function. Meant to be called by the pedals thread. */
-void pedals_process(void) {
-    return; // u_TODO - implement this. Maybe make stuff like calculate_brake_faults, calculate_pedal_faults, pedals_getRaw, pedals_getSensorVoltage, etc. static functions
-}
-
 /* Calculates brake faults. */
-void calculate_brake_faults(float voltage_brake1, float voltage_brake2) {
+static void _calculate_brake_faults(float voltage_brake1, float voltage_brake2) {
     /* Debounce Timers */
     static nertimer_t open_circuit_timer;  // Timer for the Open Circuit Fault
     static nertimer_t short_circuit_timer; // Timer for the Short Circuit Fault
@@ -87,7 +82,7 @@ void calculate_brake_faults(float voltage_brake1, float voltage_brake2) {
 }
 
 /* Calculates Pedal Faults. */
-void calculate_pedal_faults(float voltage_accel1, float voltage_accel2, float percentage_accel1, float percentage_accel2) {
+static void _calculate_pedal_faults(float voltage_accel1, float voltage_accel2, float percentage_accel1, float percentage_accel2) {
     /* Debounce Timers */
     static nertimer_t open_circuit_timer;     // Timer for the Open Circuit Fault
     static nertimer_t short_circuit_timer;    // Timer for the Short Circuit Fault
@@ -110,19 +105,36 @@ void calculate_pedal_faults(float voltage_accel1, float voltage_accel2, float pe
 }
 
 /* Returns the raw ADC readings for a pedal sensor. */
-uint16_t pedals_getRaw(pedal_sensor_t pedal_sensor) {
+static uint16_t _get_raw_adc_reading(pedal_sensor_t pedal_sensor) {
     return _buffer[pedal_sensor];
 }
 
 /* Converts the ADC to the voltage out of 5V (for rules). */
-float pedals_getSensorVoltage(pedal_sensor_t pedal_sensor) {
+static float _get_sensor_voltage(pedal_sensor_t pedal_sensor) {
     float v3_volts = _buffer[pedal_sensor] * MAX_VOLTS / MAX_ADC_VAL_12b;
 	// undo 2k + 3k voltage divider on APPS lines
 	return ((2000.0 + 3000) / 3000) * v3_volts;
 }
 
 /* Returns the percentage the pedal is pressed down. */
-float pedal_percent_pressed(float voltage, float offset, float max)
+static float _get_pedal_percent_pressed(float voltage, float offset, float max)
 {
 	return voltage - offset < 0 ? 0 : (voltage - offset) / (max - offset);
+}
+
+/* Initializes Pedals ADC */
+int pedals_init(void) {
+    /* Start ADC DMA */
+    HAL_StatusTypeDef status = HAL_ADC_Start_DMA(&hadc1, _buffer, NUM_SENSORS); // u_TODO - gotta correct this once pedals ADC stuff is set up in CubeMX. hadc1 is for the efuses not pedals
+    if(status != HAL_OK) {
+        DEBUG_PRINTLN("ERROR: Failed to start ADC DMA for pedals (Status: %d/%s).", status, hal_status_toString(status));
+        return U_ERROR;
+    }
+
+    return U_SUCCESS;
+}
+
+/* Pedal Processing Function. Meant to be called by the pedals thread. */
+void pedals_process(void) {
+    return; // u_TODO - implement this. Maybe make stuff like calculate_brake_faults, calculate_pedal_faults, pedals_getRaw, pedals_getSensorVoltage, etc. static functions
 }
