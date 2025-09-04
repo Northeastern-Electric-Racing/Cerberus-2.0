@@ -177,6 +177,39 @@ static void _calculate_pedal_faults(float voltage_accel1, float voltage_accel2, 
     debounce(pedal_difference_fault, &_pedal_difference_fault_callback, PEDAL_FAULT_DEBOUNCE, NULL);
 }
 
+/**
+ * @brief Determine if power to the motor controller should be disabled based on brake and accelerator pedal travel.
+ * @param percentage_accel Percent travel of the accelerator pedal from 0-1
+ * @param percentage_brake Brake pressure sensor reading, 0-1
+ * @return bool True for prefault conditions met, false for no prefault.
+ */
+static bool _calc_bspd_prefault(float percentage_accel, float percentage_brake, float dc_current)
+{
+	static bool motor_disabled = false;
+
+	/* EV.4.7: If brakes are engaged and APPS signals more than 25% pedal travel, disable power
+	to the motor(s). Re-enable when accelerator has less than 5% pedal travel. */
+
+	if (percentage_brake > PEDAL_HARD_BRAKE_THRESH && percentage_accel > 0.25) {
+		motor_disabled = true;
+		queue_send(&faults, &(fault_t){BSPD_PREFAULT});
+	}
+
+	/* Prevent a fault. */
+	if (percentage_brake > PEDAL_HARD_BRAKE_THRESH && dc_current > 10) {
+		motor_disabled = true;
+		queue_send(&faults, &(fault_t){BSPD_PREFAULT});
+	}
+
+	if (motor_disabled) {
+		if (percentage_accel < 0.05) {
+			motor_disabled = false;
+		}
+	}
+
+	return motor_disabled;
+}
+
 /* Returns the raw ADC readings for a pedal sensor. */
 static uint16_t _get_raw_adc_reading(pedal_sensor_t pedal_sensor) {
     return _buffer[pedal_sensor];
