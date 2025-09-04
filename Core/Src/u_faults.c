@@ -53,11 +53,7 @@ static void _timer_callback(ULONG args) {
     fault_t fault_id = (fault_t)args;
 
     /* Get faults mutex. */
-    int status = mutex_get(&faults_mutex);
-    if(status != TX_SUCCESS) {
-        DEBUG_PRINTLN("ERROR: Failed to get fault mutex. (Status: %d/%s, Relevant Fault: %s).", status, tx_status_toString(status), faults[fault_id].name);
-        return;
-    }
+    mutex_get(&faults_mutex);
 
     /* Clear the fault. */
     fault_flags &= ~((uint64_t)(1 << fault_id));
@@ -74,11 +70,7 @@ static void _timer_callback(ULONG args) {
     }
 
     /* Put faults mutex. */
-    status = mutex_put(&faults_mutex);
-    if(status != TX_SUCCESS) {
-        DEBUG_PRINTLN("ERROR: Failed to put faults mutex. (Status: %d/%s, Relevant Fault: %s).", status, tx_status_toString(status), faults[fault_id].name);
-        return;
-    }
+    mutex_put(&faults_mutex);
 }
 
 /* Initializes the fault seveity mask, and creates all timers. */
@@ -116,20 +108,12 @@ int faults_init(void) {
 int trigger_fault(fault_t fault_id) {
 
     /* Get faults mutex. */
-    int status = mutex_get(&faults_mutex);
-    if(status != TX_SUCCESS) {
-        DEBUG_PRINTLN("ERROR: Failed to get fault mutex. (Status: %d/%s, Relevant Fault: %s).", status, tx_status_toString(status), faults[fault_id].name);
-        return U_ERROR;
-    }
+    mutex_get(&faults_mutex);
 
     fault_flags |= (uint64_t)(1 << fault_id); // Set the relevant fault bit.
 
     /* Put faults mutex. */
-    status = mutex_put(&faults_mutex);
-    if(status != TX_SUCCESS) {
-        DEBUG_PRINTLN("ERROR: Failed to put faults mutex. (Status: %d/%s, Relevant Fault: %s).", status, tx_status_toString(status), faults[fault_id].name);
-        return U_ERROR;
-    }
+    mutex_put(&faults_mutex);
 
     switch(faults[fault_id].severity) {
         case CRITICAL:
@@ -143,7 +127,7 @@ int trigger_fault(fault_t fault_id) {
     }
 
     /* Deactivate the fault timer. */
-    status = tx_timer_deactivate(&timers[fault_id]);
+    int status = tx_timer_deactivate(&timers[fault_id]);
     if(status != TX_SUCCESS) {
         DEBUG_PRINTLN("ERROR: Failed to deactivate fault timer (Status: %d/%s, Fault: %s).", status, tx_status_toString(status), faults[fault_id].name);
         return U_ERROR;
