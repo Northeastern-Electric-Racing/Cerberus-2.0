@@ -1,7 +1,10 @@
 #include "main.h"
 #include "timer.h"
+#include "u_can.h"
+#include "tx_api.h"
 #include "u_pedals.h"
 #include "u_queues.h"
+#include "u_mutexes.h"
 #include "u_faults.h"
 #include "u_general.h"
 
@@ -24,6 +27,7 @@ static bool launch_control_enabled = false;
 static uint32_t _buffer[NUM_SENSORS];        // Buffer to hold Pedal ADC readings. Each index corresponds to a different eFuse.
 static const float MPH_TO_KMH = 1.609;       // Factor for converting MPH to KMH
 static bool brake_pressed = false;
+static TX_TIMER pedal_data_timer;            // Timer for sending pedal data message.
 
 /* Pedal Data. */
 typedef struct {
@@ -34,13 +38,14 @@ typedef struct {
 	float accel_norm;
 	float brake_norm;
 } pedal_data_t;
-static pedal_data_t pedal_data;
+static pedal_data_t pedal_data = { 0 };
 
 /* =================================== */
 /*            CONFIG MACROS            */
 /* =================================== */
-/* ADC Stuff */
+/* MISC */
 #define MAX_ADC_VAL_12b    4096       // Maximum value for a 12-bit ADC.
+#define PEDAL_DATA_MSG_FREQUENCY 100  // (Ticks). How often the pedal data message should get sent.
 
 /* Motor Control Timing/Safety */
 #define MIN_COMMAND_FREQ     60                      // (Hz). Minimum frequency for sending torque commands.
@@ -82,6 +87,55 @@ static pedal_data_t pedal_data;
 static void _open_circuit_fault_callback(void *arg) {queue_send(&faults, &(fault_t){ONBOARD_PEDAL_OPEN_CIRCUIT_FAULT});};   // Queues the Open Circuit Fault.
 static void _short_circuit_fault_callback(void *arg) {queue_send(&faults, &(fault_t){ONBOARD_PEDAL_SHORT_CIRCUIT_FAULT});}; // Queues the Short Circuit Fault.
 static void _pedal_difference_fault_callback(void *arg) {queue_send(&faults, &(fault_t){ONBOARD_PEDAL_DIFFERENCE_FAULT});}; // Queues the Pedal Difference Fault.
+
+/* Send Pedal Data Callback */
+static void _send_pedal_data(ULONG args) {
+    (void)args; // The args parameter is unused for this callback.
+
+    /* Get the Pedal Data Mutex */
+    mutex_get(&pedal_data_mutex);
+
+    /* Pedal Volts Message. */
+    can_msg_t pedals_volts_msg = { .id = CANID_PEDALS_VOLTS_MSG, .len = 8, .data = { 0 } };
+    struct __attribute__((__packed__)) {
+		uint16_t accel_1;
+		uint16_t accel_2;
+		uint16_t brake_1;
+		uint16_t brake_2;
+	} pedal_volts_data;
+
+    /* Normalized Pedals Message. */
+    can_msg_t pedals_norm_msg = { .id = CAN_ID_PEDALS_NORM_MSG, .len = 4, .data = { 0 } };
+	struct __attribute((__packed__)) {
+		uint16_t accel_norm;
+		uint16_t brake_norm;
+	} pedal_norm_data;
+
+    /* Fill the Pedal Volts Message with the data. */
+	pedal_volts_data.accel_1 = (uint16_t)(pedal_data.accel1_volts * 100);
+	pedal_volts_data.accel_2 = (uint16_t)(pedal_data.accel2_volts * 100);
+	pedal_volts_data.brake_1 = (uint16_t)(pedal_data.brake1_volts * 100);
+	pedal_volts_data.brake_2 = (uint16_t)(pedal_data.brake2_volts * 100);
+	endian_swap(&pedal_volts_data.accel_1, sizeof(pedal_volts_data.accel_1));
+	endian_swap(&pedal_volts_data.accel_2, sizeof(pedal_volts_data.accel_2));
+	endian_swap(&pedal_volts_data.brake_1, sizeof(pedal_volts_data.brake_1));
+	endian_swap(&pedal_volts_data.brake_2, sizeof(pedal_volts_data.brake_2));
+    memcpy(pedals_volts_msg.data, &pedal_volts_data, pedals_volts_msg.len);
+
+    /* Fill the Normalized Pedals Message with the data. */
+	pedal_norm_data.accel_norm = (uint16_t)(pedal_data.accel_norm * 100);
+	pedal_norm_data.brake_norm = (uint16_t)(pedal_data.brake_norm * 100);
+	endian_swap(&pedal_norm_data.accel_norm, sizeof(pedal_norm_data.accel_norm));
+	endian_swap(&pedal_norm_data.brake_norm, sizeof(pedal_norm_data.brake_norm));
+    memcpy(pedals_norm_msg.data, &pedal_norm_data, pedals_norm_msg.len);
+
+    /* Queue the Messages. */
+    queue_send(&can_outgoing, &pedals_volts_msg);
+    queue_send(&can_outgoing, &pedals_norm_msg);
+
+    /* Put the Pedal Data Mutex. */
+    mutex_put(&pedal_data_mutex);
+}
 
 /* Calculates brake faults. */
 static void _calculate_brake_faults(float voltage_brake1, float voltage_brake2) {
@@ -141,12 +195,27 @@ static float _get_pedal_percent_pressed(float voltage, float offset, float max)
 	return voltage - offset < 0 ? 0 : (voltage - offset) / (max - offset);
 }
 
-/* Initializes Pedals ADC */
+/* Initializes Pedals ADC and creates pedal data timer. */
 int pedals_init(void) {
     /* Start ADC DMA */
-    HAL_StatusTypeDef status = HAL_ADC_Start_DMA(&hadc1, _buffer, NUM_SENSORS); // u_TODO - gotta correct this once pedals ADC stuff is set up in CubeMX. hadc1 is for the efuses not pedals
+    int status = HAL_ADC_Start_DMA(&hadc1, _buffer, NUM_SENSORS); // u_TODO - gotta correct this once pedals ADC stuff is set up in CubeMX. hadc1 is for the efuses not pedals
     if(status != HAL_OK) {
         DEBUG_PRINTLN("ERROR: Failed to start ADC DMA for pedals (Status: %d/%s).", status, hal_status_toString(status));
+        return U_ERROR;
+    }
+
+    /* Create Pedal Data Timer. */
+    status = tx_timer_create(
+        &pedal_data_timer,        /* Timer Instance */
+        "Pedal Data Timer",       /* Timer Name */
+        _send_pedal_data,         /* Timer Expiration Callback */
+        0,                        /* Callback Input */
+        PEDAL_DATA_MSG_FREQUENCY, /* Ticks until timer expiration. */
+        PEDAL_DATA_MSG_FREQUENCY, /* Number of ticks for all timer expirations after the first (0 makes this a one-shot timer). */
+        TX_AUTO_ACTIVATE          /* Make the timer dormant until it is activated. */
+    );
+    if(status != TX_SUCCESS) {
+        DEBUG_PRINTLN("ERROR: Failed to create Pedal Data Timer (Status: %d/%s).", status, tx_status_toString(status));
         return U_ERROR;
     }
 

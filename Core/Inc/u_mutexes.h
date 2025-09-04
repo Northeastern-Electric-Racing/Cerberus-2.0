@@ -6,9 +6,6 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-/* Mutex Config Macros */
-#define MUTEX_WAIT_TIME TX_WAIT_FOREVER // Wait time for mutex stuff before timing out
-
 typedef struct {
     /* PUBLIC: Mutex Configuration Settings */
     /* Set these when defining an instance of this struct. */
@@ -23,6 +20,7 @@ typedef struct {
 /* Mutex List */
 extern mutex_t faults_mutex;      // Faults Mutex
 extern mutex_t brake_state_mutex; // Brake State Mutex
+extern mutex_t pedal_data_mutex;  // Pedal Data Mutex
 // add more as necessary...
 
 /* API */

@@ -15,6 +15,12 @@ mutex_t brake_state_mutex = {
     .priority_inherit = TX_INHERIT /* Priority inheritance setting. */
 };
 
+/* Pedal Data Mutex */
+mutex_t pedal_data_mutex = {
+    .name = "Pedal Data Mutex",    /* Name of the mutex. */
+    .priority_inherit = TX_INHERIT /* Priority inheritance setting. */
+};
+
 /* Helper function. Creates a ThreadX mutex. */
 static uint8_t _create_mutex(mutex_t *mutex) {
     uint8_t status = tx_mutex_create(&mutex->_TX_MUTEX, (CHAR*)mutex->name, mutex->priority_inherit);
@@ -32,7 +38,8 @@ static uint8_t _create_mutex(mutex_t *mutex) {
 uint8_t mutexes_init() {
     /* Create Mutexes. */
     CATCH_ERROR(_create_mutex(&faults_mutex), U_SUCCESS);       // Create Faults Mutex.
-    CATCH_ERROR(_create_mutex(&brake_state_mutex), U_SUCCESS);  // Create Faults Mutex.
+    CATCH_ERROR(_create_mutex(&brake_state_mutex), U_SUCCESS);  // Create Brake State Mutex.
+    CATCH_ERROR(_create_mutex(&pedal_data_mutex), U_SUCCESS);   // Create Pedal Data Mutex.
     // add more as necessary.
 
     DEBUG_PRINTLN("Ran mutexes_init().");
@@ -41,8 +48,8 @@ uint8_t mutexes_init() {
 
 /* Get a mutex. */
 uint8_t mutex_get(mutex_t *mutex) {
-    uint8_t status = tx_mutex_get(&mutex->_TX_MUTEX, MUTEX_WAIT_TIME);
-    if(status != TX_SUCCESS) {
+    uint8_t status = tx_mutex_get(&mutex->_TX_MUTEX, TX_WAIT_FOREVER);
+    if(status != TX_SUCCESS) { // Note: As long as TX_WAIT_FOREVER is used, tx_mutex_get() should never be unsucessful here (since it waits indefinitely until the mutex is available).
         DEBUG_PRINTLN("ERROR: Failed to get mutex (Status: %d/%s, Mutex: %s).", status, tx_status_toString(status), mutex->name);
         return status;
     }
