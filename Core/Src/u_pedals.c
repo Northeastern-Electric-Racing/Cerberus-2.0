@@ -7,6 +7,7 @@
 #include "u_mutexes.h"
 #include "u_faults.h"
 #include "u_general.h"
+#include "u_efuses.h"
 
 /* Pedal sensors. This enum is ordered based on each sensor's ADC rank, which corresponds to the index of each sensor's data in the ADC buffer.  */
 typedef enum {
@@ -31,12 +32,12 @@ static TX_TIMER pedal_data_timer;            // Timer for sending pedal data mes
 
 /* Pedal Data. */
 typedef struct {
-	float accel1_volts;
-	float accel2_volts;
-	float brake1_volts;
-	float brake2_volts;
-	float accel_norm;
-	float brake_norm;
+	float voltage_accel1;
+	float voltage_accel2;
+	float voltage_brake1;
+	float voltage_brake2;
+	float percentage_accel;
+	float percentage_brake;
 } pedal_data_t;
 static pedal_data_t pedal_data = { 0 };
 
@@ -112,10 +113,10 @@ static void _send_pedal_data(ULONG args) {
 	} pedal_norm_data;
 
     /* Fill the Pedal Volts Message with the data. */
-	pedal_volts_data.accel_1 = (uint16_t)(pedal_data.accel1_volts * 100);
-	pedal_volts_data.accel_2 = (uint16_t)(pedal_data.accel2_volts * 100);
-	pedal_volts_data.brake_1 = (uint16_t)(pedal_data.brake1_volts * 100);
-	pedal_volts_data.brake_2 = (uint16_t)(pedal_data.brake2_volts * 100);
+	pedal_volts_data.accel_1 = (uint16_t)(pedal_data.voltage_accel1 * 100);
+	pedal_volts_data.accel_2 = (uint16_t)(pedal_data.voltage_accel2 * 100);
+	pedal_volts_data.brake_1 = (uint16_t)(pedal_data.voltage_brake1 * 100);
+	pedal_volts_data.brake_2 = (uint16_t)(pedal_data.voltage_brake2 * 100);
 	endian_swap(&pedal_volts_data.accel_1, sizeof(pedal_volts_data.accel_1));
 	endian_swap(&pedal_volts_data.accel_2, sizeof(pedal_volts_data.accel_2));
 	endian_swap(&pedal_volts_data.brake_1, sizeof(pedal_volts_data.brake_1));
@@ -123,8 +124,8 @@ static void _send_pedal_data(ULONG args) {
     memcpy(pedals_volts_msg.data, &pedal_volts_data, pedals_volts_msg.len);
 
     /* Fill the Normalized Pedals Message with the data. */
-	pedal_norm_data.accel_norm = (uint16_t)(pedal_data.accel_norm * 100);
-	pedal_norm_data.brake_norm = (uint16_t)(pedal_data.brake_norm * 100);
+	pedal_norm_data.accel_norm = (uint16_t)(pedal_data.percentage_accel * 100);
+	pedal_norm_data.brake_norm = (uint16_t)(pedal_data.percentage_brake * 100);
 	endian_swap(&pedal_norm_data.accel_norm, sizeof(pedal_norm_data.accel_norm));
 	endian_swap(&pedal_norm_data.brake_norm, sizeof(pedal_norm_data.brake_norm));
     memcpy(pedals_norm_msg.data, &pedal_norm_data, pedals_norm_msg.len);
@@ -155,7 +156,7 @@ static void _calculate_brake_faults(float voltage_brake1, float voltage_brake2) 
 }
 
 /* Calculates Pedal Faults. */
-static void _calculate_pedal_faults(float voltage_accel1, float voltage_accel2, float percentage_accel1, float percentage_accel2) {
+static void _calculate_accel_faults(float voltage_accel1, float voltage_accel2, float percentage_accel1, float percentage_accel2) {
     /* Debounce Timers */
     static nertimer_t open_circuit_timer;     // Timer for the Open Circuit Fault
     static nertimer_t short_circuit_timer;    // Timer for the Short Circuit Fault
@@ -210,6 +211,228 @@ static bool _calc_bspd_prefault(float percentage_accel, float percentage_brake, 
 	return motor_disabled;
 }
 
+#ifndef POWER_REGRESSION_PEDAL_TORQUE_TRANSFER
+/* Linearlly translates the "amount pressed" percentage of the acceleration pedal to torque. */
+/* (i.e. This function creates a constant rate of torque increase relative to pedal travel). */
+static void _linear_accel_to_torque(float percentage_accel)
+{
+	/* Sometimes, the pedal travel jumps to 3% even if it is not pressed. */
+	if (percentage_accel < 0.03) {
+		percentage_accel = 0.0;
+	}
+	if (percentage_accel > 1) {
+		percentage_accel = 1.0;
+	}
+
+	/* Linearly map acceleration to torque */
+	int16_t torque = (int16_t)(percentage_accel * MAX_TORQUE);
+
+	dti_set_torque(torque);
+}
+
+#else
+/* Non-linearlly translates the "amount pressed" percentage of the acceleration pedal to torque. */
+/* (i.e. This function makes the pedal less sensitive at lower positions, and more agressive at higher positions). */
+static void _power_regression_accel_to_torque(float percentage_accel)
+{
+	/* Sometimes, the pedal travel jumps to 1% even if it is not pressed. */
+	if (fabs(percentage_accel - 0.01) < 0.001) {
+		percentage_accel = 0;
+	}
+	/*  map acceleration to torque */
+	int16_t torque =
+		(int16_t)(0.137609 * powf(percentage_accel, 1.43068) * MAX_TORQUE);
+	/* These values came from creating a power regression function intersecting three points: (0,0) (20,10) & (100,100)*/
+
+	dti_set_torque(torque);
+}
+#endif
+
+/**
+ * @brief Derate torque target to keep car below the maximum pit/reverse mode speed.
+ * 
+ * @param mph Speed of the car
+ * @param percentage_accel Percent travel of the acceleration pedal from 0-1
+ * @return int16_t Derated torque
+ */
+static int16_t _derate_torque(float mph, float percentage_accel)
+{
+	static int16_t torque_accumulator[TORQUE_ACCUMULATOR_SIZE];
+	/* index in moving average */
+	static uint8_t index = 0;
+
+	int16_t torque;
+
+	/* If we are going too fast, we don't want to apply any torque to the moving average */
+	if (mph > PIT_MAX_SPEED) {
+		torque = 0;
+	} else {
+		/* Highest torque % in pit mode */
+		static const float max_torque_percent = 0.3;
+		/* Linearly derate torque from 30% to 0% as speed increases */
+		float torque_derating_factor =
+			max_torque_percent -
+			(max_torque_percent / PIT_MAX_SPEED);
+		percentage_accel *= torque_derating_factor;
+		torque = MAX_TORQUE * percentage_accel;
+	}
+
+	/* Add value to moving average */
+	torque_accumulator[index] = torque;
+	index = (index + 1) % TORQUE_ACCUMULATOR_SIZE;
+
+	/* Get moving average then send torque command to dti motor controller */
+	int16_t sum = 0;
+	for (uint8_t i = 0; i < TORQUE_ACCUMULATOR_SIZE; i++) {
+		sum += torque_accumulator[i];
+	}
+	return sum / TORQUE_ACCUMULATOR_SIZE;
+}
+
+/**
+ * @brief Calculate and send torque command to motor controller.
+ * 
+ * @param percentage_accel Accelerator pedal percent travel from 0-1
+ */
+static void _accel_pedal_regen_torque(float percentage_accel)
+{
+	/* Coefficient to map accel pedal travel % to the max torque */
+	float coeff = (MAX_TORQUE * torque_limit_percentage);
+
+	/* Makes acceleration pedal more sensitive since domain is compressed but range is the same */
+	uint16_t torque = coeff * (percentage_accel - ACCELERATION_THRESHOLD);
+
+	/* Limit torque percentage wise in endurance mode */
+	if (torque > MAX_TORQUE * torque_limit_percentage) {
+		torque = MAX_TORQUE * torque_limit_percentage;
+	}
+
+	dti_set_torque(torque);
+}
+
+/**
+ * @brief Calculate regen braking AC current target based on accelerator pedal percent travel.
+ * 
+ * @param percentage_accel Accelerator pedal percent travel from 0-1
+ */
+static void _accel_pedal_regen_braking(float percentage_accel)
+{
+	uint16_t regen_limit = get_regen_limit();
+
+	/* Calculate AC current target for regenerative braking */
+	float regen_current =
+		(regen_limit / REGEN_THRESHOLD) * (REGEN_THRESHOLD - percentage_accel);
+
+	if (regen_current > regen_limit) {
+		regen_current = regen_limit;
+	}
+
+	/* Send regen current to motor controller */
+	dti_set_regen((uint16_t)(regen_current * 10));
+}
+
+/* Implements Launch Control. */
+/* (i.e. Prevents the car from accelerating too aggressively from a standstill, helping to maintain traction). */
+static void _launch_control(float mph, float percentage_accel)
+{
+	static float last_mph = 0.0f;
+	static uint32_t prevTime = 0;
+	static float prev_accel = 0;
+
+    const float deltaMPHPS_max = 22.0f; // Miles per hour per second, based on matlab accel numbers
+    const float max_limiting_mph = 30;
+
+	if (prevTime == 0) { // Initialize time
+		prevTime = HAL_GetTick();
+		return;
+	}
+
+	uint32_t now = HAL_GetTick();
+	uint32_t delta_ms = now - prevTime;
+
+	float delta_mph = mph - last_mph;
+	float max_delta_adjusted = deltaMPHPS_max * (delta_ms / 1000.0f);
+
+	if (mph < max_limiting_mph && delta_mph > max_delta_adjusted) {
+		linear_accel_to_torque(prev_accel / 2);
+	} else {
+		linear_accel_to_torque(percentage_accel);
+	}
+
+	// Update for next cycle
+	prevTime = now;
+	last_mph = mph;
+	prev_accel = percentage_accel;
+}
+
+/* Manages torque control when the car is in Performance Mode. */
+static void _handle_performance(float mph, float percentage_accel)
+{
+#ifndef POWER_REGRESSION_PEDAL_TORQUE_TRANSFER
+	uint16_t regen_limit = get_regen_limit();
+	if (regen_limit <= 0.01) {
+		_linear_accel_to_torque(percentage_accel);
+		return;
+	}
+
+	if (percentage_accel >= ACCELERATION_THRESHOLD) {
+		if (launch_control_enabled) {
+			_launch_control(mph, (percentage_accel - 0.25) / 0.75);
+		} else {
+			_accel_pedal_regen_torque(percentage_accel);
+		}
+	} else if (mph * MPH_TO_KMH > 5 && percentage_accel <= REGEN_THRESHOLD) {
+		_accel_pedal_regen_braking(percentage_accel);
+	} else {
+		/* Pedal travel is between thresholds, so there should not be acceleration or braking */
+		dti_set_torque(0);
+	}
+#else
+	power_regression_accel_to_torque(percentage_accel);
+#endif
+}
+
+/**
+ * @brief Torque calculations for efficiency mode. If the driver is braking, do regenerative braking.
+ * 
+ * @param mph mph of the car
+ * @param percentage_accel adjusted value of the acceleration pedal
+ */
+static void _handle_endurance(float mph, float percentage_accel)
+{
+	/* Pedal is in acceleration range. Set forward torque target. */
+	if (percentage_accel >= ACCELERATION_THRESHOLD) {
+		accel_pedal_regen_torque(percentage_accel);
+	} else if (mph * MPH_TO_KMH > 5 && percentage_accel <= REGEN_THRESHOLD) {
+		accel_pedal_regen_braking(percentage_accel);
+	} else {
+		/* Pedal travel is between thresholds, so there should not be acceleration or braking */
+		dti_set_torque(0);
+	}
+}
+
+/**
+ * @brief Drive forward with a speed limit of 5 mph.
+ * 
+ * @param mph Current speed of the car.
+ * @param percentage_accel % pedal travel of the accelerator pedal.
+ */
+static void _handle_pit(float mph, float percentage_accel)
+{
+	dti_set_torque(derate_torque(mph, percentage_accel));
+}
+
+/**
+ * @brief Drive in speed limited reverse mode.
+ * 
+ * @param mph Current speed of the car.
+ * @param percentage_accel % pedal travel of the accelerator pedal.
+ */
+static void _handle_reverse(float mph, float percentage_accel)
+{
+	dti_set_torque(-1 * derate_torque(fabs(mph), percentage_accel));
+}
+
 /* Returns the raw ADC readings for a pedal sensor. */
 static uint16_t _get_raw_adc_reading(pedal_sensor_t pedal_sensor) {
     return _buffer[pedal_sensor];
@@ -255,7 +478,88 @@ int pedals_init(void) {
     return U_SUCCESS;
 }
 
+/* Returns the brake state (true=brake pressed, false=brake not pressed). */
+bool pedals_getBrakeState(void) {
+    bool temp;
+    mutex_get(&brake_state_mutex);
+    temp = brake_pressed;
+    mutex_put(&brake_state_mutex);
+    return temp;
+}
+
 /* Pedal Processing Function. Meant to be called by the pedals thread. */
 void pedals_process(void) {
+
+    /* Get the pedal data mutex. */
+    mutex_get(&pedal_data_mutex);
+
+    /* Get pedal voltage data. */
+    pedal_data.voltage_accel1 = _get_sensor_voltage(ACCEL_PEDAL_1);
+	pedal_data.voltage_accel2 = _get_sensor_voltage(ACCEL_PEDAL_2);
+	pedal_data.voltage_brake1 = _get_sensor_voltage(BRAKE_PEDAL_1);
+	pedal_data.voltage_brake2 = _get_sensor_voltage(BRAKE_PEDAL_2);
+
+    /* Calculate acceleration pedal percentage pressed. */
+    float accel1_percentage = _get_pedal_percent_pressed(pedal_data.voltage_accel1, MIN_APPS1_VOLTS, MAX_APPS1_VOLTS); // For sensor 1...
+    float accel2_percentage = _get_pedal_percent_pressed(pedal_data.voltage_accel2, MIN_APPS2_VOLTS, MAX_APPS2_VOLTS); // For sensor 2...
+    pedal_data.percentage_accel = (accel1_percentage + accel2_percentage) / 2; /* Record the averaged percentage. */
+    _calculate_accel_faults(pedal_data.voltage_accel1, pedal_data.voltage_accel2, accel1_percentage, accel2_percentage); // Check for faults.
+
+    /* Calculate brake pedal percentage pressed. */
+    // u_TODO - this is slightly different to how its done in Cerberus (1.0). I changed it to match how acceleration pedal percentages are calculated, but maybe brake percentage isn't supposed to be calculated this way?
+    float brake1_percentage = _get_pedal_percent_pressed(pedal_data.voltage_brake1, 0, MAX_VOLTS_UNSCALED); // For sensor 1...
+    float brake2_percentage = _get_pedal_percent_pressed(pedal_data.voltage_brake2, 0, MAX_VOLTS_UNSCALED); // For sensor 2...
+    pedal_data.percentage_brake = (brake1_percentage + brake2_percentage) / 2; /* Record the averaged percentage. */
+    _calculate_brake_faults(pedal_data.voltage_brake1, pedal_data.voltage_brake2); // Check for faults.
+
+    /* Set brake state, and turn brakelight on/off. */
+    mutex_get(&brake_state_mutex);
+    if(pedal_data.percentage_brake > PEDAL_BRAKE_THRESH) {
+        brake_pressed = true;
+        efuse_enable(ef_break); // u_TODO - i'm pretty sure this is for the brakelight? but idk why its spelled like that in altium
+    }
+    else {
+        brake_pressed = false;
+        efuse_disable(ef_break);
+    }
+    mutex_put(&brake_state_mutex);
+
+    // u_TODO - finish this stuff when statemachine and dit done
+	// uint16_t dc_current = dti_get_dc_current(mc, &dc_current);
+    // float mph = dti_get_mph(mc);
+
+	// if (calc_bspd_prefault(pedal_data.percentage_accel, pedal_data.percentage_brake, dc_current)) {
+	// 	/* Prefault triggered */
+	// 	// dti_set_torque(0);
+	// 	// osDelay(delay_time);
+    // }
+
+    // switch(statemachine_getFunctionalState()) {
+    //     case READY:
+    //         dti_set_torque(0);
+    //         break;
+    //     case FAULTED:
+    //         dti_set_torque(0);
+    //         break;
+    //     case F_PIT:
+    //         _handle_pit(mph, pedal_data.percentage_accel);
+    //         break;
+    //     case F_REVERSE:
+    //         _handle_reverse(mph, pedal_data.percentage_accel);
+    //         break;
+    //     case F_PERFORMANCE:
+    //         _handle_performance(mph, pedal_data.percentage_accel);
+    //         break;
+    //     case F_EFFICIENCY:
+    //         _handle_efficiency(mph, pedal_data.percentage_accel);
+    //         break;
+    //     default:
+    //         DEBUG_PRINTLN("ERROR: Failed to process pedals due to unknown functional state.");
+    //         break;
+    // }
+
+    /* Return the pedal data mutex. */
+    mutex_put(&pedal_data_mutex);
+
     return; // u_TODO - implement this. Maybe make stuff like calculate_brake_faults, calculate_pedal_faults, pedals_getRaw, pedals_getSensorVoltage, etc. static functions
 }
