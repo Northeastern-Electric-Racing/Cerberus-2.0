@@ -44,7 +44,7 @@ static pedal_data_t pedal_data = { 0 };
 /* =================================== */
 /*            CONFIG MACROS            */
 /* =================================== */
-/* MISC */
+/* Misc */
 #define MAX_ADC_VAL_12b    4096       // Maximum value for a 12-bit ADC.
 #define PEDAL_DATA_MSG_FREQUENCY 100  // (Ticks). How often the pedal data message should get sent.
 
@@ -148,11 +148,11 @@ static void _calculate_brake_faults(float voltage_brake1, float voltage_brake2) 
     
     /* Open Circuit Fault */
     bool open_circuit_fault = (voltage_brake1 > BRAKE_SENSOR_IRREGULAR_HIGH + BRAKE_THRESHOLD_TOLERANCE) || (voltage_brake2 > BRAKE_SENSOR_IRREGULAR_HIGH + BRAKE_THRESHOLD_TOLERANCE);
-    debounce(open_circuit_fault, &_open_circuit_fault_callback, BRAKE_FAULT_DEBOUNCE, NULL);
+    debounce(open_circuit_fault, &open_circuit_timer, BRAKE_FAULT_DEBOUNCE, &_open_circuit_fault_callback, NULL);
 
     /* Short Circuit Fault */
     bool short_circuit_fault = (voltage_brake1 < BRAKE_SENSOR_IRREGULAR_LOW - BRAKE_THRESHOLD_TOLERANCE) || (voltage_brake2 < BRAKE_SENSOR_IRREGULAR_LOW - BRAKE_THRESHOLD_TOLERANCE);
-    debounce(short_circuit_fault, &_short_circuit_fault_callback, BRAKE_FAULT_DEBOUNCE, NULL);
+    debounce(short_circuit_fault, &short_circuit_timer, BRAKE_FAULT_DEBOUNCE, &_short_circuit_fault_callback, NULL);
 }
 
 /* Calculates Pedal Faults. */
@@ -166,16 +166,16 @@ static void _calculate_accel_faults(float voltage_accel1, float voltage_accel2, 
 
     /* Open Circuit Fault */
     bool open_circuit_fault = (voltage_accel1 > MAX_VOLTS_UNSCALED - APPS_THRESHOLD_TOLERANCE) || (voltage_accel2 > MAX_VOLTS_UNSCALED - APPS_THRESHOLD_TOLERANCE);
-    debounce(open_circuit_fault, &_open_circuit_fault_callback, PEDAL_FAULT_DEBOUNCE, NULL);
+    debounce(open_circuit_fault, &open_circuit_timer, PEDAL_FAULT_DEBOUNCE, &_open_circuit_fault_callback, NULL);
 
     /* Short Circuit Fault */
     bool short_circuit_fault = (voltage_accel1 < MIN_APPS1_VOLTS - APPS_THRESHOLD_TOLERANCE) || (voltage_accel2 < MIN_APPS2_VOLTS - APPS_THRESHOLD_TOLERANCE);
-    debounce(short_circuit_fault, &_short_circuit_fault_callback, PEDAL_FAULT_DEBOUNCE, NULL);
+    debounce(short_circuit_fault, &short_circuit_timer, PEDAL_FAULT_DEBOUNCE, &_short_circuit_fault_callback, NULL);
 
     /* Pedal Difference Fault */
     /* Detects if the two accelerator pedal sensors give readings that differ by more than PEDAL_DIFF_THRESH. */
     bool pedal_difference_fault = fabs(percentage_accel1 - percentage_accel2) > PEDAL_DIFF_THRESH;
-    debounce(pedal_difference_fault, &_pedal_difference_fault_callback, PEDAL_FAULT_DEBOUNCE, NULL);
+    debounce(pedal_difference_fault, &pedal_difference_timer, PEDAL_FAULT_DEBOUNCE, &_pedal_difference_fault_callback, NULL);
 }
 
 /**
@@ -354,9 +354,9 @@ static void _launch_control(float mph, float percentage_accel)
 	float max_delta_adjusted = deltaMPHPS_max * (delta_ms / 1000.0f);
 
 	if (mph < max_limiting_mph && delta_mph > max_delta_adjusted) {
-		linear_accel_to_torque(prev_accel / 2);
+		_linear_accel_to_torque(prev_accel / 2);
 	} else {
-		linear_accel_to_torque(percentage_accel);
+		_linear_accel_to_torque(percentage_accel);
 	}
 
 	// Update for next cycle
@@ -402,9 +402,9 @@ static void _handle_endurance(float mph, float percentage_accel)
 {
 	/* Pedal is in acceleration range. Set forward torque target. */
 	if (percentage_accel >= ACCELERATION_THRESHOLD) {
-		accel_pedal_regen_torque(percentage_accel);
+		_accel_pedal_regen_torque(percentage_accel);
 	} else if (mph * MPH_TO_KMH > 5 && percentage_accel <= REGEN_THRESHOLD) {
-		accel_pedal_regen_braking(percentage_accel);
+		_accel_pedal_regen_braking(percentage_accel);
 	} else {
 		/* Pedal travel is between thresholds, so there should not be acceleration or braking */
 		dti_set_torque(0);
@@ -419,7 +419,7 @@ static void _handle_endurance(float mph, float percentage_accel)
  */
 static void _handle_pit(float mph, float percentage_accel)
 {
-	dti_set_torque(derate_torque(mph, percentage_accel));
+	dti_set_torque(_derate_torque(mph, percentage_accel));
 }
 
 /**
@@ -430,7 +430,7 @@ static void _handle_pit(float mph, float percentage_accel)
  */
 static void _handle_reverse(float mph, float percentage_accel)
 {
-	dti_set_torque(-1 * derate_torque(fabs(mph), percentage_accel));
+	dti_set_torque(-1 * _derate_torque(fabs(mph), percentage_accel));
 }
 
 /* Returns the raw ADC readings for a pedal sensor. */
@@ -468,12 +468,14 @@ int pedals_init(void) {
         0,                        /* Callback Input */
         PEDAL_DATA_MSG_FREQUENCY, /* Ticks until timer expiration. */
         PEDAL_DATA_MSG_FREQUENCY, /* Number of ticks for all timer expirations after the first (0 makes this a one-shot timer). */
-        TX_AUTO_ACTIVATE          /* Make the timer dormant until it is activated. */
+        TX_AUTO_ACTIVATE          /* Automatically start the timer. */
     );
     if(status != TX_SUCCESS) {
         DEBUG_PRINTLN("ERROR: Failed to create Pedal Data Timer (Status: %d/%s).", status, tx_status_toString(status));
         return U_ERROR;
     }
+
+	DEBUG_PRINTLN("Ran pedals_init().");
 
     return U_SUCCESS;
 }
@@ -528,7 +530,7 @@ void pedals_process(void) {
 	// uint16_t dc_current = dti_get_dc_current(mc, &dc_current);
     // float mph = dti_get_mph(mc);
 
-	// if (calc_bspd_prefault(pedal_data.percentage_accel, pedal_data.percentage_brake, dc_current)) {
+	// if (_calc_bspd_prefault(pedal_data.percentage_accel, pedal_data.percentage_brake, dc_current)) {
 	// 	/* Prefault triggered */
 	// 	// dti_set_torque(0);
 	// 	// osDelay(delay_time);

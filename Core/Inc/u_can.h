@@ -15,6 +15,8 @@ extern can_t can1;
 #define CANID_SHUTDOWN_MSG	   0x123
 #define CANID_PEDALS_VOLTS_MSG 0x504
 #define CAN_ID_PEDALS_NORM_MSG 0x505
+#define CANID_BMS_CELL_TEMPS   0x84
+#define CANID_BMS_DCL_MSG      0x156
 // add more as necessary
 
 #endif /* u_can.h */

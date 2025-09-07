@@ -58,6 +58,8 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     "../Drivers/Embedded-Base/platforms/stm32h563/src/fdcan.c"
     "./Drivers/Embedded-Base/middleware/src/bitstream.c"
     "./Drivers/Embedded-Base/middleware/src/debounce.c"
+    "./Drivers/Embedded-Base/middleware/src/timer.c"
+    "./Drivers/Embedded-Base/middleware/src/c_utils.c"
 
     # Cerberus-2.0 Source Files
     "./Core/Src/u_ethernet.c"
@@ -72,6 +74,7 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     "./Core/Src/u_efuses.c"
     "./Core/Src/u_rtds.c"
     "./Core/Src/u_pedals.c"
+    "./Core/Src/u_bms.c"
 )
 
 # Add include paths

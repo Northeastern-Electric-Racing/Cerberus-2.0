@@ -21,6 +21,7 @@ typedef struct {
 extern mutex_t faults_mutex;      // Faults Mutex
 extern mutex_t brake_state_mutex; // Brake State Mutex
 extern mutex_t pedal_data_mutex;  // Pedal Data Mutex
+extern mutex_t bms_mutex;         // BMS Mutex
 // add more as necessary...
 
 /* API */
