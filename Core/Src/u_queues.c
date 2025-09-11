@@ -61,8 +61,7 @@ static uint8_t _create_queue(TX_BYTE_POOL *byte_pool, queue_t *queue) {
     /* Basically, queue messages have to be a multiple of 4 bytes? Kinda weird but this should handle it. */
     UINT message_size_words = (queue->message_size + 3) / 4;
     if (message_size_words < 1 || message_size_words > 16) {
-        DEBUG_PRINTLN("ERROR: Invalid message size %d bytes (must be 1-64 bytes). Queue: %s", 
-                    queue->message_size, queue->name);
+        DEBUG_PRINTLN("ERROR: Invalid message size %d bytes (must be 1-64 bytes). Queue: %s", queue->message_size, queue->name);
         return U_ERROR;
     }
 

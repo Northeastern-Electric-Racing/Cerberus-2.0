@@ -13,7 +13,7 @@
 */
 
 /* Queue Config Macros */
-#define QUEUE_WAIT_TIME TX_WAIT_FOREVER // Wait time for queue stuff before timing out
+#define QUEUE_WAIT_TIME TX_NO_WAIT // Wait time for queue stuff before timing out
 
 typedef struct {
 
