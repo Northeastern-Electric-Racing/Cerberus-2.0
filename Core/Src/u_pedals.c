@@ -1,5 +1,6 @@
 #include "main.h"
 #include "timer.h"
+#include "debounce.h"
 #include "u_can.h"
 #include "tx_api.h"
 #include "u_pedals.h"
@@ -487,6 +488,106 @@ bool pedals_getBrakeState(void) {
     temp = brake_pressed;
     mutex_put(&brake_state_mutex);
     return temp;
+}
+
+/* Returns the torque limit percentgae. */
+float pedals_getTorqueLimitPercentage(void) {
+	float temp;
+	mutex_get(&torque_limit_mutex);
+	temp = torque_limit_percentage;
+	mutex_put(&torque_limit_mutex);
+	return temp;
+}
+
+void pedals_setTorqueLimitPercentage(float percentage) {
+	mutex_get(&torque_limit_mutex);
+	torque_limit_percentage = percentage;
+	mutex_put(&torque_limit_mutex);
+}
+
+void pedals_increaseTorqueLimit(void)
+{
+	mutex_get(&torque_limit_mutex);
+	if (torque_limit_percentage + 0.1 > 1) {
+		torque_limit_percentage = 1;
+	} else {
+		torque_limit_percentage += 0.1;
+	}
+	mutex_put(&torque_limit_mutex);
+}
+
+void pedals_decreaseTorqueLimit(void)
+{
+	mutex_get(&torque_limit_mutex);
+	if (torque_limit_percentage - 0.1 < 0) {
+		torque_limit_percentage = 0;
+	} else {
+		torque_limit_percentage -= 0.1;
+	}
+	mutex_put(&torque_limit_mutex);
+}
+
+void pedals_increaseRegenLimit(void)
+{
+	// func_state_t func_state = get_func_state();
+	// if (func_state != F_PERFORMANCE && func_state != F_EFFICIENCY)
+	// 	return;
+	// uint16_t regen_limit = pedals_getRegenLimit();
+	// if (regen_limit + REGEN_INCREMENT_STEP > MAX_REGEN_CURRENT) {
+	// 	pedals_setRegenLimit(MAX_REGEN_CURRENT);
+	// } else {
+	// 	pedals_setRegenLimit(regen_limit += REGEN_INCREMENT_STEP);
+	// }
+	// u_TODO - uncomment this stuff when statemachine
+}
+
+void pedals_decreaseRegenLimit(void)
+{
+	// func_state_t func_state = get_func_state();
+	// if (func_state != F_PERFORMANCE && func_state != F_EFFICIENCY)
+	// 	return;
+	// uint16_t regen_limit = pedals_getRegenLimit();
+	// if (regen_limit - REGEN_INCREMENT_STEP < 0) {
+	// 	pedals_setRegenLimit(0);
+	// } else {
+	// 	pedals_setRegenLimit(regen_limit -= REGEN_INCREMENT_STEP);
+	// }
+	// u_TODO - uncomment this stuff when statemachine
+}
+
+void pedals_setRegenLimit(uint16_t limit)
+{
+	// func_state_t func_state = get_func_state();
+	// if (func_state != F_PERFORMANCE && func_state != F_EFFICIENCY)
+	// 	return;
+	// if (limit > MAX_REGEN_CURRENT) {
+	// 	regen_limits[func_state - F_PERFORMANCE] = MAX_REGEN_CURRENT;
+	// } else if (limit < 0.0) {
+	// 	regen_limits[func_state - F_PERFORMANCE] = 0.0;
+	// } else {
+	// 	regen_limits[func_state - F_PERFORMANCE] = limit;
+	// }
+	// u_TODO - uncomment this stuff when statemachine
+}
+
+uint16_t pedals_getRegenLimit(void)
+{
+	// func_state_t func_state = get_func_state();
+	// if (func_state != F_PERFORMANCE && func_state != F_EFFICIENCY) {
+	// 	return 0;
+	// }
+	// return regen_limits[get_func_state() - F_PERFORMANCE];
+	// u_TODO - uncomment this stuff when statemachine
+}
+
+void pedals_toggleLaunchControl(void)
+{
+	launch_control_enabled = !launch_control_enabled;
+}
+
+bool pedals_getLaunchControl(void)
+{
+	return launch_control_enabled;
 }
 
 /* Pedal Processing Function. Meant to be called by the pedals thread. */
