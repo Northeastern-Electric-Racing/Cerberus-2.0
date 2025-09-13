@@ -13,10 +13,10 @@ static thread_t _default_thread = {
         .name       = "Default Thread",  /* Name */
         .size       = 512,               /* Stack Size (in bytes) */
         .priority   = 9,                 /* Priority */
-        .threshold  = 9,                 /* Preemption Threshold */
+        .threshold  = 0,                 /* Preemption Threshold */
         .time_slice = TX_NO_TIME_SLICE,  /* Time Slice */
         .auto_start = TX_AUTO_START,     /* Auto Start */
-        .sleep      = 500,               /* Sleep (in ticks) */
+        .sleep      = 50,                /* Sleep (in ticks) */
         .function   = default_thread     /* Thread Function */
     };
 void default_thread(ULONG thread_input) {
@@ -36,11 +36,11 @@ void default_thread(ULONG thread_input) {
 static thread_t _ethernet_thread = {
         .name       = "Ethernet Thread", /* Name */
         .size       = 512,               /* Stack Size (in bytes) */
-        .priority   = 9,                 /* Priority */
-        .threshold  = 9,                 /* Preemption Threshold */
+        .priority   = 3,                 /* Priority */
+        .threshold  = 0,                 /* Preemption Threshold */
         .time_slice = TX_NO_TIME_SLICE,  /* Time Slice */
         .auto_start = TX_AUTO_START,     /* Auto Start */
-        .sleep      = 500,               /* Sleep (in ticks) */
+        .sleep      =  1,                /* Sleep (in ticks) */
         .function   = ethernet_thread    /* Thread Function */
     };
 void ethernet_thread(ULONG thread_input) {
@@ -73,11 +73,11 @@ void ethernet_thread(ULONG thread_input) {
 static thread_t _can_thread = {
         .name       = "CAN Thread",     /* Name */
         .size       = 512,              /* Stack Size (in bytes) */
-        .priority   = 9,                /* Priority */
-        .threshold  = 9,                /* Preemption Threshold */
+        .priority   = 0,                /* Priority */
+        .threshold  = 0,                /* Preemption Threshold */
         .time_slice = TX_NO_TIME_SLICE, /* Time Slice */
         .auto_start = TX_AUTO_START,    /* Auto Start */
-        .sleep      = 500,              /* Sleep (in ticks) */
+        .sleep      = 1,                /* Sleep (in ticks) */
         .function   = can_thread        /* Thread Function */
     };
 void can_thread(ULONG thread_input) {
@@ -110,8 +110,8 @@ void can_thread(ULONG thread_input) {
 static thread_t _faults_thread = {
         .name       = "Faults Thread",  /* Name */
         .size       = 512,              /* Stack Size (in bytes) */
-        .priority   = 9,                /* Priority */
-        .threshold  = 9,                /* Preemption Threshold */
+        .priority   = 4,                /* Priority */
+        .threshold  = 0,                /* Preemption Threshold */
         .time_slice = TX_NO_TIME_SLICE, /* Time Slice */
         .auto_start = TX_AUTO_START,    /* Auto Start */
         .sleep      = 500,              /* Sleep (in ticks) */
@@ -142,8 +142,8 @@ void faults_thread(ULONG thread_input) {
 static thread_t _shutdown_thread = {
         .name       = "Shutdown Thread", /* Name */
         .size       = 512,               /* Stack Size (in bytes) */
-        .priority   = 9,                 /* Priority */
-        .threshold  = 9,                 /* Preemption Threshold */
+        .priority   = 5,                 /* Priority */
+        .threshold  = 0,                 /* Preemption Threshold */
         .time_slice = TX_NO_TIME_SLICE,  /* Time Slice */
         .auto_start = TX_AUTO_START,     /* Auto Start */
         .sleep      = 500,               /* Sleep (in ticks) */
