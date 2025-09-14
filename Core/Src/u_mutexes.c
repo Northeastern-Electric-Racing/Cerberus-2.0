@@ -33,6 +33,12 @@ mutex_t torque_limit_mutex = {
     .priority_inherit = TX_INHERIT /* Priority inheritance setting. */
 };
 
+/* DTI Mutex */
+mutex_t dti_mutex = {
+    .name = "DTI Mutex",           /* Name of the mutex. */
+    .priority_inherit = TX_INHERIT /* Priority inheritance setting. */
+};
+
 /* Helper function. Creates a ThreadX mutex. */
 static uint8_t _create_mutex(mutex_t *mutex) {
     uint8_t status = tx_mutex_create(&mutex->_TX_MUTEX, (CHAR*)mutex->name, mutex->priority_inherit);
@@ -54,6 +60,7 @@ uint8_t mutexes_init() {
     CATCH_ERROR(_create_mutex(&pedal_data_mutex), U_SUCCESS);   // Create Pedal Data Mutex.
     CATCH_ERROR(_create_mutex(&bms_mutex), U_SUCCESS);          // Create BMS Mutex.
     CATCH_ERROR(_create_mutex(&torque_limit_mutex), U_SUCCESS); // Create Torque Limit Mutex.
+    CATCH_ERROR(_create_mutex(&dti_mutex), U_SUCCESS);          // Create DTI Mutex.
     // add more as necessary.
 
     DEBUG_PRINTLN("Ran mutexes_init().");

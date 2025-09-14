@@ -18,7 +18,7 @@ void inbox_ethernet(ethernet_message_t *message) {
             // etc
             break;
         default:
-            DEBUG_PRINTLN("ERROR: Unknown Ethernet Message Recieved (Message ID: %X).", message->message_id);
+            DEBUG_PRINTLN("ERROR: Unknown Ethernet Message Recieved (Message ID: %d).", message->message_id);
             break;
     }
 }
@@ -34,7 +34,7 @@ void inbox_can(can_msg_t *message) {
             bms_setBattboxTemp(battbox_temp);
             break;
         default:
-            DEBUG_PRINTLN("ERROR: Unknown CAN Message Recieved (Message ID: %X).", message->id);
+            DEBUG_PRINTLN("ERROR: Unknown CAN Message Recieved (Message ID: %ld).", message->id);
             break;
     }
 }

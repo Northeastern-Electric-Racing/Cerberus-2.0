@@ -9,6 +9,7 @@
 #include "u_faults.h"
 #include "u_general.h"
 #include "u_efuses.h"
+#include "u_dti.h"
 
 /* Pedal sensors. This enum is ordered based on each sensor's ADC rank, which corresponds to the index of each sensor's data in the ADC buffer.  */
 typedef enum {
@@ -318,7 +319,7 @@ static void _accel_pedal_regen_torque(float percentage_accel)
  */
 static void _accel_pedal_regen_braking(float percentage_accel)
 {
-	uint16_t regen_limit = get_regen_limit();
+	uint16_t regen_limit = pedals_getRegenLimit();
 
 	/* Calculate AC current target for regenerative braking */
 	float regen_current =
@@ -370,7 +371,7 @@ static void _launch_control(float mph, float percentage_accel)
 static void _handle_performance(float mph, float percentage_accel)
 {
 #ifndef POWER_REGRESSION_PEDAL_TORQUE_TRANSFER
-	uint16_t regen_limit = get_regen_limit();
+	uint16_t regen_limit = pedals_getRegenLimit();
 	if (regen_limit <= 0.01) {
 		_linear_accel_to_torque(percentage_accel);
 		return;
