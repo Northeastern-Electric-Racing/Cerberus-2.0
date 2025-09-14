@@ -39,5 +39,6 @@ void ethernet_thread(ULONG thread_input);
 void can_thread(ULONG thread_input);
 void faults_thread(ULONG thread_input);
 void shutdown_thread(ULONG thread_input);
+void statemachine_thread(ULONG thread_input);
 
 #endif /* u_threads.h */

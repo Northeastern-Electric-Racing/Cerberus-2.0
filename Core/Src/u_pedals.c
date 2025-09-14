@@ -10,6 +10,7 @@
 #include "u_general.h"
 #include "u_efuses.h"
 #include "u_dti.h"
+#include "u_statemachine.h"
 
 /* Pedal sensors. This enum is ordered based on each sensor's ADC rank, which corresponds to the index of each sensor's data in the ADC buffer.  */
 typedef enum {
@@ -530,55 +531,51 @@ void pedals_decreaseTorqueLimit(void)
 
 void pedals_increaseRegenLimit(void)
 {
-	// func_state_t func_state = get_func_state();
-	// if (func_state != F_PERFORMANCE && func_state != F_EFFICIENCY)
-	// 	return;
-	// uint16_t regen_limit = pedals_getRegenLimit();
-	// if (regen_limit + REGEN_INCREMENT_STEP > MAX_REGEN_CURRENT) {
-	// 	pedals_setRegenLimit(MAX_REGEN_CURRENT);
-	// } else {
-	// 	pedals_setRegenLimit(regen_limit += REGEN_INCREMENT_STEP);
-	// }
-	// u_TODO - uncomment this stuff when statemachine
+	func_state_t func_state = get_func_state();
+	if (func_state != F_PERFORMANCE && func_state != F_EFFICIENCY)
+		return;
+	uint16_t regen_limit = pedals_getRegenLimit();
+	if (regen_limit + REGEN_INCREMENT_STEP > MAX_REGEN_CURRENT) {
+		pedals_setRegenLimit(MAX_REGEN_CURRENT);
+	} else {
+		pedals_setRegenLimit(regen_limit += REGEN_INCREMENT_STEP);
+	}
 }
 
 void pedals_decreaseRegenLimit(void)
 {
-	// func_state_t func_state = get_func_state();
-	// if (func_state != F_PERFORMANCE && func_state != F_EFFICIENCY)
-	// 	return;
-	// uint16_t regen_limit = pedals_getRegenLimit();
-	// if (regen_limit - REGEN_INCREMENT_STEP < 0) {
-	// 	pedals_setRegenLimit(0);
-	// } else {
-	// 	pedals_setRegenLimit(regen_limit -= REGEN_INCREMENT_STEP);
-	// }
-	// u_TODO - uncomment this stuff when statemachine
+	func_state_t func_state = get_func_state();
+	if (func_state != F_PERFORMANCE && func_state != F_EFFICIENCY)
+		return;
+	uint16_t regen_limit = pedals_getRegenLimit();
+	if (regen_limit - REGEN_INCREMENT_STEP < 0) {
+		pedals_setRegenLimit(0);
+	} else {
+		pedals_setRegenLimit(regen_limit -= REGEN_INCREMENT_STEP);
+	}
 }
 
 void pedals_setRegenLimit(uint16_t limit)
 {
-	// func_state_t func_state = get_func_state();
-	// if (func_state != F_PERFORMANCE && func_state != F_EFFICIENCY)
-	// 	return;
-	// if (limit > MAX_REGEN_CURRENT) {
-	// 	regen_limits[func_state - F_PERFORMANCE] = MAX_REGEN_CURRENT;
-	// } else if (limit < 0.0) {
-	// 	regen_limits[func_state - F_PERFORMANCE] = 0.0;
-	// } else {
-	// 	regen_limits[func_state - F_PERFORMANCE] = limit;
-	// }
-	// u_TODO - uncomment this stuff when statemachine
+	func_state_t func_state = get_func_state();
+	if (func_state != F_PERFORMANCE && func_state != F_EFFICIENCY)
+		return;
+	if (limit > MAX_REGEN_CURRENT) {
+		regen_limits[func_state - F_PERFORMANCE] = MAX_REGEN_CURRENT;
+	} else if (limit < 0.0) {
+		regen_limits[func_state - F_PERFORMANCE] = 0.0;
+	} else {
+		regen_limits[func_state - F_PERFORMANCE] = limit;
+	}
 }
 
 uint16_t pedals_getRegenLimit(void)
 {
-	// func_state_t func_state = get_func_state();
-	// if (func_state != F_PERFORMANCE && func_state != F_EFFICIENCY) {
-	// 	return 0;
-	// }
-	// return regen_limits[get_func_state() - F_PERFORMANCE];
-	// u_TODO - uncomment this stuff when statemachine
+	func_state_t func_state = get_func_state();
+	if (func_state != F_PERFORMANCE && func_state != F_EFFICIENCY) {
+		return 0;
+	}
+	return regen_limits[get_func_state() - F_PERFORMANCE];
 }
 
 void pedals_toggleLaunchControl(void)
@@ -628,42 +625,41 @@ void pedals_process(void) {
     }
     mutex_put(&brake_state_mutex);
 
-    // u_TODO - finish this stuff when statemachine and dit done
-	// uint16_t dc_current = dti_get_dc_current(mc, &dc_current);
-    // float mph = dti_get_mph(mc);
+	uint16_t dc_current = dti_get_dc_current();
+    float mph = dti_get_mph();
 
-	// if (_calc_bspd_prefault(pedal_data.percentage_accel, pedal_data.percentage_brake, dc_current)) {
-	// 	/* Prefault triggered */
-	// 	// dti_set_torque(0);
-	// 	// osDelay(delay_time);
-    // }
+	if (_calc_bspd_prefault(pedal_data.percentage_accel, pedal_data.percentage_brake, dc_current)) {
+		/* Prefault triggered */
+		// dti_set_torque(0);
+		// osDelay(delay_time);
+    }
 
-    // switch(statemachine_getFunctionalState()) {
-    //     case READY:
-    //         dti_set_torque(0);
-    //         break;
-    //     case FAULTED:
-    //         dti_set_torque(0);
-    //         break;
-    //     case F_PIT:
-    //         _handle_pit(mph, pedal_data.percentage_accel);
-    //         break;
-    //     case F_REVERSE:
-    //         _handle_reverse(mph, pedal_data.percentage_accel);
-    //         break;
-    //     case F_PERFORMANCE:
-    //         _handle_performance(mph, pedal_data.percentage_accel);
-    //         break;
-    //     case F_EFFICIENCY:
-    //         _handle_efficiency(mph, pedal_data.percentage_accel);
-    //         break;
-    //     default:
-    //         DEBUG_PRINTLN("ERROR: Failed to process pedals due to unknown functional state.");
-    //         break;
-    // }
+    switch(statemachine_getFunctionalState()) {
+        case READY:
+            dti_set_torque(0);
+            break;
+        case FAULTED:
+            dti_set_torque(0);
+            break;
+        case F_PIT:
+            _handle_pit(mph, pedal_data.percentage_accel);
+            break;
+        case F_REVERSE:
+            _handle_reverse(mph, pedal_data.percentage_accel);
+            break;
+        case F_PERFORMANCE:
+            _handle_performance(mph, pedal_data.percentage_accel);
+            break;
+        case F_EFFICIENCY:
+            _handle_efficiency(mph, pedal_data.percentage_accel);
+            break;
+        default:
+            DEBUG_PRINTLN("ERROR: Failed to process pedals due to unknown functional state.");
+            break;
+    }
 
     /* Return the pedal data mutex. */
     mutex_put(&pedal_data_mutex);
 
-    return; // u_TODO - implement this. Maybe make stuff like calculate_brake_faults, calculate_pedal_faults, pedals_getRaw, pedals_getSensorVoltage, etc. static functions
+    return;
 }

@@ -181,6 +181,28 @@ void shutdown_thread(ULONG thread_input) {
     }
 }
 
+/* State Machine Thread. */
+static thread_t _statemachine_thread = {
+        .name       = "State Machine Thread", /* Name */
+        .size       = 512,                    /* Stack Size (in bytes) */
+        .priority   = 2,                      /* Priority */
+        .threshold  = 0,                      /* Preemption Threshold */
+        .time_slice = TX_NO_TIME_SLICE,       /* Time Slice */
+        .auto_start = TX_AUTO_START,          /* Auto Start */
+        .sleep      = 1,                      /* Sleep (in ticks) */
+        .function   = statemachine_thread     /* Thread Function */
+    };
+void statemachine_thread(ULONG thread_input) {
+    
+    while(1) {
+
+        statemachine_process();
+
+        /* Sleep Thread for specified number of ticks. */
+        tx_thread_sleep(_statemachine_thread.sleep);
+    }
+}
+
 /* Helper function. Creates a ThreadX thread. */
 static uint8_t _create_thread(TX_BYTE_POOL *byte_pool, thread_t *thread) {
     CHAR *pointer;
@@ -215,6 +237,8 @@ uint8_t threads_init(TX_BYTE_POOL *byte_pool) {
     CATCH_ERROR(_create_thread(byte_pool, &_can_thread), U_SUCCESS);      // Create CAN thread.
     CATCH_ERROR(_create_thread(byte_pool, &_faults_thread), U_SUCCESS);   // Create Faults thread.
     CATCH_ERROR(_create_thread(byte_pool, &_shutdown_thread), U_SUCCESS); // Create Shutdown thread.
+    CATCH_ERROR(_create_thread(byte_pool, &_statemachine_thread), U_SUCCESS); // Create Shutdown thread.
+
     // add more threads here if need
 
     DEBUG_PRINTLN("Ran threads_init().");

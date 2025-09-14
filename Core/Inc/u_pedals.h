@@ -14,5 +14,6 @@ void pedals_decreaseRegenLimit(void);                   // Decrease Regen Limit.
 void pedals_setRegenLimit(uint16_t limit);              // Sets regen limit.
 uint16_t pedals_getRegenLimit(void);                    // Sets regen limit.
 void pedals_toggleLaunchControl(void);                  // Toggles launch control.
+bool pedals_getLaunchControl(void);                     // Gets launch control.
 
 #endif /* u_pedals.h */
