@@ -5,29 +5,23 @@
 #include <stdbool.h>
 #include "main.h"
 
-typedef struct {
-    int en_pin;             /* EN (Enable) pin for this eFuse. It enables/disables the eFuse. */
-    GPIO_TypeDef* en_port;  /* GPIO port for the EN pin. */
-    int er_pin;             /* ER (Error) pin for this eFuse. It indicates if the eFuse is experiencing an error. */
-    GPIO_TypeDef* er_port;  /* GPIO port for the ER pin. */
-    float scale;            /* scale = 1 / (GAIN_IMON * R_IMON). Used to calculate current. */
-    int rank;               /* Rank of the eFuse's ADC channel. Corresponds to the eFuse's index in the ADC buffer. */
+typedef enum {
+    EFUSE_DASHBOARD,
+    EFUSE_BRAKE,
+    EFUSE_SHUTDOWN,
+    EFUSE_LV,
+    EFUSE_RADFAN,
+    EFUSE_FANBATT,
+    EFUSE_PUMP1,
+    EFUSE_PUMP2,
+    EFUSE_BATTBOX,
+    EFUSE_MC,
+
+    /* Total number of efuses. */
+    NUM_EFUSES
 } efuse_t;
 
-/* eFuse List: */
-extern const efuse_t ef_dashboard; // Dashboard eFuse
-extern const efuse_t ef_break;     // Break eFuse
-extern const efuse_t ef_shutdown;  // Shutdown eFuse
-extern const efuse_t ef_lv;        // LV eFuse
-extern const efuse_t ef_radfan;    // Radfan eFuse
-extern const efuse_t ef_fanbatt;   // Fanbatt eFuse
-extern const efuse_t ef_pump1;     // Pump1 eFuse
-extern const efuse_t ef_pump2;     // Pump2 eFuse
-extern const efuse_t ef_battbox;   // Battbox eFuse
-extern const efuse_t ef_mc;        // MC eFuse
-
 /* API */
-uint8_t efuses_init(void);                 // Start eFuse-related ADC DMA.
 uint16_t efuse_getRaw(efuse_t efuse);      // Returns the eFuse's raw ADC reading.
 float efuse_getVoltage(efuse_t efuse);     // Returns the eFuse's voltage reading.
 float efuse_getCurrent(efuse_t efuse);     // Returns the eFuse's current reading.

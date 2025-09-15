@@ -12,8 +12,9 @@
 #include "u_efuses.h"
 #include "u_dti.h"
 #include "u_statemachine.h"
+#include "u_adc.h"
 
-/* Pedal sensors. This enum is ordered based on each sensor's ADC rank, which corresponds to the index of each sensor's data in the ADC buffer.  */
+/* Pedal sensors. This enum is ordered based on the order of the sensors' ADC indexes, as set up in u_adc.c  */
 typedef enum {
     ACCEL_PEDAL_1, /* Sensor 1 for the Acceleration Pedal. */
     ACCEL_PEDAL_2, /* Sensor 2 for the Acceleration Pedal. */
@@ -23,13 +24,11 @@ typedef enum {
     /* Total number of pedal sensors. */
     NUM_SENSORS
 } pedal_sensor_t;
-// u_TODO - once pedal ADC stuff is set up in CubeMX, make sure this order is accurate.
 
 /* Globals. */
 static float torque_limit_percentage = 1.0;
 static uint16_t regen_limits[2] = { 0, 50 }; // [PERFORMANCE, ENDURANCE]
 static bool launch_control_enabled = false;
-static uint32_t _buffer[NUM_SENSORS];        // Buffer to hold Pedal ADC readings. Each index corresponds to a different eFuse.
 static const float MPH_TO_KMH = 1.609;       // Factor for converting MPH to KMH
 static bool brake_pressed = false;
 static TX_TIMER pedal_data_timer;            // Timer for sending pedal data message.
@@ -439,12 +438,31 @@ static void _handle_reverse(float mph, float percentage_accel)
 
 /* Returns the raw ADC readings for a pedal sensor. */
 static uint16_t _get_raw_adc_reading(pedal_sensor_t pedal_sensor) {
-    return _buffer[pedal_sensor];
+	uint16_t reading;
+	switch(pedal_sensor) {
+		case ACCEL_PEDAL_1:
+			reading = adc_getPedalData().accel_1;
+			break;
+		case ACCEL_PEDAL_2:
+			reading = adc_getPedalData().accel_2;
+			break;
+		case BRAKE_PEDAL_1:
+			reading = adc_getPedalData().brake_1;
+			break;
+		case BRAKE_PEDAL_2:
+			reading = adc_getPedalData().brake_2;
+			break;
+		default:
+			DEBUG_PRINTLN("ERROR: Unknown pedal sensor enum passed into function.");
+			return U_ERROR;
+	}
+	return reading;
 }
 
 /* Converts the ADC to the voltage out of 5V (for rules). */
 static float _get_sensor_voltage(pedal_sensor_t pedal_sensor) {
-    float v3_volts = _buffer[pedal_sensor] * MAX_VOLTS / MAX_ADC_VAL_12b;
+	uint16_t adc_data = _get_raw_adc_reading(pedal_sensor);
+    float v3_volts = adc_data * MAX_VOLTS / MAX_ADC_VAL_12b;
 	// undo 2k + 3k voltage divider on APPS lines
 	return ((2000.0 + 3000) / 3000) * v3_volts;
 }
@@ -457,15 +475,9 @@ static float _get_pedal_percent_pressed(float voltage, float offset, float max)
 
 /* Initializes Pedals ADC and creates pedal data timer. */
 int pedals_init(void) {
-    /* Start ADC DMA */
-    int status = HAL_ADC_Start_DMA(&hadc1, _buffer, NUM_SENSORS); // u_TODO - gotta correct this once pedals ADC stuff is set up in CubeMX. hadc1 is for the efuses not pedals
-    if(status != HAL_OK) {
-        DEBUG_PRINTLN("ERROR: Failed to start ADC DMA for pedals (Status: %d/%s).", status, hal_status_toString(status));
-        return U_ERROR;
-    }
 
     /* Create Pedal Data Timer. */
-    status = tx_timer_create(
+    int status = tx_timer_create(
         &pedal_data_timer,        /* Timer Instance */
         "Pedal Data Timer",       /* Timer Name */
         _send_pedal_data,         /* Timer Expiration Callback */
@@ -618,11 +630,11 @@ void pedals_process(void) {
     mutex_get(&brake_state_mutex);
     if(pedal_data.percentage_brake > PEDAL_BRAKE_THRESH) {
         brake_pressed = true;
-        efuse_enable(ef_break); // u_TODO - i'm pretty sure this is for the brakelight? but idk why its spelled like that in altium
+        efuse_enable(EFUSE_BRAKE); // u_TODO - i'm pretty sure this is for the brakelight? but idk why its spelled like that in altium
     }
     else {
         brake_pressed = false;
-        efuse_disable(ef_break);
+        efuse_disable(EFUSE_BRAKE);
     }
     mutex_put(&brake_state_mutex);
 
