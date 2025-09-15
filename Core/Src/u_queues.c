@@ -2,6 +2,7 @@
 #include "u_can.h"
 #include "u_general.h"
 #include "u_faults.h"
+#include "u_statemachine.h"
 #include <stdio.h>
 
 /* 
@@ -51,6 +52,13 @@ queue_t faults = {
     .capacity = 10                         /* Number of messages the queue can hold. */
 };
 
+/* State Transition Queue */
+queue_t state_transition_queue = {
+    .name = "State Transition Queue",      /* Name of the queue. */
+    .message_size = sizeof(state_req_t),   /* Size of each queue message, in bytes. */
+    .capacity = 10                         /* Number of messages the queue can hold. */
+};
+
 /* Helper function. Creates a ThreadX queue. */
 static uint8_t _create_queue(TX_BYTE_POOL *byte_pool, queue_t *queue) {
     uint8_t status;
@@ -61,8 +69,7 @@ static uint8_t _create_queue(TX_BYTE_POOL *byte_pool, queue_t *queue) {
     /* Basically, queue messages have to be a multiple of 4 bytes? Kinda weird but this should handle it. */
     UINT message_size_words = (queue->message_size + 3) / 4;
     if (message_size_words < 1 || message_size_words > 16) {
-        DEBUG_PRINTLN("ERROR: Invalid message size %d bytes (must be 1-64 bytes). Queue: %s", 
-                    queue->message_size, queue->name);
+        DEBUG_PRINTLN("ERROR: Invalid message size %d bytes (must be 1-64 bytes). Queue: %s", queue->message_size, queue->name);
         return U_ERROR;
     }
 
@@ -103,6 +110,7 @@ uint8_t queues_init(TX_BYTE_POOL *byte_pool) {
     CATCH_ERROR(_create_queue(byte_pool, &can_incoming), U_SUCCESS); // Create Incoming CAN Queue
     CATCH_ERROR(_create_queue(byte_pool, &can_outgoing), U_SUCCESS); // Create Outgoing CAN Queue
     CATCH_ERROR(_create_queue(byte_pool, &faults), U_SUCCESS);       // Create Faults Queue
+    CATCH_ERROR(_create_queue(byte_pool, &state_transition_queue), U_SUCCESS); // Create state transition queue.
 
     DEBUG_PRINTLN("Ran queues_init().");
     return U_SUCCESS;

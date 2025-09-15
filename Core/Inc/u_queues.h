@@ -13,7 +13,7 @@
 */
 
 /* Queue Config Macros */
-#define QUEUE_WAIT_TIME TX_WAIT_FOREVER // Wait time for queue stuff before timing out
+#define QUEUE_WAIT_TIME TX_NO_WAIT // Wait time for queue stuff before timing out
 
 typedef struct {
 
@@ -36,6 +36,7 @@ extern queue_t eth_outgoing; // Outgoing Ethernet Queue
 extern queue_t can_incoming; // Incoming CAN Queue
 extern queue_t can_outgoing; // Outgoing CAN Queue
 extern queue_t faults;       // Faults Queue
+extern queue_t state_transition_queue; // State Transition Queue
 // add more as necessary
 
 /* API */
