@@ -9,24 +9,24 @@ typedef enum {
     /* The order of items in this enum MUST match how the ADC ranks are set up in CubeMX. */
 
     /* EFuses. */
-    ADC1_EFUSE_DASHBOARD,
-    ADC1_EFUSE_BRAKE,
-    ADC1_EFUSE_SHUTDOWN,
-    ADC1_EFUSE_LV,
-    ADC1_EFUSE_RADFAN,
-    ADC1_EFUSE_FANBATT,
-    ADC1_EFUSE_PUMP1,
-    ADC1_EFUSE_PUMP2,
-    ADC1_EFUSE_BATTBOX,
-    ADC1_EFUSE_MC,
+    ADC1_EFUSE_DASHBOARD, // ADC1 Rank 0 (i.e. buffer index 0)
+    ADC1_EFUSE_BRAKE,     // ADC1 Rank 1 (i.e. buffer index 1)
+    ADC1_EFUSE_SHUTDOWN,  // ADC1 Rank 2 (i.e. buffer index 2)
+    ADC1_EFUSE_LV,        // ADC1 Rank 3 (i.e. buffer index 3)
+    ADC1_EFUSE_RADFAN,    // ADC1 Rank 4 (i.e. buffer index 4)
+    ADC1_EFUSE_FANBATT,   // ADC1 Rank 5 (i.e. buffer index 5)
+    ADC1_EFUSE_PUMP1,     // ADC1 Rank 6 (i.e. buffer index 6)
+    ADC1_EFUSE_PUMP2,     // ADC1 Rank 7 (i.e. buffer index 7)
+    ADC1_EFUSE_BATTBOX,   // ADC1 Rank 8 (i.e. buffer index 8)
+    ADC1_EFUSE_MC,        // ADC1 Rank 9 (i.e. buffer index 9)
 
     /* Acceleration Pedal Sensors. */
-    ADC1_ACCEL_PEDAL_1, /* Sensor 1 for the Acceleration Pedal. */
-    ADC1_ACCEL_PEDAL_2, /* Sensor 2 for the Acceleration Pedal. */
+    ADC1_ACCEL_PEDAL_1,   // ADC1 Rank 10 (i.e. buffer index 10)
+    ADC1_ACCEL_PEDAL_2,   // ADC1 Rank 11 (i.e. buffer index 11)
     
     /* Total number of indexes for ADC1. */
     ADC1_SIZE
-} adc1_t;
+} _adc1_t;
 static uint32_t _adc1_buffer[ADC1_SIZE]; // Buffer for the ADC DMA readings.
 
 /* ADC2 Config. */
@@ -34,15 +34,15 @@ typedef enum {
     /* The order of items in this enum MUST match how the ADC ranks are set up in CubeMX. */
 
     /* Brake Pedal Sensors. */
-    ADC2_BRAKE_PEDAL_1, /* Sensor 1 for the Brake Pedal. */
-    ADC2_BRAKE_PEDAL_2, /* Sensor 2 for the Brake Pedal. */
+    ADC2_BRAKE_PEDAL_1, // ADC2 Rank 0 (i.e. buffer index 0)
+    ADC2_BRAKE_PEDAL_2, // ADC2 Rank 1 (i.e. buffer index 1)
 
     /* Total number of indexes for ADC2. */
     ADC2_SIZE
-} adc2_t;
+} _adc2_t;
 static uint32_t _adc2_buffer[ADC2_SIZE]; // Buffer for the ADC DMA readings.
 
-uint16_t _get_adc1_value(adc1_t index) {
+uint16_t _get_adc1_value(_adc1_t index) {
     uint16_t temp;
     mutex_get(&adc1_mutex);
     temp = (uint16_t)(_adc1_buffer[index]);
@@ -50,7 +50,7 @@ uint16_t _get_adc1_value(adc1_t index) {
     return temp;
 }
 
-uint16_t _get_adc2_value(adc2_t index) {
+uint16_t _get_adc2_value(_adc2_t index) {
     uint16_t temp;
     mutex_get(&adc2_mutex);
     temp = (uint16_t)(_adc2_buffer[index]);
