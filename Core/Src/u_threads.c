@@ -5,6 +5,7 @@
 #include "u_can.h"
 #include "u_ethernet.h"
 #include "u_faults.h"
+#include "u_pedals.h"
 #include "u_efuses.h"
 #include "bitstream.h"
 
@@ -203,6 +204,28 @@ void statemachine_thread(ULONG thread_input) {
     }
 }
 
+/* Pedals Thread. */
+static thread_t _pedals_thread = {
+        .name       = "Pedals Thread", /* Name */
+        .size       = 512,                    /* Stack Size (in bytes) */
+        .priority   = 2,                      /* Priority */
+        .threshold  = 0,                      /* Preemption Threshold */
+        .time_slice = TX_NO_TIME_SLICE,       /* Time Slice */
+        .auto_start = TX_AUTO_START,          /* Auto Start */
+        .sleep      = 1,                      /* Sleep (in ticks) */
+        .function   = pedals_thread           /* Thread Function */
+    };
+void pedals_thread(ULONG thread_input) {
+    
+    while(1) {
+
+        pedals_process();
+
+        /* Sleep Thread for specified number of ticks. */
+        tx_thread_sleep(_pedals_thread.sleep);
+    }
+}
+
 /* Helper function. Creates a ThreadX thread. */
 static uint8_t _create_thread(TX_BYTE_POOL *byte_pool, thread_t *thread) {
     CHAR *pointer;
@@ -232,12 +255,13 @@ static uint8_t _create_thread(TX_BYTE_POOL *byte_pool, thread_t *thread) {
 uint8_t threads_init(TX_BYTE_POOL *byte_pool) {
 
     /* Create Threads */
-    CATCH_ERROR(_create_thread(byte_pool, &_default_thread), U_SUCCESS);  // Create Default thread.
-    CATCH_ERROR(_create_thread(byte_pool, &_ethernet_thread), U_SUCCESS); // Create Ethernet thread.
-    CATCH_ERROR(_create_thread(byte_pool, &_can_thread), U_SUCCESS);      // Create CAN thread.
-    CATCH_ERROR(_create_thread(byte_pool, &_faults_thread), U_SUCCESS);   // Create Faults thread.
-    CATCH_ERROR(_create_thread(byte_pool, &_shutdown_thread), U_SUCCESS); // Create Shutdown thread.
-    CATCH_ERROR(_create_thread(byte_pool, &_statemachine_thread), U_SUCCESS); // Create Shutdown thread.
+    CATCH_ERROR(_create_thread(byte_pool, &_default_thread), U_SUCCESS);      // Create Default thread.
+    CATCH_ERROR(_create_thread(byte_pool, &_ethernet_thread), U_SUCCESS);     // Create Ethernet thread.
+    CATCH_ERROR(_create_thread(byte_pool, &_can_thread), U_SUCCESS);          // Create CAN thread.
+    CATCH_ERROR(_create_thread(byte_pool, &_faults_thread), U_SUCCESS);       // Create Faults thread.
+    CATCH_ERROR(_create_thread(byte_pool, &_shutdown_thread), U_SUCCESS);     // Create Shutdown thread.
+    CATCH_ERROR(_create_thread(byte_pool, &_statemachine_thread), U_SUCCESS); // Create State Machine thread.
+    CATCH_ERROR(_create_thread(byte_pool, &_pedals_thread), U_SUCCESS);       // Create Pedals thread.
 
     // add more threads here if need
 

@@ -15,7 +15,7 @@ static void _set_rtds_pin(void) {
 /* Clears (i.e. turns off) the RTDS pin. */
 static void _clear_rtds_pin(void) {
     HAL_GPIO_WritePin(RTDS_GPIO_GPIO_Port, RTDS_GPIO_Pin, GPIO_PIN_RESET); // Turn off RTDS pin.
-    DEBUG_PRINTLN("Turned off RTDS pin.");;
+    DEBUG_PRINTLN("Turned off RTDS pin.");
 }
 
 /* Callback function. Turns off the RTDS after the timer expires. */

@@ -1,6 +1,7 @@
 #include "main.h"
 #include "timer.h"
 #include "debounce.h"
+#include "c_utils.h"
 #include "u_can.h"
 #include "tx_api.h"
 #include "u_pedals.h"
@@ -634,7 +635,7 @@ void pedals_process(void) {
 		// osDelay(delay_time);
     }
 
-    switch(statemachine_getFunctionalState()) {
+    switch(get_func_state()) {
         case READY:
             dti_set_torque(0);
             break;
@@ -651,7 +652,7 @@ void pedals_process(void) {
             _handle_performance(mph, pedal_data.percentage_accel);
             break;
         case F_EFFICIENCY:
-            _handle_efficiency(mph, pedal_data.percentage_accel);
+            _handle_endurance(mph, pedal_data.percentage_accel);
             break;
         default:
             DEBUG_PRINTLN("ERROR: Failed to process pedals due to unknown functional state.");
