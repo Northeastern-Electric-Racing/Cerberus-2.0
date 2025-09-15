@@ -4,9 +4,43 @@
 #include "u_general.h"
 #include "u_adc.h"
 
-/* Globals. */
-static uint32_t _adc1_buffer[ADC1_SIZE];
-static uint32_t _adc2_buffer[ADC2_SIZE];
+/* ADC1 Config. */
+typedef enum {
+    /* The order of items in this enum MUST match how the ADC ranks are set up in CubeMX. */
+
+    /* EFuses. */
+    ADC1_EFUSE_DASHBOARD,
+    ADC1_EFUSE_BRAKE,
+    ADC1_EFUSE_SHUTDOWN,
+    ADC1_EFUSE_LV,
+    ADC1_EFUSE_RADFAN,
+    ADC1_EFUSE_FANBATT,
+    ADC1_EFUSE_PUMP1,
+    ADC1_EFUSE_PUMP2,
+    ADC1_EFUSE_BATTBOX,
+    ADC1_EFUSE_MC,
+
+    /* Acceleration Pedal Sensors. */
+    ADC1_ACCEL_PEDAL_1, /* Sensor 1 for the Acceleration Pedal. */
+    ADC1_ACCEL_PEDAL_2, /* Sensor 2 for the Acceleration Pedal. */
+    
+    /* Total number of indexes for ADC1. */
+    ADC1_SIZE
+} adc1_t;
+static uint32_t _adc1_buffer[ADC1_SIZE]; // Buffer for the ADC DMA readings.
+
+/* ADC2 Config. */
+typedef enum {
+    /* The order of items in this enum MUST match how the ADC ranks are set up in CubeMX. */
+
+    /* Brake Pedal Sensors. */
+    ADC2_BRAKE_PEDAL_1, /* Sensor 1 for the Brake Pedal. */
+    ADC2_BRAKE_PEDAL_2, /* Sensor 2 for the Brake Pedal. */
+
+    /* Total number of indexes for ADC2. */
+    ADC2_SIZE
+} adc2_t;
+static uint32_t _adc2_buffer[ADC2_SIZE]; // Buffer for the ADC DMA readings.
 
 uint16_t _get_adc1_value(adc1_t index) {
     uint16_t temp;
