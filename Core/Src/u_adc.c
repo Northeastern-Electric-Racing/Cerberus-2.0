@@ -19,7 +19,7 @@ uint16_t _get_adc1_value(adc1_t index) {
 uint16_t _get_adc2_value(adc2_t index) {
     uint16_t temp;
     mutex_get(&adc2_mutex);
-    temp = (uint16_t)(_adc1_buffer[index]);
+    temp = (uint16_t)(_adc2_buffer[index]);
     mutex_put(&adc2_mutex);
     return temp;
 }
