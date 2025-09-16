@@ -239,16 +239,18 @@ static thread_t _efuse_thread = {
         .function   = efuse_thread            /* Thread Function */
     };
 void efuse_thread(ULONG thread_input) {
+
+    /* Struct for holding eFuse data. */
+    /* Each instance of this struct represents a different eFuse. */
+    typedef struct __attribute__((__packed__)) {
+		uint16_t raw;
+        uint16_t voltage;
+		uint16_t current;
+		bool faulted;
+		bool enabled;
+	} efuse_data_t;
     
     while(1) {
-
-        typedef struct __attribute__((__packed__)) {
-		    uint16_t raw;
-            uint16_t voltage;
-		    uint16_t current;
-		    bool faulted;
-		    bool enabled;
-	    } efuse_data_t;
 
         /* Set data. */
         efuse_data_t data[NUM_EFUSES];
