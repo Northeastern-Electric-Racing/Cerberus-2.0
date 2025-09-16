@@ -7,6 +7,7 @@
 #include "u_faults.h"
 #include "u_pedals.h"
 #include "u_efuses.h"
+#include "u_statemachine.h"
 #include "bitstream.h"
 
 /* Default Thread */
@@ -226,6 +227,54 @@ void pedals_thread(ULONG thread_input) {
     }
 }
 
+/* eFuse Thread. */
+static thread_t _efuse_thread = {
+        .name       = "eFuse Thread",         /* Name */
+        .size       = 512,                    /* Stack Size (in bytes) */
+        .priority   = 2,                      /* Priority */
+        .threshold  = 0,                      /* Preemption Threshold */
+        .time_slice = TX_NO_TIME_SLICE,       /* Time Slice */
+        .auto_start = TX_AUTO_START,          /* Auto Start */
+        .sleep      = 1,                      /* Sleep (in ticks) */
+        .function   = efuse_thread            /* Thread Function */
+    };
+void efuse_thread(ULONG thread_input) {
+
+    /* Struct for holding eFuse data. */
+    /* Each instance of this struct represents a different eFuse. */
+    typedef struct __attribute__((__packed__)) {
+		uint16_t raw;
+        uint16_t voltage;
+		uint16_t current;
+		bool faulted;
+		bool enabled;
+	} efuse_data_t;
+    
+    while(1) {
+
+        /* Set data. */
+        efuse_data_t data[NUM_EFUSES];
+        for(efuse_t efuse = 0; efuse < NUM_EFUSES; efuse++) {
+            /* Set the data for each eFuse. */
+            data[efuse].raw = efuse_getRaw(efuse);
+            data[efuse].voltage = (uint16_t)(efuse_getVoltage(efuse) * 100);
+            data[efuse].current = (uint16_t)(efuse_getCurrent(efuse) * 100);
+            data[efuse].faulted = efuse_getFaultStatus(efuse);
+            data[efuse].enabled = efuse_getEnableStatus(efuse);
+        }
+
+        // u_TODO - eventually actually make and send the messages when it's set up in embedded-base
+        // do something like:
+        //
+        // can_msg_t dashboard_msg = {.id = CANID_EFUSE_DASHBOARD, .len = 8};
+        // memcpy(dashboard_msg.data, &data[EFUSE_DASHBOARD], dashboard_msg.len);
+        // queue_send(&can_outgoing, &dashboard_msg);
+
+        /* Sleep Thread for specified number of ticks. */
+        tx_thread_sleep(_efuse_thread.sleep);
+    }
+}
+
 /* Helper function. Creates a ThreadX thread. */
 static uint8_t _create_thread(TX_BYTE_POOL *byte_pool, thread_t *thread) {
     CHAR *pointer;
@@ -262,6 +311,7 @@ uint8_t threads_init(TX_BYTE_POOL *byte_pool) {
     CATCH_ERROR(_create_thread(byte_pool, &_shutdown_thread), U_SUCCESS);     // Create Shutdown thread.
     CATCH_ERROR(_create_thread(byte_pool, &_statemachine_thread), U_SUCCESS); // Create State Machine thread.
     CATCH_ERROR(_create_thread(byte_pool, &_pedals_thread), U_SUCCESS);       // Create Pedals thread.
+    CATCH_ERROR(_create_thread(byte_pool, &_efuse_thread), U_SUCCESS);        // Create eFuse thread.
 
     // add more threads here if need
 
