@@ -1,5 +1,6 @@
 #include <stdint.h>
 #include "tx_api.h"
+#include "main.h"
 #include "u_faults.h"
 #include "u_general.h"
 #include "u_mutexes.h"
@@ -148,6 +149,12 @@ int trigger_fault(fault_t fault_id) {
     }
 
     return U_SUCCESS;
+}
+
+/* Write the VCU FAULT line (from the microcontroller to the car). */
+void write_mcu_fault(bool status)
+{
+	HAL_GPIO_WritePin(FAULT_MCU_GPIO_Port, FAULT_MCU_Pin, !status);
 }
 
 /* Static Asserts */
