@@ -158,10 +158,12 @@ void write_mcu_fault(bool status)
     // The pin has a default state of HIGH (i.e. no fault).
     if(status) {
         // If there is a fault, set the fault pin to LOW.
+        DEBUG_PRINTLN("Turned on MCU fault.");
         HAL_GPIO_WritePin(FAULT_MCU_GPIO_Port, FAULT_MCU_Pin, GPIO_PIN_RESET);
     }
     else {
         // If there is not a fault, set the pin to HIGH.
+        DEBUG_PRINTLN("Turned off MCU fault.");
         HAL_GPIO_WritePin(FAULT_MCU_GPIO_Port, FAULT_MCU_Pin, GPIO_PIN_SET);
     }
 }
