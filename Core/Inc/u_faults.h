@@ -1,6 +1,8 @@
 #ifndef __U_FAULTS_H
 #define __U_FAULTS_H
 
+#include <stdbool.h>
+
 /* List of fault IDs. */
 typedef enum {
     /* Critical Faults */
@@ -31,5 +33,6 @@ typedef enum {
 int faults_init(void);
 int trigger_fault(fault_t fault_id);
 uint64_t get_faults(void);
+void write_mcu_fault(bool status); /* Write the VCU FAULT line (from the microcontroller to the car). true = faulted, false = unfaulted. */
 
 #endif /* u_faults.h */

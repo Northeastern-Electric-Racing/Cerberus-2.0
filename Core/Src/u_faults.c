@@ -1,6 +1,8 @@
 #include <stdint.h>
 #include "tx_api.h"
+#include "main.h"
 #include "u_faults.h"
+#include "u_statemachine.h"
 #include "u_general.h"
 #include "u_mutexes.h"
 
@@ -60,13 +62,10 @@ static void _timer_callback(ULONG args) {
     DEBUG_PRINTLN("UNFAULTED: %s.", faults[fault_id].name);
 
     /* Check if there are any active critical faults. If not, unfault the car. */
-    if((fault_flags & severity_mask) == 0) {
-        // u_TODO - implement this when statemachine is done. should be something like based on Cerberus-1.0 fault.c: 
-        //
-        // if(get_func_state() == FAULTED) {
-        //      set_ready_mode();
-        // }
-        //
+    if((fault_flags & severity_mask) == 0) {        
+        if(get_func_state() == FAULTED) {
+             set_ready_mode();
+        }
     }
 
     /* Put faults mutex. */
@@ -118,7 +117,7 @@ int trigger_fault(fault_t fault_id) {
     switch(faults[fault_id].severity) {
         case CRITICAL:
             DEBUG_PRINTLN("CRITICAL FAULT TRIGGERED: %s.", faults[fault_id].name);
-            // fault(); u_TODO - this has to be implemented in the statemachine. if the cerberus statemachine is just copied over, this function should be in there.
+            fault();
             break;
         case NON_CRITICAL:
             DEBUG_PRINTLN("NON_CRITICAL FAULT TRIGGERED: %s.", faults[fault_id].name);
@@ -148,6 +147,23 @@ int trigger_fault(fault_t fault_id) {
     }
 
     return U_SUCCESS;
+}
+
+/* Write the VCU FAULT line (from the microcontroller to the car). */
+void write_mcu_fault(bool status)
+{   
+    // The MCU Fault pin is kind of "swapped".
+    // Setting the pin to HIGH indicates that there is no fault.
+    // Setting the pin to LOW indicates that there is a fault.
+    // The pin has a default state of HIGH (i.e. no fault).
+    if(status) {
+        // If there is a fault, set the fault pin to LOW.
+        HAL_GPIO_WritePin(FAULT_MCU_GPIO_Port, FAULT_MCU_Pin, GPIO_PIN_RESET);
+    }
+    else {
+        // If there is not a fault, set the pin to HIGH.
+        HAL_GPIO_WritePin(FAULT_MCU_GPIO_Port, FAULT_MCU_Pin, GPIO_PIN_SET);
+    }
 }
 
 /* Static Asserts */

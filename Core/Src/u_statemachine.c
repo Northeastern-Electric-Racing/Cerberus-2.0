@@ -13,6 +13,7 @@
 #include "u_rtds.h"
 #include "u_general.h"
 #include "u_queues.h"
+#include "u_faults.h"
 #include "u_pedals.h"
 
 #define STATE_TRANS_QUEUE_SIZE 4
@@ -107,7 +108,7 @@ static int transition_functional_state(func_state_t new_state)
 	if (new_state == FAULTED) {
 		/* Turn off high power peripherals */
 		cerberus_state.nero = (nero_state_t){ .nero_index = OFF, .home_mode = true };
-		//write_fault(true); u_TODO - implement this
+		write_mcu_fault(true);
 		printf("FAULTED\r\n");
 	}
 
@@ -119,7 +120,7 @@ static int transition_functional_state(func_state_t new_state)
 	switch (new_state) {
 	case READY:
 		/* Turn off high power peripherals */
-		//write_fault(false); u_TODO - implement this
+		write_mcu_fault(false);
 		printf("READY\n");
 		break;
 	case F_REVERSE:
