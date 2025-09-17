@@ -151,8 +151,19 @@ int trigger_fault(fault_t fault_id) {
 
 /* Write the VCU FAULT line (from the microcontroller to the car). */
 void write_mcu_fault(bool status)
-{
-	HAL_GPIO_WritePin(FAULT_MCU_GPIO_Port, FAULT_MCU_Pin, !status);
+{   
+    // The MCU Fault pin is kind of "swapped".
+    // Setting the pin to HIGH indicates that there is no fault.
+    // Setting the pin to LOW indicates that there is a fault.
+    // The pin has a default state of HIGH (i.e. no fault).
+    if(status) {
+        // If there is a fault, set the fault pin to LOW.
+        HAL_GPIO_WritePin(FAULT_MCU_GPIO_Port, FAULT_MCU_Pin, GPIO_PIN_RESET);
+    }
+    else {
+        // If there is not a fault, set the pin to HIGH.
+        HAL_GPIO_WritePin(FAULT_MCU_GPIO_Port, FAULT_MCU_Pin, GPIO_PIN_SET);
+    }
 }
 
 /* Static Asserts */
