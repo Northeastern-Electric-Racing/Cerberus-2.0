@@ -120,7 +120,7 @@ uint8_t queue_send(queue_t *queue, void *message) {
     UINT status;
 
     /* Create a buffer. */
-    uint32_t buffer[queue->_words];     // Max size is 16 words (64 bytes).
+    uint32_t buffer[queue->_words];    // Max size is 16 words (64 bytes).
     memset(buffer, 0, sizeof(buffer)); // Initialize buffer to zero
 
     /* Copy message into the buffer. The buffer is what actually gets sent to the queue. */
