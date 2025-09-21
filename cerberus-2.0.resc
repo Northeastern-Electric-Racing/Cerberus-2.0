@@ -19,7 +19,7 @@ include $CWD/Drivers/Embedded-Base/dev/renode/i2c/STM32F4_I2C_NER.cs
 
 machine LoadPlatformDescription $CWD/vcu.repl
 
-sysbus LoadELF $CWD/build/cerberus.elf
+sysbus LoadELF $CWD/build/Cerberus-2.0.elf
 
 machine CreateSocketCANBridgeNER "socketcan" "vcan0" 
 
