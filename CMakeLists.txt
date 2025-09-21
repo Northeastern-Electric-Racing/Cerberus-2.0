@@ -55,6 +55,7 @@ target_link_directories(${CMAKE_PROJECT_NAME} PRIVATE
 target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     # Embedded Base Stuff (drivers, middleware, utils, etc.)
     "../Drivers/Embedded-Base/general/src/lan8670.c"
+    "../Drivers/Embedded-Base/general/src/sht30.c"
     "../Drivers/Embedded-Base/platforms/stm32h563/src/fdcan.c"
     "./Drivers/Embedded-Base/middleware/src/bitstream.c"
     "./Drivers/Embedded-Base/middleware/src/debounce.c"
@@ -77,6 +78,7 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     "./Core/Src/u_bms.c"
     "./Core/Src/u_dti.c"
     "./Core/Src/u_adc.c"
+    "./Core/Src/u_peripherals.c"
 )
 
 # Add include paths
