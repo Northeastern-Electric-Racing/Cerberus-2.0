@@ -54,7 +54,7 @@ int tempsensor_getTemperature(float *temperature) {
         DEBUG_PRINTLN("Failed to read SHT30 temperature/humidity (Status: %d).", status);
         return U_ERROR;
     }
-    *temperature = temperature_sensor.humidity;
+    *temperature = temperature_sensor.temp;
     return U_SUCCESS;
 }
 
