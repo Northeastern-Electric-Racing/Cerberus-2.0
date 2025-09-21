@@ -31,7 +31,7 @@
 #include "u_pedals.h"
 #include "u_bms.h"
 #include "u_adc.h"
-#include "u_i2c.h"
+#include "u_peripherals.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -79,7 +79,7 @@ UINT App_ThreadX_Init(VOID *memory_ptr)
   CATCH_ERROR(pedals_init(), U_SUCCESS);
   CATCH_ERROR(bms_init(), U_SUCCESS);
   CATCH_ERROR(adc_init(), U_SUCCESS);
-  CATCH_ERROR(i2c_init(), U_SUCCESS);
+  CATCH_ERROR(peripherals_init(), U_SUCCESS);
 
   /* USER CODE END App_ThreadX_MEM_POOL */
   /* USER CODE BEGIN App_ThreadX_Init */

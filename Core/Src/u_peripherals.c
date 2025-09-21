@@ -1,5 +1,5 @@
 #include "sht30.h"
-#include "u_i2c.h"
+#include "u_peripherals.h"
 #include "u_general.h"
 
 static sht30_t temperature_sensor = {
@@ -25,15 +25,15 @@ static int _sht30_write(uint8_t *data, uint8_t device_address, uint8_t length) {
 }
 
 /* Initializes I2C devices. */
-int i2c_init(void) {
+int peripherals_init(void) {
 
     int status = sht30_init(&temperature_sensor, _sht30_write, _sht30_read, _sht30_read, temperature_sensor.dev_address);
     if(status != 0) {
-        DEBUG_PRINTLN("ERROR: Failed to run sht30_init (Status: %d).", status);
+        DEBUG_PRINTLN("ERROR: Failed to run sht30_init() (Status: %d).", status);
         return U_ERROR;
     }
 
-    DEBUG_PRINTLN("Ran i2c_init().");
+    DEBUG_PRINTLN("Ran peripherals_init().");
     return U_SUCCESS;
 }
 
