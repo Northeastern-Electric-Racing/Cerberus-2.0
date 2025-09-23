@@ -1,5 +1,4 @@
 #include "sht30.h"
-#include "lsm6dso.h"
 #include "main.h"
 #include "u_peripherals.h"
 #include "u_general.h"
@@ -8,12 +7,68 @@
 static sht30_t temperature_sensor = { .dev_address = SHT30_I2C_ADDR };
 static LSM6DSO_Object_t imu;
 
-static int _lsm6dso_read(uint16_t device_address, uint16_t register_address, uint8_t *data, uint16_t length) {
-    return;
+/* IMU SPI Chip Select Macros. */
+#define _SELECT_IMU   GPIO_PIN_RESET // Setting the CS pin LOW selects the IMU for SPI.
+#define _DESELECT_IMU GPIO_PIN_SET   // Setting the CS pin HIGH deselects the IMU for SPI.
+
+/* Wrapper for lsm6dso SPI reading. */
+static int32_t _lsm6dso_read(uint16_t device_address, uint16_t register_address, uint8_t *data, uint16_t length) {
+    /* For SPI reads, set MSB = 1 for read operation. */
+    uint8_t spi_reg = (uint8_t)(register_address | 0x80);
+    HAL_StatusTypeDef status;
+    
+    /* Select the IMU device. */
+    HAL_GPIO_WritePin(SPI2_NSS_GPIO_Port, SPI2_NSS_Pin, _SELECT_IMU);
+    
+    /* Send the register address we're trying to read from. */
+    status = HAL_SPI_Transmit(&hspi2, &spi_reg, sizeof(spi_reg), HAL_MAX_DELAY);
+    if(status != HAL_OK) {
+        HAL_GPIO_WritePin(SPI2_NSS_GPIO_Port, SPI2_NSS_Pin, _DESELECT_IMU);
+        DEBUG_PRINTLN("ERROR: Failed to send register address to lsm6dso over SPI (Status: %d/%s).", status, hal_status_toString(status));
+        return LSM6DSO_ERROR;
+    }
+    
+    /* Recieve the data. */
+    status = HAL_SPI_Receive(&hspi2, data, length, HAL_MAX_DELAY);
+    if(status != HAL_OK) {
+        DEBUG_PRINTLN("ERROR: Failed to read from the lsm6dso over SPI (Status: %d/%s).", status, hal_status_toString(status));
+        return LSM6DSO_ERROR;
+    }
+    
+    /* Deselect the IMU device. */
+    HAL_GPIO_WritePin(SPI2_NSS_GPIO_Port, SPI2_NSS_Pin, _DESELECT_IMU);
+    
+    return LSM6DSO_OK;
 }
 
-static int _lsm6ds0_write(uint16_t device_address, uint16_t register_address, uint8_t *data, uint16_t length) {
-    return; // u_TODO - implement this
+/* Wrapper for lsm6dso SPI writing. */
+static int32_t _lsm6dso_write(uint16_t device_address, uint16_t register_address, uint8_t *data, uint16_t length) {
+    /* For SPI writes, clear MSB = 0 for write operation. */
+    uint8_t spi_reg = (uint8_t)(register_address & 0x7F);
+    HAL_StatusTypeDef status;
+    
+    /* Select the device (CS low). */
+    HAL_GPIO_WritePin(SPI2_NSS_GPIO_Port, SPI2_NSS_Pin, _SELECT_IMU);
+    
+    /* Send register address. */
+    status = HAL_SPI_Transmit(&hspi2, &spi_reg, sizeof(spi_reg), HAL_MAX_DELAY);
+    if(status != HAL_OK) {
+        HAL_GPIO_WritePin(SPI2_NSS_GPIO_Port, SPI2_NSS_Pin, _DESELECT_IMU);
+        DEBUG_PRINTLN("ERROR: Failed to send register address to lsm6dso over SPI (Status: %d/%s).", status, hal_status_toString(status));
+        return LSM6DSO_ERROR;
+    }
+    
+    /* Send data. */
+    status = HAL_SPI_Transmit(&hspi2, data, length, HAL_MAX_DELAY);
+    if(status != HAL_OK) {
+        DEBUG_PRINTLN("ERROR: Failed to write to the lsm6dso over SPI (Status: %d/%s).", status, hal_status_toString(status));
+        return LSM6DSO_ERROR;
+    }
+    
+    /* Deselect the device (CS high). */
+    HAL_GPIO_WritePin(SPI2_NSS_GPIO_Port, SPI2_NSS_Pin, _DESELECT_IMU);
+    
+    return LSM6DSO_OK;
 }
 
 /* Wrapper for sht30 I2C reading. */
@@ -59,7 +114,7 @@ int peripherals_init(void) {
     /* Register LSM6DSO Bus IO (i.e. how it does read/write). */
     LSM6DSO_IO_t io_config = {
         .BusType = LSM6DSO_SPI_4WIRES_BUS,
-        .WriteReg = _lsm6ds0_write,
+        .WriteReg = _lsm6dso_write,
         .ReadReg = _lsm6dso_read,
         .GetTick = _get_tick,
         .Delay = _delay
@@ -158,5 +213,25 @@ int tempsensor_getHumidity(float *humidity) {
         return U_ERROR;
     }
     *humidity = temperature_sensor.humidity;
+    return U_SUCCESS;
+}
+
+/* Gets the accelerometer axes (x, y, and z). */
+int imu_getAccelerometerData(LSM6DSO_Axes_t *axes) {
+    int status = LSM6DSO_ACC_GetAxes(&imu, axes);
+    if(status != LSM6DSO_OK) {
+        DEBUG_PRINTLN("ERROR: Failed to call LSM6DSO_ACC_GetAxes() (Status: %d).", status);
+        return U_ERROR;
+    }
+    return U_SUCCESS;
+}
+
+/* Gets the gyroscope axes (x, y, and z). */
+int imu_getGyroscopeData(LSM6DSO_Axes_t *axes) {
+    int status = LSM6DSO_GYRO_GetAxes(&imu, axes);
+    if(status != LSM6DSO_OK) {
+        DEBUG_PRINTLN("ERROR: Failed to call LSM6DSO_GYRO_GetAxes() (Status: %d).", status);
+        return U_ERROR;
+    }
     return U_SUCCESS;
 }
