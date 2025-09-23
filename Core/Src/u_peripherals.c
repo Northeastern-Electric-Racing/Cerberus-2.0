@@ -7,6 +7,15 @@
 static sht30_t temperature_sensor = { .dev_address = SHT30_I2C_ADDR };
 static LSM6DSO_Object_t imu;
 
+static int _lsm6dso_read(uint16_t device_address, uint16_t register_address, uint8_t *data, uint16_t length) {
+    return; // u_TODO - implement this
+}
+
+static int _lsm6ds0_write(uint16_t device_address, uint16_t register_address, uint8_t *data, uint16_t length) {
+    return; // u_TODO - implement this
+}
+
+/* Wrapper for sht30 I2C reading. */
 static int _sht30_read(uint8_t *data, uint16_t command, uint8_t device_address, uint8_t length) {
     HAL_StatusTypeDef status = HAL_I2C_Mem_Read(&hi2c2, (uint16_t)device_address, command, I2C_MEMADD_SIZE_16BIT, data, length, HAL_MAX_DELAY);
     if(status != HAL_OK) {
@@ -16,6 +25,7 @@ static int _sht30_read(uint8_t *data, uint16_t command, uint8_t device_address, 
     return status;
 }
 
+/* Wrapper for sht30 I2C writing. */
 static int _sht30_write(uint8_t *data, uint8_t device_address, uint8_t length) {
     HAL_StatusTypeDef status = HAL_I2C_Master_Transmit(&hi2c2, (uint16_t)device_address, data, (uint16_t)length, HAL_MAX_DELAY);
     if(status != HAL_OK) {
@@ -23,6 +33,16 @@ static int _sht30_write(uint8_t *data, uint8_t device_address, uint8_t length) {
         return status;
     }
     return status;
+}
+
+/* Wrapper for HAL_GetTick. */
+int32_t _get_tick(void) {
+    return (int32_t)HAL_GetTick();
+}
+
+/* Wrapper for HAL_Delay. */
+void _delay(uint32_t delay) {
+    return HAL_Delay(delay);
 }
 
 /* Initializes I2C devices. */
@@ -40,8 +60,8 @@ int peripherals_init(void) {
         .BusType = LSM6DSO_SPI_4WIRES_BUS,
         .WriteReg = NULL, // u_TODO
         .ReadReg = NULL,  // u_TODO
-        .GetTick = HAL_GetTick,
-        .Delay = HAL_Delay
+        .GetTick = _get_tick,
+        .Delay = _delay
     };
     status = LSM6DSO_RegisterBusIO(&imu, &io_config);
     if(status != LSM6DSO_OK) {
@@ -79,7 +99,7 @@ int peripherals_init(void) {
 	/* Setup IMU Gyroscope */
 	status = LSM6DSO_GYRO_SetOutputDataRate_With_Mode(&imu, 104.0f, LSM6DSO_GYRO_HIGH_PERFORMANCE_MODE);
     if(status != LSM6DSO_OK) {
-        DEBUG_PRINTLN("ERROR: Failed to run LSM6DSO_GYRO_SetOutputDataRate_With_Mode() (Status: %d).");
+        DEBUG_PRINTLN("ERROR: Failed to run LSM6DSO_GYRO_SetOutputDataRate_With_Mode() (Status: %d).", status);
         return U_ERROR;
     }
 
