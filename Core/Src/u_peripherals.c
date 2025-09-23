@@ -1,5 +1,6 @@
 #include "sht30.h"
 #include "lsm6dso.h"
+#include "main.h"
 #include "u_peripherals.h"
 #include "u_general.h"
 
@@ -8,7 +9,7 @@ static sht30_t temperature_sensor = { .dev_address = SHT30_I2C_ADDR };
 static LSM6DSO_Object_t imu;
 
 static int _lsm6dso_read(uint16_t device_address, uint16_t register_address, uint8_t *data, uint16_t length) {
-    return; // u_TODO - implement this
+    return;
 }
 
 static int _lsm6ds0_write(uint16_t device_address, uint16_t register_address, uint8_t *data, uint16_t length) {
@@ -58,8 +59,8 @@ int peripherals_init(void) {
     /* Register LSM6DSO Bus IO (i.e. how it does read/write). */
     LSM6DSO_IO_t io_config = {
         .BusType = LSM6DSO_SPI_4WIRES_BUS,
-        .WriteReg = NULL, // u_TODO
-        .ReadReg = NULL,  // u_TODO
+        .WriteReg = _lsm6ds0_write,
+        .ReadReg = _lsm6dso_read,
         .GetTick = _get_tick,
         .Delay = _delay
     };
