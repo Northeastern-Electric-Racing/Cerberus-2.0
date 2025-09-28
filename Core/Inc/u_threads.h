@@ -2,7 +2,6 @@
 #define __U_THREADS_H
 
 #include "tx_api.h"
-#include "u_general.h"
 #include <stdint.h>
 #include <stdio.h>
 

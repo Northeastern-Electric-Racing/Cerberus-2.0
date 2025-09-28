@@ -1,7 +1,7 @@
 #include "sht30.h"
+#include "u_tx_debug.h"
 #include "main.h"
 #include "u_peripherals.h"
-#include "u_general.h"
 
 /* Driver instances. */
 static sht30_t temperature_sensor = { .dev_address = SHT30_I2C_ADDR };
