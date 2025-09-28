@@ -1,7 +1,7 @@
 #include "tx_api.h"
 #include "main.h"
 #include "u_rtds.h"
-#include "u_general.h"
+#include "u_tx_debug.h"
 
 static TX_TIMER rtds_timer; /* Timer for the RTDS. */
 static TX_TIMER reverse_sound_timer; /* Timer for the reverse sound beeping. */

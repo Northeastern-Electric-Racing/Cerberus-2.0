@@ -1,7 +1,7 @@
 #include <stdint.h>
+#include "u_tx_debug.h"
 #include "main.h"
 #include "u_mutexes.h"
-#include "u_general.h"
 #include "u_adc.h"
 
 /* ADC1 Config. */

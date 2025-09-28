@@ -22,7 +22,7 @@
 #include "app_azure_rtos.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "u_general.h"
+#include "u_tx_debug.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/

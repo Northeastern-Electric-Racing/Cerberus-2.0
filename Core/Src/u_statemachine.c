@@ -11,7 +11,7 @@
 #include "u_pedals.h"
 #include "u_can.h"
 #include "u_rtds.h"
-#include "u_general.h"
+#include "u_tx_debug.h"
 #include "u_queues.h"
 #include "u_faults.h"
 #include "u_pedals.h"
