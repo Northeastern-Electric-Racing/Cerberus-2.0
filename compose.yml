@@ -17,7 +17,7 @@ services:
             - "3240"
         environment:
             - DEBUG_PORT=/dev/ttyACM0
-            - STM_TARGET_NAME=stm32h7
+            - STM_TARGET_NAME=stm32h5
             - USBIP_PORT=1-1.3        
         
 
