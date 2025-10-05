@@ -1,4 +1,5 @@
 #include "main.h"
+#include "u_tx_debug.h"
 #include "u_threads.h"
 #include "u_queues.h"
 #include "u_inbox.h"
@@ -231,11 +232,11 @@ void pedals_thread(ULONG thread_input) {
 static thread_t _efuse_thread = {
         .name       = "eFuse Thread",         /* Name */
         .size       = 512,                    /* Stack Size (in bytes) */
-        .priority   = 2,                      /* Priority */
+        .priority   = 10,                     /* Priority */
         .threshold  = 0,                      /* Preemption Threshold */
         .time_slice = TX_NO_TIME_SLICE,       /* Time Slice */
         .auto_start = TX_AUTO_START,          /* Auto Start */
-        .sleep      = 1,                      /* Sleep (in ticks) */
+        .sleep      = 10,                     /* Sleep (in ticks) */
         .function   = efuse_thread            /* Thread Function */
     };
 void efuse_thread(ULONG thread_input) {
@@ -318,43 +319,20 @@ void efuse_thread(ULONG thread_input) {
     }
 }
 
-/* Helper function. Creates a ThreadX thread. */
-static uint8_t _create_thread(TX_BYTE_POOL *byte_pool, thread_t *thread) {
-    CHAR *pointer;
-    uint8_t status;
-
-    /* Allocate the stack for the thread. */
-    status = tx_byte_allocate(byte_pool, (VOID**) &pointer, thread->size, TX_NO_WAIT);
-    if(status != TX_SUCCESS) {
-        DEBUG_PRINTLN("ERROR: Failed to allocate stack before creating thread (Status: %d/%s, Thread: %s).", status, tx_status_toString(status), thread->name);
-        return U_ERROR;
-    }
-
-    /* Create the thread. */
-    status = tx_thread_create(&thread->_TX_THREAD, (CHAR*)thread->name, thread->function, thread->thread_input, pointer, thread->size, thread->priority, thread->threshold, thread->time_slice, thread->auto_start);
-    if(status != TX_SUCCESS) {
-        DEBUG_PRINTLN("ERROR: Failed to create thread (Status: %d/%s, Thread: %s).", status, tx_status_toString(status), thread->name);
-        tx_byte_release(pointer); // Free allocated memory if thread creation fails
-        return U_ERROR;
-    }
-    
-    return U_SUCCESS;
-}
-
 /* Initializes all ThreadX threads. 
 *  Calls to _create_thread() should go in here
 */
 uint8_t threads_init(TX_BYTE_POOL *byte_pool) {
 
     /* Create Threads */
-    CATCH_ERROR(_create_thread(byte_pool, &_default_thread), U_SUCCESS);      // Create Default thread.
-    CATCH_ERROR(_create_thread(byte_pool, &_ethernet_thread), U_SUCCESS);     // Create Ethernet thread.
-    CATCH_ERROR(_create_thread(byte_pool, &_can_thread), U_SUCCESS);          // Create CAN thread.
-    CATCH_ERROR(_create_thread(byte_pool, &_faults_thread), U_SUCCESS);       // Create Faults thread.
-    CATCH_ERROR(_create_thread(byte_pool, &_shutdown_thread), U_SUCCESS);     // Create Shutdown thread.
-    CATCH_ERROR(_create_thread(byte_pool, &_statemachine_thread), U_SUCCESS); // Create State Machine thread.
-    CATCH_ERROR(_create_thread(byte_pool, &_pedals_thread), U_SUCCESS);       // Create Pedals thread.
-    CATCH_ERROR(_create_thread(byte_pool, &_efuse_thread), U_SUCCESS);        // Create eFuse thread.
+    CATCH_ERROR(create_thread(byte_pool, &_default_thread), U_SUCCESS);      // Create Default thread.
+    CATCH_ERROR(create_thread(byte_pool, &_ethernet_thread), U_SUCCESS);     // Create Ethernet thread.
+    CATCH_ERROR(create_thread(byte_pool, &_can_thread), U_SUCCESS);          // Create CAN thread.
+    CATCH_ERROR(create_thread(byte_pool, &_faults_thread), U_SUCCESS);       // Create Faults thread.
+    CATCH_ERROR(create_thread(byte_pool, &_shutdown_thread), U_SUCCESS);     // Create Shutdown thread.
+    CATCH_ERROR(create_thread(byte_pool, &_statemachine_thread), U_SUCCESS); // Create State Machine thread.
+    CATCH_ERROR(create_thread(byte_pool, &_pedals_thread), U_SUCCESS);       // Create Pedals thread.
+    CATCH_ERROR(create_thread(byte_pool, &_efuse_thread), U_SUCCESS);        // Create eFuse thread.
 
     // add more threads here if need
 

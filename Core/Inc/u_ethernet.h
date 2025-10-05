@@ -2,6 +2,7 @@
 #define __U_ETHERNET_H
 
 #include "u_general.h"
+#include "u_tx_debug.h"
 #include <stdint.h>
 #include <stdbool.h>
 

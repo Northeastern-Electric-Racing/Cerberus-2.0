@@ -3,7 +3,7 @@
 #include "main.h"
 #include "u_faults.h"
 #include "u_statemachine.h"
-#include "u_general.h"
+#include "u_tx_debug.h"
 #include "u_mutexes.h"
 
 typedef enum {
