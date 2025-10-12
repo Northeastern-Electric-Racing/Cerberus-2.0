@@ -60,6 +60,10 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     "../Drivers/Embedded-Base/threadX/src/u_tx_queues.c"
     "../Drivers/Embedded-Base/threadX/src/u_tx_threads.c"
 
+    # Embedded-Base NetX Utils
+    "../Drivers/Embedded-Base/NetX/src/u_nx_debug.c"
+    "../Drivers/Embedded-Base/NetX/src/u_nx_ethernet.c"
+
     # Misc Embedded-Base Stuff (drivers, middleware, utils, etc.)
     "../Drivers/Embedded-Base/general/src/lan8670.c"
     "../Drivers/Embedded-Base/general/src/sht30.c"
@@ -72,7 +76,6 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     "./Drivers/Embedded-Base/middleware/src/c_utils.c"
 
     # Cerberus-2.0 Source Files
-    "./Core/Src/u_ethernet.c"
     "./Core/Src/u_inbox.c"
     "./Core/Src/u_threads.c"
     "./Core/Src/u_statemachine.c"
@@ -80,7 +83,6 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     "./Core/Src/u_can.c"
     "./Core/Src/u_faults.c"
     "./Core/Src/u_mutexes.c"
-    "./Core/Src/u_general.c"
     "./Core/Src/u_efuses.c"
     "./Core/Src/u_rtds.c"
     "./Core/Src/u_pedals.c"
@@ -97,6 +99,7 @@ target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
     "./Drivers/Embedded-Base/middleware/include/"
     "./Drivers/Embedded-Base/platforms/stm32h563/include/"
     "./Drivers/Embedded-Base/threadX/inc/"
+    "./Drivers/Embedded-Base/NetX/inc/"
     "./NetXDuo"
     "./Core/Inc/"
 )

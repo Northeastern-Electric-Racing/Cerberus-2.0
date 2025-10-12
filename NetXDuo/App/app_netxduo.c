@@ -23,8 +23,8 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "u_ethernet.h"
-#include "u_inbox.h"
+#include "u_nx_ethernet.h"
+#include "u_queues.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -50,6 +50,16 @@
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN PFP */
 
+/* Callback for when a ethernet message is recieved. */
+void _ethernet_recieve(ethernet_message_t message) {
+  /* Send the message to the incoming ethernet queue. */
+  int status = queue_send(&eth_incoming, &message);
+  if(status != U_SUCCESS) {
+    DEBUG_PRINTLN("ERROR: Failed to send message to the incoming ethernet queue (Status: %d).", status);
+    return;
+  }
+}
+
 /* USER CODE END PFP */
 
 /**
@@ -69,7 +79,7 @@ UINT MX_NetXDuo_Init(VOID *memory_ptr)
   /* USER CODE END 0 */
 
   /* USER CODE BEGIN MX_NetXDuo_Init */
-  ret = ethernet_init(VCU);
+  ret = ethernet_init(VCU, nx_stm32_eth_driver, _ethernet_recieve);
   /* USER CODE END MX_NetXDuo_Init */
 
   return ret;

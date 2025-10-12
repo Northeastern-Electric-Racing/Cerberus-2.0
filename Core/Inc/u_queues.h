@@ -3,7 +3,7 @@
 
 #include "tx_api.h"
 #include "u_tx_queues.h"
-#include "u_ethernet.h"
+#include "u_nx_ethernet.h"
 #include <stdint.h>
 
 /*

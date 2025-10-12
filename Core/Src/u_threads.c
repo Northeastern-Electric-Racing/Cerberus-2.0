@@ -4,7 +4,7 @@
 #include "u_queues.h"
 #include "u_inbox.h"
 #include "u_can.h"
-#include "u_ethernet.h"
+#include "u_nx_ethernet.h"
 #include "u_faults.h"
 #include "u_pedals.h"
 #include "u_efuses.h"
