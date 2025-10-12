@@ -9,6 +9,7 @@
 #include "u_pedals.h"
 #include "u_efuses.h"
 #include "u_statemachine.h"
+#include "u_tsms.h"
 #include "bitstream.h"
 
 /* Default Thread */
@@ -319,6 +320,28 @@ void efuse_thread(ULONG thread_input) {
     }
 }
 
+/* TSMS Thread. */
+static thread_t _tsms_thread = {
+        .name       = "TSMS Thread",          /* Name */
+        .size       = 512,                    /* Stack Size (in bytes) */
+        .priority   = 2,                      /* Priority */
+        .threshold  = 0,                      /* Preemption Threshold */
+        .time_slice = TX_NO_TIME_SLICE,       /* Time Slice */
+        .auto_start = TX_AUTO_START,          /* Auto Start */
+        .sleep      = 50,                     /* Sleep (in ticks) */
+        .function   = tsms_thread             /* Thread Function */
+    };
+void tsms_thread(ULONG thread_input) {
+    
+    while(1) {
+
+        tsms_update();
+
+        /* Sleep Thread for specified number of ticks. */
+        tx_thread_sleep(_tsms_thread.sleep);
+    }
+}
+
 /* Initializes all ThreadX threads. 
 *  Calls to _create_thread() should go in here
 */
@@ -333,6 +356,7 @@ uint8_t threads_init(TX_BYTE_POOL *byte_pool) {
     CATCH_ERROR(create_thread(byte_pool, &_statemachine_thread), U_SUCCESS); // Create State Machine thread.
     CATCH_ERROR(create_thread(byte_pool, &_pedals_thread), U_SUCCESS);       // Create Pedals thread.
     CATCH_ERROR(create_thread(byte_pool, &_efuse_thread), U_SUCCESS);        // Create eFuse thread.
+    CATCH_ERROR(create_thread(byte_pool, &_tsms_thread), U_SUCCESS);         // Create TSMS thread.
 
     // add more threads here if need
 
