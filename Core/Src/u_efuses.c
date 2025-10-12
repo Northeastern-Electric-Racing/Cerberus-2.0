@@ -49,7 +49,8 @@ uint16_t efuse_getRaw(efuse_t efuse) {
             raw = adc_getEFuseData().shutdown;
             break;
         case EFUSE_LV:
-            raw = adc_getEFuseData().lv;
+            DEBUG_PRINTLN("ERROR at case EFUSE_LV: EFUSE_LV ADC Reading/Current Sensing is not supported. Calls to efuse_getRaw(), efuse_getVoltage(), and efuse_getCurrent() should not be made for the LV eFuse.");
+            return U_ERROR;
             break;
         case EFUSE_RADFAN:
             raw = adc_getEFuseData().radfan;

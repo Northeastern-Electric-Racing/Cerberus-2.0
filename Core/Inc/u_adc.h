@@ -13,7 +13,6 @@ typedef struct {
     uint16_t dashboard;
     uint16_t brake;
     uint16_t shutdown;
-    uint16_t lv;
     uint16_t radfan;
     uint16_t fanbatt;
     uint16_t pump1;

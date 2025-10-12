@@ -12,17 +12,16 @@ typedef enum {
     ADC1_EFUSE_DASHBOARD, // ADC1 Rank 0 (i.e. buffer index 0)
     ADC1_EFUSE_BRAKE,     // ADC1 Rank 1 (i.e. buffer index 1)
     ADC1_EFUSE_SHUTDOWN,  // ADC1 Rank 2 (i.e. buffer index 2)
-    ADC1_EFUSE_LV,        // ADC1 Rank 3 (i.e. buffer index 3)
-    ADC1_EFUSE_RADFAN,    // ADC1 Rank 4 (i.e. buffer index 4)
-    ADC1_EFUSE_FANBATT,   // ADC1 Rank 5 (i.e. buffer index 5)
-    ADC1_EFUSE_PUMP1,     // ADC1 Rank 6 (i.e. buffer index 6)
-    ADC1_EFUSE_PUMP2,     // ADC1 Rank 7 (i.e. buffer index 7)
-    ADC1_EFUSE_BATTBOX,   // ADC1 Rank 8 (i.e. buffer index 8)
-    ADC1_EFUSE_MC,        // ADC1 Rank 9 (i.e. buffer index 9)
+    ADC1_EFUSE_RADFAN,    // ADC1 Rank 3 (i.e. buffer index 3)
+    ADC1_EFUSE_FANBATT,   // ADC1 Rank 4 (i.e. buffer index 4)
+    ADC1_EFUSE_PUMP1,     // ADC1 Rank 5 (i.e. buffer index 5)
+    ADC1_EFUSE_PUMP2,     // ADC1 Rank 6 (i.e. buffer index 6)
+    ADC1_EFUSE_BATTBOX,   // ADC1 Rank 7 (i.e. buffer index 7)
+    ADC1_EFUSE_MC,        // ADC1 Rank 8 (i.e. buffer index 8)
 
     /* Acceleration Pedal Sensors. */
-    ADC1_ACCEL_PEDAL_1,   // ADC1 Rank 10 (i.e. buffer index 10)
-    ADC1_ACCEL_PEDAL_2,   // ADC1 Rank 11 (i.e. buffer index 11)
+    ADC1_ACCEL_PEDAL_1,   // ADC1 Rank 9 (i.e. buffer index 9)
+    ADC1_ACCEL_PEDAL_2,   // ADC1 Rank 10 (i.e. buffer index 10)
     
     /* Total number of indexes for ADC1. */
     ADC1_SIZE
@@ -82,7 +81,6 @@ raw_efuse_adc_t adc_getEFuseData(void) {
     efuses.dashboard = _get_adc1_value(ADC1_EFUSE_DASHBOARD);
     efuses.brake = _get_adc1_value(ADC1_EFUSE_BRAKE);
     efuses.shutdown = _get_adc1_value(ADC1_EFUSE_SHUTDOWN);
-    efuses.lv = _get_adc1_value(ADC1_EFUSE_LV);
     efuses.radfan = _get_adc1_value(ADC1_EFUSE_RADFAN);
     efuses.fanbatt = _get_adc1_value(ADC1_EFUSE_FANBATT);
     efuses.pump1 = _get_adc1_value(ADC1_EFUSE_PUMP1);
