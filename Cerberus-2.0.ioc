@@ -1,6 +1,6 @@
 #MicroXplorer Configuration settings - do not modify
-ADC1.Channel-0\#ChannelRegularConversion=ADC_CHANNEL_0
-ADC1.Channel-1\#ChannelRegularConversion=ADC_CHANNEL_3
+ADC1.Channel-0\#ChannelRegularConversion=ADC_CHANNEL_3
+ADC1.Channel-1\#ChannelRegularConversion=ADC_CHANNEL_0
 ADC1.Channel-10\#ChannelRegularConversion=ADC_CHANNEL_6
 ADC1.Channel-2\#ChannelRegularConversion=ADC_CHANNEL_5
 ADC1.Channel-3\#ChannelRegularConversion=ADC_CHANNEL_9
