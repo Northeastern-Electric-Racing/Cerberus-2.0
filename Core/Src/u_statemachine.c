@@ -15,6 +15,7 @@
 #include "u_queues.h"
 #include "u_faults.h"
 #include "u_pedals.h"
+#include "u_tsms.h"
 
 #define STATE_TRANS_QUEUE_SIZE 4
 
@@ -34,13 +35,6 @@ static void _rising_ts_cb(ULONG input)
 	enter_drive_enabled = true;
 }
 
-/* Gets TSMS status. */
-static bool _get_tsms(void) {
-	// U_TODO - This needs to be implemented.
-	DEBUG_PRINTLN("ERROR: _get_tsms() has not been implemented yet.");
-	return false;
-}
-
 static void _send_nero_msg(void)
 {
 	bitstream_t nero_msg;
@@ -50,7 +44,7 @@ static void _send_nero_msg(void)
 	bitstream_add(&nero_msg, get_nero_state().home_mode, 4);
 	bitstream_add(&nero_msg, get_nero_state().nero_index, 4);
 	bitstream_add_signed(&nero_msg, dti_get_mph() * 10, 16);
-	bitstream_add(&nero_msg, _get_tsms(), 1);
+	bitstream_add(&nero_msg, tsms_get(), 1);
 	bitstream_add(&nero_msg, pedals_getTorqueLimitPercentage() * 100, 7);
 	bitstream_add(&nero_msg, cerberus_state.functional != F_REVERSE, 1);
 	bitstream_add(&nero_msg, pedals_getRegenLimit(), 10);
@@ -136,7 +130,7 @@ static int transition_functional_state(func_state_t new_state)
 
 		brake_state = pedals_getBrakeState();
 #ifdef TSMS_OVERRIDE
-		if (_get_tsms() && (!brake_state || cerberus_state.functional == FAULTED)) { // only enforce brake / fault if tsms is actually on
+		if (tsms_get() && (!brake_state || cerberus_state.functional == FAULTED)) { // only enforce brake / fault if tsms is actually on
 			return 3;
 		}
 		printf("Ignoring tsms\n\n");
@@ -152,12 +146,12 @@ static int transition_functional_state(func_state_t new_state)
 		}
 
 		/* Only turn on motor if brakes engaged and tsms is on */
-		if (!brake_state || !_get_tsms()) {
+		if (!brake_state || !tsms_get()) {
 			return 3;
 		}
 #endif
 
-		if (_get_tsms()) {
+		if (tsms_get()) {
 			rtds_soundRTDS();
 		}
 
@@ -199,7 +193,7 @@ static int transition_nero_state(nero_state_t new_state)
 		/* TSMS OFF and MPH = 0 to enter games */
 		if (new_state.nero_index == GAMES) {
 #ifndef TSMS_OVERRIDE
-			if (_get_tsms() || dti_get_mph() >= 1) {
+			if (tsms_get() || dti_get_mph() >= 1) {
 				return 1;
 			}
 #endif
@@ -324,13 +318,13 @@ void statemachine_process(void) {
 			}
 	}
 
-	if (!is_ts_rising && _get_tsms()) {
+	if (!is_ts_rising && tsms_get()) {
 			is_ts_rising = true;
 
 			/* Deactivate the TS Rising timer. */
     		int status = tx_timer_deactivate(&ts_rising_timer);
     		if(status != TX_SUCCESS) {
-        		DEBUG_PRINTLN("ERROR: Failed to deactivate TS Rising timer (in !is_ts_rising && _get_tsms()) (Status: %d/%s).", status, tx_status_toString(status));
+        		DEBUG_PRINTLN("ERROR: Failed to deactivate TS Rising timer (in !is_ts_rising && tsms_get()) (Status: %d/%s).", status, tx_status_toString(status));
         		return;
     		}
 
@@ -347,11 +341,11 @@ void statemachine_process(void) {
         		DEBUG_PRINTLN("ERROR: Failed to activate TS Rising timer (Status: %d/%s).", status, tx_status_toString(status));
         		return;
     		}
-	} else if (!_get_tsms()) {
+	} else if (!tsms_get()) {
 		/* Deactivate the TS Rising timer. */
     	int status = tx_timer_deactivate(&ts_rising_timer);
     	if(status != TX_SUCCESS) {
-        	DEBUG_PRINTLN("ERROR: Failed to deactivate TS Rising timer (in !_get_tsms()) (Status: %d/%s).", status, tx_status_toString(status));
+        	DEBUG_PRINTLN("ERROR: Failed to deactivate TS Rising timer (in !tsms_get()) (Status: %d/%s).", status, tx_status_toString(status));
         	return;
     	}
 		is_ts_rising = false;

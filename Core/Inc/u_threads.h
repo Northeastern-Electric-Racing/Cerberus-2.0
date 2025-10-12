@@ -24,5 +24,6 @@ void shutdown_thread(ULONG thread_input);
 void statemachine_thread(ULONG thread_input);
 void pedals_thread(ULONG thread_input);
 void efuse_thread(ULONG thread_input);
+void tsms_thread(ULONG thread_input);
 
 #endif /* u_threads.h */
