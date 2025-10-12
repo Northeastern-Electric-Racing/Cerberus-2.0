@@ -25,9 +25,11 @@ machine CreateSocketCANBridgeNER "socketcan" "vcan0"
 
 machine StartGdbServer 3334 true
 
-connector Connect sysbus.can1 canHub
+connector Connect sysbus.fdcan1 canHub
 
 connector Connect sysbus.socketcan canHub 
+
+sysbus.usart3 CreateFileBackend $CWD/usart.log
 
 showAnalyzer sysbus.usart3
 
