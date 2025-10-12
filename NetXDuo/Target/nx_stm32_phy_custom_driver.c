@@ -15,7 +15,7 @@
 
 /* USER CODE BEGIN Includes */
 #include "lan8670.h"
-#include "u_ethernet.h"
+#include "u_nx_ethernet.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/

@@ -1,7 +1,7 @@
 #include <stdint.h>
 #include "fdcan.h"
 #include "u_tx_debug.h"
-#include "u_ethernet.h"
+#include "u_nx_ethernet.h"
 #include "u_can.h"
 #include "u_bms.h"
 
