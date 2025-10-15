@@ -2,7 +2,9 @@
 #include <stdbool.h>
 #include "u_drive.h"
 #include "u_faults.h"
+#include "u_pedals.h"
 #include "u_queues.h"
+#include "u_statemachine.h"
 
 /* =================================== */
 /*         DRIVE CONFIG MACROS         */
@@ -20,12 +22,6 @@
 
 /* BSPD (Brake System Plausibility Device) */
 #define PEDAL_HARD_BRAKE_THRESH 0.50 // (Percentage). Pedal position above which a "hard brake" is detected.
-
-/* Globals. */
-static float torque_limit_percentage = 1.0;
-static uint16_t regen_limits[2] = { 0, 50 }; // [PERFORMANCE, ENDURANCE]
-static bool launch_control_enabled = false;
-static const float MPH_TO_KMH = 1.609;       // Factor for converting MPH to KMH
 
 /**
  * @brief Determine if power to the motor controller should be disabled based on brake and accelerator pedal travel.
@@ -60,3 +56,45 @@ static bool _calc_bspd_prefault(float percentage_accel, float percentage_brake, 
 	return motor_disabled;
 }
 
+/* Handle torque when the car is in PERFORMANCE. */
+#define _PERFORMANCE(acceleration_percentage) 0 /* Relationship between acceleration pedal percentage and torque percentage. */
+void drive_handlePerformance(void) {
+	/* CONFIG. */
+	const uint16_t MAX_TORQUE = 220;
+	
+	/* Get target torque. */
+	pedal_data_t pedal_data = pedals_getData();
+	uint16_t torque = _PERFORMANCE(pedal_data.acceleration_percentage) * MAX_TORQUE;
+
+	return;
+}
+
+/* Handle torque when the car is in PIT. */
+#define _PIT(acceleration_percentage) 0 /* Relationship between acceleration pedal percentage and torque percentage. */
+void drive_handlePit(void) {
+	/* CONFIG. */
+	const uint16_t MAX_TORQUE = 10;
+	const uint16_t MAX_MPH = 5;
+	return;
+}
+
+/* Handle torque when the car is in REVERSE. */
+#define _REVERSE(acceleration_percentage) 0 /* Relationship between acceleration pedal percentage and torque percentage. */
+void drive_handleReverse(void) {
+	/* CONFIG. */
+	const uint16_t MAX_TORQUE = -10;
+	const uint16_t MAX_MPH = 5;
+	return;
+}
+
+/* Handle torque when the car is in FAULTED. */
+void drive_handleFaulted(void) {
+	dti_set_torque(0); // No torque should be applied in FAULTED.
+	return;
+}
+
+/* Handle torque when the car is in READY. */
+void drive_handleReady(void) {
+	dti_set_torque(0); // No torque should be applied in READY.
+	return;
+}
