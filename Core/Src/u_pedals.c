@@ -34,12 +34,6 @@ pedal_data_t pedal_data = { 0 };
 /* =================================== */
 /* Misc */
 #define MAX_ADC_VAL_12b    4096       // Maximum value for a 12-bit ADC.
-#define PEDAL_DATA_MSG_FREQUENCY 100  // (Ticks). How often the pedal data message should get sent.
-
-/* Motor Control Timing/Safety */
-#define MIN_COMMAND_FREQ     60                      // (Hz). Minimum frequency for sending torque commands.
-#define MAX_COMMAND_DELAY    1000 / MIN_COMMAND_FREQ // (ms). Maximum delay between torque commands.
-#define REGEN_INCREMENT_STEP 10                      // (AC Amps). Steo size for increasing/decreasing regenerative braking current.
 
 /* Voltage Stuff */
 #define MAX_VOLTS          3.3  // (Volts). Maximum voltage for the ADC.
@@ -51,16 +45,6 @@ pedal_data_t pedal_data = { 0 };
 #define MAX_APPS2_VOLTS		    2.28 // (Volts). Upper bound on APPS2 voltage range.
 #define MIN_APPS2_VOLTS		    1.07 // (Volts). Lower bound on APPS2 voltage range.
 #define PEDAL_BRAKE_THRESH	    0.20 // (Percantage). Pedal position above which the system registers the brake pedal as "pressed".
-#define PEDAL_HARD_BRAKE_THRESH 0.50 // (Percentage). Pedal position above which a "hard brake" is detected.
-
-/* Performance Limits */
-#define PIT_MAX_SPEED           5.0 // (mph). Speed limit in pit mode.
-#define TORQUE_ACCUMULATOR_SIZE 10  // (Number). Size of the moving average filter for torque stuff.
-#define MAX_REGEN_CURRENT       250 // (AC Amps). Maximum regenerative braking current.
-
-/* Endurance Mode */
-#define ACCELERATION_THRESHOLD 0.25 // (Percentage). Pedal position above which acceleration begins.
-#define REGEN_THRESHOLD 0.10        // (Percentage). Pedal position below which regenerative braking activates.
 
 /* Fault Detection */
 #define BRAKE_SENSOR_IRREGULAR_HIGH 4.5  // (Volts). The brake sensor voltage should not exceed this value.
@@ -204,7 +188,7 @@ void pedals_process(void) {
     queue_send(&can_outgoing, &pedals_volts_msg);
 
     /* Create/send Normalized Pedals Message. */
-    can_msg_t pedals_norm_msg = { .id = CAN_ID_PEDALS_NORM_MSG, .len = 4, .data = { 0 } };
+    can_msg_t pedals_norm_msg = { .id = CANID_PEDALS_NORM_MSG, .len = 4, .data = { 0 } };
 	struct __attribute((__packed__)) {
 		uint16_t accel_norm;
 		uint16_t brake_norm;
