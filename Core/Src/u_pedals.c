@@ -25,24 +25,9 @@ typedef enum {
     NUM_SENSORS
 } pedal_sensor_t;
 
-/* Globals. */
-static float torque_limit_percentage = 1.0;
-static uint16_t regen_limits[2] = { 0, 50 }; // [PERFORMANCE, ENDURANCE]
-static bool launch_control_enabled = false;
-static const float MPH_TO_KMH = 1.609;       // Factor for converting MPH to KMH
-static bool brake_pressed = false;
-static TX_TIMER pedal_data_timer;            // Timer for sending pedal data message.
-
-/* Pedal Data. */
-typedef struct {
-	float voltage_accel1;
-	float voltage_accel2;
-	float voltage_brake1;
-	float voltage_brake2;
-	float percentage_accel;
-	float percentage_brake;
-} pedal_data_t;
-static pedal_data_t pedal_data = { 0 };
+/* External pedal data (exposed for use outside of this file). */
+/* Manaed by the pedals thread, and can be retrieved using pedals_getData(). */
+pedal_data_t pedal_data = { 0 };
 
 /* =================================== */
 /*            CONFIG MACROS            */
@@ -90,55 +75,6 @@ static pedal_data_t pedal_data = { 0 };
 static void _open_circuit_fault_callback(void *arg) {queue_send(&faults, &(fault_t){ONBOARD_PEDAL_OPEN_CIRCUIT_FAULT});};   // Queues the Open Circuit Fault.
 static void _short_circuit_fault_callback(void *arg) {queue_send(&faults, &(fault_t){ONBOARD_PEDAL_SHORT_CIRCUIT_FAULT});}; // Queues the Short Circuit Fault.
 static void _pedal_difference_fault_callback(void *arg) {queue_send(&faults, &(fault_t){ONBOARD_PEDAL_DIFFERENCE_FAULT});}; // Queues the Pedal Difference Fault.
-
-/* Send Pedal Data Callback */
-static void _send_pedal_data(ULONG args) {
-    (void)args; // The args parameter is unused for this callback.
-
-    /* Get the Pedal Data Mutex */
-    mutex_get(&pedal_data_mutex);
-
-    /* Pedal Volts Message. */
-    can_msg_t pedals_volts_msg = { .id = CANID_PEDALS_VOLTS_MSG, .len = 8, .data = { 0 } };
-    struct __attribute__((__packed__)) {
-		uint16_t accel_1;
-		uint16_t accel_2;
-		uint16_t brake_1;
-		uint16_t brake_2;
-	} pedal_volts_data;
-
-    /* Normalized Pedals Message. */
-    can_msg_t pedals_norm_msg = { .id = CAN_ID_PEDALS_NORM_MSG, .len = 4, .data = { 0 } };
-	struct __attribute((__packed__)) {
-		uint16_t accel_norm;
-		uint16_t brake_norm;
-	} pedal_norm_data;
-
-    /* Fill the Pedal Volts Message with the data. */
-	pedal_volts_data.accel_1 = (uint16_t)(pedal_data.voltage_accel1 * 100);
-	pedal_volts_data.accel_2 = (uint16_t)(pedal_data.voltage_accel2 * 100);
-	pedal_volts_data.brake_1 = (uint16_t)(pedal_data.voltage_brake1 * 100);
-	pedal_volts_data.brake_2 = (uint16_t)(pedal_data.voltage_brake2 * 100);
-	endian_swap(&pedal_volts_data.accel_1, sizeof(pedal_volts_data.accel_1));
-	endian_swap(&pedal_volts_data.accel_2, sizeof(pedal_volts_data.accel_2));
-	endian_swap(&pedal_volts_data.brake_1, sizeof(pedal_volts_data.brake_1));
-	endian_swap(&pedal_volts_data.brake_2, sizeof(pedal_volts_data.brake_2));
-    memcpy(pedals_volts_msg.data, &pedal_volts_data, pedals_volts_msg.len);
-
-    /* Fill the Normalized Pedals Message with the data. */
-	pedal_norm_data.accel_norm = (uint16_t)(pedal_data.percentage_accel * 100);
-	pedal_norm_data.brake_norm = (uint16_t)(pedal_data.percentage_brake * 100);
-	endian_swap(&pedal_norm_data.accel_norm, sizeof(pedal_norm_data.accel_norm));
-	endian_swap(&pedal_norm_data.brake_norm, sizeof(pedal_norm_data.brake_norm));
-    memcpy(pedals_norm_msg.data, &pedal_norm_data, pedals_norm_msg.len);
-
-    /* Queue the Messages. */
-    queue_send(&can_outgoing, &pedals_volts_msg);
-    queue_send(&can_outgoing, &pedals_norm_msg);
-
-    /* Put the Pedal Data Mutex. */
-    mutex_put(&pedal_data_mutex);
-}
 
 /* Calculates brake faults. */
 static void _calculate_brake_faults(float voltage_brake1, float voltage_brake2) {
@@ -217,91 +153,83 @@ static float _get_pedal_percent_pressed(float voltage, float offset, float max)
 	return voltage - offset < 0 ? 0 : (voltage - offset) / (max - offset);
 }
 
-/* Initializes Pedals ADC and creates pedal data timer. */
-int pedals_init(void) {
-
-    /* Create Pedal Data Timer. */
-    int status = tx_timer_create(
-        &pedal_data_timer,        /* Timer Instance */
-        "Pedal Data Timer",       /* Timer Name */
-        _send_pedal_data,         /* Timer Expiration Callback */
-        0,                        /* Callback Input */
-        PEDAL_DATA_MSG_FREQUENCY, /* Ticks until timer expiration. */
-        PEDAL_DATA_MSG_FREQUENCY, /* Number of ticks for all timer expirations after the first (0 makes this a one-shot timer). */
-        TX_AUTO_ACTIVATE          /* Automatically start the timer. */
-    );
-    if(status != TX_SUCCESS) {
-        DEBUG_PRINTLN("ERROR: Failed to create Pedal Data Timer (Status: %d/%s).", status, tx_status_toString(status));
-        return U_ERROR;
-    }
-
-	DEBUG_PRINTLN("Ran pedals_init().");
-
-    return U_SUCCESS;
+/* Gets the current pedal data. */
+pedal_data_t pedals_getData(void) {
+    pedal_data_t data;
+    mutex_get(&pedal_data_mutex);
+    data = pedal_data;
+    mutex_put(&pedal_data_mutex);
+    return data;
 }
 
-/* Returns the brake state (true=brake pressed, false=brake not pressed). */
-bool pedals_isBrakePressed(void) {
-    bool temp;
-    mutex_get(&brake_state_mutex);
-    temp = brake_pressed;
-    mutex_put(&brake_state_mutex);
-    return temp;
-}
-
-float pedals_getBrakePercentage(void) {
-	float temp;
-	mutex_get(&pedal_data_mutex);
-	temp = pedal_data.percentage_brake;
-	mutex_put(&pedal_data_mutex);
-	return temp;
-}
-
-/* Gets the percentage pressed of the acceleration pedal. */
-float pedals_getAccelerationPercentage(void) {
-	float temp;
-	mutex_get(&pedal_data_mutex);
-	temp = pedal_data.percentage_accel;
-	mutex_put(&pedal_data_mutex);
-	return temp;
-}
-
-/* Pedal Processing Function. Meant to be called by the pedals thread. */
+/* Pedal Processing Function (reads from pedal ADCs and updates pedal data). Meant to be called by the pedals thread. */
 void pedals_process(void) {
 
-    /* Get the pedal data mutex. */
-    mutex_get(&pedal_data_mutex);
-
     /* Get pedal voltage data. */
-    pedal_data.voltage_accel1 = _get_sensor_voltage(ACCEL_PEDAL_1);
-	pedal_data.voltage_accel2 = _get_sensor_voltage(ACCEL_PEDAL_2);
-	pedal_data.voltage_brake1 = _get_sensor_voltage(BRAKE_PEDAL_1);
-	pedal_data.voltage_brake2 = _get_sensor_voltage(BRAKE_PEDAL_2);
+    float voltage_accel1 = _get_sensor_voltage(ACCEL_PEDAL_1);
+	float voltage_accel2 = _get_sensor_voltage(ACCEL_PEDAL_2);
+	float voltage_brake1 = _get_sensor_voltage(BRAKE_PEDAL_1);
+	float voltage_brake2 = _get_sensor_voltage(BRAKE_PEDAL_2);
 
     /* Calculate acceleration pedal percentage pressed. */
-    float accel1_percentage = _get_pedal_percent_pressed(pedal_data.voltage_accel1, MIN_APPS1_VOLTS, MAX_APPS1_VOLTS); // For sensor 1...
-    float accel2_percentage = _get_pedal_percent_pressed(pedal_data.voltage_accel2, MIN_APPS2_VOLTS, MAX_APPS2_VOLTS); // For sensor 2...
-    pedal_data.percentage_accel = (accel1_percentage + accel2_percentage) / 2; /* Record the averaged percentage. */
-    _calculate_accel_faults(pedal_data.voltage_accel1, pedal_data.voltage_accel2, accel1_percentage, accel2_percentage); // Check for faults.
+    float accel1_percentage = _get_pedal_percent_pressed(voltage_accel1, MIN_APPS1_VOLTS, MAX_APPS1_VOLTS); // For sensor 1...
+    float accel2_percentage = _get_pedal_percent_pressed(voltage_accel2, MIN_APPS2_VOLTS, MAX_APPS2_VOLTS); // For sensor 2...
+    float percentage_accel = (accel1_percentage + accel2_percentage) / 2; /* Record the averaged percentage. */
+    _calculate_accel_faults(voltage_accel1, voltage_accel2, accel1_percentage, accel2_percentage); // Check for faults.
 
     /* Calculate brake pedal percentage pressed. */
     // u_TODO - this is slightly different to how its done in Cerberus (1.0). I changed it to match how acceleration pedal percentages are calculated, but maybe brake percentage isn't supposed to be calculated this way?
-    float brake1_percentage = _get_pedal_percent_pressed(pedal_data.voltage_brake1, 0, MAX_VOLTS_UNSCALED); // For sensor 1...
-    float brake2_percentage = _get_pedal_percent_pressed(pedal_data.voltage_brake2, 0, MAX_VOLTS_UNSCALED); // For sensor 2...
-    pedal_data.percentage_brake = (brake1_percentage + brake2_percentage) / 2; /* Record the averaged percentage. */
-    _calculate_brake_faults(pedal_data.voltage_brake1, pedal_data.voltage_brake2); // Check for faults.
+    float brake1_percentage = _get_pedal_percent_pressed(voltage_brake1, 0, MAX_VOLTS_UNSCALED); // For sensor 1...
+    float brake2_percentage = _get_pedal_percent_pressed(voltage_brake2, 0, MAX_VOLTS_UNSCALED); // For sensor 2...
+    float percentage_brake = (brake1_percentage + brake2_percentage) / 2; /* Record the averaged percentage. */
+    _calculate_brake_faults(voltage_brake1, voltage_brake2); // Check for faults.
+
+    /* Create/send Pedal Volts Message. */
+    can_msg_t pedals_volts_msg = { .id = CANID_PEDALS_VOLTS_MSG, .len = 8, .data = { 0 } };
+    struct __attribute__((__packed__)) {
+		uint16_t accel_1;
+		uint16_t accel_2;
+		uint16_t brake_1;
+		uint16_t brake_2;
+	} pedal_volts_data;
+    pedal_volts_data.accel_1 = (uint16_t)(voltage_accel1 * 100);
+	pedal_volts_data.accel_2 = (uint16_t)(voltage_accel2 * 100);
+	pedal_volts_data.brake_1 = (uint16_t)(voltage_brake1 * 100);
+	pedal_volts_data.brake_2 = (uint16_t)(voltage_brake2 * 100);
+	endian_swap(&pedal_volts_data.accel_1, sizeof(pedal_volts_data.accel_1));
+	endian_swap(&pedal_volts_data.accel_2, sizeof(pedal_volts_data.accel_2));
+	endian_swap(&pedal_volts_data.brake_1, sizeof(pedal_volts_data.brake_1));
+	endian_swap(&pedal_volts_data.brake_2, sizeof(pedal_volts_data.brake_2));
+    memcpy(pedals_volts_msg.data, &pedal_volts_data, pedals_volts_msg.len);
+    queue_send(&can_outgoing, &pedals_volts_msg);
+
+    /* Create/send Normalized Pedals Message. */
+    can_msg_t pedals_norm_msg = { .id = CAN_ID_PEDALS_NORM_MSG, .len = 4, .data = { 0 } };
+	struct __attribute((__packed__)) {
+		uint16_t accel_norm;
+		uint16_t brake_norm;
+	} pedal_norm_data;
+	pedal_norm_data.accel_norm = (uint16_t)(percentage_accel * 100);
+	pedal_norm_data.brake_norm = (uint16_t)(percentage_brake * 100);
+	endian_swap(&pedal_norm_data.accel_norm, sizeof(pedal_norm_data.accel_norm));
+	endian_swap(&pedal_norm_data.brake_norm, sizeof(pedal_norm_data.brake_norm));
+    memcpy(pedals_norm_msg.data, &pedal_norm_data, pedals_norm_msg.len);
+    queue_send(&can_outgoing, &pedals_norm_msg);
+
+    /* Update public (non-internal) pedal data. */
+    mutex_get(&pedal_data_mutex);
+    pedal_data.acceleration_percentage = percentage_accel;
+    pedal_data.brake_percentage = percentage_brake;
 
     /* Set brake state, and turn brakelight on/off. */
-    mutex_get(&brake_state_mutex);
-    if(pedal_data.percentage_brake > PEDAL_BRAKE_THRESH) {
-        brake_pressed = true;
+    if(percentage_brake > PEDAL_BRAKE_THRESH) {
+        pedal_data.brake_pressed = true;
         efuse_enable(EFUSE_BRAKE);
     }
     else {
-        brake_pressed = false;
+        pedal_data.brake_pressed = false;
         efuse_disable(EFUSE_BRAKE);
     }
-    mutex_put(&brake_state_mutex);
 
     /* Return the pedal data mutex. */
     mutex_put(&pedal_data_mutex);
