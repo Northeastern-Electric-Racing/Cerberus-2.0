@@ -180,39 +180,6 @@ static void _calculate_accel_faults(float voltage_accel1, float voltage_accel2, 
     debounce(pedal_difference_fault, &pedal_difference_timer, PEDAL_FAULT_DEBOUNCE, &_pedal_difference_fault_callback, NULL);
 }
 
-/**
- * @brief Determine if power to the motor controller should be disabled based on brake and accelerator pedal travel.
- * @param percentage_accel Percent travel of the accelerator pedal from 0-1
- * @param percentage_brake Brake pressure sensor reading, 0-1
- * @return bool True for prefault conditions met, false for no prefault.
- */
-static bool _calc_bspd_prefault(float percentage_accel, float percentage_brake, float dc_current)
-{
-	static bool motor_disabled = false;
-
-	/* EV.4.7: If brakes are engaged and APPS signals more than 25% pedal travel, disable power
-	to the motor(s). Re-enable when accelerator has less than 5% pedal travel. */
-
-	if (percentage_brake > PEDAL_HARD_BRAKE_THRESH && percentage_accel > 0.25) {
-		motor_disabled = true;
-		queue_send(&faults, &(fault_t){BSPD_PREFAULT});
-	}
-
-	/* Prevent a fault. */
-	if (percentage_brake > PEDAL_HARD_BRAKE_THRESH && dc_current > 10) {
-		motor_disabled = true;
-		queue_send(&faults, &(fault_t){BSPD_PREFAULT});
-	}
-
-	if (motor_disabled) {
-		if (percentage_accel < 0.05) {
-			motor_disabled = false;
-		}
-	}
-
-	return motor_disabled;
-}
-
 /* Returns the raw ADC readings for a pedal sensor. */
 static uint16_t _get_raw_adc_reading(pedal_sensor_t pedal_sensor) {
 	uint16_t reading;
@@ -274,7 +241,7 @@ int pedals_init(void) {
 }
 
 /* Returns the brake state (true=brake pressed, false=brake not pressed). */
-bool pedals_getBrakeState(void) {
+bool pedals_isBrakePressed(void) {
     bool temp;
     mutex_get(&brake_state_mutex);
     temp = brake_pressed;
@@ -282,100 +249,21 @@ bool pedals_getBrakeState(void) {
     return temp;
 }
 
-/* Returns the torque limit percentgae. */
-float pedals_getTorqueLimitPercentage(void) {
+float pedals_getBrakePercentage(void) {
 	float temp;
-	mutex_get(&torque_limit_mutex);
-	temp = torque_limit_percentage;
-	mutex_put(&torque_limit_mutex);
+	mutex_get(&pedal_data_mutex);
+	temp = pedal_data.percentage_brake;
+	mutex_put(&pedal_data_mutex);
 	return temp;
 }
 
-void pedals_setTorqueLimitPercentage(float percentage) {
-	mutex_get(&torque_limit_mutex);
-	torque_limit_percentage = percentage;
-	mutex_put(&torque_limit_mutex);
-}
-
-void pedals_increaseTorqueLimit(void)
-{
-	mutex_get(&torque_limit_mutex);
-	if (torque_limit_percentage + 0.1 > 1) {
-		torque_limit_percentage = 1;
-	} else {
-		torque_limit_percentage += 0.1;
-	}
-	mutex_put(&torque_limit_mutex);
-}
-
-void pedals_decreaseTorqueLimit(void)
-{
-	mutex_get(&torque_limit_mutex);
-	if (torque_limit_percentage - 0.1 < 0) {
-		torque_limit_percentage = 0;
-	} else {
-		torque_limit_percentage -= 0.1;
-	}
-	mutex_put(&torque_limit_mutex);
-}
-
-void pedals_increaseRegenLimit(void)
-{
-	func_state_t func_state = get_func_state();
-	if (func_state != F_PERFORMANCE && func_state != F_EFFICIENCY)
-		return;
-	uint16_t regen_limit = pedals_getRegenLimit();
-	if (regen_limit + REGEN_INCREMENT_STEP > MAX_REGEN_CURRENT) {
-		pedals_setRegenLimit(MAX_REGEN_CURRENT);
-	} else {
-		pedals_setRegenLimit(regen_limit += REGEN_INCREMENT_STEP);
-	}
-}
-
-void pedals_decreaseRegenLimit(void)
-{
-	func_state_t func_state = get_func_state();
-	if (func_state != F_PERFORMANCE && func_state != F_EFFICIENCY)
-		return;
-	uint16_t regen_limit = pedals_getRegenLimit();
-	if (regen_limit - REGEN_INCREMENT_STEP < 0) {
-		pedals_setRegenLimit(0);
-	} else {
-		pedals_setRegenLimit(regen_limit -= REGEN_INCREMENT_STEP);
-	}
-}
-
-void pedals_setRegenLimit(uint16_t limit)
-{
-	func_state_t func_state = get_func_state();
-	if (func_state != F_PERFORMANCE && func_state != F_EFFICIENCY)
-		return;
-	if (limit > MAX_REGEN_CURRENT) {
-		regen_limits[func_state - F_PERFORMANCE] = MAX_REGEN_CURRENT;
-	} else if (limit < 0.0) {
-		regen_limits[func_state - F_PERFORMANCE] = 0.0;
-	} else {
-		regen_limits[func_state - F_PERFORMANCE] = limit;
-	}
-}
-
-uint16_t pedals_getRegenLimit(void)
-{
-	func_state_t func_state = get_func_state();
-	if (func_state != F_PERFORMANCE && func_state != F_EFFICIENCY) {
-		return 0;
-	}
-	return regen_limits[get_func_state() - F_PERFORMANCE];
-}
-
-void pedals_toggleLaunchControl(void)
-{
-	launch_control_enabled = !launch_control_enabled;
-}
-
-bool pedals_getLaunchControl(void)
-{
-	return launch_control_enabled;
+/* Gets the percentage pressed of the acceleration pedal. */
+float pedals_getAccelerationPercentage(void) {
+	float temp;
+	mutex_get(&pedal_data_mutex);
+	temp = pedal_data.percentage_accel;
+	mutex_put(&pedal_data_mutex);
+	return temp;
 }
 
 /* Pedal Processing Function. Meant to be called by the pedals thread. */
@@ -407,46 +295,13 @@ void pedals_process(void) {
     mutex_get(&brake_state_mutex);
     if(pedal_data.percentage_brake > PEDAL_BRAKE_THRESH) {
         brake_pressed = true;
-        efuse_enable(EFUSE_BRAKE); // u_TODO - i'm pretty sure this is for the brakelight? but idk why its spelled like that in altium
+        efuse_enable(EFUSE_BRAKE);
     }
     else {
         brake_pressed = false;
         efuse_disable(EFUSE_BRAKE);
     }
     mutex_put(&brake_state_mutex);
-
-	uint16_t dc_current = dti_get_dc_current();
-    float mph = dti_get_mph();
-
-	if (_calc_bspd_prefault(pedal_data.percentage_accel, pedal_data.percentage_brake, dc_current)) {
-		/* Prefault triggered */
-		// dti_set_torque(0);
-		// osDelay(delay_time);
-    }
-
-    switch(get_func_state()) {
-        case READY:
-            // handle ready
-            break;
-        case FAULTED:
-            // handle faulted
-            break;
-        case F_PIT:
-            // handle pit
-            break;
-        case F_REVERSE:
-            // handle reverse
-            break;
-        case F_PERFORMANCE:
-            // handle performance
-            break;
-        case F_EFFICIENCY:
-            // handle endurance
-            break;
-        default:
-            DEBUG_PRINTLN("ERROR: Failed to process pedals due to unknown functional state.");
-            break;
-    }
 
     /* Return the pedal data mutex. */
     mutex_put(&pedal_data_mutex);
