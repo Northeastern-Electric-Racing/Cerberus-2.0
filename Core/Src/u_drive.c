@@ -57,7 +57,7 @@ static bool _calc_bspd_prefault(float percentage_accel, float percentage_brake, 
 }
 
 /* Handle torque when the car is in PERFORMANCE. */
-#define _PERFORMANCE(acceleration_percentage) 0 /* Relationship between acceleration pedal percentage and torque percentage. */
+#define _PERFORMANCE(x) 1*x /* Relationship between acceleration pedal percentage and torque percentage. */
 void drive_handlePerformance(void) {
 	/* CONFIG. */
 	const uint16_t MAX_TORQUE = 220;
@@ -66,24 +66,43 @@ void drive_handlePerformance(void) {
 	pedal_data_t pedal_data = pedals_getData();
 	uint16_t torque = _PERFORMANCE(pedal_data.acceleration_percentage) * MAX_TORQUE;
 
-	return;
+	dti_set_torque(torque);
 }
 
 /* Handle torque when the car is in PIT. */
-#define _PIT(acceleration_percentage) 0 /* Relationship between acceleration pedal percentage and torque percentage. */
+#define _PIT(x) 1*x /* Relationship between acceleration pedal percentage and torque percentage. */
 void drive_handlePit(void) {
 	/* CONFIG. */
 	const uint16_t MAX_TORQUE = 10;
 	const uint16_t MAX_MPH = 5;
-	return;
+
+	/* Get target torque. */
+	pedal_data_t pedal_data = pedals_getData();
+	uint16_t torque = _PIT(pedal_data.acceleration_percentage) * MAX_TORQUE;
+
+	if(dti_get_mph() > MAX_MPH) {
+		torque = 0;
+	}
+
+	dti_set_torque(torque);
 }
 
 /* Handle torque when the car is in REVERSE. */
-#define _REVERSE(acceleration_percentage) 0 /* Relationship between acceleration pedal percentage and torque percentage. */
+#define _REVERSE(x) 1*x /* Relationship between acceleration pedal percentage and torque percentage. */
 void drive_handleReverse(void) {
 	/* CONFIG. */
-	const uint16_t MAX_TORQUE = -10;
+	const uint16_t MAX_TORQUE = 10;
 	const uint16_t MAX_MPH = 5;
+
+	/* Get target torque. */
+	pedal_data_t pedal_data = pedals_getData();
+	uint16_t torque = _REVERSE(pedal_data.acceleration_percentage) * MAX_TORQUE;
+
+	if(dti_get_mph() > MAX_MPH) {
+		torque = 0;
+	}
+
+	dti_set_torque(-1*torque);
 	return;
 }
 
