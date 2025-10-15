@@ -23,9 +23,10 @@
 #include "u_queues.h"
 #include "u_mutexes.h"
 
+/* Config. */
 #define CAN_QUEUE_SIZE 5 /* messages */
-#define SAMPLES \
-	3 /* determines number of torque request samples to average for dti*/
+#define SAMPLES 	   3 /* determines number of torque request samples to average for dti*/
+#define MAX_TORQUE     220 // (Nm). Maximum torque output
 
 static dti_t mc;
 
@@ -41,6 +42,16 @@ void dti_init(void)
 
 void dti_set_torque(int16_t torque)
 {
+	/* Clamp inputs to motor limits. */
+	if(torque > MAX_TORQUE) {
+		DEBUG_PRINTLN("WARNING: Torque input (%d Nm) was larger than the maximum allowed torque value (%c Nm). So, it has been clamped to the maximum value (%d Nm).", torque, MAX_TORQUE, MAX_TORQUE);
+		torque = MAX_TORQUE;
+	}
+	if(torque < -MAX_TORQUE) {
+		DEBUG_PRINTLN("WARNING: Torque input (%d Nm) was larger than the maximum allowed torque value (%c Nm). So, it has been clamped to the maximum value (%d Nm).", torque, -1 * MAX_TORQUE, -1 * MAX_TORQUE);
+		torque = -1 * MAX_TORQUE;
+	}
+
 	/* We can't change motor speed super fast else we blow diff, therefore low pass filter */
 	// Static variables for the buffer and index
 	static float buffer[SAMPLES] = { 0 };
