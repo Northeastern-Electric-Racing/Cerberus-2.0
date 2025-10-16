@@ -1,5 +1,6 @@
 #include <stdint.h>
 #include <stdbool.h>
+#include <math.h>
 #include "u_drive.h"
 #include "u_faults.h"
 #include "u_pedals.h"
@@ -55,8 +56,13 @@ static bool _calc_bspd_prefault(float percentage_accel, float percentage_brake)
 	return motor_disabled;
 }
 
+/* TORQUE RESPONSE CURVE TEMPLATES. */
+#define _LINEAR(x) ( 1*x ) 						   			// f(x) = x
+#define _PROGRESSIVE(x) ( powf(x,2) )				   		// f(x) = x^2
+#define _S_CURVE(x) ( (3*powf((x), 2)) - (2*powf((x), 3)) ) // f(x) = 3x^2 - 2x^3
+
 /* Handle torque when the car is in PERFORMANCE. */
-#define _PERFORMANCE(x) 1*x /* Relationship between acceleration pedal percentage and torque percentage. */
+#define _PERFORMANCE(x) _LINEAR(x) /* Relationship between acceleration pedal percentage and torque percentage. */
 void drive_handlePerformance(void) {
 	/* CONFIG. */
 	const uint16_t MAX_TORQUE = 220;
@@ -88,7 +94,7 @@ void drive_handlePerformance(void) {
 }
 
 /* Handle torque when the car is in EFFICIENCY. */
-#define _EFFICIENCY(x) 1*x /* Relationship between acceleration pedal percentage and torque percentage. */
+#define _EFFICIENCY(x) _LINEAR(x) /* Relationship between acceleration pedal percentage and torque percentage. */
 void drive_handleEfficiency(void) {
 	/* CONFIG. */
 	const uint16_t MAX_TORQUE = 220;
@@ -120,7 +126,7 @@ void drive_handleEfficiency(void) {
 }
 
 /* Handle torque when the car is in PIT. */
-#define _PIT(x) 1*x /* Relationship between acceleration pedal percentage and torque percentage. */
+#define _PIT(x) _LINEAR(x) /* Relationship between acceleration pedal percentage and torque percentage. */
 void drive_handlePit(void) {
 	/* CONFIG. */
 	const uint16_t MAX_TORQUE = 10;
@@ -159,7 +165,7 @@ void drive_handlePit(void) {
 }
 
 /* Handle torque when the car is in REVERSE. */
-#define _REVERSE(x) 1*x /* Relationship between acceleration pedal percentage and torque percentage. */
+#define _REVERSE(x) _LINEAR(x) /* Relationship between acceleration pedal percentage and torque percentage. */
 void drive_handleReverse(void) {
 	/* CONFIG. */
 	const uint16_t MAX_TORQUE = 10;
