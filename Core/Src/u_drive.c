@@ -69,16 +69,20 @@ void drive_handlePerformance(void) {
         return;
     }
 
-	/* Calculate a scaled acceleration percentage from the threshold. */
-    float scaled = (pedal_data.acceleration_percentage - ACCELERATION_THRESHOLD) / (1.0f - ACCELERATION_THRESHOLD);
-	uint16_t torque = _PERFORMANCE(scaled) * MAX_TORQUE;
-
+	/* Calculate BSPD Prefault. */
 	if(_calc_bspd_prefault(pedal_data.acceleration_percentage, pedal_data.brake_percentage)) {
 		/* Prefault triggered */
 		// dti_set_torque(0);
 		// osDelay(delay_time);
 		// return;
 	}
+
+	/* Calculate a scaled acceleration percentage from the threshold. */
+    float scaled = (pedal_data.acceleration_percentage - ACCELERATION_THRESHOLD) / (1.0f - ACCELERATION_THRESHOLD);
+	uint16_t torque = _PERFORMANCE(scaled) * MAX_TORQUE;
+
+	/* Apply filters. */
+	// u_TODO
 
 	dti_set_torque(torque);
 }
@@ -97,16 +101,20 @@ void drive_handleEfficiency(void) {
         return;
     }
 
-	/* Calculate a scaled acceleration percentage from the threshold. */
-    float scaled = (pedal_data.acceleration_percentage - ACCELERATION_THRESHOLD) / (1.0f - ACCELERATION_THRESHOLD);
-	uint16_t torque = _EFFICIENCY(scaled) * MAX_TORQUE;
-
+	/* Calculate BSPD Prefault. */
 	if(_calc_bspd_prefault(pedal_data.acceleration_percentage, pedal_data.brake_percentage)) {
 		/* Prefault triggered */
 		// dti_set_torque(0);
 		// osDelay(delay_time);
 		// return;
 	}
+
+	/* Calculate a scaled acceleration percentage from the threshold. */
+    float scaled = (pedal_data.acceleration_percentage - ACCELERATION_THRESHOLD) / (1.0f - ACCELERATION_THRESHOLD);
+	uint16_t torque = _EFFICIENCY(scaled) * MAX_TORQUE;
+
+	/* Apply filters. */
+	// u_TODO
 
 	dti_set_torque(torque);
 }
@@ -132,16 +140,20 @@ void drive_handlePit(void) {
         return;
     }
 
-	/* Calculate a scaled acceleration percentage from the threshold. */
-    float scaled = (pedal_data.acceleration_percentage - ACCELERATION_THRESHOLD) / (1.0f - ACCELERATION_THRESHOLD);
-	uint16_t torque = _PIT(scaled) * MAX_TORQUE;
-
+	/* Calculate BSPD prefault. */
 	if(_calc_bspd_prefault(pedal_data.acceleration_percentage, pedal_data.brake_percentage)) {
 		/* Prefault triggered */
 		// dti_set_torque(0);
 		// osDelay(delay_time);
 		// return;
 	}
+
+	/* Calculate a scaled acceleration percentage from the threshold. */
+    float scaled = (pedal_data.acceleration_percentage - ACCELERATION_THRESHOLD) / (1.0f - ACCELERATION_THRESHOLD);
+	uint16_t torque = _PIT(scaled) * MAX_TORQUE;
+
+	/* Apply filters. */
+	// u_TODO
 
 	dti_set_torque(torque);
 }
@@ -167,16 +179,20 @@ void drive_handleReverse(void) {
         return;
     }
 
-	/* Calculate a scaled acceleration percentage from the threshold. */
-    float scaled = (pedal_data.acceleration_percentage - ACCELERATION_THRESHOLD) / (1.0f - ACCELERATION_THRESHOLD);
-	uint16_t torque = _REVERSE(scaled) * MAX_TORQUE;
-
+	/* Calculate BSPD Prefault. */
 	if(_calc_bspd_prefault(pedal_data.acceleration_percentage, pedal_data.brake_percentage)) {
 		/* Prefault triggered */
 		// dti_set_torque(0);
 		// osDelay(delay_time);
 		// return;
 	}
+
+	/* Calculate a scaled acceleration percentage from the threshold. */
+    float scaled = (pedal_data.acceleration_percentage - ACCELERATION_THRESHOLD) / (1.0f - ACCELERATION_THRESHOLD);
+	uint16_t torque = _REVERSE(scaled) * MAX_TORQUE;
+
+	/* Apply filters. */
+	// u_TODO
 
 	dti_set_torque(-1*torque);
 	return;
