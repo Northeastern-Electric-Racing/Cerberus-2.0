@@ -292,12 +292,6 @@ float dti_get_mph(void)
 	       (TIRE_DIAMETER_INCHES / 63360.0) * M_PI;
 }
 
-float dti_get_kph(void) {
-	/* Convert RPM to KPH using: kph = (RPM * π * Diameter in meters * 60) / 1000 */
-	float wheel_rpm = dti_get_rpm() / GEAR_RATIO; /* Note: Need to convert motor RPM to wheel RPM first using gear ratio */
-	return (wheel_rpm * M_PI * TIRE_DIAMETER_METERS * 60.0) / 1000.0;
-}
-
 void dti_record_rpm(can_msg_t msg)
 {
 	/* ERPM is first four bytes of can message in big endian format */
