@@ -9,12 +9,6 @@ mutex_t faults_mutex = {
     .priority_inherit = TX_INHERIT /* Priority inheritance setting. */
 };
 
-/* Brake State Mutex */
-mutex_t brake_state_mutex = {
-    .name = "Brake State Mutex",   /* Name of the mutex. */
-    .priority_inherit = TX_INHERIT /* Priority inheritance setting. */
-};
-
 /* Pedal Data Mutex */
 mutex_t pedal_data_mutex = {
     .name = "Pedal Data Mutex",    /* Name of the mutex. */
@@ -63,7 +57,6 @@ mutex_t tsms_mutex = {
 uint8_t mutexes_init() {
     /* Create Mutexes. */
     CATCH_ERROR(create_mutex(&faults_mutex), U_SUCCESS);       // Create Faults Mutex.
-    CATCH_ERROR(create_mutex(&brake_state_mutex), U_SUCCESS);  // Create Brake State Mutex.
     CATCH_ERROR(create_mutex(&pedal_data_mutex), U_SUCCESS);   // Create Pedal Data Mutex.
     CATCH_ERROR(create_mutex(&bms_mutex), U_SUCCESS);          // Create BMS Mutex.
     CATCH_ERROR(create_mutex(&torque_limit_mutex), U_SUCCESS); // Create Torque Limit Mutex.
