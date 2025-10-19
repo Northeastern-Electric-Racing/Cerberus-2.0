@@ -66,13 +66,6 @@ void dti_record_rpm(can_msg_t msg);
 float dti_get_mph(void);
 
 /**
- * @brief Get the KPH of the motor.
- *
- * @return float
- */
-float dti_get_kph(void);
-
-/**
  * @brief Get the input voltage of the DTI.
  *
  * @param dti Pointer to DTI struct
