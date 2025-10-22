@@ -16,14 +16,14 @@
 uint8_t threads_init(TX_BYTE_POOL *byte_pool);
 
 /* Thread Functions */
-void default_thread(ULONG thread_input);
-void ethernet_thread(ULONG thread_input);
-void can_thread(ULONG thread_input);
-void faults_thread(ULONG thread_input);
-void shutdown_thread(ULONG thread_input);
-void statemachine_thread(ULONG thread_input);
-void pedals_thread(ULONG thread_input);
-void efuse_thread(ULONG thread_input);
-void tsms_thread(ULONG thread_input);
+void vDefault(ULONG thread_input);
+void vEthernet(ULONG thread_input);
+void vCAN(ULONG thread_input);
+void vFaults(ULONG thread_input);
+void vShutdown(ULONG thread_input);
+void vStatemachine(ULONG thread_input);
+void vPedals(ULONG thread_input);
+void vEFuses(ULONG thread_input);
+void vTSMS(ULONG thread_input);
 
 #endif /* u_threads.h */
