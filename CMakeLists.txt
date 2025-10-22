@@ -94,6 +94,7 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     "./Core/Src/u_adc.c"
     "./Core/Src/u_peripherals.c"
     "./Core/Src/u_tsms.c"
+    "./Core/Src/u_drive.c"
 )
 
 # Add include paths

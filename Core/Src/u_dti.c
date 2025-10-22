@@ -23,9 +23,11 @@
 #include "u_queues.h"
 #include "u_mutexes.h"
 
-#define CAN_QUEUE_SIZE 5 /* messages */
-#define SAMPLES \
-	3 /* determines number of torque request samples to average for dti*/
+/* Config. */
+#define CAN_QUEUE_SIZE 	  5 /* messages */
+#define SAMPLES 	   	  3 /* determines number of torque request samples to average for dti*/
+#define MAX_TORQUE     	  220 // (Nm). Maximum torque output
+#define MAX_REGEN_CURRENT 250 // (AC Amps). Maximum regenerative braking current.
 
 static dti_t mc;
 
@@ -41,6 +43,16 @@ void dti_init(void)
 
 void dti_set_torque(int16_t torque)
 {
+	/* Clamp inputs to motor limits. */
+	if(torque > MAX_TORQUE) {
+		DEBUG_PRINTLN("WARNING: Torque input (%d Nm) was larger than the maximum allowed torque value (%d Nm). So, it has been clamped to the maximum value (%d Nm).", torque, MAX_TORQUE, MAX_TORQUE);
+		torque = MAX_TORQUE;
+	}
+	if(torque < -MAX_TORQUE) {
+		DEBUG_PRINTLN("WARNING: Torque input (%d Nm) was larger than the maximum allowed torque value (%d Nm). So, it has been clamped to the maximum value (%d Nm).", torque, -1 * MAX_TORQUE, -1 * MAX_TORQUE);
+		torque = -1 * MAX_TORQUE;
+	}
+
 	/* We can't change motor speed super fast else we blow diff, therefore low pass filter */
 	// Static variables for the buffer and index
 	static float buffer[SAMPLES] = { 0 };
@@ -82,6 +94,12 @@ void dti_set_torque(int16_t torque)
 
 void dti_set_regen(uint16_t current_target)
 {
+	/* Clamp input to maximum regen current. */
+	if(current_target > (MAX_REGEN_CURRENT / 10)) {
+		DEBUG_PRINTLN("WARNING: Regen current input (%d AC Amps) was larger than the maximum allowed regen current value (%d Nm). So, it has been clamped to the maximum value (%d AC Amps).", (current_target/10), (MAX_REGEN_CURRENT), (MAX_REGEN_CURRENT));
+		return;
+	}
+
 	/* Simple moving average to smooth change in braking target */
 
 	// Static variables for the buffer and index
@@ -278,7 +296,7 @@ float dti_get_mph(void)
 	// tire diamter miles * pi --> tire circumference
 	// rph * wheel circumference miles --> mph
 	return (dti_get_rpm() / (GEAR_RATIO)) * 60 *
-	       (TIRE_DIAMETER / 63360.0) * M_PI;
+	       (TIRE_DIAMETER_INCHES / 63360.0) * M_PI;
 }
 
 void dti_record_rpm(can_msg_t msg)
