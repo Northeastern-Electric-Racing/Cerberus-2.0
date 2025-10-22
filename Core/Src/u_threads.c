@@ -13,7 +13,7 @@
 #include "bitstream.h"
 
 /* Default Thread */
-static thread_t _default_thread = {
+static thread_t default_thread = {
         .name       = "Default Thread",  /* Name */
         .size       = 512,               /* Stack Size (in bytes) */
         .priority   = 9,                 /* Priority */
@@ -21,9 +21,9 @@ static thread_t _default_thread = {
         .time_slice = TX_NO_TIME_SLICE,  /* Time Slice */
         .auto_start = TX_AUTO_START,     /* Auto Start */
         .sleep      = 50,                /* Sleep (in ticks) */
-        .function   = default_thread     /* Thread Function */
+        .function   = vDefault           /* Thread Function */
     };
-void default_thread(ULONG thread_input) {
+void vDefault(ULONG thread_input) {
     
     while(1) {
 
@@ -32,12 +32,12 @@ void default_thread(ULONG thread_input) {
         HAL_GPIO_TogglePin(WATCHDOG_GPIO_Port, WATCHDOG_Pin); // External Watchdog
 
         /* Sleep Thread for specified number of ticks. */
-        tx_thread_sleep(_default_thread.sleep);
+        tx_thread_sleep(default_thread.sleep);
     }
 }
 
 /* Ethernet Thread. Sends outgoing messages and processes incoming messages. */
-static thread_t _ethernet_thread = {
+static thread_t ethernet_thread = {
         .name       = "Ethernet Thread", /* Name */
         .size       = 512,               /* Stack Size (in bytes) */
         .priority   = 3,                 /* Priority */
@@ -45,9 +45,9 @@ static thread_t _ethernet_thread = {
         .time_slice = TX_NO_TIME_SLICE,  /* Time Slice */
         .auto_start = TX_AUTO_START,     /* Auto Start */
         .sleep      =  1,                /* Sleep (in ticks) */
-        .function   = ethernet_thread    /* Thread Function */
+        .function   = vEthernet          /* Thread Function */
     };
-void ethernet_thread(ULONG thread_input) {
+void vEthernet(ULONG thread_input) {
     
     while(1) {
 
@@ -69,12 +69,12 @@ void ethernet_thread(ULONG thread_input) {
         }
 
         /* Sleep Thread for specified number of ticks. */
-        tx_thread_sleep(_ethernet_thread.sleep);
+        tx_thread_sleep(ethernet_thread.sleep);
     }
 }
 
 /* CAN Thread. Sends outgoing messages and processes incoming messages. */
-static thread_t _can_thread = {
+static thread_t can_thread = {
         .name       = "CAN Thread",     /* Name */
         .size       = 512,              /* Stack Size (in bytes) */
         .priority   = 0,                /* Priority */
@@ -82,9 +82,9 @@ static thread_t _can_thread = {
         .time_slice = TX_NO_TIME_SLICE, /* Time Slice */
         .auto_start = TX_AUTO_START,    /* Auto Start */
         .sleep      = 1,                /* Sleep (in ticks) */
-        .function   = can_thread        /* Thread Function */
+        .function   = vCAN              /* Thread Function */
     };
-void can_thread(ULONG thread_input) {
+void vCAN(ULONG thread_input) {
     
     while(1) {
 
@@ -106,12 +106,12 @@ void can_thread(ULONG thread_input) {
         }
 
         /* Sleep Thread for specified number of ticks. */
-        tx_thread_sleep(_can_thread.sleep);
+        tx_thread_sleep(can_thread.sleep);
     }
 }
 
 /* Faults Thread. */
-static thread_t _faults_thread = {
+static thread_t faults_thread = {
         .name       = "Faults Thread",  /* Name */
         .size       = 512,              /* Stack Size (in bytes) */
         .priority   = 4,                /* Priority */
@@ -119,9 +119,9 @@ static thread_t _faults_thread = {
         .time_slice = TX_NO_TIME_SLICE, /* Time Slice */
         .auto_start = TX_AUTO_START,    /* Auto Start */
         .sleep      = 500,              /* Sleep (in ticks) */
-        .function   = faults_thread     /* Thread Function */
+        .function   = vFaults           /* Thread Function */
     };
-void faults_thread(ULONG thread_input) {
+void vFaults(ULONG thread_input) {
     
     while(1) {
 
@@ -138,12 +138,12 @@ void faults_thread(ULONG thread_input) {
         queue_send(&can_outgoing, &msg);
 
         /* Sleep Thread for specified number of ticks. */
-        tx_thread_sleep(_faults_thread.sleep);
+        tx_thread_sleep(faults_thread.sleep);
     }
 }
 
 /* Shutdown Thread. Reads the shutdown (aka. "External Faults") pins and sends them in a CAN message. */
-static thread_t _shutdown_thread = {
+static thread_t shutdown_thread = {
         .name       = "Shutdown Thread", /* Name */
         .size       = 512,               /* Stack Size (in bytes) */
         .priority   = 5,                 /* Priority */
@@ -151,9 +151,9 @@ static thread_t _shutdown_thread = {
         .time_slice = TX_NO_TIME_SLICE,  /* Time Slice */
         .auto_start = TX_AUTO_START,     /* Auto Start */
         .sleep      = 500,               /* Sleep (in ticks) */
-        .function   = shutdown_thread    /* Thread Function */
+        .function   = vShutdown          /* Thread Function */
     };
-void shutdown_thread(ULONG thread_input) {
+void vShutdown(ULONG thread_input) {
     
     while(1) {
 
@@ -181,12 +181,12 @@ void shutdown_thread(ULONG thread_input) {
         queue_send(&can_outgoing, &msg);
 
         /* Sleep Thread for specified number of ticks. */
-        tx_thread_sleep(_shutdown_thread.sleep);
+        tx_thread_sleep(shutdown_thread.sleep);
     }
 }
 
 /* State Machine Thread. */
-static thread_t _statemachine_thread = {
+static thread_t statemachine_thread = {
         .name       = "State Machine Thread", /* Name */
         .size       = 512,                    /* Stack Size (in bytes) */
         .priority   = 2,                      /* Priority */
@@ -194,53 +194,53 @@ static thread_t _statemachine_thread = {
         .time_slice = TX_NO_TIME_SLICE,       /* Time Slice */
         .auto_start = TX_AUTO_START,          /* Auto Start */
         .sleep      = 1,                      /* Sleep (in ticks) */
-        .function   = statemachine_thread     /* Thread Function */
+        .function   = vStatemachine           /* Thread Function */
     };
-void statemachine_thread(ULONG thread_input) {
+void vStatemachine(ULONG thread_input) {
     
     while(1) {
 
         statemachine_process();
 
         /* Sleep Thread for specified number of ticks. */
-        tx_thread_sleep(_statemachine_thread.sleep);
+        tx_thread_sleep(statemachine_thread.sleep);
     }
 }
 
 /* Pedals Thread. */
-static thread_t _pedals_thread = {
-        .name       = "Pedals Thread", /* Name */
+static thread_t pedals_thread = {
+        .name       = "Pedals Thread",        /* Name */
         .size       = 512,                    /* Stack Size (in bytes) */
         .priority   = 2,                      /* Priority */
         .threshold  = 0,                      /* Preemption Threshold */
         .time_slice = TX_NO_TIME_SLICE,       /* Time Slice */
         .auto_start = TX_AUTO_START,          /* Auto Start */
         .sleep      = 1,                      /* Sleep (in ticks) */
-        .function   = pedals_thread           /* Thread Function */
+        .function   = vPedals                 /* Thread Function */
     };
-void pedals_thread(ULONG thread_input) {
+void vPedals(ULONG thread_input) {
     
     while(1) {
 
         pedals_process();
 
         /* Sleep Thread for specified number of ticks. */
-        tx_thread_sleep(_pedals_thread.sleep);
+        tx_thread_sleep(pedals_thread.sleep);
     }
 }
 
-/* eFuse Thread. */
-static thread_t _efuse_thread = {
-        .name       = "eFuse Thread",         /* Name */
+/* eFuses Thread. */
+static thread_t efuses_thread = {
+        .name       = "eFuses Thread",        /* Name */
         .size       = 512,                    /* Stack Size (in bytes) */
         .priority   = 10,                     /* Priority */
         .threshold  = 0,                      /* Preemption Threshold */
         .time_slice = TX_NO_TIME_SLICE,       /* Time Slice */
         .auto_start = TX_AUTO_START,          /* Auto Start */
         .sleep      = 10,                     /* Sleep (in ticks) */
-        .function   = efuse_thread            /* Thread Function */
+        .function   = vEFuses                 /* Thread Function */
     };
-void efuse_thread(ULONG thread_input) {
+void vEFuses(ULONG thread_input) {
 
     /* Struct for holding eFuse data. */
     /* Each instance of this struct represents a different eFuse. */
@@ -316,12 +316,12 @@ void efuse_thread(ULONG thread_input) {
         queue_send(&can_outgoing, &mc_msg);
 
         /* Sleep Thread for specified number of ticks. */
-        tx_thread_sleep(_efuse_thread.sleep);
+        tx_thread_sleep(efuses_thread.sleep);
     }
 }
 
 /* TSMS Thread. */
-static thread_t _tsms_thread = {
+static thread_t tsms_thread = {
         .name       = "TSMS Thread",          /* Name */
         .size       = 512,                    /* Stack Size (in bytes) */
         .priority   = 2,                      /* Priority */
@@ -329,16 +329,16 @@ static thread_t _tsms_thread = {
         .time_slice = TX_NO_TIME_SLICE,       /* Time Slice */
         .auto_start = TX_AUTO_START,          /* Auto Start */
         .sleep      = 50,                     /* Sleep (in ticks) */
-        .function   = tsms_thread             /* Thread Function */
+        .function   = vTSMS                   /* Thread Function */
     };
-void tsms_thread(ULONG thread_input) {
+void vTSMS(ULONG thread_input) {
     
     while(1) {
 
         tsms_update();
 
         /* Sleep Thread for specified number of ticks. */
-        tx_thread_sleep(_tsms_thread.sleep);
+        tx_thread_sleep(tsms_thread.sleep);
     }
 }
 
@@ -348,15 +348,15 @@ void tsms_thread(ULONG thread_input) {
 uint8_t threads_init(TX_BYTE_POOL *byte_pool) {
 
     /* Create Threads */
-    CATCH_ERROR(create_thread(byte_pool, &_default_thread), U_SUCCESS);      // Create Default thread.
-    CATCH_ERROR(create_thread(byte_pool, &_ethernet_thread), U_SUCCESS);     // Create Ethernet thread.
-    CATCH_ERROR(create_thread(byte_pool, &_can_thread), U_SUCCESS);          // Create CAN thread.
-    CATCH_ERROR(create_thread(byte_pool, &_faults_thread), U_SUCCESS);       // Create Faults thread.
-    CATCH_ERROR(create_thread(byte_pool, &_shutdown_thread), U_SUCCESS);     // Create Shutdown thread.
-    CATCH_ERROR(create_thread(byte_pool, &_statemachine_thread), U_SUCCESS); // Create State Machine thread.
-    CATCH_ERROR(create_thread(byte_pool, &_pedals_thread), U_SUCCESS);       // Create Pedals thread.
-    CATCH_ERROR(create_thread(byte_pool, &_efuse_thread), U_SUCCESS);        // Create eFuse thread.
-    CATCH_ERROR(create_thread(byte_pool, &_tsms_thread), U_SUCCESS);         // Create TSMS thread.
+    CATCH_ERROR(create_thread(byte_pool, &default_thread), U_SUCCESS);      // Create Default thread.
+    CATCH_ERROR(create_thread(byte_pool, &ethernet_thread), U_SUCCESS);     // Create Ethernet thread.
+    CATCH_ERROR(create_thread(byte_pool, &can_thread), U_SUCCESS);          // Create CAN thread.
+    CATCH_ERROR(create_thread(byte_pool, &faults_thread), U_SUCCESS);       // Create Faults thread.
+    CATCH_ERROR(create_thread(byte_pool, &shutdown_thread), U_SUCCESS);     // Create Shutdown thread.
+    CATCH_ERROR(create_thread(byte_pool, &statemachine_thread), U_SUCCESS); // Create State Machine thread.
+    CATCH_ERROR(create_thread(byte_pool, &pedals_thread), U_SUCCESS);       // Create Pedals thread.
+    CATCH_ERROR(create_thread(byte_pool, &efuses_thread), U_SUCCESS);       // Create eFuses thread.
+    CATCH_ERROR(create_thread(byte_pool, &tsms_thread), U_SUCCESS);         // Create TSMS thread.
 
     // add more threads here if need
 
