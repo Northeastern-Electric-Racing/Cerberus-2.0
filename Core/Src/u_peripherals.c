@@ -24,14 +24,16 @@ static int32_t _lsm6dso_read(uint16_t device_address, uint16_t register_address,
     status = HAL_SPI_Transmit(&hspi2, &spi_reg, sizeof(spi_reg), HAL_MAX_DELAY);
     if(status != HAL_OK) {
         HAL_GPIO_WritePin(SPI2_NSS_GPIO_Port, SPI2_NSS_Pin, _DESELECT_IMU);
-        DEBUG_PRINTLN("ERROR: Failed to send register address to lsm6dso over SPI (Status: %d/%s).", status, hal_status_toString(status));
+        DEBUG_PRINTLN("ERROR: Failed to send register address to lsm6dso over SPI 
+            (Status: %d/%s).", status, hal_status_toString(status));
         return LSM6DSO_ERROR;
     }
     
     /* Recieve the data. */
     status = HAL_SPI_Receive(&hspi2, data, length, HAL_MAX_DELAY);
     if(status != HAL_OK) {
-        DEBUG_PRINTLN("ERROR: Failed to read from the lsm6dso over SPI (Status: %d/%s).", status, hal_status_toString(status));
+        DEBUG_PRINTLN("ERROR: Failed to read from the lsm6dso over SPI 
+            (Status: %d/%s).", status, hal_status_toString(status));
         return LSM6DSO_ERROR;
     }
     
