@@ -26,7 +26,7 @@ typedef enum {
     /* Total number of indexes for ADC1. */
     ADC1_SIZE
 } _adc1_t;
-static uint32_t _adc1_buffer[ADC1_SIZE]; // Buffer for the ADC DMA readings.
+static uint16_t _adc1_buffer[ADC1_SIZE]; // Buffer for the ADC DMA readings (note: has to be uint16_t to correspond with the "Half Word" GPDMA setting in CubeMX).
 
 /* ADC2 Config. */
 typedef enum {
@@ -39,7 +39,7 @@ typedef enum {
     /* Total number of indexes for ADC2. */
     ADC2_SIZE
 } _adc2_t;
-static uint32_t _adc2_buffer[ADC2_SIZE]; // Buffer for the ADC DMA readings.
+static uint16_t _adc2_buffer[ADC2_SIZE]; // Buffer for the ADC DMA readings (note: has to be uint16_t to correspond with the "Half Word" GPDMA setting in CubeMX).
 
 uint16_t _get_adc1_value(_adc1_t index) {
     uint16_t temp;

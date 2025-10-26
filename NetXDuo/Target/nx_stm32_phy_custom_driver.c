@@ -128,7 +128,7 @@ int32_t nx_eth_phy_get_link_state(void)
 
   /* USER CODE END LINK_STATE_0 */
 
-  int32_t  linkstate = ETH_PHY_STATUS_LINK_ERROR;
+  int32_t  linkstate = ETH_PHY_STATUS_OK;
 
   /* USER CODE BEGIN LINK_STATE_1 */
     uint8_t link_state;
@@ -136,11 +136,11 @@ int32_t nx_eth_phy_get_link_state(void)
     
     if (ret == LAN8670_STATUS_OK && link_state == 1)
     {
-        linkstate = ETH_PHY_STATUS_10MBITS_FULLDUPLEX;  // since we're using 10BASE-T1S
+      linkstate = ETH_PHY_STATUS_10MBITS_FULLDUPLEX;  // since we're using 10BASE-T1S
     }
     else
     {
-        linkstate = ETH_PHY_STATUS_LINK_DOWN;
+      linkstate = ETH_PHY_STATUS_LINK_DOWN;
     }
   /* USER CODE END LINK_STATE_1 */
   return linkstate;
