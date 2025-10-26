@@ -15,9 +15,10 @@
 #include "fdcan.h"
 
 /* Config. */
-#define TIRE_DIAMETER 16 /* inches */
-#define GEAR_RATIO    41 / 13.0 /* unitless */
-#define POLE_PAIRS    10 /* unitless */
+#define TIRE_DIAMETER_INCHES 16 	/* inches */
+#define TIRE_DIAMETER_METERS 0.4064 /* Meters */
+#define GEAR_RATIO    41 / 13.0 	/* unitless */
+#define POLE_PAIRS    10 			/* unitless */
 
 typedef struct {
 	int32_t rpm; /* SCALE: 1         UNITS: Rotations per Minute   */
