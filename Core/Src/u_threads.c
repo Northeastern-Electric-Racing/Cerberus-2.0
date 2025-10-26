@@ -49,6 +49,9 @@ static thread_t ethernet_thread = {
     };
 void vEthernet(ULONG thread_input) {
     
+    /* PHY_RESET Pin has to be set HIGH for the PHY to function. */
+    HAL_GPIO_WritePin(PHY_RESET_GPIO_Port, PHY_RESET_Pin, GPIO_PIN_SET);
+
     while(1) {
 
         ethernet_message_t message;
