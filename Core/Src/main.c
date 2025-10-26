@@ -820,7 +820,7 @@ static void MX_SPI2_Init(void)
   hspi2.Instance = SPI2;
   hspi2.Init.Mode = SPI_MODE_MASTER;
   hspi2.Init.Direction = SPI_DIRECTION_2LINES;
-  hspi2.Init.DataSize = SPI_DATASIZE_4BIT;
+  hspi2.Init.DataSize = SPI_DATASIZE_8BIT;
   hspi2.Init.CLKPolarity = SPI_POLARITY_LOW;
   hspi2.Init.CLKPhase = SPI_PHASE_1EDGE;
   hspi2.Init.NSS = SPI_NSS_HARD_OUTPUT;
@@ -881,8 +881,10 @@ static void MX_GPIO_Init(void)
                           |EF_DASH_EN_Pin|RTDS_GPIO_Pin|EF_LV_EN_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOG, EF_RADFAN_EN_Pin|EF_SHUTDOWN_EN_Pin|EF_SPARE_EN_Pin|WATCHDOG_Pin
-                          |FAULT_MCU_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOG, EF_RADFAN_EN_Pin|EF_SHUTDOWN_EN_Pin|EF_SPARE_EN_Pin|WATCHDOG_Pin, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(FAULT_MCU_GPIO_Port, FAULT_MCU_Pin, GPIO_PIN_SET);
 
   /*Configure GPIO pins : EF_BATTBOX_EN_Pin EF_MC_EN_Pin */
   GPIO_InitStruct.Pin = EF_BATTBOX_EN_Pin|EF_MC_EN_Pin;
