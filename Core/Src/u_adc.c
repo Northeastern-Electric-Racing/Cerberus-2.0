@@ -77,14 +77,12 @@ int adc_switchMuxState(void) {
         mux_state = HIGH;   // Update the mux state
 
         /* We are now in the HIGH state, so set the associated indexes in the buffer. */
-        mutex_get(&mux_buffer_mutex);
-        mutex_get(&adc1_mutex);
+        mutex_get(&adc_mutex);
         _mux_buffer[SEL1_HIGH] = _adc1_buffer[ADC1_CHANNEL0];
         _mux_buffer[SEL2_HIGH] = _adc1_buffer[ADC1_CHANNEL15];
         _mux_buffer[SEL3_HIGH] = _adc1_buffer[ADC1_CHANNEL5];
         _mux_buffer[SEL4_HIGH] = _adc1_buffer[ADC1_CHANNEL9];
-        mutex_put(&mux_buffer_mutex);
-        mutex_put(&adc1_mutex);
+        mutex_put(&adc_mutex);
     }
     else if(mux_state == HIGH) {
         /* Mux is currently HIGH, so switch to LOW. */
@@ -97,14 +95,12 @@ int adc_switchMuxState(void) {
         mux_state = LOW;   // Update the mux state
 
         /* We are now in the LOW state, so set the associated indexes in the buffer. */
-        mutex_get(&mux_buffer_mutex);
-        mutex_get(&adc1_mutex);
+        mutex_get(&adc_mutex);
         _mux_buffer[SEL1_LOW] = _adc1_buffer[ADC1_CHANNEL0];
         _mux_buffer[SEL2_LOW] = _adc1_buffer[ADC1_CHANNEL15];
         _mux_buffer[SEL3_LOW] = _adc1_buffer[ADC1_CHANNEL5];
         _mux_buffer[SEL4_LOW] = _adc1_buffer[ADC1_CHANNEL9];
-        mutex_put(&mux_buffer_mutex);
-        mutex_put(&adc1_mutex);
+        mutex_put(&adc_mutex);
     }
 
     return U_SUCCESS;
@@ -130,8 +126,7 @@ int adc_init(void) {
 
 /* Get raw eFuse ADC Data. */
 raw_efuse_adc_t adc_getEFuseData(void) {
-    mutex_get(&adc1_mutex);
-    mutex_get(&mux_buffer_mutex);
+    mutex_get(&adc_mutex);
 
     raw_efuse_adc_t efuses;
     efuses.dashboard = _adc1_buffer[ADC1_CHANNEL3];
@@ -144,15 +139,13 @@ raw_efuse_adc_t adc_getEFuseData(void) {
     efuses.battbox = _mux_buffer[SEL1_LOW];
     efuses.mc = _adc1_buffer[ADC1_CHANNEL18];
 
-    mutex_put(&adc1_mutex);
-    mutex_put(&mux_buffer_mutex);
+    mutex_put(&adc_mutex);
     return efuses;
 }
 
 /* Get raw pedal sensor ADC Data. */
 raw_pedal_adc_t adc_getPedalData(void) {
-    mutex_get(&adc1_mutex);
-    mutex_get(&adc2_mutex);
+    mutex_get(&adc_mutex);
 
     raw_pedal_adc_t sensors;
     sensors.accel_1 = _adc1_buffer[ADC1_CHANNEL2];
@@ -160,7 +153,6 @@ raw_pedal_adc_t adc_getPedalData(void) {
     sensors.brake_1 = _adc2_buffer[ADC2_CHANNEL2];
     sensors.brake_2 = _adc2_buffer[ADC2_CHANNEL6];
 
-    mutex_put(&adc1_mutex);
-    mutex_put(&adc2_mutex);
+    mutex_put(&adc_mutex);
     return sensors;
 }

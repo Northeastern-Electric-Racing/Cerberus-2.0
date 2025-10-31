@@ -39,21 +39,9 @@ mutex_t dti_mutex = {
     .priority_inherit = TX_INHERIT /* Priority inheritance setting. */
 };
 
-/* ADC1 Mutex */
-mutex_t adc1_mutex = {
-    .name = "ADC1 Mutex",           /* Name of the mutex. */
-    .priority_inherit = TX_INHERIT /* Priority inheritance setting. */
-};
-
-/* ADC2 Mutex */
-mutex_t adc2_mutex = {
-    .name = "ADC2 Mutex",           /* Name of the mutex. */
-    .priority_inherit = TX_INHERIT /* Priority inheritance setting. */
-};
-
-/* MUX Buffer Mutex */
-mutex_t mux_buffer_mutex = {
-    .name = "Mux Buffer Mutex",    /* Name of the mutex. */
+/* ADC Mutex */
+mutex_t adc_mutex = {
+    .name = "ADC Mutex",           /* Name of the mutex. */
     .priority_inherit = TX_INHERIT /* Priority inheritance setting. */
 };
 
@@ -74,9 +62,7 @@ uint8_t mutexes_init() {
     CATCH_ERROR(create_mutex(&bms_mutex), U_SUCCESS);          // Create BMS Mutex.
     CATCH_ERROR(create_mutex(&torque_limit_mutex), U_SUCCESS); // Create Torque Limit Mutex.
     CATCH_ERROR(create_mutex(&dti_mutex), U_SUCCESS);          // Create DTI Mutex.
-    CATCH_ERROR(create_mutex(&adc1_mutex), U_SUCCESS);         // Create ADC1 Mutex.
-    CATCH_ERROR(create_mutex(&adc2_mutex), U_SUCCESS);         // Create ADC2 Mutex.
-    CATCH_ERROR(create_mutex(&mux_buffer_mutex), U_SUCCESS);   // Create Mux Buffer Mutex.
+    CATCH_ERROR(create_mutex(&adc_mutex), U_SUCCESS);          // Create ADC Mutex.
     CATCH_ERROR(create_mutex(&tsms_mutex), U_SUCCESS);         // Create TSMS Mutex.
 
     // add more as necessary.
