@@ -68,22 +68,42 @@ int adc_switchMuxState(void) {
 
     if(mux_state == LOW) {
         /* Mux is currently LOW, so switch to HIGH. */
-        HAL_Gpio_WritePin(MUX_SEL1_GPIO_Port, MUX_SEL1_Pin, GPIO_PIN_SET);
-        HAL_Gpio_WritePin(MUX_SEL2_GPIO_Port, MUX_SEL2_Pin, GPIO_PIN_SET);
-        HAL_Gpio_WritePin(MUX_SEL3_GPIO_Port, MUX_SEL3_Pin, GPIO_PIN_SET);
-        HAL_Gpio_WritePin(MUX_SEL4_GPIO_Port, MUX_SEL4_Pin, GPIO_PIN_SET);
+        HAL_GPIO_WritePin(MUX_SEL1_GPIO_Port, MUX_SEL1_Pin, GPIO_PIN_SET);
+        HAL_GPIO_WritePin(MUX_SEL2_GPIO_Port, MUX_SEL2_Pin, GPIO_PIN_SET);
+        HAL_GPIO_WritePin(MUX_SEL3_GPIO_Port, MUX_SEL3_Pin, GPIO_PIN_SET);
+        HAL_GPIO_WritePin(MUX_SEL4_GPIO_Port, MUX_SEL4_Pin, GPIO_PIN_SET);
 
         tx_thread_sleep(1); // Sleep for 1 tick so the mux settles.
         mux_state = HIGH;   // Update the mux state
 
         /* We are now in the HIGH state, so set the associated indexes in the buffer. */
         mutex_get(&mux_buffer_mutex);
-        _mux_buffer[SEL1_HIGH] = _adc1_buffer[ADC1_INP0_SEL1];
-        _mux_buffer[SEL2_HIGH] = _adc1_buffer[ADC1_INP15_SEL2];
-        _mux_buffer[SEL3_HIGH] = _adc1_buffer[ADC1_INP5_SEL3];
-        _mux_buffer[SEL4_HIGH] = _adc1_buffer[ADC1_INP9_SEL4];
+        _mux_buffer[SEL1_HIGH] = _adc1_buffer[ADC1_CHANNEL0];
+        _mux_buffer[SEL2_HIGH] = _adc1_buffer[ADC1_CHANNEL15];
+        _mux_buffer[SEL3_HIGH] = _adc1_buffer[ADC1_CHANNEL5];
+        _mux_buffer[SEL4_HIGH] = _adc1_buffer[ADC1_CHANNEL9];
         mutex_put(&mux_buffer_mutex);
     }
+    else if(mux_state == HIGH) {
+        /* Mux is currently HIGH, so switch to LOW. */
+        HAL_GPIO_WritePin(MUX_SEL1_GPIO_Port, MUX_SEL1_Pin, GPIO_PIN_RESET);
+        HAL_GPIO_WritePin(MUX_SEL2_GPIO_Port, MUX_SEL2_Pin, GPIO_PIN_RESET);
+        HAL_GPIO_WritePin(MUX_SEL3_GPIO_Port, MUX_SEL3_Pin, GPIO_PIN_RESET);
+        HAL_GPIO_WritePin(MUX_SEL4_GPIO_Port, MUX_SEL4_Pin, GPIO_PIN_RESET);
+
+        tx_thread_sleep(1); // Sleep for 1 tick so the mux settles.
+        mux_state = LOW;   // Update the mux state
+
+        /* We are now in the LOW state, so set the associated indexes in the buffer. */
+        mutex_get(&mux_buffer_mutex);
+        _mux_buffer[SEL1_LOW] = _adc1_buffer[ADC1_CHANNEL0];
+        _mux_buffer[SEL2_LOW] = _adc1_buffer[ADC1_CHANNEL15];
+        _mux_buffer[SEL3_LOW] = _adc1_buffer[ADC1_CHANNEL5];
+        _mux_buffer[SEL4_LOW] = _adc1_buffer[ADC1_CHANNEL9];
+        mutex_put(&mux_buffer_mutex);
+    }
+
+    return U_SUCCESS;
 }
 
 /* Start ADC DMA. */
@@ -110,15 +130,15 @@ raw_efuse_adc_t adc_getEFuseData(void) {
     mutex_get(&mux_buffer_mutex);
 
     raw_efuse_adc_t efuses;
-    efuses.dashboard = _get_adc1_value(ADC1_EFUSE_DASHBOARD);
-    efuses.brake = _get_adc1_value(ADC1_EFUSE_BRAKE);
-    efuses.shutdown = _get_adc1_value(ADC1_EFUSE_SHUTDOWN);
-    efuses.radfan = _get_adc1_value(ADC1_EFUSE_RADFAN);
-    efuses.fanbatt = _get_adc1_value(ADC1_EFUSE_FANBATT);
-    efuses.pump1 = _get_adc1_value(ADC1_EFUSE_PUMP1);
-    efuses.pump2 = _get_adc1_value(ADC1_EFUSE_PUMP2);
-    efuses.battbox = _get_adc1_value(ADC1_EFUSE_BATTBOX);
-    efuses.mc = _get_adc1_value(ADC1_EFUSE_MC);
+    efuses.dashboard = _adc1_buffer[ADC1_CHANNEL3];
+    efuses.brake = _mux_buffer[SEL1_HIGH];
+    efuses.shutdown = _mux_buffer[SEL3_LOW];
+    efuses.radfan = _mux_buffer[SEL4_HIGH];
+    efuses.fanbatt = _adc1_buffer[ADC1_CHANNEL10];
+    efuses.pump1 = _adc1_buffer[ADC1_CHANNEL12];
+    efuses.pump2 = _adc1_buffer[ADC1_CHANNEL13];
+    efuses.battbox = _mux_buffer[SEL1_LOW];
+    efuses.mc = _adc1_buffer[ADC1_CHANNEL18];
 
     mutex_put(&adc1_mutex);
     mutex_put(&mux_buffer_mutex);
@@ -131,10 +151,10 @@ raw_pedal_adc_t adc_getPedalData(void) {
     mutex_get(&adc2_mutex);
 
     raw_pedal_adc_t sensors;
-    sensors.accel_1 = _get_adc1_value(ADC1_ACCEL_PEDAL_1);
-    sensors.accel_2 = _get_adc1_value(ADC1_ACCEL_PEDAL_2);
-    sensors.brake_1 = _get_adc2_value(ADC2_BRAKE_PEDAL_1);
-    sensors.brake_2 = _get_adc2_value(ADC2_BRAKE_PEDAL_2);
+    sensors.accel_1 = _adc1_buffer[ADC1_CHANNEL2];
+    sensors.accel_2 = _adc1_buffer[ADC1_CHANNEL6];
+    sensors.brake_1 = _adc2_buffer[ADC2_CHANNEL2];
+    sensors.brake_2 = _adc2_buffer[ADC2_CHANNEL6];
 
     mutex_put(&adc1_mutex);
     mutex_put(&adc2_mutex);
