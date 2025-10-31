@@ -51,6 +51,12 @@ mutex_t adc2_mutex = {
     .priority_inherit = TX_INHERIT /* Priority inheritance setting. */
 };
 
+/* MUX Buffer Mutex */
+mutex_t mux_buffer_mutex = {
+    .name = "Mux Buffer Mutex",    /* Name of the mutex. */
+    .priority_inherit = TX_INHERIT /* Priority inheritance setting. */
+};
+
 /* TSMS Mutex */
 mutex_t tsms_mutex = {
     .name = "TSMS Mutex",          /* Name of the mutex. */
@@ -70,6 +76,7 @@ uint8_t mutexes_init() {
     CATCH_ERROR(create_mutex(&dti_mutex), U_SUCCESS);          // Create DTI Mutex.
     CATCH_ERROR(create_mutex(&adc1_mutex), U_SUCCESS);         // Create ADC1 Mutex.
     CATCH_ERROR(create_mutex(&adc2_mutex), U_SUCCESS);         // Create ADC2 Mutex.
+    CATCH_ERROR(create_mutex(&mux_buffer_mutex), U_SUCCESS);   // Create Mux Buffer Mutex.
     CATCH_ERROR(create_mutex(&tsms_mutex), U_SUCCESS);         // Create TSMS Mutex.
 
     // add more as necessary.
