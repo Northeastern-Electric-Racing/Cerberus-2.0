@@ -25,5 +25,6 @@ void vStatemachine(ULONG thread_input);
 void vPedals(ULONG thread_input);
 void vEFuses(ULONG thread_input);
 void vTSMS(ULONG thread_input);
+void vMux(ULONG thread_input);
 
 #endif /* u_threads.h */
