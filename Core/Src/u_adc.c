@@ -7,7 +7,7 @@
 /* ADC1 Config. */
 /* For mux'd inputs: SELx=HIGH corresponds to the A input. SELx=LOW corresponds to the B input. */
 typedef enum {
-    /* ADC Input Channel Ranks. *
+    /* ADC Input Channel Ranks. */
     /* The order these values MUST match how the ADC ranks are set up in CubeMX. */
     ADC1_CHANNEL0,  // SEL1
     ADC1_CHANNEL2,  // APPS_1_ADC
@@ -46,7 +46,7 @@ typedef enum {
 
     /* SEL2 */
     SEL2_HIGH,  // LFIU_CURRENT_1
-    SEL2_LOW,   // LIFU_CURRENT_2
+    SEL2_LOW,   // LFIU_CURRENT_2
     
     /* SEL3 */
     SEL3_HIGH,  // SPARE_FUSE_ADC
@@ -78,11 +78,13 @@ int adc_switchMuxState(void) {
 
         /* We are now in the HIGH state, so set the associated indexes in the buffer. */
         mutex_get(&mux_buffer_mutex);
+        mutex_get(&adc1_mutex);
         _mux_buffer[SEL1_HIGH] = _adc1_buffer[ADC1_CHANNEL0];
         _mux_buffer[SEL2_HIGH] = _adc1_buffer[ADC1_CHANNEL15];
         _mux_buffer[SEL3_HIGH] = _adc1_buffer[ADC1_CHANNEL5];
         _mux_buffer[SEL4_HIGH] = _adc1_buffer[ADC1_CHANNEL9];
         mutex_put(&mux_buffer_mutex);
+        mutex_put(&adc1_mutex);
     }
     else if(mux_state == HIGH) {
         /* Mux is currently HIGH, so switch to LOW. */
@@ -96,11 +98,13 @@ int adc_switchMuxState(void) {
 
         /* We are now in the LOW state, so set the associated indexes in the buffer. */
         mutex_get(&mux_buffer_mutex);
+        mutex_get(&adc1_mutex);
         _mux_buffer[SEL1_LOW] = _adc1_buffer[ADC1_CHANNEL0];
         _mux_buffer[SEL2_LOW] = _adc1_buffer[ADC1_CHANNEL15];
         _mux_buffer[SEL3_LOW] = _adc1_buffer[ADC1_CHANNEL5];
         _mux_buffer[SEL4_LOW] = _adc1_buffer[ADC1_CHANNEL9];
         mutex_put(&mux_buffer_mutex);
+        mutex_put(&adc1_mutex);
     }
 
     return U_SUCCESS;
