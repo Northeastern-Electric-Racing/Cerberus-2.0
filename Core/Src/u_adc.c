@@ -127,32 +127,40 @@ int adc_init(void) {
 /* Get raw eFuse ADC Data. */
 raw_efuse_adc_t adc_getEFuseData(void) {
     mutex_get(&adc_mutex);
+    uint16_t adc1[ADC1_SIZE]; // Local ADC1 buffer copy.
+    memcpy(adc1, _adc1_buffer, sizeof(_adc1_buffer));
+    uint16_t mux[MUX_SIZE]; // Local Mux buffer copy.
+    memcpy(mux, _mux_buffer, sizeof(_mux_buffer));
+    mutex_put(&adc_mutex);
 
     raw_efuse_adc_t efuses;
-    efuses.dashboard = _adc1_buffer[ADC1_CHANNEL3];
-    efuses.brake = _mux_buffer[SEL1_HIGH];
-    efuses.shutdown = _mux_buffer[SEL3_LOW];
-    efuses.radfan = _mux_buffer[SEL4_HIGH];
-    efuses.fanbatt = _adc1_buffer[ADC1_CHANNEL10];
-    efuses.pump1 = _adc1_buffer[ADC1_CHANNEL12];
-    efuses.pump2 = _adc1_buffer[ADC1_CHANNEL13];
-    efuses.battbox = _mux_buffer[SEL1_LOW];
-    efuses.mc = _adc1_buffer[ADC1_CHANNEL18];
+    efuses.dashboard = adc1[ADC1_CHANNEL3];
+    efuses.brake = mux[SEL1_HIGH];
+    efuses.shutdown = mux[SEL3_LOW];
+    efuses.radfan = mux[SEL4_HIGH];
+    efuses.fanbatt = adc1[ADC1_CHANNEL10];
+    efuses.pump1 = adc1[ADC1_CHANNEL12];
+    efuses.pump2 = adc1[ADC1_CHANNEL13];
+    efuses.battbox = mux[SEL1_LOW];
+    efuses.mc = adc1[ADC1_CHANNEL18];
 
-    mutex_put(&adc_mutex);
     return efuses;
 }
 
 /* Get raw pedal sensor ADC Data. */
 raw_pedal_adc_t adc_getPedalData(void) {
     mutex_get(&adc_mutex);
+    uint16_t adc1[ADC1_SIZE]; // Local ADC1 buffer copy.
+    memcpy(adc1, _adc1_buffer, sizeof(_adc1_buffer));
+    uint16_t adc2[ADC2_SIZE]; // Local ADC2 buffer copy.
+    memcpy(adc2, _adc2_buffer, sizeof(_adc2_buffer));
+    mutex_put(&adc_mutex);
 
     raw_pedal_adc_t sensors;
-    sensors.accel_1 = _adc1_buffer[ADC1_CHANNEL2];
-    sensors.accel_2 = _adc1_buffer[ADC1_CHANNEL6];
-    sensors.brake_1 = _adc2_buffer[ADC2_CHANNEL2];
-    sensors.brake_2 = _adc2_buffer[ADC2_CHANNEL6];
+    sensors.accel_1 = adc1[ADC1_CHANNEL2];
+    sensors.accel_2 = adc1[ADC1_CHANNEL6];
+    sensors.brake_1 = adc2[ADC2_CHANNEL2];
+    sensors.brake_2 = adc2[ADC2_CHANNEL6];
 
-    mutex_put(&adc_mutex);
     return sensors;
 }
