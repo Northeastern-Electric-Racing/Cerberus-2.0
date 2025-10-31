@@ -884,6 +884,9 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_WritePin(GPIOG, EF_RADFAN_EN_Pin|EF_SHUTDOWN_EN_Pin|EF_SPARE_EN_Pin|WATCHDOG_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIOC, MUX_SEL1_Pin|MUX_SEL2_Pin|MUX_SEL3_Pin|MUX_SEL4_Pin, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(FAULT_MCU_GPIO_Port, FAULT_MCU_Pin, GPIO_PIN_SET);
 
   /*Configure GPIO pins : EF_BATTBOX_EN_Pin EF_MC_EN_Pin */
@@ -959,6 +962,13 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOG, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : MUX_SEL1_Pin MUX_SEL2_Pin MUX_SEL3_Pin MUX_SEL4_Pin */
+  GPIO_InitStruct.Pin = MUX_SEL1_Pin|MUX_SEL2_Pin|MUX_SEL3_Pin|MUX_SEL4_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
   /*Configure GPIO pins : IMU_INT1_Pin IMU_INT2_Pin */
   GPIO_InitStruct.Pin = IMU_INT1_Pin|IMU_INT2_Pin;
