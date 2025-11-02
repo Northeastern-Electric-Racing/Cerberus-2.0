@@ -12,9 +12,6 @@
 *   Author: Blake Jackson
 */
 
-/* Queue Config Macros */
-#define QUEUE_WAIT_TIME TX_NO_WAIT // Wait time for queue stuff before timing out
-
 /* Queue List */
 extern queue_t eth_incoming; // Incoming Ethernet Queue
 extern queue_t eth_outgoing; // Outgoing Ethernet Queue
