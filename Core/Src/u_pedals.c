@@ -630,7 +630,7 @@ void pedals_process(void) {
     mutex_get(&brake_state_mutex);
     if(pedal_data.percentage_brake > PEDAL_BRAKE_THRESH) {
         brake_pressed = true;
-        efuse_enable(EFUSE_BRAKE); // u_TODO - i'm pretty sure this is for the brakelight? but idk why its spelled like that in altium
+        efuse_enable(EFUSE_BRAKE);
     }
     else {
         brake_pressed = false;
