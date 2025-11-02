@@ -7,6 +7,7 @@
 #include "u_nx_ethernet.h"
 #include "u_faults.h"
 #include "u_pedals.h"
+#include "u_adc.h"
 #include "u_efuses.h"
 #include "u_statemachine.h"
 #include "u_tsms.h"
@@ -61,7 +62,7 @@ void vEthernet(ULONG thread_input) {
         while(queue_receive(&eth_outgoing, &message) == U_SUCCESS) {
             status = ethernet_send_message(&message);
             if(status != U_SUCCESS) {
-                DEBUG_PRINTLN("WARNING: Failed to send Ethernet message after removing from outgoing queue (Message ID: %d).", message.message_id);
+                PRINTLN_WARNING("Failed to send Ethernet message after removing from outgoing queue (Message ID: %d).", message.message_id);
                 // u_TODO - maybe add the message back into the queue if it fails to send? not sure if this is a good idea tho
                 }
         }
@@ -98,7 +99,7 @@ void vCAN(ULONG thread_input) {
         while(queue_receive(&can_outgoing, &message) == U_SUCCESS) {
             status = can_send_msg(&can1, &message);
             if(status != U_SUCCESS) {
-                DEBUG_PRINTLN("WARNING: Failed to send message (on can1) after removing from outgoing queue (Message ID: %ld).", message.id);
+                PRINTLN_WARNING("Failed to send message (on can1) after removing from outgoing queue (Message ID: %ld).", message.id);
                 // u_TODO - maybe add the message back into the queue if it fails to send? not sure if this is a good idea tho
                 }
         }
@@ -345,6 +346,29 @@ void vTSMS(ULONG thread_input) {
     }
 }
 
+/* Mux Thread (for the ADC multiplexer). */
+static thread_t mux_thread = {
+        .name       = "Mux Thread",           /* Name */
+        .size       = 512,                    /* Stack Size (in bytes) */
+        .priority   = 10,                     /* Priority */
+        .threshold  = 0,                      /* Preemption Threshold */
+        .time_slice = TX_NO_TIME_SLICE,       /* Time Slice */
+        .auto_start = TX_AUTO_START,          /* Auto Start */
+        .sleep      = 100,                    /* Sleep (in ticks) */
+        .function   = vMux                    /* Thread Function */
+    };
+void vMux(ULONG thread_input) {
+    
+    while(1) {
+
+        /* Switches the multiplexer state and updates the buffer. */
+        adc_switchMuxState();
+
+        /* Sleep Thread for specified number of ticks. */
+        tx_thread_sleep(mux_thread.sleep);
+    }
+}
+
 /* Initializes all ThreadX threads. 
 *  Calls to _create_thread() should go in here
 */
@@ -360,9 +384,10 @@ uint8_t threads_init(TX_BYTE_POOL *byte_pool) {
     CATCH_ERROR(create_thread(byte_pool, &pedals_thread), U_SUCCESS);       // Create Pedals thread.
     CATCH_ERROR(create_thread(byte_pool, &efuses_thread), U_SUCCESS);       // Create eFuses thread.
     CATCH_ERROR(create_thread(byte_pool, &tsms_thread), U_SUCCESS);         // Create TSMS thread.
+    CATCH_ERROR(create_thread(byte_pool, &mux_thread), U_SUCCESS);          // Create Mux thread.
 
     // add more threads here if need
 
-    DEBUG_PRINTLN("Ran threads_init().");
+    PRINTLN_INFO("Ran threads_init().");
     return U_SUCCESS;
 }
