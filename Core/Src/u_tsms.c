@@ -25,21 +25,21 @@ static int _trigger_timer(void) {
     /* Deactivate the TSMS timer. */
     int status = tx_timer_deactivate(&timer);
     if(status != TX_SUCCESS) {
-        DEBUG_PRINTLN("ERROR: Failed to deactivate TSMS timer (Status: %d/%s).", status, tx_status_toString(status));
+        PRINTLN_ERROR("Failed to deactivate TSMS timer (Status: %d/%s).", status, tx_status_toString(status));
         return U_ERROR;
     }
 
     /* Change the TSMS timer. */
     status = tx_timer_change(&timer, _TSMS_DEBOUNCE_TIME, 0);
     if(status != TX_SUCCESS) {
-        DEBUG_PRINTLN("ERROR: Failed to change TSMS timer (Status: %d/%s).", status, tx_status_toString(status));
+        PRINTLN_ERROR("Failed to change TSMS timer (Status: %d/%s).", status, tx_status_toString(status));
         return U_ERROR;
     }
 
     /* Activate the TSMS timer. */
     status = tx_timer_activate(&timer);
     if(status != TX_SUCCESS) {
-        DEBUG_PRINTLN("ERROR: Failed to activate TSMS timer (Status: %d/%s).", status, tx_status_toString(status));
+        PRINTLN_ERROR("Failed to activate TSMS timer (Status: %d/%s).", status, tx_status_toString(status));
         return U_ERROR;
     }
     
@@ -58,7 +58,7 @@ int tsms_init(void) {
         TX_NO_ACTIVATE            /* Make the timer dormant until it is activated. */
     );
     if(status != TX_SUCCESS) {
-        DEBUG_PRINTLN("ERROR: Failed to create TSMS debounce timer (Status: %d/%s).", status, tx_status_toString(status));
+        PRINTLN_ERROR("Failed to create TSMS debounce timer (Status: %d/%s).", status, tx_status_toString(status));
         return U_ERROR;
     }
     return U_SUCCESS;
@@ -72,7 +72,7 @@ void tsms_update(void) {
         UINT active;
         int status = tx_timer_info_get(&timer, TX_NULL, &active, TX_NULL, TX_NULL, TX_NULL);
         if(status != TX_SUCCESS) {
-            DEBUG_PRINTLN("ERROR: Failed to get active status of the TSMS timer (Status: %d/%s).", status, tx_status_toString(status));
+            PRINTLN_ERROR("Failed to get active status of the TSMS timer (Status: %d/%s).", status, tx_status_toString(status));
             return;
         }
 

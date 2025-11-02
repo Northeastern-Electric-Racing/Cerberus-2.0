@@ -60,6 +60,6 @@ uint8_t queues_init(TX_BYTE_POOL *byte_pool) {
     CATCH_ERROR(create_queue(byte_pool, &faults), U_SUCCESS);       // Create Faults Queue
     CATCH_ERROR(create_queue(byte_pool, &state_transition_queue), U_SUCCESS); // Create state transition queue.
 
-    DEBUG_PRINTLN("Ran queues_init().");
+    PRINTLN_INFO("Ran queues_init().");
     return U_SUCCESS;
 }

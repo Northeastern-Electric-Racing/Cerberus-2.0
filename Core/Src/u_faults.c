@@ -59,7 +59,7 @@ static void _timer_callback(ULONG args) {
 
     /* Clear the fault. */
     fault_flags &= ~((uint64_t)(1 << fault_id));
-    DEBUG_PRINTLN("UNFAULTED: %s.", faults[fault_id].name);
+    PRINTLN_INFO("Cleared fault (Fault: %s).", faults[fault_id].name);
 
     /* Check if there are any active critical faults. If not, unfault the car. */
     if((fault_flags & severity_mask) == 0) {        
@@ -92,12 +92,12 @@ int faults_init(void) {
             TX_NO_ACTIVATE            /* Make the timer dormant until it is activated. */
         );
         if(status != TX_SUCCESS) {
-            DEBUG_PRINTLN("ERROR: Failed to create fault timer (Status: %d/%s, Fault: %s).", status, tx_status_toString(status), faults[fault_id].name);
+            PRINTLN_ERROR("Failed to create fault timer (Status: %d/%s, Fault: %s).", status, tx_status_toString(status), faults[fault_id].name);
             return U_ERROR;
         }
     }
 
-    DEBUG_PRINTLN("Ran faults_init().");
+    PRINTLN_INFO("Ran faults_init().");
 
     return U_SUCCESS;
 }
@@ -116,11 +116,11 @@ int trigger_fault(fault_t fault_id) {
 
     switch(faults[fault_id].severity) {
         case CRITICAL:
-            DEBUG_PRINTLN("CRITICAL FAULT TRIGGERED: %s.", faults[fault_id].name);
+            PRINTLN_INFO("Triggered CRITICAL FAULT (Fault: %s).", faults[fault_id].name);
             fault();
             break;
         case NON_CRITICAL:
-            DEBUG_PRINTLN("NON_CRITICAL FAULT TRIGGERED: %s.", faults[fault_id].name);
+            PRINTLN_INFO("Triggered non-critical fault (Fault: %s).", faults[fault_id].name);
             // If the fault is non-critical, the car doesn't need to be put in its faulted state.
             break;
     }
@@ -128,21 +128,21 @@ int trigger_fault(fault_t fault_id) {
     /* Deactivate the fault timer. */
     int status = tx_timer_deactivate(&timers[fault_id]);
     if(status != TX_SUCCESS) {
-        DEBUG_PRINTLN("ERROR: Failed to deactivate fault timer (Status: %d/%s, Fault: %s).", status, tx_status_toString(status), faults[fault_id].name);
+        PRINTLN_ERROR("Failed to deactivate fault timer (Status: %d/%s, Fault: %s).", status, tx_status_toString(status), faults[fault_id].name);
         return U_ERROR;
     }
 
     /* Change the fault timer. */
     status = tx_timer_change(&timers[fault_id], faults[fault_id].timeout, 0);
     if(status != TX_SUCCESS) {
-        DEBUG_PRINTLN("ERROR: Failed to change fault timer (Status: %d/%s, Fault: %s).", status, tx_status_toString(status), faults[fault_id].name);
+        PRINTLN_ERROR("Failed to change fault timer (Status: %d/%s, Fault: %s).", status, tx_status_toString(status), faults[fault_id].name);
         return U_ERROR;
     }
 
     /* Activate the fault timer. */
     status = tx_timer_activate(&timers[fault_id]);
     if(status != TX_SUCCESS) {
-        DEBUG_PRINTLN("ERROR: Failed to activate fault timer (Status: %d/%s, Fault: %s).", status, tx_status_toString(status), faults[fault_id].name);
+        PRINTLN_ERROR("Failed to activate fault timer (Status: %d/%s, Fault: %s).", status, tx_status_toString(status), faults[fault_id].name);
         return U_ERROR;
     }
 
@@ -158,12 +158,12 @@ void write_mcu_fault(bool status)
     // The pin has a default state of HIGH (i.e. no fault).
     if(status) {
         // If there is a fault, set the fault pin to LOW.
-        DEBUG_PRINTLN("Turned on MCU fault.");
+        PRINTLN_INFO("Turned on MCU fault.");
         HAL_GPIO_WritePin(FAULT_MCU_GPIO_Port, FAULT_MCU_Pin, GPIO_PIN_RESET);
     }
     else {
         // If there is not a fault, set the pin to HIGH.
-        DEBUG_PRINTLN("Turned off MCU fault.");
+        PRINTLN_INFO("Turned off MCU fault.");
         HAL_GPIO_WritePin(FAULT_MCU_GPIO_Port, FAULT_MCU_Pin, GPIO_PIN_SET);
     }
 }

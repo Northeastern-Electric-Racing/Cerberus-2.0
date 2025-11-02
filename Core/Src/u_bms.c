@@ -28,11 +28,11 @@ int bms_init(void) {
         TX_AUTO_ACTIVATE          /* Automatically start the timer. */
     );
     if(status != TX_SUCCESS) {
-        DEBUG_PRINTLN("ERROR: Failed to create BMS Fault Timer (Status: %d/%s).", status, tx_status_toString(status));
+        PRINTLN_ERROR("Failed to create BMS Fault Timer (Status: %d/%s).", status, tx_status_toString(status));
         return U_ERROR;
     }
 
-    DEBUG_PRINTLN("Ran bms_init().");
+    PRINTLN_INFO("Ran bms_init().");
 
     return U_SUCCESS;
 }
@@ -43,21 +43,21 @@ int bms_handleDclMessage(void)
     /* Deactivate the BMS fault timer. */
     int status = tx_timer_deactivate(&bms_fault_timer);
     if(status != TX_SUCCESS) {
-        DEBUG_PRINTLN("ERROR: Failed to deactivate BMS fault timer (Status: %d/%s).", status, tx_status_toString(status));
+        PRINTLN_ERROR("Failed to deactivate BMS fault timer (Status: %d/%s).", status, tx_status_toString(status));
         return U_ERROR;
     }
 
     /* Change the BMS fault timer. */
     status = tx_timer_change(&bms_fault_timer, BMS_CAN_MONITOR_DELAY, 0);
     if(status != TX_SUCCESS) {
-        DEBUG_PRINTLN("ERROR: Failed to change BMS fault timer (Status: %d/%s).", status, tx_status_toString(status));
+        PRINTLN_ERROR("Failed to change BMS fault timer (Status: %d/%s).", status, tx_status_toString(status));
         return U_ERROR;
     }
 
     /* Activate the BMS fault timer. */
     status = tx_timer_activate(&bms_fault_timer);
     if(status != TX_SUCCESS) {
-        DEBUG_PRINTLN("ERROR: Failed to activate BMS fault timer (Status: %d/%s).", status, tx_status_toString(status));
+        PRINTLN_ERROR("Failed to activate BMS fault timer (Status: %d/%s).", status, tx_status_toString(status));
         return U_ERROR;
     }
 

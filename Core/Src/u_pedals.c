@@ -453,7 +453,7 @@ static uint16_t _get_raw_adc_reading(pedal_sensor_t pedal_sensor) {
 			reading = adc_getPedalData().brake_2;
 			break;
 		default:
-			DEBUG_PRINTLN("ERROR: Unknown pedal sensor enum passed into function.");
+			PRINTLN_ERROR("Unknown pedal sensor enum passed into function.");
 			return U_ERROR;
 	}
 	return reading;
@@ -487,11 +487,11 @@ int pedals_init(void) {
         TX_AUTO_ACTIVATE          /* Automatically start the timer. */
     );
     if(status != TX_SUCCESS) {
-        DEBUG_PRINTLN("ERROR: Failed to create Pedal Data Timer (Status: %d/%s).", status, tx_status_toString(status));
+        PRINTLN_ERROR("Failed to create Pedal Data Timer (Status: %d/%s).", status, tx_status_toString(status));
         return U_ERROR;
     }
 
-	DEBUG_PRINTLN("Ran pedals_init().");
+	PRINTLN_INFO("Ran pedals_init().");
 
     return U_SUCCESS;
 }
@@ -667,7 +667,7 @@ void pedals_process(void) {
             _handle_endurance(mph, pedal_data.percentage_accel);
             break;
         default:
-            DEBUG_PRINTLN("ERROR: Failed to process pedals due to unknown functional state.");
+            PRINTLN_ERROR("Failed to process pedals due to unknown functional state.");
             break;
     }
 

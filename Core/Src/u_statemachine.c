@@ -70,10 +70,10 @@ int init_statemachine(void) {
             TX_NO_ACTIVATE      		  /* Make the timer dormant until it is activated. */
         );
         if(status != TX_SUCCESS) {
-            DEBUG_PRINTLN("ERROR: Failed to create TS Rising timer (Status: %d/%s).", status, tx_status_toString(status));
+            PRINTLN_ERROR("Failed to create TS Rising timer (Status: %d/%s).", status, tx_status_toString(status));
             return U_ERROR;
         }
-	DEBUG_PRINTLN("Ran init_statemachine().");
+	PRINTLN_INFO("Ran init_statemachine().");
 
 	return U_SUCCESS;
 }
@@ -185,7 +185,7 @@ static int transition_nero_state(nero_state_t new_state)
 	if (current_nero_state.home_mode && !new_state.home_mode) {
 		if (new_state.nero_index < GAMES && new_state.nero_index > OFF) {
 			if (transition_functional_state(new_state.nero_index)) {
-				DEBUG_PRINTLN("ERROR: Failed to transition functional state.");
+				PRINTLN_ERROR("Failed to transition functional state.");
 				return 1;
 			}
 		}
@@ -324,28 +324,28 @@ void statemachine_process(void) {
 			/* Deactivate the TS Rising timer. */
     		int status = tx_timer_deactivate(&ts_rising_timer);
     		if(status != TX_SUCCESS) {
-        		DEBUG_PRINTLN("ERROR: Failed to deactivate TS Rising timer (in !is_ts_rising && tsms_get()) (Status: %d/%s).", status, tx_status_toString(status));
+        		PRINTLN_ERROR("Failed to deactivate TS Rising timer (in !is_ts_rising && tsms_get()) (Status: %d/%s).", status, tx_status_toString(status));
         		return;
     		}
 
     		/* Change the TS Rising timer. */
     		status = tx_timer_change(&ts_rising_timer, TS_RISING_BLOCK_TIMEOUT, 0);
     		if(status != TX_SUCCESS) {
-        		DEBUG_PRINTLN("ERROR: Failed to change TS Rising timer (Status: %d/%s).", status, tx_status_toString(status));
+        		PRINTLN_ERROR("Failed to change TS Rising timer (Status: %d/%s).", status, tx_status_toString(status));
         		return;
     		}
 
     		/* Activate the TS Rising timer. */
     		status = tx_timer_activate(&ts_rising_timer);
     		if(status != TX_SUCCESS) {
-        		DEBUG_PRINTLN("ERROR: Failed to activate TS Rising timer (Status: %d/%s).", status, tx_status_toString(status));
+        		PRINTLN_ERROR("Failed to activate TS Rising timer (Status: %d/%s).", status, tx_status_toString(status));
         		return;
     		}
 	} else if (!tsms_get()) {
 		/* Deactivate the TS Rising timer. */
     	int status = tx_timer_deactivate(&ts_rising_timer);
     	if(status != TX_SUCCESS) {
-        	DEBUG_PRINTLN("ERROR: Failed to deactivate TS Rising timer (in !tsms_get()) (Status: %d/%s).", status, tx_status_toString(status));
+        	PRINTLN_ERROR("Failed to deactivate TS Rising timer (in !tsms_get()) (Status: %d/%s).", status, tx_status_toString(status));
         	return;
     	}
 		is_ts_rising = false;

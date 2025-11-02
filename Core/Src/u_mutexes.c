@@ -67,6 +67,6 @@ uint8_t mutexes_init() {
 
     // add more as necessary.
 
-    DEBUG_PRINTLN("Ran mutexes_init().");
+    PRINTLN_INFO("Ran mutexes_init().");
     return U_SUCCESS;
 }
