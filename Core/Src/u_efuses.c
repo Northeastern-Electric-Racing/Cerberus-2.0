@@ -35,63 +35,29 @@ static const _metadata efuses[] = {
     [EFUSE_MC] = {.en_pin = EF_MC_EN_Pin, .en_port = EF_MC_EN_GPIO_Port, .er_pin = EF_MC_ER_Pin, .er_port = EF_MC_ER_GPIO_Port, .scale = SCALE(56)}
 };
 
-/* Returns the eFuse's raw ADC reading. */
-uint16_t efuse_getRaw(efuse_t efuse) {
-    uint16_t raw;
-    switch(efuse) {
-        case EFUSE_DASHBOARD:
-            raw = adc_getEFuseData().dashboard;
-            break;
-        case EFUSE_BRAKE:
-            raw = adc_getEFuseData().brake;
-            break;
-        case EFUSE_SHUTDOWN:
-            raw = adc_getEFuseData().shutdown;
-            break;
-        case EFUSE_LV:
-            PRINTLN_ERROR("Error at case EFUSE_LV: EFUSE_LV ADC Reading/Current Sensing is not supported. Calls to efuse_getRaw(), efuse_getVoltage(), and efuse_getCurrent() should not be made for the LV eFuse.");
-            return U_ERROR;
-            break;
-        case EFUSE_RADFAN:
-            raw = adc_getEFuseData().radfan;
-            break;
-        case EFUSE_PUMP1:
-            raw = adc_getEFuseData().pump1;
-            break;
-        case EFUSE_PUMP2:
-            raw = adc_getEFuseData().pump2;
-            break;
-        case EFUSE_BATTBOX:
-            raw = adc_getEFuseData().battbox;
-            break;
-        case EFUSE_MC:
-            raw = adc_getEFuseData().mc;
-            break;
-        default:
-            PRINTLN_ERROR("Unknown EFuse enum was passed into switch statement.");
-            return U_ERROR;
-    }
-    return raw;
-}
-
+/* Returns an instance of efuse_data_t with all current eFuse data. */
 #define V_REF 3.3f // V_(REF) = 3V3
-/* Returns the eFuse's V_(IMON) voltage reading. */
-float efuse_getVoltage(efuse_t efuse) {
-    // V_(IMON) = (ADC_READING / 4095) * V_(REF)
-    const uint16_t ADC_READING = efuse_getRaw(efuse);
-    return ((float)ADC_READING / 4095) * V_REF;
-}
+efuse_data_t efuse_getData(void) {
+    raw_efuse_adc_t adc = adc_getEFuseData();
 
-/* Returns the eFuse's I_(OUT) current reading. */
-float efuse_getCurrent(efuse_t efuse) {
-    // I_(OUT) = V_(IMON) / (GAIN_(IMON) * R_(IMON))
-    const float v_imon = efuse_getVoltage(efuse);
-    return v_imon * efuses[efuse].scale;
-}
+    /* Loop through each eFuse and calculate the necessary values. */
+    efuse_data_t data;
+    for(efuse_t efuse = 0; efuse < NUM_EFUSES; efuse++) {
+        data.raw[efuse] = adc.data[efuse]; // Get Raw ADC readings.
+        
+        /* Calculate the eFuse's V_(IMON) voltage reading. */
+        // V_(IMON) = (ADC_READING / 4095) * V_(REF)
+        data.voltage[efuse] = ((float)(adc.data[efuse]) / 4095) * V_REF;
 
-/* Returns the eFuse's fault status (true = faulted, false = not faulted). */
-bool efuse_getFaultStatus(efuse_t efuse) {
-    return (bool)(HAL_GPIO_ReadPin(efuses[efuse].er_port, efuses[efuse].er_pin) == GPIO_PIN_SET);
+        /* Calculate the eFuse's I_(OUT) current reading. */
+        data.current[efuse] = data.voltage[efuse] * efuses[efuse].scale;
+
+        /* Get the eFuse's fault status (true = faulted, false = not faulted). */
+        data.faulted[efuse] = (bool)(HAL_GPIO_ReadPin(efuses[efuse].er_port, efuses[efuse].er_pin) == GPIO_PIN_SET);
+
+        /* Get the eFuse's enable status (true = eFuse is enabled, false = eFuse is disabled). */
+        data.enabled[efuse] = (bool)(HAL_GPIO_ReadPin(efuses[efuse].en_port, efuses[efuse].en_pin) == GPIO_PIN_SET);
+    }
 }
 
 /* Enables an eFuse. */
@@ -102,9 +68,4 @@ void efuse_enable(efuse_t efuse) {
 /* Disables an eFuse. */
 void efuse_disable(efuse_t efuse) {
     HAL_GPIO_WritePin(efuses[efuse].en_port, efuses[efuse].en_pin, GPIO_PIN_RESET);
-}
-
-/* Returns whether or not the eFuse is enabled (true = eFuse is enabled, false = eFuse is disabled). */
-bool efuse_getEnableStatus(efuse_t efuse) {
-    return (bool)(HAL_GPIO_ReadPin(efuses[efuse].en_port, efuses[efuse].en_pin) == GPIO_PIN_SET);
 }

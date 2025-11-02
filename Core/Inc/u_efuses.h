@@ -21,13 +21,18 @@ typedef enum {
     NUM_EFUSES
 } efuse_t;
 
+/* Struct for holding eFuse data. */
+typedef struct {
+    uint16_t raw[NUM_EFUSES];   // eFuse's raw ADC reading.
+    float voltage[NUM_EFUSES];  // eFuse's voltage reading.
+    float current[NUM_EFUSES];  // eFuse's current reading.
+    bool faulted[NUM_EFUSES];   // eFuse's faulted state (true = faulted, false = not faulted).
+    bool enabled[NUM_EFUSES];   // eFuse's enabled state (true = eFuse is enabled, false = eFuse is disabled).
+} efuse_data_t;
+
 /* API */
-uint16_t efuse_getRaw(efuse_t efuse);      // Returns the eFuse's raw ADC reading.
-float efuse_getVoltage(efuse_t efuse);     // Returns the eFuse's voltage reading.
-float efuse_getCurrent(efuse_t efuse);     // Returns the eFuse's current reading.
-bool efuse_getFaultStatus(efuse_t efuse);  // Returns the eFuse's fault status (true = faulted, false = not faulted).
-void efuse_enable(efuse_t efuse);          // Enables an eFuse.
-void efuse_disable(efuse_t efuse);         // Disables an eFuse.
-bool efuse_getEnableStatus(efuse_t efuse); // Returns whether or not the eFuse is enabled (true = eFuse is enabled, false = eFuse is disabled).
+efuse_data_t efuse_getData(void);  // Returns an instance of efuse_data_t with all current eFuse data.
+void efuse_enable(efuse_t efuse);  // Enables an eFuse.
+void efuse_disable(efuse_t efuse); // Disables an eFuse.
 
 #endif /* u_efuses.h */

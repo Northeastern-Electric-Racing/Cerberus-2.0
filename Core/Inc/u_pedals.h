@@ -1,6 +1,17 @@
 #ifndef __U_PEDALS_H
 #define __U_PEDALS_H
 
+/* Pedal sensors. This enum is ordered based on the order of the sensors' ADC indexes, as set up in u_adc.c  */
+typedef enum {
+    PEDAL_ACCEL1, /* Sensor 1 for the Acceleration Pedal. */
+    PEDAL_ACCEL2, /* Sensor 2 for the Acceleration Pedal. */
+    PEDAL_BRAKE1, /* Sensor 1 for the Brake Pedal. */
+    PEDAL_BRAKE2, /* Sensor 2 for the Brake Pedal. */
+    
+    /* Total number of pedal sensors. */
+    NUM_PEDALS
+} pedal_t;
+
 /* API */
 int pedals_init(void);                                  // Initializes Pedals ADC and creates pedal data timer.
 void pedals_process(void);                              // Pedal Processing Function. Meant to be called by the pedals thread.
