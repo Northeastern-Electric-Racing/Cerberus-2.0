@@ -14,17 +14,6 @@
 #include "u_statemachine.h"
 #include "u_adc.h"
 
-/* Pedal sensors. This enum is ordered based on the order of the sensors' ADC indexes, as set up in u_adc.c  */
-typedef enum {
-    ACCEL_PEDAL_1, /* Sensor 1 for the Acceleration Pedal. */
-    ACCEL_PEDAL_2, /* Sensor 2 for the Acceleration Pedal. */
-    BRAKE_PEDAL_1, /* Sensor 1 for the Brake Pedal. */
-    BRAKE_PEDAL_2, /* Sensor 2 for the Brake Pedal. */
-    
-    /* Total number of pedal sensors. */
-    NUM_SENSORS
-} pedal_sensor_t;
-
 /* Globals. */
 static float torque_limit_percentage = 1.0;
 static uint16_t regen_limits[2] = { 0, 50 }; // [PERFORMANCE, ENDURANCE]
@@ -436,33 +425,9 @@ static void _handle_reverse(float mph, float percentage_accel)
 	dti_set_torque(-1 * _derate_torque(fabs(mph), percentage_accel));
 }
 
-/* Returns the raw ADC readings for a pedal sensor. */
-static uint16_t _get_raw_adc_reading(pedal_sensor_t pedal_sensor) {
-	uint16_t reading;
-	switch(pedal_sensor) {
-		case ACCEL_PEDAL_1:
-			reading = adc_getPedalData().accel_1;
-			break;
-		case ACCEL_PEDAL_2:
-			reading = adc_getPedalData().accel_2;
-			break;
-		case BRAKE_PEDAL_1:
-			reading = adc_getPedalData().brake_1;
-			break;
-		case BRAKE_PEDAL_2:
-			reading = adc_getPedalData().brake_2;
-			break;
-		default:
-			PRINTLN_ERROR("Unknown pedal sensor enum passed into function.");
-			return U_ERROR;
-	}
-	return reading;
-}
-
 /* Converts the ADC to the voltage out of 5V (for rules). */
-static float _get_sensor_voltage(pedal_sensor_t pedal_sensor) {
-	uint16_t adc_data = _get_raw_adc_reading(pedal_sensor);
-    float v3_volts = adc_data * MAX_VOLTS / MAX_ADC_VAL_12b;
+static float _adc_to_voltage(uint16_t raw_adc) {
+    float v3_volts = raw_adc * MAX_VOLTS / MAX_ADC_VAL_12b;
 	// undo 2k + 3k voltage divider on APPS lines
 	return ((2000.0 + 3000) / 3000) * v3_volts;
 }
@@ -608,10 +573,11 @@ void pedals_process(void) {
     mutex_get(&pedal_data_mutex);
 
     /* Get pedal voltage data. */
-    pedal_data.voltage_accel1 = _get_sensor_voltage(ACCEL_PEDAL_1);
-	pedal_data.voltage_accel2 = _get_sensor_voltage(ACCEL_PEDAL_2);
-	pedal_data.voltage_brake1 = _get_sensor_voltage(BRAKE_PEDAL_1);
-	pedal_data.voltage_brake2 = _get_sensor_voltage(BRAKE_PEDAL_2);
+	raw_pedal_adc_t raw = adc_getPedalData();
+    pedal_data.voltage_accel1 = _adc_to_voltage(raw.data[PEDAL_ACCEL1]);
+	pedal_data.voltage_accel2 = _adc_to_voltage(raw.data[PEDAL_ACCEL2]);
+	pedal_data.voltage_brake1 = _adc_to_voltage(raw.data[PEDAL_BRAKE1]);
+	pedal_data.voltage_brake2 = _adc_to_voltage(raw.data[PEDAL_BRAKE2]);
 
     /* Calculate acceleration pedal percentage pressed. */
     float accel1_percentage = _get_pedal_percent_pressed(pedal_data.voltage_accel1, MIN_APPS1_VOLTS, MAX_APPS1_VOLTS); // For sensor 1...

@@ -135,16 +135,17 @@ raw_efuse_adc_t adc_getEFuseData(void) {
     memcpy(mux, _mux_buffer, sizeof(_mux_buffer));
     mutex_put(&adc_mutex);
 
-    raw_efuse_adc_t efuses;
-    efuses.dashboard = adc1[ADC1_CHANNEL3];
-    efuses.brake = mux[SEL1_HIGH];
-    efuses.shutdown = mux[SEL3_LOW];
-    efuses.radfan = mux[SEL4_HIGH];
-    efuses.fanbatt = adc1[ADC1_CHANNEL10];
-    efuses.pump1 = adc1[ADC1_CHANNEL12];
-    efuses.pump2 = adc1[ADC1_CHANNEL13];
-    efuses.battbox = mux[SEL1_LOW];
-    efuses.mc = adc1[ADC1_CHANNEL18];
+    raw_efuse_adc_t efuses = { 0 };
+    efuses.data[EFUSE_DASHBOARD] = adc1[ADC1_CHANNEL3];
+    efuses.data[EFUSE_BRAKE] = mux[SEL1_HIGH];
+    efuses.data[EFUSE_SHUTDOWN] = mux[SEL3_LOW];
+    efuses.data[EFUSE_LV] = 0; // ADC reading is not supported for LV eFuse.
+    efuses.data[EFUSE_RADFAN] = mux[SEL4_HIGH];
+    efuses.data[EFUSE_FANBATT] = adc1[ADC1_CHANNEL10];
+    efuses.data[EFUSE_PUMP1] = adc1[ADC1_CHANNEL12];
+    efuses.data[EFUSE_PUMP2] = adc1[ADC1_CHANNEL13];
+    efuses.data[EFUSE_BATTBOX] = mux[SEL1_LOW];
+    efuses.data[EFUSE_MC] = adc1[ADC1_CHANNEL18];
 
     return efuses;
 }
@@ -159,10 +160,10 @@ raw_pedal_adc_t adc_getPedalData(void) {
     mutex_put(&adc_mutex);
 
     raw_pedal_adc_t sensors;
-    sensors.accel_1 = adc1[ADC1_CHANNEL2];
-    sensors.accel_2 = adc1[ADC1_CHANNEL6];
-    sensors.brake_1 = adc2[ADC2_CHANNEL2];
-    sensors.brake_2 = adc2[ADC2_CHANNEL6];
+    sensors.data[PEDAL_ACCEL1] = adc1[ADC1_CHANNEL2];
+    sensors.data[PEDAL_ACCEL2] = adc1[ADC1_CHANNEL6];
+    sensors.data[PEDAL_BRAKE1] = adc2[ADC2_CHANNEL2];
+    sensors.data[PEDAL_BRAKE2] = adc2[ADC2_CHANNEL6];
 
     return sensors;
 }

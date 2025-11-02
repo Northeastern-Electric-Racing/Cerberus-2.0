@@ -31,10 +31,26 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
 project(${CMAKE_PROJECT_NAME})
 message("Build type: " ${CMAKE_BUILD_TYPE})
 
+# Colors
+string(ASCII 27 Esc)
+set(ColorReset "${Esc}[m")
+set(ColorBold  "${Esc}[1m")
+set(Red         "${Esc}[31m")
+set(Green       "${Esc}[32m")
+set(Yellow      "${Esc}[33m")
+set(Blue        "${Esc}[34m")
+set(Magenta     "${Esc}[35m")
+set(Cyan        "${Esc}[36m")
+set(White       "${Esc}[37m")
+set(BoldRed     "${Esc}[1;31m")
+set(BoldGreen   "${Esc}[1;32m")
+set(BoldYellow  "${Esc}[1;33m")
+set(BoldBlue    "${Esc}[1;34m")
+
 # Display ASCII art at start of build
 if(EXISTS "${CMAKE_SOURCE_DIR}/art")
     file(READ "${CMAKE_SOURCE_DIR}/art" ASCII_ART)
-    message("${ASCII_ART}")
+    message("${BoldYellow}${ASCII_ART}${ColorReset}")
 endif()
 
 # Enable CMake support for ASM and C languages
