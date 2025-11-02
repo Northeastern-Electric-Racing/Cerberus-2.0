@@ -44,7 +44,7 @@ efuse_data_t efuse_getData(void) {
     efuse_data_t data;
     for(efuse_t efuse = 0; efuse < NUM_EFUSES; efuse++) {
         data.raw[efuse] = adc.data[efuse]; // Get Raw ADC readings.
-        
+
         /* Calculate the eFuse's V_(IMON) voltage reading. */
         // V_(IMON) = (ADC_READING / 4095) * V_(REF)
         data.voltage[efuse] = ((float)(adc.data[efuse]) / 4095) * V_REF;
@@ -58,6 +58,8 @@ efuse_data_t efuse_getData(void) {
         /* Get the eFuse's enable status (true = eFuse is enabled, false = eFuse is disabled). */
         data.enabled[efuse] = (bool)(HAL_GPIO_ReadPin(efuses[efuse].en_port, efuses[efuse].en_pin) == GPIO_PIN_SET);
     }
+
+    return data;
 }
 
 /* Enables an eFuse. */
