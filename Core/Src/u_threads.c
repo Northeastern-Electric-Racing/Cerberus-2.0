@@ -15,15 +15,16 @@
 
 /* Thread Priority Macros. */
 /* (please keep these organized in increasing order) */
-#define PRIO_vDefault  0
-#define PRIO_vEthernet 1
-#define PRIO_vCAN      1
-#define PRIO_vPedals   1
-#define PRIO_vFaults   2
-#define PRIO_vShutdown 2
-#define PRIO_vEFuses   2
-#define PRIO_vTSMS     2 
-#define PRIO_vMux      2
+#define PRIO_vDefault      0
+#define PRIO_vFaults       0
+#define PRIO_vEthernet     1
+#define PRIO_vCAN          1
+#define PRIO_vPedals       1
+#define PRIO_vStatemachine 1
+#define PRIO_vShutdown     2
+#define PRIO_vEFuses       2
+#define PRIO_vTSMS         2
+#define PRIO_vMux          2
 
 /* Default Thread */
 static thread_t default_thread = {
@@ -205,7 +206,7 @@ void vShutdown(ULONG thread_input) {
 static thread_t statemachine_thread = {
         .name       = "State Machine Thread", /* Name */
         .size       = 512,                    /* Stack Size (in bytes) */
-        .priority   = PRIO_vShutdown,     /* Priority */
+        .priority   = PRIO_vStatemachine,     /* Priority */
         .threshold  = 0,                      /* Preemption Threshold */
         .time_slice = TX_NO_TIME_SLICE,       /* Time Slice */
         .auto_start = TX_AUTO_START,          /* Auto Start */
