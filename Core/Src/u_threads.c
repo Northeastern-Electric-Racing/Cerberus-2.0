@@ -13,11 +13,23 @@
 #include "u_tsms.h"
 #include "bitstream.h"
 
+/* Thread Priority Macros. */
+/* (please keep these organized in increasing order) */
+#define PRIO_vDefault  0
+#define PRIO_vEthernet 1
+#define PRIO_vCAN      1
+#define PRIO_vPedals   1
+#define PRIO_vFaults   2
+#define PRIO_vShutdown 2
+#define PRIO_vEFuses   2
+#define PRIO_vTSMS     2 
+#define PRIO_vMux      2
+
 /* Default Thread */
 static thread_t default_thread = {
         .name       = "Default Thread",  /* Name */
         .size       = 512,               /* Stack Size (in bytes) */
-        .priority   = 9,                 /* Priority */
+        .priority   = PRIO_vDefault, /* Priority */
         .threshold  = 0,                 /* Preemption Threshold */
         .time_slice = TX_NO_TIME_SLICE,  /* Time Slice */
         .auto_start = TX_AUTO_START,     /* Auto Start */
@@ -39,14 +51,14 @@ void vDefault(ULONG thread_input) {
 
 /* Ethernet Thread. Sends outgoing messages and processes incoming messages. */
 static thread_t ethernet_thread = {
-        .name       = "Ethernet Thread", /* Name */
-        .size       = 512,               /* Stack Size (in bytes) */
-        .priority   = 3,                 /* Priority */
-        .threshold  = 0,                 /* Preemption Threshold */
-        .time_slice = TX_NO_TIME_SLICE,  /* Time Slice */
-        .auto_start = TX_AUTO_START,     /* Auto Start */
-        .sleep      =  1,                /* Sleep (in ticks) */
-        .function   = vEthernet          /* Thread Function */
+        .name       = "Ethernet Thread",  /* Name */
+        .size       = 512,                /* Stack Size (in bytes) */
+        .priority   = PRIO_vEthernet, /* Priority */
+        .threshold  = 0,                  /* Preemption Threshold */
+        .time_slice = TX_NO_TIME_SLICE,   /* Time Slice */
+        .auto_start = TX_AUTO_START,      /* Auto Start */
+        .sleep      =  1,                 /* Sleep (in ticks) */
+        .function   = vEthernet           /* Thread Function */
     };
 void vEthernet(ULONG thread_input) {
     
@@ -81,7 +93,7 @@ void vEthernet(ULONG thread_input) {
 static thread_t can_thread = {
         .name       = "CAN Thread",     /* Name */
         .size       = 512,              /* Stack Size (in bytes) */
-        .priority   = 0,                /* Priority */
+        .priority   = PRIO_vCAN,    /* Priority */
         .threshold  = 0,                /* Preemption Threshold */
         .time_slice = TX_NO_TIME_SLICE, /* Time Slice */
         .auto_start = TX_AUTO_START,    /* Auto Start */
@@ -118,7 +130,7 @@ void vCAN(ULONG thread_input) {
 static thread_t faults_thread = {
         .name       = "Faults Thread",  /* Name */
         .size       = 512,              /* Stack Size (in bytes) */
-        .priority   = 4,                /* Priority */
+        .priority   = PRIO_vFaults, /* Priority */
         .threshold  = 0,                /* Preemption Threshold */
         .time_slice = TX_NO_TIME_SLICE, /* Time Slice */
         .auto_start = TX_AUTO_START,    /* Auto Start */
@@ -148,14 +160,14 @@ void vFaults(ULONG thread_input) {
 
 /* Shutdown Thread. Reads the shutdown (aka. "External Faults") pins and sends them in a CAN message. */
 static thread_t shutdown_thread = {
-        .name       = "Shutdown Thread", /* Name */
-        .size       = 512,               /* Stack Size (in bytes) */
-        .priority   = 5,                 /* Priority */
-        .threshold  = 0,                 /* Preemption Threshold */
-        .time_slice = TX_NO_TIME_SLICE,  /* Time Slice */
-        .auto_start = TX_AUTO_START,     /* Auto Start */
-        .sleep      = 500,               /* Sleep (in ticks) */
-        .function   = vShutdown          /* Thread Function */
+        .name       = "Shutdown Thread",  /* Name */
+        .size       = 512,                /* Stack Size (in bytes) */
+        .priority   = PRIO_vShutdown, /* Priority */
+        .threshold  = 0,                  /* Preemption Threshold */
+        .time_slice = TX_NO_TIME_SLICE,   /* Time Slice */
+        .auto_start = TX_AUTO_START,      /* Auto Start */
+        .sleep      = 500,                /* Sleep (in ticks) */
+        .function   = vShutdown           /* Thread Function */
     };
 void vShutdown(ULONG thread_input) {
     
@@ -193,7 +205,7 @@ void vShutdown(ULONG thread_input) {
 static thread_t statemachine_thread = {
         .name       = "State Machine Thread", /* Name */
         .size       = 512,                    /* Stack Size (in bytes) */
-        .priority   = 2,                      /* Priority */
+        .priority   = PRIO_vShutdown,     /* Priority */
         .threshold  = 0,                      /* Preemption Threshold */
         .time_slice = TX_NO_TIME_SLICE,       /* Time Slice */
         .auto_start = TX_AUTO_START,          /* Auto Start */
@@ -215,7 +227,7 @@ void vStatemachine(ULONG thread_input) {
 static thread_t pedals_thread = {
         .name       = "Pedals Thread",        /* Name */
         .size       = 512,                    /* Stack Size (in bytes) */
-        .priority   = 2,                      /* Priority */
+        .priority   = PRIO_vPedals,       /* Priority */
         .threshold  = 0,                      /* Preemption Threshold */
         .time_slice = TX_NO_TIME_SLICE,       /* Time Slice */
         .auto_start = TX_AUTO_START,          /* Auto Start */
@@ -237,7 +249,7 @@ void vPedals(ULONG thread_input) {
 static thread_t efuses_thread = {
         .name       = "eFuses Thread",        /* Name */
         .size       = 512,                    /* Stack Size (in bytes) */
-        .priority   = 10,                     /* Priority */
+        .priority   = PRIO_vEFuses,       /* Priority */
         .threshold  = 0,                      /* Preemption Threshold */
         .time_slice = TX_NO_TIME_SLICE,       /* Time Slice */
         .auto_start = TX_AUTO_START,          /* Auto Start */
@@ -329,7 +341,7 @@ void vEFuses(ULONG thread_input) {
 static thread_t tsms_thread = {
         .name       = "TSMS Thread",          /* Name */
         .size       = 512,                    /* Stack Size (in bytes) */
-        .priority   = 2,                      /* Priority */
+        .priority   = PRIO_vTSMS,         /* Priority */
         .threshold  = 0,                      /* Preemption Threshold */
         .time_slice = TX_NO_TIME_SLICE,       /* Time Slice */
         .auto_start = TX_AUTO_START,          /* Auto Start */
@@ -351,7 +363,7 @@ void vTSMS(ULONG thread_input) {
 static thread_t mux_thread = {
         .name       = "Mux Thread",           /* Name */
         .size       = 512,                    /* Stack Size (in bytes) */
-        .priority   = 10,                     /* Priority */
+        .priority   = PRIO_vMux,          /* Priority */
         .threshold  = 0,                      /* Preemption Threshold */
         .time_slice = TX_NO_TIME_SLICE,       /* Time Slice */
         .auto_start = TX_AUTO_START,          /* Auto Start */
