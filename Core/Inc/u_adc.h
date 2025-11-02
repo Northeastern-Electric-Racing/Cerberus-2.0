@@ -7,6 +7,7 @@
 
 /* API */
 int adc_init(void);
+int adc_switchMuxState(void); /* "Switches" the multiplexer (if it's currently HIGH, it will become LOW; if it's currently LOW, it will become HIGH). Then, updates the mux buffer accordingly. */
 
 /* Get raw EFuse ADC Data. */
 typedef struct {

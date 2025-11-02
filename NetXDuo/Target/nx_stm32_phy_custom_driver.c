@@ -128,7 +128,7 @@ int32_t nx_eth_phy_get_link_state(void)
 
   /* USER CODE END LINK_STATE_0 */
 
-  int32_t  linkstate = ETH_PHY_STATUS_OK;
+  int32_t  linkstate = ETH_PHY_STATUS_LINK_ERROR;
 
   /* USER CODE BEGIN LINK_STATE_1 */
     uint8_t link_state;

@@ -49,7 +49,7 @@ uint16_t efuse_getRaw(efuse_t efuse) {
             raw = adc_getEFuseData().shutdown;
             break;
         case EFUSE_LV:
-            DEBUG_PRINTLN("ERROR at case EFUSE_LV: EFUSE_LV ADC Reading/Current Sensing is not supported. Calls to efuse_getRaw(), efuse_getVoltage(), and efuse_getCurrent() should not be made for the LV eFuse.");
+            PRINTLN_ERROR("Error at case EFUSE_LV: EFUSE_LV ADC Reading/Current Sensing is not supported. Calls to efuse_getRaw(), efuse_getVoltage(), and efuse_getCurrent() should not be made for the LV eFuse.");
             return U_ERROR;
             break;
         case EFUSE_RADFAN:
@@ -68,7 +68,7 @@ uint16_t efuse_getRaw(efuse_t efuse) {
             raw = adc_getEFuseData().mc;
             break;
         default:
-            DEBUG_PRINTLN("ERROR: Unknown EFuse enum was passed into switch statement.");
+            PRINTLN_ERROR("Unknown EFuse enum was passed into switch statement.");
             return U_ERROR;
     }
     return raw;

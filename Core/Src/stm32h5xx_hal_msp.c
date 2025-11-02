@@ -141,12 +141,12 @@ void HAL_ADC_MspInit(ADC_HandleTypeDef* hadc)
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
-    GPIO_InitStruct.Pin = ADC12_INP0_1_Pin|ADC12_INP15_2_Pin|ADC12_INP18_Pin|ADC12_INP3_Pin;
+    GPIO_InitStruct.Pin = MUX_ADC12_INP0_Pin|MUX_ADC12_INP15_Pin|ADC12_INP18_Pin|ADC12_INP3_Pin;
     GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-    GPIO_InitStruct.Pin = ADC12_INP9_Pin|ADC12_INP5_Pin;
+    GPIO_InitStruct.Pin = MUX_ADC12_INP9_Pin|MUX_ADC12_INP5_Pin;
     GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
@@ -259,12 +259,12 @@ void HAL_ADC_MspInit(ADC_HandleTypeDef* hadc)
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
-    GPIO_InitStruct.Pin = ADC12_INP0_1_Pin|ADC12_INP15_2_Pin|ADC12_INP18_Pin|ADC12_INP3_Pin;
+    GPIO_InitStruct.Pin = MUX_ADC12_INP0_Pin|MUX_ADC12_INP15_Pin|ADC12_INP18_Pin|ADC12_INP3_Pin;
     GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-    GPIO_InitStruct.Pin = ADC12_INP9_Pin|ADC12_INP5_Pin;
+    GPIO_InitStruct.Pin = MUX_ADC12_INP9_Pin|MUX_ADC12_INP5_Pin;
     GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
@@ -371,9 +371,9 @@ void HAL_ADC_MspDeInit(ADC_HandleTypeDef* hadc)
     */
     HAL_GPIO_DeInit(GPIOC, ADC12_INP10_Pin|ADC12_INP12_Pin|ADC12_INP13_Pin);
 
-    HAL_GPIO_DeInit(GPIOA, ADC12_INP0_1_Pin|ADC12_INP15_2_Pin|ADC12_INP18_Pin|ADC12_INP3_Pin);
+    HAL_GPIO_DeInit(GPIOA, MUX_ADC12_INP0_Pin|MUX_ADC12_INP15_Pin|ADC12_INP18_Pin|ADC12_INP3_Pin);
 
-    HAL_GPIO_DeInit(GPIOB, ADC12_INP9_Pin|ADC12_INP5_Pin);
+    HAL_GPIO_DeInit(GPIOB, MUX_ADC12_INP9_Pin|MUX_ADC12_INP5_Pin);
 
     HAL_GPIO_DeInit(GPIOF, GPIO_PIN_11|GPIO_PIN_12);
 
@@ -409,9 +409,9 @@ void HAL_ADC_MspDeInit(ADC_HandleTypeDef* hadc)
     */
     HAL_GPIO_DeInit(GPIOC, ADC12_INP10_Pin|ADC12_INP12_Pin|ADC12_INP13_Pin);
 
-    HAL_GPIO_DeInit(GPIOA, ADC12_INP0_1_Pin|ADC12_INP15_2_Pin|ADC12_INP18_Pin|ADC12_INP3_Pin);
+    HAL_GPIO_DeInit(GPIOA, MUX_ADC12_INP0_Pin|MUX_ADC12_INP15_Pin|ADC12_INP18_Pin|ADC12_INP3_Pin);
 
-    HAL_GPIO_DeInit(GPIOB, ADC12_INP9_Pin|ADC12_INP5_Pin);
+    HAL_GPIO_DeInit(GPIOB, MUX_ADC12_INP9_Pin|MUX_ADC12_INP5_Pin);
 
     HAL_GPIO_DeInit(GPIOF, GPIO_PIN_13|GPIO_PIN_14);
 

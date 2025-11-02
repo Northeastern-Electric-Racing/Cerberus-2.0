@@ -96,6 +96,27 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     "./Core/Src/u_tsms.c"
 )
 
+# Disable Logging in certain files
+set_source_files_properties(
+    #"./Core/Src/u_inbox.c"
+    #"./Core/Src/u_threads.c"
+    #"./Core/Src/u_statemachine.c"
+    #"./Core/Src/u_queues.c"
+    #"./Core/Src/u_can.c"
+    #"./Core/Src/u_faults.c"
+    #"./Core/Src/u_mutexes.c"
+    #"./Core/Src/u_efuses.c"
+    #"./Core/Src/u_rtds.c"
+    #"./Core/Src/u_pedals.c"
+    #"./Core/Src/u_bms.c"
+    #"./Core/Src/u_dti.c"
+    #"./Core/Src/u_adc.c"
+    #"./Core/Src/u_peripherals.c"
+    #"./Core/Src/u_tsms.c"
+
+    PROPERTIES COMPILE_DEFINITIONS "NO_LOG"
+)
+
 # Add include paths
 target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
     # Add user defined include paths

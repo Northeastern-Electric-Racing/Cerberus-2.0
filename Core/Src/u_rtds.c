@@ -9,13 +9,13 @@ static TX_TIMER reverse_sound_timer; /* Timer for the reverse sound beeping. */
 /* Sets (i.e. turns on) the RTDS pin. */
 static void _set_rtds_pin(void) {
     HAL_GPIO_WritePin(RTDS_GPIO_GPIO_Port, RTDS_GPIO_Pin, GPIO_PIN_SET); // Turn on RTDS pin.
-    DEBUG_PRINTLN("Turned on RTDS pin.");
+    PRINTLN_INFO("Turned on RTDS pin.");
 }
 
 /* Clears (i.e. turns off) the RTDS pin. */
 static void _clear_rtds_pin(void) {
     HAL_GPIO_WritePin(RTDS_GPIO_GPIO_Port, RTDS_GPIO_Pin, GPIO_PIN_RESET); // Turn off RTDS pin.
-    DEBUG_PRINTLN("Turned off RTDS pin.");
+    PRINTLN_INFO("Turned off RTDS pin.");
 }
 
 /* Callback function. Turns off the RTDS after the timer expires. */
@@ -47,7 +47,7 @@ int rtds_init(void) {
             TX_NO_ACTIVATE      /* Make the timer dormant until it is activated. */
         );
         if(status != TX_SUCCESS) {
-            DEBUG_PRINTLN("ERROR: Failed to create RTDS timer (Status: %d/%s).", status, tx_status_toString(status));
+            PRINTLN_ERROR("Failed to create RTDS timer (Status: %d/%s).", status, tx_status_toString(status));
             return U_ERROR;
         }
 
@@ -62,11 +62,11 @@ int rtds_init(void) {
             TX_NO_ACTIVATE           /* Make the timer dormant until it is activated. */
         );
         if(status != TX_SUCCESS) {
-            DEBUG_PRINTLN("ERROR: Failed to create reverse sound timer (Status: %d/%s).", status, tx_status_toString(status));
+            PRINTLN_ERROR("Failed to create reverse sound timer (Status: %d/%s).", status, tx_status_toString(status));
             return U_ERROR;
         }
 
-        DEBUG_PRINTLN("Ran rtds_init().");
+        PRINTLN_INFO("Ran rtds_init().");
         return U_SUCCESS;
 }
 
@@ -79,21 +79,21 @@ int rtds_soundRTDS(void) {
     /* Deactivate the RTDS timer. */
     int status = tx_timer_deactivate(&rtds_timer);
     if(status != TX_SUCCESS) {
-        DEBUG_PRINTLN("ERROR: Failed to deactivate RTDS timer (Status: %d/%s).", status, tx_status_toString(status));
+        PRINTLN_ERROR("Failed to deactivate RTDS timer (Status: %d/%s).", status, tx_status_toString(status));
         return U_ERROR;
     }
 
     /* Change the RTDS timer. */
     status = tx_timer_change(&rtds_timer, RTDS_DURATION, 0);
     if(status != TX_SUCCESS) {
-        DEBUG_PRINTLN("ERROR: Failed to change RTDS timer (Status: %d/%s).", status, tx_status_toString(status));
+        PRINTLN_ERROR("Failed to change RTDS timer (Status: %d/%s).", status, tx_status_toString(status));
         return U_ERROR;
     }
 
     /* Activate the RTDS timer. */
     status = tx_timer_activate(&rtds_timer);
     if(status != TX_SUCCESS) {
-        DEBUG_PRINTLN("ERROR: Failed to activate RTDS timer (Status: %d/%s).", status, tx_status_toString(status));
+        PRINTLN_ERROR("Failed to activate RTDS timer (Status: %d/%s).", status, tx_status_toString(status));
         return U_ERROR;
     }
 
@@ -108,11 +108,11 @@ int rtds_startReverseSound(void) {
     /* Activate the reverse sound timer to start periodic beeping */
     int status = tx_timer_activate(&reverse_sound_timer);
     if(status != TX_SUCCESS) {
-        DEBUG_PRINTLN("ERROR: Failed to activate reverse sound timer (Status: %d/%s).", status, tx_status_toString(status));
+        PRINTLN_ERROR("Failed to activate reverse sound timer (Status: %d/%s).", status, tx_status_toString(status));
         return U_ERROR;
     }
     
-    DEBUG_PRINTLN("Started reverse sound.");
+    PRINTLN_INFO("Started reverse sound.");
     return U_SUCCESS;
 }
 
@@ -124,11 +124,11 @@ int rtds_stopReverseSound(void) {
     /* Deactivate the reverse sound timer */
     int status = tx_timer_deactivate(&reverse_sound_timer);
     if(status != TX_SUCCESS && status != TX_ACTIVATE_ERROR) { /* TX_ACTIVATE_ERROR means timer was already inactive */
-        DEBUG_PRINTLN("ERROR: Failed to deactivate reverse sound timer (Status: %d/%s).", status, tx_status_toString(status));
+        PRINTLN_ERROR("Failed to deactivate reverse sound timer (Status: %d/%s).", status, tx_status_toString(status));
         return U_ERROR;
     }
     
-    DEBUG_PRINTLN("Stopped reverse sound.");
+    PRINTLN_INFO("Stopped reverse sound.");
     return U_SUCCESS;
 }
 
