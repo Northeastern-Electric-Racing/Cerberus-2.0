@@ -38,5 +38,6 @@ extern can_t can1;
 #define CAN_ID_PEDALS_NORM_MSG 0x505
 #define CANID_BMS_CELL_TEMPS   0x84
 #define CANID_BMS_DCL_MSG      0x156
+#define LIGHT_BOARD_CAN_MSG_ID 0xCA
 
 #endif /* u_can.h */

@@ -1,8 +1,6 @@
 #ifndef __U_LIGHTNING_H
 #define __U_LIGHTNING_H
 
-#define LIGHT_BOARD_CAN_MSG_ID 0xCA
-
 typedef enum {
     LIGHT_OFF = 0,
     LIGHT_GREEN = 1,
