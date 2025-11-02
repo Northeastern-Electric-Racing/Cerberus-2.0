@@ -55,7 +55,7 @@ void _ethernet_recieve(ethernet_message_t message) {
   /* Send the message to the incoming ethernet queue. */
   int status = queue_send(&eth_incoming, &message);
   if(status != U_SUCCESS) {
-    DEBUG_PRINTLN("ERROR: Failed to send message to the incoming ethernet queue (Status: %d).", status);
+    PRINTLN_ERROR("Failed to send message to the incoming ethernet queue (Status: %d).", status);
     return;
   }
 }

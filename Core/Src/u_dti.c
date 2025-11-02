@@ -36,7 +36,7 @@ void dti_init(void)
 	mc.motor_temp = 0;
 	mc.rpm = 0;
 
-	DEBUG_PRINTLN("Ran dti_init().");
+	PRINTLN_INFO("Ran dti_init().");
 }
 
 void dti_set_torque(int16_t torque)
