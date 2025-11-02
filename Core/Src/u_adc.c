@@ -135,10 +135,11 @@ raw_efuse_adc_t adc_getEFuseData(void) {
     memcpy(mux, _mux_buffer, sizeof(_mux_buffer));
     mutex_put(&adc_mutex);
 
-    raw_efuse_adc_t efuses;
+    raw_efuse_adc_t efuses = { 0 };
     efuses.data[EFUSE_DASHBOARD] = adc1[ADC1_CHANNEL3];
     efuses.data[EFUSE_BRAKE] = mux[SEL1_HIGH];
     efuses.data[EFUSE_SHUTDOWN] = mux[SEL3_LOW];
+    efuses.data[EFUSE_LV] = 0; // ADC reading is not supported for LV eFuse.
     efuses.data[EFUSE_RADFAN] = mux[SEL4_HIGH];
     efuses.data[EFUSE_FANBATT] = adc1[ADC1_CHANNEL10];
     efuses.data[EFUSE_PUMP1] = adc1[ADC1_CHANNEL12];

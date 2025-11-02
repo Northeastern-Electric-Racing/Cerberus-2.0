@@ -41,7 +41,7 @@ efuse_data_t efuse_getData(void) {
     raw_efuse_adc_t adc = adc_getEFuseData();
 
     /* Loop through each eFuse and calculate the necessary values. */
-    efuse_data_t data;
+    efuse_data_t data = { 0 };
     for(efuse_t efuse = 0; efuse < NUM_EFUSES; efuse++) {
         data.raw[efuse] = adc.data[efuse]; // Get Raw ADC readings.
 
