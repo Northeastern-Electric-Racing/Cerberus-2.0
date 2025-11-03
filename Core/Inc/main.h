@@ -61,6 +61,13 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
+#define USER_BUTTON_Pin GPIO_PIN_2
+#define USER_BUTTON_GPIO_Port GPIOE
+#define USER_BUTTON_EXTI_IRQn EXTI2_IRQn
+#define RED_LED_Pin GPIO_PIN_3
+#define RED_LED_GPIO_Port GPIOE
+#define GREEN_LED_Pin GPIO_PIN_4
+#define GREEN_LED_GPIO_Port GPIOE
 #define EF_BATTBOX_EN_Pin GPIO_PIN_2
 #define EF_BATTBOX_EN_GPIO_Port GPIOF
 #define EF_BATTBOX_ER_Pin GPIO_PIN_3
@@ -111,6 +118,7 @@ void Error_Handler(void);
 #define HVD_GPIO_GPIO_Port GPIOF
 #define PHY_IRQ_Pin GPIO_PIN_9
 #define PHY_IRQ_GPIO_Port GPIOE
+#define PHY_IRQ_EXTI_IRQn EXTI9_IRQn
 #define PHY_RESET_Pin GPIO_PIN_10
 #define PHY_RESET_GPIO_Port GPIOE
 #define PHY_GPIO_Pin GPIO_PIN_11
@@ -159,8 +167,10 @@ void Error_Handler(void);
 #define MUX_SEL4_GPIO_Port GPIOC
 #define IMU_INT1_Pin GPIO_PIN_8
 #define IMU_INT1_GPIO_Port GPIOA
+#define IMU_INT1_EXTI_IRQn EXTI8_IRQn
 #define IMU_INT2_Pin GPIO_PIN_11
 #define IMU_INT2_GPIO_Port GPIOA
+#define IMU_INT2_EXTI_IRQn EXTI11_IRQn
 #define JTMS_Pin GPIO_PIN_13
 #define JTMS_GPIO_Port GPIOA
 #define JTCK_Pin GPIO_PIN_14
