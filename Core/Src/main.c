@@ -890,11 +890,11 @@ static void MX_GPIO_Init(void)
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(FAULT_MCU_GPIO_Port, FAULT_MCU_Pin, GPIO_PIN_SET);
 
-  /*Configure GPIO pins : USER_BUTTON_Pin PHY_IRQ_Pin */
-  GPIO_InitStruct.Pin = USER_BUTTON_Pin|PHY_IRQ_Pin;
+  /*Configure GPIO pin : USER_BUTTON_Pin */
+  GPIO_InitStruct.Pin = USER_BUTTON_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
+  HAL_GPIO_Init(USER_BUTTON_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pins : RED_LED_Pin GREEN_LED_Pin PHY_RESET_Pin */
   GPIO_InitStruct.Pin = RED_LED_Pin|GREEN_LED_Pin|PHY_RESET_Pin;
@@ -917,6 +917,12 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOF, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : PHY_IRQ_Pin */
+  GPIO_InitStruct.Pin = PHY_IRQ_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(PHY_IRQ_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pins : PHY_GPIO_Pin IMD_GPIO_Pin */
   GPIO_InitStruct.Pin = PHY_GPIO_Pin|IMD_GPIO_Pin;
@@ -996,6 +1002,14 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+
+/* Interrupt handler. */
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
+{
+  switch(GPIO_Pin) {
+    case USER_BUTTON_Pin: debug_onUserButtonPressed();
+  }
+}
 
 /* USER CODE END 4 */
 
