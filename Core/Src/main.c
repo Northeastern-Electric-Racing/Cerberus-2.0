@@ -30,6 +30,7 @@
 #include "u_inbox.h"
 #include "u_can.h"
 #include "u_queues.h"
+#include "u_debug.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -1007,7 +1008,7 @@ static void MX_GPIO_Init(void)
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
   switch(GPIO_Pin) {
-    case USER_BUTTON_Pin: debug_onUserButtonPressed();
+    case USER_BUTTON_Pin: debug_onUserButtonPressed(); break;
   }
 }
 
