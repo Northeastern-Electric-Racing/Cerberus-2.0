@@ -103,13 +103,13 @@ int32_t nx_eth_phy_init(void)
     }
 
     /* Set PLCA node count and ID */
-    ret = LAN8670_PLCA_Set_Node_Count(&lan8670, ETH_NUMBER_OF_NODES);
+    ret = LAN8670_PLCA_Set_Node_Count(&lan8670, PLCA_NUM_NODES);
     if (ret != LAN8670_STATUS_OK)
     {
         return ETH_PHY_STATUS_ERROR;
     }
 
-    ret = LAN8670_PLCA_Set_Node_Id(&lan8670, VCU);
+    ret = LAN8670_PLCA_Set_Node_Id(&lan8670, PLCA_VCU);
     if (ret != LAN8670_STATUS_OK)
     {
         return ETH_PHY_STATUS_ERROR;
