@@ -425,6 +425,51 @@ void HAL_ADC_MspDeInit(ADC_HandleTypeDef* hadc)
 }
 
 /**
+  * @brief DCACHE MSP Initialization
+  * This function configures the hardware resources used in this example
+  * @param hdcache: DCACHE handle pointer
+  * @retval None
+  */
+void HAL_DCACHE_MspInit(DCACHE_HandleTypeDef* hdcache)
+{
+  if(hdcache->Instance==DCACHE1)
+  {
+    /* USER CODE BEGIN DCACHE1_MspInit 0 */
+
+    /* USER CODE END DCACHE1_MspInit 0 */
+    /* Peripheral clock enable */
+    __HAL_RCC_DCACHE1_CLK_ENABLE();
+    /* USER CODE BEGIN DCACHE1_MspInit 1 */
+
+    /* USER CODE END DCACHE1_MspInit 1 */
+
+  }
+
+}
+
+/**
+  * @brief DCACHE MSP De-Initialization
+  * This function freeze the hardware resources used in this example
+  * @param hdcache: DCACHE handle pointer
+  * @retval None
+  */
+void HAL_DCACHE_MspDeInit(DCACHE_HandleTypeDef* hdcache)
+{
+  if(hdcache->Instance==DCACHE1)
+  {
+    /* USER CODE BEGIN DCACHE1_MspDeInit 0 */
+
+    /* USER CODE END DCACHE1_MspDeInit 0 */
+    /* Peripheral clock disable */
+    __HAL_RCC_DCACHE1_CLK_DISABLE();
+    /* USER CODE BEGIN DCACHE1_MspDeInit 1 */
+
+    /* USER CODE END DCACHE1_MspDeInit 1 */
+  }
+
+}
+
+/**
   * @brief ETH MSP Initialization
   * This function configures the hardware resources used in this example
   * @param heth: ETH handle pointer
@@ -547,7 +592,7 @@ void HAL_FDCAN_MspInit(FDCAN_HandleTypeDef* hfdcan)
   /** Initializes the peripherals clock
   */
     PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_FDCAN;
-    PeriphClkInitStruct.FdcanClockSelection = RCC_FDCANCLKSOURCE_PLL1Q;
+    PeriphClkInitStruct.FdcanClockSelection = RCC_FDCANCLKSOURCE_HSE;
     if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK)
     {
       Error_Handler();
@@ -830,7 +875,17 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* hspi)
   /** Initializes the peripherals clock
   */
     PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_SPI2;
-    PeriphClkInitStruct.Spi2ClockSelection = RCC_SPI2CLKSOURCE_PLL1Q;
+    PeriphClkInitStruct.PLL2.PLL2Source = RCC_PLL2_SOURCE_CSI;
+    PeriphClkInitStruct.PLL2.PLL2M = 1;
+    PeriphClkInitStruct.PLL2.PLL2N = 32;
+    PeriphClkInitStruct.PLL2.PLL2P = 2;
+    PeriphClkInitStruct.PLL2.PLL2Q = 2;
+    PeriphClkInitStruct.PLL2.PLL2R = 2;
+    PeriphClkInitStruct.PLL2.PLL2RGE = RCC_PLL2_VCIRANGE_2;
+    PeriphClkInitStruct.PLL2.PLL2VCOSEL = RCC_PLL2_VCORANGE_WIDE;
+    PeriphClkInitStruct.PLL2.PLL2FRACN = 0;
+    PeriphClkInitStruct.PLL2.PLL2ClockOut = RCC_PLL2_DIVP;
+    PeriphClkInitStruct.Spi2ClockSelection = RCC_SPI2CLKSOURCE_PLL2P;
     if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK)
     {
       Error_Handler();
