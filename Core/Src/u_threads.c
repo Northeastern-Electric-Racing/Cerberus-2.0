@@ -79,7 +79,7 @@ void vEthernetIncoming(ULONG thread_input) {
     }
 }
 
-/* Outgoing Ethernet Thread. Processes incoming messages. */
+/* Outgoing Ethernet Thread. Sends outgoing messages. */
 static thread_t ethernet_outgoing_thread = {
         .name       = "Outgoing Ethernet Thread",  /* Name */
         .size       = 512,                         /* Stack Size (in bytes) */
@@ -97,7 +97,7 @@ void vEthernetOutgoing(ULONG thread_input) {
         ethernet_message_t message;
         uint8_t status;
 
-        /* Process outgoing messages */
+        /* Send outgoing messages */
         while(queue_receive(&eth_outgoing, &message, TX_WAIT_FOREVER) == U_SUCCESS) {
             status = ethernet_send_message(&message);
             if(status != U_SUCCESS) {
@@ -110,7 +110,7 @@ void vEthernetOutgoing(ULONG thread_input) {
     }
 }
 
-/* Incoming CAN Thread. Sends outgoing messages and processes incoming messages. */
+/* Incoming CAN Thread. Processes incoming messages. */
 static thread_t can_incoming_thread = {
         .name       = "Incoming CAN Thread",     /* Name */
         .size       = 512,                       /* Stack Size (in bytes) */
@@ -137,7 +137,7 @@ void vCANIncoming(ULONG thread_input) {
     }
 }
 
-/* Outgoing CAN Thread. Sends outgoing messages and processes incoming messages. */
+/* Outgoing CAN Thread. Sends outgoing messages. */
 static thread_t can_outgoing_thread = {
         .name       = "Outgoing CAN Thread",     /* Name */
         .size       = 512,                       /* Stack Size (in bytes) */
@@ -155,7 +155,7 @@ void vCANOutgoing(ULONG thread_input) {
         can_msg_t message;
         uint8_t status;
 
-        /* Process outgoing messages */
+        /* Send outgoing messages */
         while(queue_receive(&can_outgoing, &message, TX_WAIT_FOREVER) == U_SUCCESS) {
             status = can_send_msg(&can1, &message);
             if(status != U_SUCCESS) {
