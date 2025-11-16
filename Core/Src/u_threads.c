@@ -75,7 +75,7 @@ void vEthernetIncoming(ULONG thread_input) {
             ethernet_inbox(&message);
         }
 
-        /* No sleep. Thread timing is controlled completely be the queue timeout. */
+        /* No sleep. Thread timing is controlled completely by the queue timeout. */
     }
 }
 
@@ -106,7 +106,7 @@ void vEthernetOutgoing(ULONG thread_input) {
                 }
         }
 
-        /* No sleep. Thread timing is controlled completely be the queue timeout. */
+        /* No sleep. Thread timing is controlled completely by the queue timeout. */
     }
 }
 
@@ -133,7 +133,7 @@ void vCANIncoming(ULONG thread_input) {
             can_inbox(&message);
         }
 
-        /* No sleep. Thread timing is controlled completely be the queue timeout. */
+        /* No sleep. Thread timing is controlled completely by the queue timeout. */
     }
 }
 
@@ -164,7 +164,7 @@ void vCANOutgoing(ULONG thread_input) {
                 }
         }
 
-        /* No sleep. Thread timing is controlled completely be the queue timeout. */
+        /* No sleep. Thread timing is controlled completely by the queue timeout. */
     }
 }
 
@@ -189,7 +189,7 @@ void vFaultsQueue(ULONG thread_input) {
             trigger_fault(fault_id);
         }
 
-        /* No sleep. Thread timing is controlled completely be the queue timeout. */
+        /* No sleep. Thread timing is controlled completely by the queue timeout. */
     }
 }
 
@@ -288,7 +288,7 @@ void vStatemachine(ULONG thread_input) {
 static thread_t pedals_thread = {
         .name       = "Pedals Thread",        /* Name */
         .size       = 512,                    /* Stack Size (in bytes) */
-        .priority   = PRIO_vPedals,       /* Priority */
+        .priority   = PRIO_vPedals,           /* Priority */
         .threshold  = 0,                      /* Preemption Threshold */
         .time_slice = TX_NO_TIME_SLICE,       /* Time Slice */
         .auto_start = TX_AUTO_START,          /* Auto Start */
