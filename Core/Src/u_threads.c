@@ -2,7 +2,6 @@
 #include "u_tx_debug.h"
 #include "u_threads.h"
 #include "u_queues.h"
-#include "u_inbox.h"
 #include "u_can.h"
 #include "u_nx_ethernet.h"
 #include "u_faults.h"
@@ -50,7 +49,7 @@ void vDefault(ULONG thread_input) {
     }
 }
 
-/* Ethernet Thread. Sends outgoing messages and processes incoming messages. */
+/* Incoming Ethernet Thread. Processes incoming messages. */
 static thread_t ethernet_thread = {
         .name       = "Ethernet Thread",  /* Name */
         .size       = 512,                /* Stack Size (in bytes) */
@@ -61,10 +60,7 @@ static thread_t ethernet_thread = {
         .sleep      =  1,                 /* Sleep (in ticks) */
         .function   = vEthernet           /* Thread Function */
     };
-void vEthernet(ULONG thread_input) {
-    
-    /* PHY_RESET Pin has to be set HIGH for the PHY to function. */
-    HAL_GPIO_WritePin(PHY_RESET_GPIO_Port, PHY_RESET_Pin, GPIO_PIN_SET);
+void vEthernetIncoming(ULONG thread_input) {
 
     while(1) {
 
@@ -94,7 +90,7 @@ void vEthernet(ULONG thread_input) {
 static thread_t can_thread = {
         .name       = "CAN Thread",     /* Name */
         .size       = 512,              /* Stack Size (in bytes) */
-        .priority   = PRIO_vCAN,    /* Priority */
+        .priority   = PRIO_vCAN,        /* Priority */
         .threshold  = 0,                /* Preemption Threshold */
         .time_slice = TX_NO_TIME_SLICE, /* Time Slice */
         .auto_start = TX_AUTO_START,    /* Auto Start */
@@ -119,7 +115,7 @@ void vCAN(ULONG thread_input) {
 
         /* Process incoming messages */
         while(queue_receive(&can_incoming, &message) == U_SUCCESS) {
-            inbox_can(&message);
+            can_inbox(&message);
         }
 
         /* Sleep Thread for specified number of ticks. */
@@ -131,7 +127,7 @@ void vCAN(ULONG thread_input) {
 static thread_t faults_thread = {
         .name       = "Faults Thread",  /* Name */
         .size       = 512,              /* Stack Size (in bytes) */
-        .priority   = PRIO_vFaults, /* Priority */
+        .priority   = PRIO_vFaults,     /* Priority */
         .threshold  = 0,                /* Preemption Threshold */
         .time_slice = TX_NO_TIME_SLICE, /* Time Slice */
         .auto_start = TX_AUTO_START,    /* Auto Start */

@@ -27,7 +27,6 @@
 #include <stdint.h>
 
 #include "fdcan.h"
-#include "u_inbox.h"
 #include "u_can.h"
 #include "u_queues.h"
 #include "u_debug.h"
