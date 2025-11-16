@@ -3,7 +3,7 @@
 /* Callback for when a ethernet message is recieved. */
 void _ethernet_recieve(ethernet_message_t message) {
   /* Send the message to the incoming ethernet queue. */
-  int status = queue_send(&eth_incoming, &message);
+  int status = queue_send(&eth_incoming, &message, TX_NO_WAIT);
   if(status != U_SUCCESS) {
     PRINTLN_ERROR("Failed to send message to the incoming ethernet queue (Status: %d).", status);
     return;

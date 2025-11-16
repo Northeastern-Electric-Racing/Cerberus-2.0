@@ -55,7 +55,7 @@ static void _send_nero_msg(void)
 	memcpy(msg.data, &bitstream_data, sizeof(bitstream_data));
 
 	/* Send CAN message */
-	queue_send(&can_outgoing, &msg);
+	queue_send(&can_outgoing, &msg, TX_NO_WAIT);
 }
 
 int init_statemachine(void) {
@@ -240,7 +240,7 @@ static int check_state_change(state_req_t new_state)
 
 static int queue_state_transition(state_req_t new_state)
 {
-	return queue_send(&state_transition_queue, &new_state);
+	return queue_send(&state_transition_queue, &new_state, TX_NO_WAIT);
 }
 
 /* HANDLE USER INPUT */
@@ -307,7 +307,7 @@ int fault()
 
 void statemachine_process(void) {
 	state_req_t new_state_req;
-	while(queue_receive(&state_transition_queue, &new_state_req) == U_SUCCESS) {
+	while(queue_receive(&state_transition_queue, &new_state_req, SEND_NERO_TIMEOUT) == U_SUCCESS) {
 		if (check_state_change(new_state_req)) {
 				if (new_state_req.id == NERO) {
 					transition_nero_state(new_state_req.state.nero);

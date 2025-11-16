@@ -131,7 +131,7 @@ void HAL_FDCAN_RxFifo0Callback(FDCAN_HandleTypeDef *hfdcan, uint32_t RxFifo0ITs)
 			}
 
 			/* Send message to incoming CAN queue */
-      queue_send(&can_incoming, &message);
+      queue_send(&can_incoming, &message, TX_NO_WAIT);
 		}
 	}
 }
