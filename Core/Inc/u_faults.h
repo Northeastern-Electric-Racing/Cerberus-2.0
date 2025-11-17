@@ -23,6 +23,7 @@ typedef enum {
 	RTDS_FAULT,
 	PUMP_SENSORS_FAULT,
 	PDU_CURRENT_FAULT,
+	LOW_LV_BATTERY_VOLTS,
 
     /* Total number of faults (cannot exceed 64.) */
 	/* (always keep this at the end) */
