@@ -77,9 +77,9 @@ static pedal_data_t pedal_data = { 0 };
 #define BRAKE_THRESHOLD_TOLERANCE   0.25 // (Volts). Tolerance margin around the brake pedal.
 
 /* Fault Debounce Callbacks */
-static void _open_circuit_fault_callback(void *arg) {queue_send(&faults, &(fault_t){ONBOARD_PEDAL_OPEN_CIRCUIT_FAULT});};   // Queues the Open Circuit Fault.
-static void _short_circuit_fault_callback(void *arg) {queue_send(&faults, &(fault_t){ONBOARD_PEDAL_SHORT_CIRCUIT_FAULT});}; // Queues the Short Circuit Fault.
-static void _pedal_difference_fault_callback(void *arg) {queue_send(&faults, &(fault_t){ONBOARD_PEDAL_DIFFERENCE_FAULT});}; // Queues the Pedal Difference Fault.
+static void _open_circuit_fault_callback(void *arg) {queue_send(&faults, &(fault_t){ONBOARD_PEDAL_OPEN_CIRCUIT_FAULT}, TX_NO_WAIT);};   // Queues the Open Circuit Fault.
+static void _short_circuit_fault_callback(void *arg) {queue_send(&faults, &(fault_t){ONBOARD_PEDAL_SHORT_CIRCUIT_FAULT}, TX_NO_WAIT);}; // Queues the Short Circuit Fault.
+static void _pedal_difference_fault_callback(void *arg) {queue_send(&faults, &(fault_t){ONBOARD_PEDAL_DIFFERENCE_FAULT}, TX_NO_WAIT);}; // Queues the Pedal Difference Fault.
 
 /* Send Pedal Data Callback */
 static void _send_pedal_data(ULONG args) {
@@ -123,8 +123,8 @@ static void _send_pedal_data(ULONG args) {
     memcpy(pedals_norm_msg.data, &pedal_norm_data, pedals_norm_msg.len);
 
     /* Queue the Messages. */
-    queue_send(&can_outgoing, &pedals_volts_msg);
-    queue_send(&can_outgoing, &pedals_norm_msg);
+    queue_send(&can_outgoing, &pedals_volts_msg, TX_NO_WAIT);
+    queue_send(&can_outgoing, &pedals_norm_msg, TX_NO_WAIT);
 
     /* Put the Pedal Data Mutex. */
     mutex_put(&pedal_data_mutex);
@@ -185,13 +185,13 @@ static bool _calc_bspd_prefault(float percentage_accel, float percentage_brake, 
 
 	if (percentage_brake > PEDAL_HARD_BRAKE_THRESH && percentage_accel > 0.25) {
 		motor_disabled = true;
-		queue_send(&faults, &(fault_t){BSPD_PREFAULT});
+		queue_send(&faults, &(fault_t){BSPD_PREFAULT}, TX_NO_WAIT);
 	}
 
 	/* Prevent a fault. */
 	if (percentage_brake > PEDAL_HARD_BRAKE_THRESH && dc_current > 10) {
 		motor_disabled = true;
-		queue_send(&faults, &(fault_t){BSPD_PREFAULT});
+		queue_send(&faults, &(fault_t){BSPD_PREFAULT}, TX_NO_WAIT);
 	}
 
 	if (motor_disabled) {

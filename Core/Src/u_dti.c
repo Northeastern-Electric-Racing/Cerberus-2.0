@@ -124,7 +124,7 @@ void dti_set_current(int16_t current)
 	msg.data[0] = msb;
 	msg.data[1] = lsb;
 
-	queue_send(&can_outgoing, &msg);
+	queue_send(&can_outgoing, &msg, TX_NO_WAIT);
 }
 
 void dti_send_brake_current(uint16_t brake_current)
@@ -138,7 +138,7 @@ void dti_send_brake_current(uint16_t brake_current)
 
 	/* Send CAN message */
 	memcpy(&msg.data, &brake_current, 2);
-	queue_send(&can_outgoing, &msg);
+	queue_send(&can_outgoing, &msg, TX_NO_WAIT);
 }
 
 void dti_set_speed(int32_t rpm)
@@ -152,7 +152,7 @@ void dti_set_speed(int32_t rpm)
 
 	/* Send CAN message */
 	memcpy(msg.data, &rpm, msg.len);
-	queue_send(&can_outgoing, &msg);
+	queue_send(&can_outgoing, &msg, TX_NO_WAIT);
 }
 
 void dti_set_position(int16_t angle)
@@ -164,7 +164,7 @@ void dti_set_position(int16_t angle)
 
 	/* Send CAN message */
 	memcpy(msg.data, &angle, msg.len);
-	queue_send(&can_outgoing, &msg);
+	queue_send(&can_outgoing, &msg, TX_NO_WAIT);
 }
 
 void dti_set_relative_current(int16_t relative_current)
@@ -176,7 +176,7 @@ void dti_set_relative_current(int16_t relative_current)
 
 	/* Send CAN message */
 	memcpy(msg.data, &relative_current, msg.len);
-	queue_send(&can_outgoing, &msg);
+	queue_send(&can_outgoing, &msg, TX_NO_WAIT);
 }
 
 void dti_set_relative_brake_current(int16_t relative_brake_current)
@@ -188,7 +188,7 @@ void dti_set_relative_brake_current(int16_t relative_brake_current)
 
 	/* Send CAN message */
 	memcpy(msg.data, &relative_brake_current, msg.len);
-	queue_send(&can_outgoing, &msg);
+	queue_send(&can_outgoing, &msg, TX_NO_WAIT);
 }
 
 void dti_set_digital_output(uint8_t output, bool value)
@@ -199,7 +199,7 @@ void dti_set_digital_output(uint8_t output, bool value)
 
 	/* Send CAN message */
 	memcpy(msg.data, &ctrl, msg.len);
-	queue_send(&can_outgoing, &msg);
+	queue_send(&can_outgoing, &msg, TX_NO_WAIT);
 }
 
 void dti_set_max_ac_current(int16_t current)
@@ -211,7 +211,7 @@ void dti_set_max_ac_current(int16_t current)
 
 	/* Send CAN message */
 	memcpy(msg.data, &current, msg.len);
-	queue_send(&can_outgoing, &msg);
+	queue_send(&can_outgoing, &msg, TX_NO_WAIT);
 }
 
 void dti_set_max_ac_brake_current(int16_t current)
@@ -223,7 +223,7 @@ void dti_set_max_ac_brake_current(int16_t current)
 
 	/* Send CAN message */
 	memcpy(msg.data, &current, msg.len);
-	queue_send(&can_outgoing, &msg);
+	queue_send(&can_outgoing, &msg, TX_NO_WAIT);
 }
 
 void dti_set_max_dc_current(int16_t current)
@@ -235,7 +235,7 @@ void dti_set_max_dc_current(int16_t current)
 
 	/* Send CAN message */
 	memcpy(msg.data, &current, msg.len);
-	queue_send(&can_outgoing, &msg);
+	queue_send(&can_outgoing, &msg, TX_NO_WAIT);
 }
 
 void dti_set_max_dc_brake_current(int16_t current)
@@ -247,7 +247,7 @@ void dti_set_max_dc_brake_current(int16_t current)
 
 	/* Send CAN message */
 	memcpy(msg.data, &current, msg.len);
-	queue_send(&can_outgoing, &msg);
+	queue_send(&can_outgoing, &msg, TX_NO_WAIT);
 }
 
 void dti_set_drive_enable(bool drive_enable)
@@ -256,7 +256,7 @@ void dti_set_drive_enable(bool drive_enable)
 
 	/* Send CAN message */
 	memcpy(msg.data, &drive_enable, msg.len);
-	queue_send(&can_outgoing, &msg);
+	queue_send(&can_outgoing, &msg, TX_NO_WAIT);
 }
 
 int32_t dti_get_rpm(void)
