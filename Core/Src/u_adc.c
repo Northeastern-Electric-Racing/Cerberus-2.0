@@ -148,7 +148,7 @@ raw_efuse_adc_t adc_getEFuseData(void) {
 
 /* Get raw pedal sensor ADC Data. */
 raw_pedal_adc_t adc_getPedalData(void) {
-    raw_pedal_adc_t sensors;
+    raw_pedal_adc_t sensors = { 0 };
 
     mutex_get(&adc_mutex);
     sensors.data[PEDAL_ACCEL1] = _adc1_buffer[ADC1_CHANNEL2];
