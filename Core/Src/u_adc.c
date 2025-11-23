@@ -49,12 +49,12 @@ typedef enum {
     SEL2_LOW,   // LFIU_CURRENT_2
     
     /* SEL3 */
-    SEL3_HIGH,  // SPARE_FUSE_ADC
+    SEL3_HIGH,  // LV_ADC
     SEL3_LOW,   // SHUTDOWN_ADC
 
     /* SEL4 */
     SEL4_HIGH,  // RADFAN_ADC
-    SEL4_LOW,   // SPARE1_ADC
+    SEL4_LOW,   // SPARE_FUSE_ADC
 
     /* Total number of indexes for the multiplexer buffer. */
     MUX_SIZE
