@@ -1,7 +1,8 @@
 #include <stdint.h>
 #include "u_can.h"
 #include "u_tx_debug.h"
-#include "stm32h5xx_hal.h"
+#include "u_nx_ethernet.h"
+#include "u_bms.h"
 
 
 /* CAN interfaces */
@@ -36,4 +37,20 @@ uint8_t can1_init(FDCAN_HandleTypeDef *hcan) {
     PRINTLN_INFO("Ran can1_init().");
 
     return U_SUCCESS;
+}
+
+/* Processes received CAN messages. */
+void can_inbox(can_msg_t *message) {
+    switch(message->id) {
+        case CANID_BMS_DCL_MSG:
+            bms_handleDclMessage();
+            break;
+        case CANID_BMS_CELL_TEMPS:
+            uint16_t battbox_temp = ((message->data[6] << 8) | message->data[7]) / 100; //  Get "BMS/Cells/Temp_Avg_Value"
+            bms_setBattboxTemp(battbox_temp);
+            break;
+        default:
+            PRINTLN_ERROR("Unknown CAN Message Recieved (Message ID: %ld).", message->id);
+            break;
+    }
 }

@@ -128,42 +128,34 @@ int adc_init(void) {
 
 /* Get raw eFuse ADC Data. */
 raw_efuse_adc_t adc_getEFuseData(void) {
-    mutex_get(&adc_mutex);
-    uint16_t adc1[ADC1_SIZE]; // Local ADC1 buffer copy.
-    memcpy(adc1, _adc1_buffer, sizeof(_adc1_buffer));
-    uint16_t mux[MUX_SIZE]; // Local Mux buffer copy.
-    memcpy(mux, _mux_buffer, sizeof(_mux_buffer));
-    mutex_put(&adc_mutex);
-
     raw_efuse_adc_t efuses = { 0 };
-    efuses.data[EFUSE_DASHBOARD] = adc1[ADC1_CHANNEL3];
-    efuses.data[EFUSE_BRAKE] = mux[SEL1_HIGH];
-    efuses.data[EFUSE_SHUTDOWN] = mux[SEL3_LOW];
+
+    mutex_get(&adc_mutex);
+    efuses.data[EFUSE_DASHBOARD] = _adc1_buffer[ADC1_CHANNEL3];
+    efuses.data[EFUSE_BRAKE] = _mux_buffer[SEL1_HIGH];
+    efuses.data[EFUSE_SHUTDOWN] = _mux_buffer[SEL3_LOW];
     efuses.data[EFUSE_LV] = 0; // ADC reading is not supported for LV eFuse.
-    efuses.data[EFUSE_RADFAN] = mux[SEL4_HIGH];
-    efuses.data[EFUSE_FANBATT] = adc1[ADC1_CHANNEL10];
-    efuses.data[EFUSE_PUMP1] = adc1[ADC1_CHANNEL12];
-    efuses.data[EFUSE_PUMP2] = adc1[ADC1_CHANNEL13];
-    efuses.data[EFUSE_BATTBOX] = mux[SEL1_LOW];
-    efuses.data[EFUSE_MC] = adc1[ADC1_CHANNEL18];
+    efuses.data[EFUSE_RADFAN] = _mux_buffer[SEL4_HIGH];
+    efuses.data[EFUSE_FANBATT] = _adc1_buffer[ADC1_CHANNEL10];
+    efuses.data[EFUSE_PUMP1] = _adc1_buffer[ADC1_CHANNEL12];
+    efuses.data[EFUSE_PUMP2] = _adc1_buffer[ADC1_CHANNEL13];
+    efuses.data[EFUSE_BATTBOX] = _mux_buffer[SEL1_LOW];
+    efuses.data[EFUSE_MC] = _adc1_buffer[ADC1_CHANNEL18];
+    mutex_put(&adc_mutex);
 
     return efuses;
 }
 
 /* Get raw pedal sensor ADC Data. */
 raw_pedal_adc_t adc_getPedalData(void) {
-    mutex_get(&adc_mutex);
-    uint16_t adc1[ADC1_SIZE]; // Local ADC1 buffer copy.
-    memcpy(adc1, _adc1_buffer, sizeof(_adc1_buffer));
-    uint16_t adc2[ADC2_SIZE]; // Local ADC2 buffer copy.
-    memcpy(adc2, _adc2_buffer, sizeof(_adc2_buffer));
-    mutex_put(&adc_mutex);
+    raw_pedal_adc_t sensors = { 0 };
 
-    raw_pedal_adc_t sensors;
-    sensors.data[PEDAL_ACCEL1] = adc1[ADC1_CHANNEL2];
-    sensors.data[PEDAL_ACCEL2] = adc1[ADC1_CHANNEL6];
-    sensors.data[PEDAL_BRAKE1] = adc2[ADC2_CHANNEL2];
-    sensors.data[PEDAL_BRAKE2] = adc2[ADC2_CHANNEL6];
+    mutex_get(&adc_mutex);
+    sensors.data[PEDAL_ACCEL1] = _adc1_buffer[ADC1_CHANNEL2];
+    sensors.data[PEDAL_ACCEL2] = _adc1_buffer[ADC1_CHANNEL6];
+    sensors.data[PEDAL_BRAKE1] = _adc2_buffer[ADC2_CHANNEL2];
+    sensors.data[PEDAL_BRAKE2] = _adc2_buffer[ADC2_CHANNEL6];
+    mutex_put(&adc_mutex);
 
     return sensors;
 }

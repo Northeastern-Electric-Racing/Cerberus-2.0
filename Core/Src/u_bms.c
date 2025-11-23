@@ -12,7 +12,7 @@ static uint16_t battbox_temp;
 static TX_TIMER bms_fault_timer;
 
 /* Fault callback(s). */
-static void _bms_fault_callback(ULONG args) {queue_send(&faults, &(fault_t){BMS_CAN_MONITOR_FAULT});}; // Queues the BMS CAN Monitor Fault.
+static void _bms_fault_callback(ULONG args) {queue_send(&faults, &(fault_t){BMS_CAN_MONITOR_FAULT}, TX_NO_WAIT);}; // Queues the BMS CAN Monitor Fault.
 
 /* Initializes the BMS fault timer. */
 int bms_init(void) {

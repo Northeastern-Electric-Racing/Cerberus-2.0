@@ -5,6 +5,7 @@
 #include "fdcan.h"
 
 uint8_t can1_init(FDCAN_HandleTypeDef *hcan);
+void can_inbox(can_msg_t *message);
 
 /* List of CAN interfaces */
 extern can_t can1;
