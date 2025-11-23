@@ -159,3 +159,15 @@ raw_pedal_adc_t adc_getPedalData(void) {
 
     return sensors;
 }
+
+/* Get raw LFIU sensor ADC Data. */
+raw_lfiu_adc_t adc_getLfiuData(void) {
+    raw_lfiu_adc_t sensors = { 0 };
+
+    mutex_get(&adc_mutex);
+    sensors.data[LFIU_1] = _mux_buffer[SEL2_HIGH];
+    sensors.data[LFIU_2] = _mux_buffer[SEL2_LOW];
+    mutex_put(&adc_mutex);
+
+    return sensors;
+}
