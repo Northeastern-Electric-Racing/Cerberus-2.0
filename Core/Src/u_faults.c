@@ -91,7 +91,7 @@ int faults_init(void) {
         timers[fault_id].auto_activate = false;
         int status = timer_init(&timers[fault_id]);
         if(status != U_SUCCESS) {
-            PRINTLN_ERROR("Failed to create fault timer (Status: %d/%s, Fault: %s).", status, tx_status_toString(status), faults[fault_id].name);
+            PRINTLN_ERROR("Failed to create fault timer (Status: %d, Fault: %s).", status, faults[fault_id].name);
             return U_ERROR;
         }
     }
@@ -130,7 +130,7 @@ int trigger_fault(fault_t fault_id) {
         PRINTLN_ERROR("Failed to restart fault timer (Status: %d, Fault: %s).", status, faults[fault_id].name);
         return U_ERROR;
     }
-    
+
     return U_SUCCESS;
 }
 
