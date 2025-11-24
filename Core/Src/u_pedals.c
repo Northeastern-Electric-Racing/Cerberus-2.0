@@ -2,6 +2,7 @@
 #include "timer.h"
 #include "debounce.h"
 #include "c_utils.h"
+#include "u_tx_timers.h"
 #include "u_can.h"
 #include "tx_api.h"
 #include "u_pedals.h"
@@ -20,7 +21,6 @@ static uint16_t regen_limits[2] = { 0, 50 }; // [PERFORMANCE, ENDURANCE]
 static bool launch_control_enabled = false;
 static const float MPH_TO_KMH = 1.609;       // Factor for converting MPH to KMH
 static bool brake_pressed = false;
-static TX_TIMER pedal_data_timer;            // Timer for sending pedal data message.
 
 /* Pedal Data. */
 typedef struct {
@@ -129,6 +129,16 @@ static void _send_pedal_data(ULONG args) {
     /* Put the Pedal Data Mutex. */
     mutex_put(&pedal_data_mutex);
 }
+
+/* Pedal Data Timer. */
+static timer_t pedal_data_timer = {
+	.name = "Pedal Data Timer",
+	.callback = _send_pedal_data,
+	.callback_input = 0,
+	.duration = PEDAL_DATA_MSG_FREQUENCY,
+	.type = PERIODIC,
+	.auto_activate = true
+};
 
 /* Calculates brake faults. */
 static void _calculate_brake_faults(float voltage_brake1, float voltage_brake2) {
@@ -442,17 +452,9 @@ static float _get_pedal_percent_pressed(float voltage, float offset, float max)
 int pedals_init(void) {
 
     /* Create Pedal Data Timer. */
-    int status = tx_timer_create(
-        &pedal_data_timer,        /* Timer Instance */
-        "Pedal Data Timer",       /* Timer Name */
-        _send_pedal_data,         /* Timer Expiration Callback */
-        0,                        /* Callback Input */
-        PEDAL_DATA_MSG_FREQUENCY, /* Ticks until timer expiration. */
-        PEDAL_DATA_MSG_FREQUENCY, /* Number of ticks for all timer expirations after the first (0 makes this a one-shot timer). */
-        TX_AUTO_ACTIVATE          /* Automatically start the timer. */
-    );
-    if(status != TX_SUCCESS) {
-        PRINTLN_ERROR("Failed to create Pedal Data Timer (Status: %d/%s).", status, tx_status_toString(status));
+    int status = timer_init(&pedal_data_timer);
+    if(status != U_SUCCESS) {
+        PRINTLN_ERROR("Failed to create Pedal Data Timer (Status: %d).", status);
         return U_ERROR;
     }
 
