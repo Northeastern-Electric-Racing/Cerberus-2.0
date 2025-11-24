@@ -19,7 +19,7 @@ static timer_t bms_fault_timer = {
     .callback_input = 0,
     .duration = BMS_CAN_MONITOR_DELAY,
     .type = ONESHOT,
-    .auto_activate = false
+    .auto_activate = true
 };
 
 /* Initializes the BMS fault timer. */
