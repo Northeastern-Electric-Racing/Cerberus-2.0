@@ -1,10 +1,30 @@
 #include "tx_api.h"
 #include "main.h"
+#include "u_tx_timers.h"
 #include "u_rtds.h"
 #include "u_tx_debug.h"
 
-static TX_TIMER rtds_timer; /* Timer for the RTDS. */
-static TX_TIMER reverse_sound_timer; /* Timer for the reverse sound beeping. */
+/* Timer for RTDS. */
+static void _timer_callback(ULONG args); // Forward declaration for callback function.
+static timer_t rtds_timer = {
+    .name = "RTDS Timer",
+    .callback = _timer_callback,
+    .callback_input = 0,
+    .duration = RTDS_DURATION,
+    .type = ONESHOT,
+    .auto_activate = false
+};
+
+/* Timer for Reverse Sound. */
+static void _reverse_sound_callback(ULONG args); // Forward declaratoin for callback function.
+static timer_t reverse_sound_timer = {
+    .name = "Reverse Sound Timer",
+    .callback = _reverse_sound_callback,
+    .callback_input = 0,
+    .duration = 50,
+    .type = PERIODIC,
+    .auto_activate = false
+};
 
 /* Sets (i.e. turns on) the RTDS pin. */
 static void _set_rtds_pin(void) {
@@ -18,7 +38,7 @@ static void _clear_rtds_pin(void) {
     PRINTLN_INFO("Turned off RTDS pin.");
 }
 
-/* Callback function. Turns off the RTDS after the timer expires. */
+/* Callback for RTDS. Turns off the RTDS after the timer expires. */
 static void _timer_callback(ULONG args) {
     _clear_rtds_pin();
 }
@@ -37,32 +57,16 @@ static void _reverse_sound_callback(ULONG args) {
 
 /* Initializes the RTDS timer. */
 int rtds_init(void) {
-        int status = tx_timer_create(
-            &rtds_timer,        /* Timer Instance */
-            "RTDS Timer",       /* Timer Name */
-            _timer_callback,    /* Timer Expiration Callback */
-            0,                  /* Callback Input */
-            RTDS_DURATION,      /* Ticks until timer expiration. */
-            0,                  /* Number of ticks for all timer expirations after the first (0 makes this a one-shot timer). */
-            TX_NO_ACTIVATE      /* Make the timer dormant until it is activated. */
-        );
-        if(status != TX_SUCCESS) {
-            PRINTLN_ERROR("Failed to create RTDS timer (Status: %d/%s).", status, tx_status_toString(status));
+        int status = timer_init(&rtds_timer);
+        if(status != U_SUCCESS) {
+            PRINTLN_ERROR("Failed to create RTDS timer (Status: %d).", status);
             return U_ERROR;
         }
 
         /* Create reverse sound timer */
-        status = tx_timer_create(
-            &reverse_sound_timer,    /* Timer Instance */
-            "Reverse Sound Timer",   /* Timer Name */
-            _reverse_sound_callback, /* Timer Expiration Callback */
-            0,                       /* Callback Input */
-            50,                      /* Ticks until timer expiration. */
-            50,                      /* Number of ticks for periodic timer. */
-            TX_NO_ACTIVATE           /* Make the timer dormant until it is activated. */
-        );
-        if(status != TX_SUCCESS) {
-            PRINTLN_ERROR("Failed to create reverse sound timer (Status: %d/%s).", status, tx_status_toString(status));
+        status = timer_init(&reverse_sound_timer);
+        if(status != U_SUCCESS) {
+            PRINTLN_ERROR("Failed to create reverse sound timer (Status: %d).", status);
             return U_ERROR;
         }
 
@@ -76,24 +80,10 @@ int rtds_soundRTDS(void) {
     /* Trigger the RTDS sound. */
     _set_rtds_pin();
 
-    /* Deactivate the RTDS timer. */
-    int status = tx_timer_deactivate(&rtds_timer);
-    if(status != TX_SUCCESS) {
-        PRINTLN_ERROR("Failed to deactivate RTDS timer (Status: %d/%s).", status, tx_status_toString(status));
-        return U_ERROR;
-    }
-
-    /* Change the RTDS timer. */
-    status = tx_timer_change(&rtds_timer, RTDS_DURATION, 0);
-    if(status != TX_SUCCESS) {
-        PRINTLN_ERROR("Failed to change RTDS timer (Status: %d/%s).", status, tx_status_toString(status));
-        return U_ERROR;
-    }
-
-    /* Activate the RTDS timer. */
-    status = tx_timer_activate(&rtds_timer);
-    if(status != TX_SUCCESS) {
-        PRINTLN_ERROR("Failed to activate RTDS timer (Status: %d/%s).", status, tx_status_toString(status));
+    /* Restart RTDS timer. */
+    int status = timer_restart(&rtds_timer);
+    if(status != U_SUCCESS) {
+        PRINTLN_ERROR("Failed to restart RTDS timer (Status: %d).", status);
         return U_ERROR;
     }
 
@@ -106,9 +96,9 @@ int rtds_startReverseSound(void) {
     rtds_stopReverseSound();
     
     /* Activate the reverse sound timer to start periodic beeping */
-    int status = tx_timer_activate(&reverse_sound_timer);
-    if(status != TX_SUCCESS) {
-        PRINTLN_ERROR("Failed to activate reverse sound timer (Status: %d/%s).", status, tx_status_toString(status));
+    int status = timer_start(&reverse_sound_timer);
+    if(status != U_SUCCESS) {
+        PRINTLN_ERROR("Failed to activate reverse sound timer (Status: %d).", status);
         return U_ERROR;
     }
     
@@ -122,9 +112,9 @@ int rtds_stopReverseSound(void) {
     _clear_rtds_pin();
     
     /* Deactivate the reverse sound timer */
-    int status = tx_timer_deactivate(&reverse_sound_timer);
-    if(status != TX_SUCCESS && status != TX_ACTIVATE_ERROR) { /* TX_ACTIVATE_ERROR means timer was already inactive */
-        PRINTLN_ERROR("Failed to deactivate reverse sound timer (Status: %d/%s).", status, tx_status_toString(status));
+    int status = timer_stop(&reverse_sound_timer);
+    if(status != U_SUCCESS) {
+        PRINTLN_ERROR("Failed to deactivate reverse sound timer (Status: %d).", status);
         return U_ERROR;
     }
     

@@ -6,6 +6,7 @@
 #include <string.h>
 
 #include "tx_api.h"
+#include "u_tx_timers.h"
 #include "bitstream.h"
 #include "u_dti.h"
 #include "u_pedals.h"
@@ -26,14 +27,19 @@
 
 /* Globals. */
 static state_t cerberus_state;
-static TX_TIMER ts_rising_timer;
 static bool is_ts_rising = false;
 static bool enter_drive_enabled = false;
 
-static void _rising_ts_cb(ULONG input)
-{
-	enter_drive_enabled = true;
-}
+/* Rising TS Callback and Timer */
+static void _rising_ts_cb(ULONG input) { enter_drive_enabled = true; }
+static timer_t ts_rising_timer = {
+	.name = "TS Rising Timer",
+	.callback = _rising_ts_cb,
+	.callback_input = 0,
+	.duration = TS_RISING_BLOCK_TIMEOUT,
+	.type = ONESHOT,
+	.auto_activate = false
+};
 
 static void _send_nero_msg(void)
 {
@@ -60,21 +66,13 @@ static void _send_nero_msg(void)
 
 int init_statemachine(void) {
 	/* Create TS Rising Timer. */
-	int status = tx_timer_create(
-            &ts_rising_timer,   		  /* Timer Instance */
-            "TS Rising Timer",  		  /* Timer Name */
-            _rising_ts_cb,    			  /* Timer Expiration Callback */
-            0,                  		  /* Callback Input */
-            TS_RISING_BLOCK_TIMEOUT,      /* Ticks until timer expiration. */
-            0,                  		  /* Number of ticks for all timer expirations after the first (0 makes this a one-shot timer). */
-            TX_NO_ACTIVATE      		  /* Make the timer dormant until it is activated. */
-        );
-        if(status != TX_SUCCESS) {
-            PRINTLN_ERROR("Failed to create TS Rising timer (Status: %d/%s).", status, tx_status_toString(status));
-            return U_ERROR;
-        }
-	PRINTLN_INFO("Ran init_statemachine().");
+	int status = timer_init(&ts_rising_timer);
+	if(status != U_SUCCESS) {
+		PRINTLN_ERROR("Failed to create TS Rising timer (Status: %d).", status);
+		return U_ERROR;
+	}
 
+	PRINTLN_INFO("Ran init_statemachine().");
 	return U_SUCCESS;
 }
 
@@ -319,33 +317,20 @@ void statemachine_process(void) {
 	}
 
 	if (!is_ts_rising && tsms_get()) {
-			is_ts_rising = true;
+		is_ts_rising = true;
 
-			/* Deactivate the TS Rising timer. */
-    		int status = tx_timer_deactivate(&ts_rising_timer);
-    		if(status != TX_SUCCESS) {
-        		PRINTLN_ERROR("Failed to deactivate TS Rising timer (in !is_ts_rising && tsms_get()) (Status: %d/%s).", status, tx_status_toString(status));
-        		return;
-    		}
+		/* Restart TS Rising timer. */
+		int status = timer_restart(&ts_rising_timer);
+		if(status != U_SUCCESS) {
+			PRINTLN_ERROR("Failed to restart TS Rising timer (in !ts_rising && tsms_get()) (Status: %d).", status);
+			return;
+		}
 
-    		/* Change the TS Rising timer. */
-    		status = tx_timer_change(&ts_rising_timer, TS_RISING_BLOCK_TIMEOUT, 0);
-    		if(status != TX_SUCCESS) {
-        		PRINTLN_ERROR("Failed to change TS Rising timer (Status: %d/%s).", status, tx_status_toString(status));
-        		return;
-    		}
-
-    		/* Activate the TS Rising timer. */
-    		status = tx_timer_activate(&ts_rising_timer);
-    		if(status != TX_SUCCESS) {
-        		PRINTLN_ERROR("Failed to activate TS Rising timer (Status: %d/%s).", status, tx_status_toString(status));
-        		return;
-    		}
 	} else if (!tsms_get()) {
-		/* Deactivate the TS Rising timer. */
-    	int status = tx_timer_deactivate(&ts_rising_timer);
-    	if(status != TX_SUCCESS) {
-        	PRINTLN_ERROR("Failed to deactivate TS Rising timer (in !tsms_get()) (Status: %d/%s).", status, tx_status_toString(status));
+		/* Stop the TS Rising timer. */
+    	int status = timer_stop(&ts_rising_timer);
+    	if(status != U_SUCCESS) {
+        	PRINTLN_ERROR("Failed to stop TS Rising timer (in !tsms_get()) (Status: %d).", status);
         	return;
     	}
 		is_ts_rising = false;

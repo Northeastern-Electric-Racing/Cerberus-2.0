@@ -78,6 +78,7 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     "../Drivers/Embedded-Base/threadX/src/u_tx_mutex.c"
     "../Drivers/Embedded-Base/threadX/src/u_tx_queues.c"
     "../Drivers/Embedded-Base/threadX/src/u_tx_threads.c"
+    "../Drivers/Embedded-Base/threadX/src/u_tx_timers.c"
 
     # Embedded-Base NetX Utils
     "../Drivers/Embedded-Base/NetX/src/u_nx_debug.c"
