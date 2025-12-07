@@ -28,6 +28,7 @@ extern "C" {
 
 /* Includes ------------------------------------------------------------------*/
 #include "stm32h5xx_hal.h"
+#include <stdint.h>
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -37,6 +38,10 @@ extern "C" {
 /* Exported types ------------------------------------------------------------*/
 /* USER CODE BEGIN ET */
 
+/* Gets the program timestamp, in microseconds (number of microseconds since the program started, as indicated by TIM2). */
+static inline uint32_t get_time(void) {
+    return TIM2->CNT;
+}
 /* USER CODE END ET */
 
 /* Exported constants --------------------------------------------------------*/

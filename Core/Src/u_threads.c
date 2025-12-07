@@ -47,6 +47,9 @@ void vDefault(ULONG thread_input) {
         HAL_IWDG_Refresh(&hiwdg); // Internal Watchdog
         HAL_GPIO_TogglePin(WATCHDOG_GPIO_Port, WATCHDOG_Pin); // External Watchdog
 
+        /* Test print timer for fun (can remove this later). */
+        PRINTLN_INFO("Microseconds since program start: %ld\n", get_time());
+
         /* Sleep Thread for specified number of ticks. */
         tx_thread_sleep(default_thread.sleep);
     }

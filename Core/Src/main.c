@@ -76,6 +76,8 @@ UART_HandleTypeDef huart7;
 
 SPI_HandleTypeDef hspi2;
 
+TIM_HandleTypeDef htim2;
+
 /* USER CODE BEGIN PV */
 
 /* USER CODE END PV */
@@ -95,6 +97,7 @@ static void MX_LPUART1_UART_Init(void);
 static void MX_SPI2_Init(void);
 static void MX_UART7_Init(void);
 static void MX_DCACHE1_Init(void);
+static void MX_TIM2_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -182,6 +185,7 @@ int main(void)
   MX_SPI2_Init();
   MX_UART7_Init();
   MX_DCACHE1_Init();
+  MX_TIM2_Init();
   /* USER CODE BEGIN 2 */
 
   /* Init CAN */
@@ -875,6 +879,58 @@ static void MX_SPI2_Init(void)
   /* USER CODE BEGIN SPI2_Init 2 */
 
   /* USER CODE END SPI2_Init 2 */
+
+}
+
+/**
+  * @brief TIM2 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_TIM2_Init(void)
+{
+
+  /* USER CODE BEGIN TIM2_Init 0 */
+
+  /* USER CODE END TIM2_Init 0 */
+
+  TIM_ClockConfigTypeDef sClockSourceConfig = {0};
+  TIM_MasterConfigTypeDef sMasterConfig = {0};
+
+  /* USER CODE BEGIN TIM2_Init 1 */
+
+  // the big important relationship: Desired Counter Frequency = Timer Clock Frequency / (Prescaler + 1)
+  // basically, if we want a timer to count up every 1 microseconds, we would want a 'Desired Counter Frequency' of 1MHz.
+  // The 'Prescaler' can be set in CubeMX. The 'Timer's Clock Frequency' can be configured in CubeMX, but it's a bigger/more important setting so for these purposes, it should basically be treated as a constant. In other words, the 'Prescaler' setting is how you control the rate at which the timer counts.
+  // As of writing this, there's a Timer Clock Frequency of 175 MHz. So, the equation looks like: 1MHz = 175 MHz / (Prescaler + 1).
+  // Solving for Prescaler, we get Prescaler = 174.
+  // This should be recalculated if/whenever the clock frequency gets changed, because the timer rate will change alongside it. The clock frequency shouldn't get changed a lot though
+
+  /* USER CODE END TIM2_Init 1 */
+  htim2.Instance = TIM2;
+  htim2.Init.Prescaler = 174;
+  htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim2.Init.Period = 4294967295;
+  htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+  htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  if (HAL_TIM_Base_Init(&htim2) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
+  if (HAL_TIM_ConfigClockSource(&htim2, &sClockSourceConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+  if (HAL_TIMEx_MasterConfigSynchronization(&htim2, &sMasterConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN TIM2_Init 2 */
+  HAL_TIM_Base_Start(&htim2);
+  /* USER CODE END TIM2_Init 2 */
 
 }
 
