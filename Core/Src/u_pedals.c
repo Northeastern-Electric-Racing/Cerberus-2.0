@@ -76,9 +76,13 @@ static pedal_data_t pedal_data = { 0 };
 #define APPS_THRESHOLD_TOLERANCE    0.45 // (Volts). Tolerance margin around the accelerator pedal.
 #define BRAKE_THRESHOLD_TOLERANCE   0.25 // (Volts). Tolerance margin around the brake pedal.
 
-/* Fault Debounce Callbacks */
-static void _open_circuit_fault_callback(void *arg) {queue_send(&faults, &(fault_t){ONBOARD_PEDAL_OPEN_CIRCUIT_FAULT}, TX_NO_WAIT);};   // Queues the Open Circuit Fault.
-static void _short_circuit_fault_callback(void *arg) {queue_send(&faults, &(fault_t){ONBOARD_PEDAL_SHORT_CIRCUIT_FAULT}, TX_NO_WAIT);}; // Queues the Short Circuit Fault.
+static void _onboard_brake_open_circuit_fault_callback(void *arg) {queue_send(&faults, &(fault_t){ONBOARD_BRAKE_OPEN_CIRCUIT_FAULT}, TX_NO_WAIT);};   // Queues the Brake Open Circuit Fault.
+static void _onboard_brake_short_circuit_fault_callback(void *arg) {queue_send(&faults, &(fault_t){ONBOARD_BRAKE_SHORT_CIRCUIT_FAULT}, TX_NO_WAIT);};   // Queues the Brake Short Circuit Fault.
+static void _onboard_accel_open_circuit_fault_callback(void *arg) {queue_send(&faults, &(fault_t){ONBOARD_ACCEL_OPEN_CIRCUIT_FAULT}, TX_NO_WAIT);};   // Queues the Accel Open Circuit Fault.
+static void _onboard_accel_short_circuit_fault_callback(void *arg) {queue_send(&faults, &(fault_t){ONBOARD_ACCEL_SHORT_CIRCUIT_FAULT}, TX_NO_WAIT);};   // Queues the Accel Short Circuit Fault.
+
+
+
 static void _pedal_difference_fault_callback(void *arg) {queue_send(&faults, &(fault_t){ONBOARD_PEDAL_DIFFERENCE_FAULT}, TX_NO_WAIT);}; // Queues the Pedal Difference Fault.
 
 /* Send Pedal Data Callback */
@@ -140,11 +144,11 @@ static void _calculate_brake_faults(float voltage_brake1, float voltage_brake2) 
     
     /* Open Circuit Fault */
     bool open_circuit_fault = (voltage_brake1 > BRAKE_SENSOR_IRREGULAR_HIGH + BRAKE_THRESHOLD_TOLERANCE) || (voltage_brake2 > BRAKE_SENSOR_IRREGULAR_HIGH + BRAKE_THRESHOLD_TOLERANCE);
-    debounce(open_circuit_fault, &open_circuit_timer, BRAKE_FAULT_DEBOUNCE, &_open_circuit_fault_callback, NULL);
+    debounce(open_circuit_fault, &open_circuit_timer, BRAKE_FAULT_DEBOUNCE, &_onboard_brake_open_circuit_fault_callback, NULL);
 
     /* Short Circuit Fault */
     bool short_circuit_fault = (voltage_brake1 < BRAKE_SENSOR_IRREGULAR_LOW - BRAKE_THRESHOLD_TOLERANCE) || (voltage_brake2 < BRAKE_SENSOR_IRREGULAR_LOW - BRAKE_THRESHOLD_TOLERANCE);
-    debounce(short_circuit_fault, &short_circuit_timer, BRAKE_FAULT_DEBOUNCE, &_short_circuit_fault_callback, NULL);
+    debounce(short_circuit_fault, &short_circuit_timer, BRAKE_FAULT_DEBOUNCE, &_onboard_brake_short_circuit_fault_callback, NULL);
 }
 
 /* Calculates Pedal Faults. */
@@ -158,12 +162,11 @@ static void _calculate_accel_faults(float voltage_accel1, float voltage_accel2, 
 
     /* Open Circuit Fault */
     bool open_circuit_fault = (voltage_accel1 > MAX_VOLTS_UNSCALED - APPS_THRESHOLD_TOLERANCE) || (voltage_accel2 > MAX_VOLTS_UNSCALED - APPS_THRESHOLD_TOLERANCE);
-    debounce(open_circuit_fault, &open_circuit_timer, PEDAL_FAULT_DEBOUNCE, &_open_circuit_fault_callback, NULL);
+    debounce(open_circuit_fault, &open_circuit_timer, PEDAL_FAULT_DEBOUNCE, &_onboard_accel_open_circuit_fault_callback, NULL);
 
     /* Short Circuit Fault */
     bool short_circuit_fault = (voltage_accel1 < MIN_APPS1_VOLTS - APPS_THRESHOLD_TOLERANCE) || (voltage_accel2 < MIN_APPS2_VOLTS - APPS_THRESHOLD_TOLERANCE);
-    debounce(short_circuit_fault, &short_circuit_timer, PEDAL_FAULT_DEBOUNCE, &_short_circuit_fault_callback, NULL);
-
+    debounce(short_circuit_fault, &short_circuit_timer, PEDAL_FAULT_DEBOUNCE, &_onboard_accel_short_circuit_fault_callback, NULL);
     /* Pedal Difference Fault */
     /* Detects if the two accelerator pedal sensors give readings that differ by more than PEDAL_DIFF_THRESH. */
     bool pedal_difference_fault = fabs(percentage_accel1 - percentage_accel2) > PEDAL_DIFF_THRESH;
