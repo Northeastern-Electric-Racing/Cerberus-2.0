@@ -1,6 +1,7 @@
 #include <stdint.h>
 #include "tx_api.h"
 #include "main.h"
+#include "u_tx_timers.h"
 #include "u_faults.h"
 #include "u_statemachine.h"
 #include "u_tx_debug.h"
@@ -45,7 +46,7 @@ static const _metadata faults[] = {
 };
 
 /* Fault Globals*/
-static TX_TIMER timers[NUM_FAULTS]; // Array of fault timers. One timer per fault.
+static timer_t timers[NUM_FAULTS]; // Array of fault timers. One timer per fault.
 static uint64_t severity_mask; // Mask that stores the severity configuration for each fault (0=NON_CRITICAL, 1=CRITICAL).
 static volatile uint64_t fault_flags; // Each bit is a separate fault (0=Not Faulted, 1=Faulted).
 
@@ -86,17 +87,15 @@ int faults_init(void) {
         }
 
         /* Initialize all timers. */
-        int status = tx_timer_create(
-            &timers[fault_id],        /* Timer Instance */
-            "Fault Timer",            /* Timer Name */
-            _timer_callback,          /* Timer Expiration Callback */
-            fault_id,                 /* Callback Input */
-            faults[fault_id].timeout, /* Ticks until timer expiration. */
-            0,                        /* Number of ticks for all timer expirations after the first (0 makes this a one-shot timer). */
-            TX_NO_ACTIVATE            /* Make the timer dormant until it is activated. */
-        );
-        if(status != TX_SUCCESS) {
-            PRINTLN_ERROR("Failed to create fault timer (Status: %d/%s, Fault: %s).", status, tx_status_toString(status), faults[fault_id].name);
+        timers[fault_id].name = "Fault Timer";
+        timers[fault_id].callback = _timer_callback;
+        timers[fault_id].callback_input = fault_id;
+        timers[fault_id].duration = faults[fault_id].timeout;
+        timers[fault_id].type = ONESHOT;
+        timers[fault_id].auto_activate = false;
+        int status = timer_init(&timers[fault_id]);
+        if(status != U_SUCCESS) {
+            PRINTLN_ERROR("Failed to create fault timer (Status: %d, Fault: %s).", status, faults[fault_id].name);
             return U_ERROR;
         }
     }
@@ -129,24 +128,10 @@ int trigger_fault(fault_t fault_id) {
             break;
     }
 
-    /* Deactivate the fault timer. */
-    int status = tx_timer_deactivate(&timers[fault_id]);
-    if(status != TX_SUCCESS) {
-        PRINTLN_ERROR("Failed to deactivate fault timer (Status: %d/%s, Fault: %s).", status, tx_status_toString(status), faults[fault_id].name);
-        return U_ERROR;
-    }
-
-    /* Change the fault timer. */
-    status = tx_timer_change(&timers[fault_id], faults[fault_id].timeout, 0);
-    if(status != TX_SUCCESS) {
-        PRINTLN_ERROR("Failed to change fault timer (Status: %d/%s, Fault: %s).", status, tx_status_toString(status), faults[fault_id].name);
-        return U_ERROR;
-    }
-
-    /* Activate the fault timer. */
-    status = tx_timer_activate(&timers[fault_id]);
-    if(status != TX_SUCCESS) {
-        PRINTLN_ERROR("Failed to activate fault timer (Status: %d/%s, Fault: %s).", status, tx_status_toString(status), faults[fault_id].name);
+    /* Restart fault timer. */
+    int status = timer_restart(&timers[fault_id]);
+    if(status != U_SUCCESS) {
+        PRINTLN_ERROR("Failed to restart fault timer (Status: %d, Fault: %s).", status, faults[fault_id].name);
         return U_ERROR;
     }
 
