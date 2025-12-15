@@ -52,7 +52,7 @@ static void _send_nero_msg(void)
 	bitstream_add_signed(&nero_msg, dti_get_mph() * 10, 16);
 	bitstream_add(&nero_msg, tsms_get(), 1);
 	bitstream_add(&nero_msg, pedals_getTorqueLimitPercentage() * 100, 7);
-	bitstream_add(&nero_msg, cerberus_state.functional != F_REVERSE, 1);
+	bitstream_add(&nero_msg, (cerberus_state.functional == F_REVERSE), 1);
 	bitstream_add(&nero_msg, pedals_getRegenLimit(), 10);
 	bitstream_add(&nero_msg, pedals_getLaunchControl(), 1);
 
