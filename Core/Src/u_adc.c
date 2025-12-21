@@ -54,7 +54,7 @@ typedef enum {
 
     /* SEL4 */
     SEL4_HIGH,  // RADFAN_ADC
-    SEL4_LOW,   // SPARE_FUSE_ADC
+    SEL4_LOW,   // LV_BATT_ADC
 
     /* Total number of indexes for the multiplexer buffer. */
     MUX_SIZE
@@ -170,4 +170,13 @@ raw_lfiu_adc_t adc_getLfiuData(void) {
     mutex_put(&adc_mutex);
 
     return sensors;
+}
+
+/* Get raw LV_BATT Voltage ADC data. */
+uint16_t adc_getLVData(void) {
+    uint16_t temp;
+    mutex_get(&adc_mutex);
+    temp = _mux_buffer[SEL4_LOW];
+    mutex_put(&adc_mutex);
+    return temp;
 }
