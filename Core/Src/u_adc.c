@@ -172,11 +172,24 @@ raw_lfiu_adc_t adc_getLfiuData(void) {
     return sensors;
 }
 
-/* Get raw LV_BATT Voltage ADC data. */
-uint16_t adc_getLVData(void) {
-    uint16_t temp;
+/* Get LV_BATT Voltage ADC data. */
+lvread_adc_t adc_getLVData(void) {
+    lvread_adc_t data = { 0 };
+
+    /* Get the raw ADC reading. */
     mutex_get(&adc_mutex);
-    temp = _mux_buffer[SEL4_LOW];
+    data.raw = _mux_buffer[SEL4_LOW];
     mutex_put(&adc_mutex);
-    return temp;
+
+    /* Calcualte the ADC voltage. */
+    const float v_ref = 3.3f; // VREF is 3V3 for VCU.
+    float adc_voltage = (data.raw / 4095.0) * v_ref; // adc_voltage = (adc_raw / 4095.0) * 3.3
+
+    /* Scale the ADC Voltage back up to 24V. */
+    // Before the ADC, there's a voltage divider that scales 24V down to 2.18V for the ADC. Here's the relavent math: Vout = Vin*(R2/(R1+R2)) = 24*(10,000/(100,000 + 10,000)) = 2.18V
+    // This means that 2.18V is the value corresponding to 24V (even though v_ref=3.3V).
+    // The adc_voltage should thus be scaled up by around *11 (since 24V/2.18V = 11.0):
+    data.voltage = adc_voltage * 11.0;
+
+    return data;
 }
