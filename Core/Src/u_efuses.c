@@ -53,7 +53,7 @@ efuse_data_t efuse_getData(void) {
         data.current[efuse] = data.voltage[efuse] * efuses[efuse].scale;
 
         /* Get the eFuse's fault status (true = faulted, false = not faulted). */
-        data.faulted[efuse] = (bool)(HAL_GPIO_ReadPin(efuses[efuse].er_port, efuses[efuse].er_pin) == GPIO_PIN_SET);
+        data.faulted[efuse] = (bool)(HAL_GPIO_ReadPin(efuses[efuse].er_port, efuses[efuse].er_pin) == GPIO_PIN_RESET); // GPIO_PIN_RESET means that a fault has been detected. GPIO_PIN_SET means that no fault has been detected.
 
         /* Get the eFuse's enable status (true = eFuse is enabled, false = eFuse is disabled). */
         data.enabled[efuse] = (bool)(HAL_GPIO_ReadPin(efuses[efuse].en_port, efuses[efuse].en_pin) == GPIO_PIN_SET);
