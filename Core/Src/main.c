@@ -939,10 +939,16 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOF, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : EF_BATTBOX_ER_Pin EF_MC_ER_Pin BMS_GPIO_Pin BOTS_GPIO_Pin
-                           SPARE_GPIO_Pin BSPD_GPIO_Pin HV_C_GPIO_Pin HVD_GPIO_Pin */
-  GPIO_InitStruct.Pin = EF_BATTBOX_ER_Pin|EF_MC_ER_Pin|BMS_GPIO_Pin|BOTS_GPIO_Pin
-                          |SPARE_GPIO_Pin|BSPD_GPIO_Pin|HV_C_GPIO_Pin|HVD_GPIO_Pin;
+  /*Configure GPIO pins : EF_BATTBOX_ER_Pin EF_MC_ER_Pin */
+  GPIO_InitStruct.Pin = EF_BATTBOX_ER_Pin|EF_MC_ER_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
+  HAL_GPIO_Init(GPIOF, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : BMS_GPIO_Pin BOTS_GPIO_Pin SPARE_GPIO_Pin BSPD_GPIO_Pin
+                           HV_C_GPIO_Pin HVD_GPIO_Pin */
+  GPIO_InitStruct.Pin = BMS_GPIO_Pin|BOTS_GPIO_Pin|SPARE_GPIO_Pin|BSPD_GPIO_Pin
+                          |HV_C_GPIO_Pin|HVD_GPIO_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOF, &GPIO_InitStruct);
@@ -979,13 +985,11 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pin = EF_BREAK_ER_Pin|EF_FANBATT_ER_Pin|EF_PUMP1_ER_Pin|EF_PUMP2_ER_Pin
                           |EF_DASH_ER_Pin|EF_LV_ER_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : CKPT_GPIO_Pin INERTIA_SW_GPIO_Pin EF_RADFAN_ER_Pin EF_SHUTDOWN_ER_Pin
-                           TSMS_GPIO_Pin EF_SPARE_ER_Pin */
-  GPIO_InitStruct.Pin = CKPT_GPIO_Pin|INERTIA_SW_GPIO_Pin|EF_RADFAN_ER_Pin|EF_SHUTDOWN_ER_Pin
-                          |TSMS_GPIO_Pin|EF_SPARE_ER_Pin;
+  /*Configure GPIO pins : CKPT_GPIO_Pin INERTIA_SW_GPIO_Pin TSMS_GPIO_Pin */
+  GPIO_InitStruct.Pin = CKPT_GPIO_Pin|INERTIA_SW_GPIO_Pin|TSMS_GPIO_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOG, &GPIO_InitStruct);
@@ -997,6 +1001,12 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOG, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : EF_RADFAN_ER_Pin EF_SHUTDOWN_ER_Pin EF_SPARE_ER_Pin */
+  GPIO_InitStruct.Pin = EF_RADFAN_ER_Pin|EF_SHUTDOWN_ER_Pin|EF_SPARE_ER_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(GPIOG, &GPIO_InitStruct);
 
   /*Configure GPIO pins : MUX_SEL1_Pin MUX_SEL2_Pin MUX_SEL3_Pin MUX_SEL4_Pin */
