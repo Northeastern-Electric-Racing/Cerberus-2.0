@@ -12,6 +12,15 @@ typedef enum {
     NUM_PEDALS
 } pedal_t;
 
+/* LFIU Sensors. */
+typedef enum {
+    LFIU_1,     /* LFIU Current Sensor 1. */
+    LFIU_2,     /* LFIU Current Sensor 2. */
+
+    /* Total number of LFIU current sensors. */
+    NUM_LFIU
+} lfiu_t;
+
 /* API */
 int pedals_init(void);                                  // Initializes Pedals ADC and creates pedal data timer.
 void pedals_process(void);                              // Pedal Processing Function. Meant to be called by the pedals thread.

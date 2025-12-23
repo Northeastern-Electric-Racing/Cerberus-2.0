@@ -19,4 +19,15 @@ raw_efuse_adc_t adc_getEFuseData(void);
 typedef struct { uint16_t data[NUM_PEDALS]; } raw_pedal_adc_t; // Struct to store the data.
 raw_pedal_adc_t adc_getPedalData(void);
 
+/* Get LFIU sensor ADC data. */
+typedef struct { uint16_t data[NUM_LFIU]; } raw_lfiu_adc_t; // Struct to store the data.
+raw_lfiu_adc_t adc_getLfiuData(void);
+
+/* Get LV_BATT Voltage ADC data. */
+typedef struct { 
+    uint16_t raw; 
+    float voltage; 
+} lvread_adc_t; // Struct to store the data.
+lvread_adc_t adc_getLVData(void);
+
 #endif /* u_adc.h */

@@ -9,17 +9,15 @@
 typedef enum {
     /* ADC Input Channel Ranks. */
     /* The order these values MUST match how the ADC ranks are set up in CubeMX. */
-    ADC1_CHANNEL0,  // SEL1
-    ADC1_CHANNEL2,  // APPS_1_ADC
     ADC1_CHANNEL3,  // EF_DASH_ADC
-    ADC1_CHANNEL5,  // SEL3
-    ADC1_CHANNEL6,  // APPS_2_ADC
-    ADC1_CHANNEL9,  // SEL4
-    ADC1_CHANNEL10, // EF_FANBATT_ADC
-    ADC1_CHANNEL12, // EF_PUMP1_ADC
+    ADC1_CHANNEL0,  // Mux 1
+    ADC1_CHANNEL5,  // Mux 3
+    ADC1_CHANNEL9,  // Mux 4
+    ADC1_CHANNEL6,  // EF_FANBATT_ADC
+    ADC1_CHANNEL2,  // EF_PUMP1_ADC
     ADC1_CHANNEL13, // EF_PUMP2_ADC
-    ADC1_CHANNEL15, // SEL2
     ADC1_CHANNEL18, // EF_MC_ADC
+    ADC1_CHANNEL15, // Mux 2
 
     /* Total number of channels/indexes for ADC1. */
     ADC1_SIZE,
@@ -30,8 +28,10 @@ static uint16_t _adc1_buffer[ADC1_SIZE]; // Buffer for the ADC DMA readings (not
 typedef enum {
     /* The order of items in this enum MUST match how the ADC ranks are set up in CubeMX. */
 
-    ADC2_CHANNEL2, // BSE_1_ADC
-    ADC2_CHANNEL6, // BSE_2_ADC
+    ADC2_CHANNEL12, // APPS_1_ADC
+    ADC2_CHANNEL10, // APPS_2_ADC
+    ADC2_CHANNEL2,  // BSE_1_ADC
+    ADC2_CHANNEL6,  // BSE_2_ADC
 
     /* Total number of indexes for ADC2. */
     ADC2_SIZE
@@ -49,12 +49,12 @@ typedef enum {
     SEL2_LOW,   // LFIU_CURRENT_2
     
     /* SEL3 */
-    SEL3_HIGH,  // SPARE_FUSE_ADC
+    SEL3_HIGH,  // LV_ADC
     SEL3_LOW,   // SHUTDOWN_ADC
 
     /* SEL4 */
     SEL4_HIGH,  // RADFAN_ADC
-    SEL4_LOW,   // SPARE1_ADC
+    SEL4_LOW,   // LV_BATT_ADC
 
     /* Total number of indexes for the multiplexer buffer. */
     MUX_SIZE
@@ -128,42 +128,68 @@ int adc_init(void) {
 
 /* Get raw eFuse ADC Data. */
 raw_efuse_adc_t adc_getEFuseData(void) {
-    mutex_get(&adc_mutex);
-    uint16_t adc1[ADC1_SIZE]; // Local ADC1 buffer copy.
-    memcpy(adc1, _adc1_buffer, sizeof(_adc1_buffer));
-    uint16_t mux[MUX_SIZE]; // Local Mux buffer copy.
-    memcpy(mux, _mux_buffer, sizeof(_mux_buffer));
-    mutex_put(&adc_mutex);
-
     raw_efuse_adc_t efuses = { 0 };
-    efuses.data[EFUSE_DASHBOARD] = adc1[ADC1_CHANNEL3];
-    efuses.data[EFUSE_BRAKE] = mux[SEL1_HIGH];
-    efuses.data[EFUSE_SHUTDOWN] = mux[SEL3_LOW];
-    efuses.data[EFUSE_LV] = 0; // ADC reading is not supported for LV eFuse.
-    efuses.data[EFUSE_RADFAN] = mux[SEL4_HIGH];
-    efuses.data[EFUSE_FANBATT] = adc1[ADC1_CHANNEL10];
-    efuses.data[EFUSE_PUMP1] = adc1[ADC1_CHANNEL12];
-    efuses.data[EFUSE_PUMP2] = adc1[ADC1_CHANNEL13];
-    efuses.data[EFUSE_BATTBOX] = mux[SEL1_LOW];
-    efuses.data[EFUSE_MC] = adc1[ADC1_CHANNEL18];
+
+    mutex_get(&adc_mutex);
+    efuses.data[EFUSE_DASHBOARD] = _adc1_buffer[ADC1_CHANNEL3];
+    efuses.data[EFUSE_BRAKE] = _mux_buffer[SEL1_HIGH];
+    efuses.data[EFUSE_SHUTDOWN] = _mux_buffer[SEL3_LOW];
+    efuses.data[EFUSE_LV] = _mux_buffer[SEL3_HIGH];
+    efuses.data[EFUSE_RADFAN] = _mux_buffer[SEL4_HIGH];
+    efuses.data[EFUSE_FANBATT] = _adc1_buffer[ADC1_CHANNEL6];
+    efuses.data[EFUSE_PUMP1] = _adc1_buffer[ADC1_CHANNEL2];
+    efuses.data[EFUSE_PUMP2] = _adc1_buffer[ADC1_CHANNEL13];
+    efuses.data[EFUSE_BATTBOX] = _mux_buffer[SEL1_LOW];
+    efuses.data[EFUSE_MC] = _adc1_buffer[ADC1_CHANNEL18];
+    mutex_put(&adc_mutex);
 
     return efuses;
 }
 
 /* Get raw pedal sensor ADC Data. */
 raw_pedal_adc_t adc_getPedalData(void) {
+    raw_pedal_adc_t sensors = { 0 };
+
     mutex_get(&adc_mutex);
-    uint16_t adc1[ADC1_SIZE]; // Local ADC1 buffer copy.
-    memcpy(adc1, _adc1_buffer, sizeof(_adc1_buffer));
-    uint16_t adc2[ADC2_SIZE]; // Local ADC2 buffer copy.
-    memcpy(adc2, _adc2_buffer, sizeof(_adc2_buffer));
+    sensors.data[PEDAL_ACCEL1] = _adc2_buffer[ADC2_CHANNEL12];
+    sensors.data[PEDAL_ACCEL2] = _adc2_buffer[ADC2_CHANNEL10];
+    sensors.data[PEDAL_BRAKE1] = _adc2_buffer[ADC2_CHANNEL2];
+    sensors.data[PEDAL_BRAKE2] = _adc2_buffer[ADC2_CHANNEL6];
     mutex_put(&adc_mutex);
 
-    raw_pedal_adc_t sensors;
-    sensors.data[PEDAL_ACCEL1] = adc1[ADC1_CHANNEL2];
-    sensors.data[PEDAL_ACCEL2] = adc1[ADC1_CHANNEL6];
-    sensors.data[PEDAL_BRAKE1] = adc2[ADC2_CHANNEL2];
-    sensors.data[PEDAL_BRAKE2] = adc2[ADC2_CHANNEL6];
+    return sensors;
+}
+
+/* Get raw LFIU sensor ADC Data. */
+raw_lfiu_adc_t adc_getLfiuData(void) {
+    raw_lfiu_adc_t sensors = { 0 };
+
+    mutex_get(&adc_mutex);
+    sensors.data[LFIU_1] = _mux_buffer[SEL2_HIGH];
+    sensors.data[LFIU_2] = _mux_buffer[SEL2_LOW];
+    mutex_put(&adc_mutex);
 
     return sensors;
+}
+
+/* Get LV_BATT Voltage ADC data. */
+lvread_adc_t adc_getLVData(void) {
+    lvread_adc_t data = { 0 };
+
+    /* Get the raw ADC reading. */
+    mutex_get(&adc_mutex);
+    data.raw = _mux_buffer[SEL4_LOW];
+    mutex_put(&adc_mutex);
+
+    /* Calcualte the ADC voltage. */
+    const float v_ref = 3.3f; // VREF is 3V3 for VCU.
+    float adc_voltage = (data.raw / 4095.0) * v_ref; // adc_voltage = (adc_raw / 4095.0) * 3.3
+
+    /* Scale the ADC Voltage back up to 24V. */
+    // Before the ADC, there's a voltage divider that scales 24V down to 2.18V for the ADC. Here's the relavent math: Vout = Vin*(R2/(R1+R2)) = 24*(10,000/(100,000 + 10,000)) = 2.18V
+    // This means that 2.18V is the value corresponding to 24V (even though v_ref=3.3V).
+    // The adc_voltage should thus be scaled up by around *11 (since 24V/2.18V = 11.0):
+    data.voltage = adc_voltage * 11.0;
+
+    return data;
 }

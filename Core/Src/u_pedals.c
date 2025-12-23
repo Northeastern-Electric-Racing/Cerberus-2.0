@@ -2,6 +2,7 @@
 #include "timer.h"
 #include "debounce.h"
 #include "c_utils.h"
+#include "u_tx_timers.h"
 #include "u_can.h"
 #include "tx_api.h"
 #include "u_pedals.h"
@@ -20,7 +21,6 @@ static uint16_t regen_limits[2] = { 0, 50 }; // [PERFORMANCE, ENDURANCE]
 static bool launch_control_enabled = false;
 static const float MPH_TO_KMH = 1.609;       // Factor for converting MPH to KMH
 static bool brake_pressed = false;
-static TX_TIMER pedal_data_timer;            // Timer for sending pedal data message.
 
 /* Pedal Data. */
 typedef struct {
@@ -76,10 +76,14 @@ static pedal_data_t pedal_data = { 0 };
 #define APPS_THRESHOLD_TOLERANCE    0.45 // (Volts). Tolerance margin around the accelerator pedal.
 #define BRAKE_THRESHOLD_TOLERANCE   0.25 // (Volts). Tolerance margin around the brake pedal.
 
-/* Fault Debounce Callbacks */
-static void _open_circuit_fault_callback(void *arg) {queue_send(&faults, &(fault_t){ONBOARD_PEDAL_OPEN_CIRCUIT_FAULT});};   // Queues the Open Circuit Fault.
-static void _short_circuit_fault_callback(void *arg) {queue_send(&faults, &(fault_t){ONBOARD_PEDAL_SHORT_CIRCUIT_FAULT});}; // Queues the Short Circuit Fault.
-static void _pedal_difference_fault_callback(void *arg) {queue_send(&faults, &(fault_t){ONBOARD_PEDAL_DIFFERENCE_FAULT});}; // Queues the Pedal Difference Fault.
+static void _onboard_brake_open_circuit_fault_callback(void *arg) {queue_send(&faults, &(fault_t){ONBOARD_BRAKE_OPEN_CIRCUIT_FAULT}, TX_NO_WAIT);};   // Queues the Brake Open Circuit Fault.
+static void _onboard_brake_short_circuit_fault_callback(void *arg) {queue_send(&faults, &(fault_t){ONBOARD_BRAKE_SHORT_CIRCUIT_FAULT}, TX_NO_WAIT);};   // Queues the Brake Short Circuit Fault.
+static void _onboard_accel_open_circuit_fault_callback(void *arg) {queue_send(&faults, &(fault_t){ONBOARD_ACCEL_OPEN_CIRCUIT_FAULT}, TX_NO_WAIT);};   // Queues the Accel Open Circuit Fault.
+static void _onboard_accel_short_circuit_fault_callback(void *arg) {queue_send(&faults, &(fault_t){ONBOARD_ACCEL_SHORT_CIRCUIT_FAULT}, TX_NO_WAIT);};   // Queues the Accel Short Circuit Fault.
+
+
+
+static void _pedal_difference_fault_callback(void *arg) {queue_send(&faults, &(fault_t){ONBOARD_PEDAL_DIFFERENCE_FAULT}, TX_NO_WAIT);}; // Queues the Pedal Difference Fault.
 
 /* Send Pedal Data Callback */
 static void _send_pedal_data(ULONG args) {
@@ -123,12 +127,22 @@ static void _send_pedal_data(ULONG args) {
     memcpy(pedals_norm_msg.data, &pedal_norm_data, pedals_norm_msg.len);
 
     /* Queue the Messages. */
-    queue_send(&can_outgoing, &pedals_volts_msg);
-    queue_send(&can_outgoing, &pedals_norm_msg);
+    queue_send(&can_outgoing, &pedals_volts_msg, TX_NO_WAIT);
+    queue_send(&can_outgoing, &pedals_norm_msg, TX_NO_WAIT);
 
     /* Put the Pedal Data Mutex. */
     mutex_put(&pedal_data_mutex);
 }
+
+/* Pedal Data Timer. */
+static timer_t pedal_data_timer = {
+	.name = "Pedal Data Timer",
+	.callback = _send_pedal_data,
+	.callback_input = 0,
+	.duration = PEDAL_DATA_MSG_FREQUENCY,
+	.type = PERIODIC,
+	.auto_activate = true
+};
 
 /* Calculates brake faults. */
 static void _calculate_brake_faults(float voltage_brake1, float voltage_brake2) {
@@ -140,11 +154,11 @@ static void _calculate_brake_faults(float voltage_brake1, float voltage_brake2) 
     
     /* Open Circuit Fault */
     bool open_circuit_fault = (voltage_brake1 > BRAKE_SENSOR_IRREGULAR_HIGH + BRAKE_THRESHOLD_TOLERANCE) || (voltage_brake2 > BRAKE_SENSOR_IRREGULAR_HIGH + BRAKE_THRESHOLD_TOLERANCE);
-    debounce(open_circuit_fault, &open_circuit_timer, BRAKE_FAULT_DEBOUNCE, &_open_circuit_fault_callback, NULL);
+    debounce(open_circuit_fault, &open_circuit_timer, BRAKE_FAULT_DEBOUNCE, &_onboard_brake_open_circuit_fault_callback, NULL);
 
     /* Short Circuit Fault */
     bool short_circuit_fault = (voltage_brake1 < BRAKE_SENSOR_IRREGULAR_LOW - BRAKE_THRESHOLD_TOLERANCE) || (voltage_brake2 < BRAKE_SENSOR_IRREGULAR_LOW - BRAKE_THRESHOLD_TOLERANCE);
-    debounce(short_circuit_fault, &short_circuit_timer, BRAKE_FAULT_DEBOUNCE, &_short_circuit_fault_callback, NULL);
+    debounce(short_circuit_fault, &short_circuit_timer, BRAKE_FAULT_DEBOUNCE, &_onboard_brake_short_circuit_fault_callback, NULL);
 }
 
 /* Calculates Pedal Faults. */
@@ -158,12 +172,11 @@ static void _calculate_accel_faults(float voltage_accel1, float voltage_accel2, 
 
     /* Open Circuit Fault */
     bool open_circuit_fault = (voltage_accel1 > MAX_VOLTS_UNSCALED - APPS_THRESHOLD_TOLERANCE) || (voltage_accel2 > MAX_VOLTS_UNSCALED - APPS_THRESHOLD_TOLERANCE);
-    debounce(open_circuit_fault, &open_circuit_timer, PEDAL_FAULT_DEBOUNCE, &_open_circuit_fault_callback, NULL);
+    debounce(open_circuit_fault, &open_circuit_timer, PEDAL_FAULT_DEBOUNCE, &_onboard_accel_open_circuit_fault_callback, NULL);
 
     /* Short Circuit Fault */
     bool short_circuit_fault = (voltage_accel1 < MIN_APPS1_VOLTS - APPS_THRESHOLD_TOLERANCE) || (voltage_accel2 < MIN_APPS2_VOLTS - APPS_THRESHOLD_TOLERANCE);
-    debounce(short_circuit_fault, &short_circuit_timer, PEDAL_FAULT_DEBOUNCE, &_short_circuit_fault_callback, NULL);
-
+    debounce(short_circuit_fault, &short_circuit_timer, PEDAL_FAULT_DEBOUNCE, &_onboard_accel_short_circuit_fault_callback, NULL);
     /* Pedal Difference Fault */
     /* Detects if the two accelerator pedal sensors give readings that differ by more than PEDAL_DIFF_THRESH. */
     bool pedal_difference_fault = fabs(percentage_accel1 - percentage_accel2) > PEDAL_DIFF_THRESH;
@@ -185,13 +198,13 @@ static bool _calc_bspd_prefault(float percentage_accel, float percentage_brake, 
 
 	if (percentage_brake > PEDAL_HARD_BRAKE_THRESH && percentage_accel > 0.25) {
 		motor_disabled = true;
-		queue_send(&faults, &(fault_t){BSPD_PREFAULT});
+		queue_send(&faults, &(fault_t){BSPD_PREFAULT}, TX_NO_WAIT);
 	}
 
 	/* Prevent a fault. */
 	if (percentage_brake > PEDAL_HARD_BRAKE_THRESH && dc_current > 10) {
 		motor_disabled = true;
-		queue_send(&faults, &(fault_t){BSPD_PREFAULT});
+		queue_send(&faults, &(fault_t){BSPD_PREFAULT}, TX_NO_WAIT);
 	}
 
 	if (motor_disabled) {
@@ -442,17 +455,9 @@ static float _get_pedal_percent_pressed(float voltage, float offset, float max)
 int pedals_init(void) {
 
     /* Create Pedal Data Timer. */
-    int status = tx_timer_create(
-        &pedal_data_timer,        /* Timer Instance */
-        "Pedal Data Timer",       /* Timer Name */
-        _send_pedal_data,         /* Timer Expiration Callback */
-        0,                        /* Callback Input */
-        PEDAL_DATA_MSG_FREQUENCY, /* Ticks until timer expiration. */
-        PEDAL_DATA_MSG_FREQUENCY, /* Number of ticks for all timer expirations after the first (0 makes this a one-shot timer). */
-        TX_AUTO_ACTIVATE          /* Automatically start the timer. */
-    );
-    if(status != TX_SUCCESS) {
-        PRINTLN_ERROR("Failed to create Pedal Data Timer (Status: %d/%s).", status, tx_status_toString(status));
+    int status = timer_init(&pedal_data_timer);
+    if(status != U_SUCCESS) {
+        PRINTLN_ERROR("Failed to create Pedal Data Timer (Status: %d).", status);
         return U_ERROR;
     }
 

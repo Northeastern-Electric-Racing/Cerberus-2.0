@@ -21,8 +21,6 @@ endif()
 # Set the project name
 set(CMAKE_PROJECT_NAME Cerberus-2.0)
 
-# Include toolchain file
-include("cmake/gcc-arm-none-eabi.cmake")
 
 # Enable compile command to ease indexing with e.g. clangd
 set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
@@ -78,6 +76,7 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     "../Drivers/Embedded-Base/threadX/src/u_tx_mutex.c"
     "../Drivers/Embedded-Base/threadX/src/u_tx_queues.c"
     "../Drivers/Embedded-Base/threadX/src/u_tx_threads.c"
+    "../Drivers/Embedded-Base/threadX/src/u_tx_timers.c"
 
     # Embedded-Base NetX Utils
     "../Drivers/Embedded-Base/NetX/src/u_nx_debug.c"
@@ -95,7 +94,6 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     "./Drivers/Embedded-Base/middleware/src/c_utils.c"
 
     # Cerberus-2.0 Source Files
-    "./Core/Src/u_inbox.c"
     "./Core/Src/u_threads.c"
     "./Core/Src/u_statemachine.c"
     "./Core/Src/u_queues.c"
@@ -112,6 +110,7 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     "./Core/Src/u_tsms.c"
     "./Core/Src/u_lightning.c"
     "./Core/Src/u_debug.c"
+    "./Core/Src/u_ethernet.c"
 )
 
 # Disable Logging in certain files
