@@ -178,9 +178,8 @@ int tempsensor_getHumidity(float *humidity) {
 }
 
 /* Gets the IMU's acceleration reading. */
-vector3_t imu_getAcceleration(void) {
+int imu_getAcceleration(vector3_t* data) {
     int16_t raw_data[3];
-    vector3_t ret = { 0 };
     
     /* Read raw accelerometer data. */
     int status = lsm6dsv_acceleration_raw_get(&imu, raw_data);
@@ -190,17 +189,16 @@ vector3_t imu_getAcceleration(void) {
     }
     
     /* Convert to mg (milligravity). */
-    ret.x = lsm6dsv_from_fs2_to_mg(raw_data[0]); // Somewhat important: These functions MUST match the full-scale settings configured in peripherals_init(). The conversions will be incorrect if you use the wrong functions.
-    ret.y = lsm6dsv_from_fs2_to_mg(raw_data[1]);
-    ret.z = lsm6dsv_from_fs2_to_mg(raw_data[2]);
+    data->x = lsm6dsv_from_fs2_to_mg(raw_data[0]); // Somewhat important: These functions MUST match the full-scale settings configured in peripherals_init(). The conversions will be incorrect if you use the wrong functions.
+    data->y = lsm6dsv_from_fs2_to_mg(raw_data[1]);
+    data->z = lsm6dsv_from_fs2_to_mg(raw_data[2]);
     
     return U_SUCCESS;
 }
 
 /* Gets the IMU's angular rate reading. */
-vector3_t imu_getAngularRate(void) {
+int imu_getAngularRate(vector3_t* data) {
     int16_t raw_data[3];
-    vector3_t ret = { 0 };
     
     /* Read raw gyroscope data. */
     int status = lsm6dsv_angular_rate_raw_get(&imu, raw_data);
@@ -210,9 +208,9 @@ vector3_t imu_getAngularRate(void) {
     }
     
     /* Convert to mdps (millidegrees per second). */
-    ret.x = lsm6dsv_from_fs2000_to_mdps(raw_data[0]); // Somewhat important: These functions MUST match the full-scale settings configured in peripherals_init(). The conversions will be incorrect if you use the wrong functions.
-    ret.y = lsm6dsv_from_fs2000_to_mdps(raw_data[1]);
-    ret.z = lsm6dsv_from_fs2000_to_mdps(raw_data[2]);
+    data->x = lsm6dsv_from_fs2000_to_mdps(raw_data[0]); // Somewhat important: These functions MUST match the full-scale settings configured in peripherals_init(). The conversions will be incorrect if you use the wrong functions.
+    data->y = lsm6dsv_from_fs2000_to_mdps(raw_data[1]);
+    data->z = lsm6dsv_from_fs2000_to_mdps(raw_data[2]);
     
     return U_SUCCESS;
 }
