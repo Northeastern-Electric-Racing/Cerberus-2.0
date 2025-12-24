@@ -87,6 +87,7 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     "../Drivers/Embedded-Base/general/src/sht30.c"
     "../Drivers/Embedded-Base/general/src/lsm6dso_reg.c"
     "../Drivers/Embedded-Base/general/src/lsm6dso.c"
+    "./Drivers/Embedded-Base/general/src/lsm6dsv_reg.c"
     "../Drivers/Embedded-Base/platforms/stm32h563/src/fdcan.c"
     "./Drivers/Embedded-Base/middleware/src/bitstream.c"
     "./Drivers/Embedded-Base/middleware/src/debounce.c"
