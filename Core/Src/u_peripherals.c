@@ -3,72 +3,63 @@
 #include "main.h"
 #include "u_peripherals.h"
 
-/* Driver instances. */
-static sht30_t temperature_sensor = { .dev_address = SHT30_I2C_ADDR };
-static LSM6DSO_Object_t imu;
+#define IMU_MAX_BUFFER_SIZE 64 /* Max buffer size for the IMU VLAs. */
 
-/* IMU SPI Chip Select Macros. */
-#define _SELECT_IMU   GPIO_PIN_RESET // Setting the CS pin LOW selects the IMU for SPI.
-#define _DESELECT_IMU GPIO_PIN_SET   // Setting the CS pin HIGH deselects the IMU for SPI.
-
-/* Wrapper for lsm6dso SPI reading. */
-static int32_t _lsm6dso_read(uint16_t device_address, uint16_t register_address, uint8_t *data, uint16_t length) {
-    /* For SPI reads, set MSB = 1 for read operation. */
-    uint8_t spi_reg = (uint8_t)(register_address | 0x80);
-    HAL_StatusTypeDef status;
-    
-    /* Select the IMU device. */
-    HAL_GPIO_WritePin(SPI2_NSS_GPIO_Port, SPI2_NSS_Pin, _SELECT_IMU);
-    
-    /* Send the register address we're trying to read from. */
-    status = HAL_SPI_Transmit(&hspi2, &spi_reg, sizeof(spi_reg), HAL_MAX_DELAY);
-    if(status != HAL_OK) {
-        HAL_GPIO_WritePin(SPI2_NSS_GPIO_Port, SPI2_NSS_Pin, _DESELECT_IMU);
-        PRINTLN_ERROR("Failed to send register address to lsm6dso over SPI (Status: %d/%s).", status, hal_status_toString(status));
-        return LSM6DSO_ERROR;
+/* Wrapper for lsm6dsv SPI reading. */
+static int32_t _lsm6dsv_read(void* spi_handle, uint8_t reg, uint8_t* buffer, uint16_t length) {
+    /* Prevent stack overflow? */
+    if((length + 1) > IMU_MAX_BUFFER_SIZE) {
+        PRINTLN_ERROR("IMU buffer length is greater than IMU_MAX_BUFFER_SIZE, so cannot read from IMU (length+1=%d, IMU_MAX_BUFFER_SIZE=%d).", (length+1), IMU_MAX_BUFFER_SIZE);
+        return -1;
     }
+    
+    uint8_t tx_buffer[length + 1];
+    uint8_t rx_buffer[length + 1];
+    
+    tx_buffer[0] = reg | 0x80; // For SPI reads, set MSB = 1 for read operation.
+    memset(&tx_buffer[1], 0x00, length);
+    
+    HAL_GPIO_WritePin(SPI2_NSS_GPIO_Port, SPI2_NSS_Pin, GPIO_PIN_RESET); // Setting the CS pin LOW selects the IMU for SPI.
     
     /* Recieve the data. */
-    status = HAL_SPI_Receive(&hspi2, data, length, HAL_MAX_DELAY);
+    HAL_StatusTypeDef status = HAL_SPI_TransmitReceive((SPI_HandleTypeDef*)spi_handle, tx_buffer, rx_buffer, length + 1, HAL_MAX_DELAY);
     if(status != HAL_OK) {
-        PRINTLN_ERROR("Failed to read from the lsm6dso over SPI (Status: %d/%s).", status, hal_status_toString(status));
-        return LSM6DSO_ERROR;
+        HAL_GPIO_WritePin(SPI2_NSS_GPIO_Port, SPI2_NSS_Pin, GPIO_PIN_SET);
+        PRINTLN_ERROR("Failed to recieve data to the IMU over SPI (Status: %d/%s).", status, hal_status_toString(status));
+        return -1;
     }
+
+    HAL_GPIO_WritePin(SPI2_NSS_GPIO_Port, SPI2_NSS_Pin, GPIO_PIN_SET); // Setting the CS pin HIGH deselects the IMU for SPI.
     
-    /* Deselect the IMU device. */
-    HAL_GPIO_WritePin(SPI2_NSS_GPIO_Port, SPI2_NSS_Pin, _DESELECT_IMU);
+    memcpy(buffer, &rx_buffer[1], length);
     
-    return LSM6DSO_OK;
+    return 0;
 }
 
-/* Wrapper for lsm6dso SPI writing. */
-static int32_t _lsm6dso_write(uint16_t device_address, uint16_t register_address, uint8_t *data, uint16_t length) {
-    /* For SPI writes, clear MSB = 0 for write operation. */
-    uint8_t spi_reg = (uint8_t)(register_address & 0x7F);
-    HAL_StatusTypeDef status;
-    
-    /* Select the device (CS low). */
-    HAL_GPIO_WritePin(SPI2_NSS_GPIO_Port, SPI2_NSS_Pin, _SELECT_IMU);
-    
-    /* Send register address. */
-    status = HAL_SPI_Transmit(&hspi2, &spi_reg, sizeof(spi_reg), HAL_MAX_DELAY);
-    if(status != HAL_OK) {
-        HAL_GPIO_WritePin(SPI2_NSS_GPIO_Port, SPI2_NSS_Pin, _DESELECT_IMU);
-        PRINTLN_ERROR("Failed to send register address to lsm6dso over SPI (Status: %d/%s).", status, hal_status_toString(status));
-        return LSM6DSO_ERROR;
+/* Wrapper for lsm6dsv SPI writing. */
+static int32_t _lsm6dsv_write(void* spi_handle, uint8_t reg, const uint8_t* data, uint16_t length) {
+    /* Prevent stack overflow? */
+    if((length + 1) > IMU_MAX_BUFFER_SIZE) {
+        PRINTLN_ERROR("IMU buffer length is greater than IMU_MAX_BUFFER_SIZE, so cannot write to IMU (length+1=%d, IMU_MAX_BUFFER_SIZE=%d).", (length+1), IMU_MAX_BUFFER_SIZE);
+        return -1;
     }
     
-    /* Send data. */
-    status = HAL_SPI_Transmit(&hspi2, data, length, HAL_MAX_DELAY);
+    uint8_t tx_buffer[length + 1];
+    tx_buffer[0] = reg & 0x7F; // For SPI writes, clear MSB = 0 for write operation.
+    memcpy(&tx_buffer[1], data, length);
+    
+    HAL_GPIO_WritePin(SPI2_NSS_GPIO_Port, SPI2_NSS_Pin, GPIO_PIN_RESET); // Setting the CS pin LOW selects the IMU for SPI.
+    
+    /* Transmit the data. */
+    HAL_StatusTypeDef status = HAL_SPI_Transmit((SPI_HandleTypeDef*)spi_handle, tx_buffer, length + 1, HAL_MAX_DELAY);
     if(status != HAL_OK) {
-        PRINTLN_ERROR("Failed to write to the lsm6dso over SPI (Status: %d/%s).", status, hal_status_toString(status));
-        return LSM6DSO_ERROR;
+        HAL_GPIO_WritePin(SPI2_NSS_GPIO_Port, SPI2_NSS_Pin, GPIO_PIN_SET);
+        PRINTLN_ERROR("Failed to transmit data to the IMU over SPI (Status: %d/%s).", status, hal_status_toString(status));
+        return -1;
     }
-    
-    /* Deselect the device (CS high). */
-    HAL_GPIO_WritePin(SPI2_NSS_GPIO_Port, SPI2_NSS_Pin, _DESELECT_IMU);
-    
-    return LSM6DSO_OK;
+
+    HAL_GPIO_WritePin(SPI2_NSS_GPIO_Port, SPI2_NSS_Pin, GPIO_PIN_SET); // Setting the CS pin HIGH deselects the IMU for SPI.
+    return 0;
 }
 
 /* Wrapper for sht30 I2C reading. */
@@ -91,15 +82,13 @@ static int _sht30_write(uint8_t *data, uint8_t device_address, uint8_t length) {
     return status;
 }
 
-/* Wrapper for HAL_GetTick. */
-int32_t _get_tick(void) {
-    return (int32_t)HAL_GetTick();
-}
-
-/* Wrapper for HAL_Delay. */
-void _delay(uint32_t delay) {
-    return HAL_Delay(delay);
-}
+/* Driver instances. */
+static sht30_t temperature_sensor = { .dev_address = SHT30_I2C_ADDR };
+static const stmdev_ctx_t imu = {
+    .handle = &hspi2,
+    .read_reg = _lsm6dsv_read,
+    .write_reg = _lsm6dsv_write
+};
 
 /* Initializes I2C devices. */
 int peripherals_init(void) {
@@ -111,72 +100,58 @@ int peripherals_init(void) {
         return U_ERROR;
     }
 
-    /* Register LSM6DSO Bus IO (i.e. how it does read/write). */
-    LSM6DSO_IO_t io_config = {
-        .BusType = LSM6DSO_SPI_4WIRES_BUS,
-        .WriteReg = _lsm6dso_write,
-        .ReadReg = _lsm6dso_read,
-        .GetTick = _get_tick,
-        .Delay = _delay
-    };
-    status = LSM6DSO_RegisterBusIO(&imu, &io_config);
-    if(status != LSM6DSO_OK) {
-        PRINTLN_ERROR("Failed to call LSM6DSO_RegisterBusIO (Status: %d).", status);
+    /* Make sure IMU is set up correctly. */
+    uint8_t id;
+    status = lsm6dsv_device_id_get(&imu, &id);
+    if(status != 0) {
+        PRINTLN_ERROR("Failed to call lsm6dsv_device_id_get() (Status: %d).", status);
+        return U_ERROR;
     }
-
-    /* Initialize IMU. */
-    status = LSM6DSO_Init(&imu);
-    if(status != LSM6DSO_OK) {
-        PRINTLN_ERROR("Failed to run LSM6DS0_Init() (Status: %d).", status);
+    if(id != LSM6DSV_ID) {
+        PRINTLN_ERROR("lsm6dsv_device_id_get() returned an unexpected ID (id=%d, expected=%d). This means that the IMU is not configured correctly.", id, LSM6DSV_ID);
         return U_ERROR;
     }
 
-    /* Setup IMU Accelerometer - default 104Hz */
-	status = LSM6DSO_ACC_SetOutputDataRate_With_Mode(&imu, 833.0f, LSM6DSO_ACC_HIGH_PERFORMANCE_MODE);
-    if(status != LSM6DSO_OK) {
-        PRINTLN_ERROR("Failed to run LSM6DSO_ACC_SetOutputDataRate_With_Mode (Status: %d).", status);
+    /* Reset IMU. */
+    status = lsm6dsv_reset_set(&imu, LSM6DSV_GLOBAL_RST);
+    if(status != 0) {
+        PRINTLN_ERROR("Failed to reset the IMU via lsm6dsv_reset_set() (Status: %d).", status);
+        return U_ERROR;
+    }
+    HAL_Delay(30); // This is probably overkill, but the datasheet lists the gyroscope's "Turn-on time" as 30ms, and I can't find anything else that specifies how long resets take.
+
+    /* Enable Block Data Update. */
+    status = lsm6dsv_block_data_update_set(&imu, PROPERTY_ENABLE); // Makes it so "output registers are not updated until LSB and MSB have been read". Datasheet says this is enabled by default but figured it was better to be explicit.
+    if(status != 0) {
+        PRINTLN_ERROR("Failed to enable Block Data Update via lsm6dsv_block_data_update_set() (Status: %d).", status);
         return U_ERROR;
     }
 
-    /* Enable Accelerometer. */
-    status = LSM6DSO_ACC_Enable(&imu);
-    if(status != LSM6DSO_OK) {
-        PRINTLN_ERROR("Failed to run LSM6DSO_ACC_Enable() (Status: %d).", status);
-        return U_ERROR;
-    }
-	
-    /* Set Accelerometer Filter Mode. */
-	status = LSM6DSO_ACC_Set_Filter_Mode(&imu, 0, 3); // 3 = 'LSM6DSO_LP_ODR_DIV_45'
-    if(status != LSM6DSO_OK) {
-        PRINTLN_ERROR("Failed to run LSM6DSO_ACC_Set_Filter_Mode() (Status: %d).", status);
+    /* Set Accelerometer Full Scale. */
+    status = lsm6dsv_xl_full_scale_set(&imu, LSM6DSV_2g);
+    if(status != 0) {
+        PRINTLN_ERROR("Failed to set IMU Accelerometer Full Scale via lsm6dsv_xl_full_scale_set() (Status: %d).", status);
         return U_ERROR;
     }
 
-	/* Setup IMU Gyroscope */
-	status = LSM6DSO_GYRO_SetOutputDataRate_With_Mode(&imu, 104.0f, LSM6DSO_GYRO_HIGH_PERFORMANCE_MODE);
-    if(status != LSM6DSO_OK) {
-        PRINTLN_ERROR("Failed to run LSM6DSO_GYRO_SetOutputDataRate_With_Mode() (Status: %d).", status);
+    /* Set gyroscope full scale. */
+    status = lsm6dsv_gy_full_scale_set(&imu, LSM6DSV_2000dps);
+    if(status != 0) {
+        PRINTLN_ERROR("Failed to set IMU Gyroscope Full Scale via lsm6dsv_gy_full_scale_set() (Status: %d).", status);
         return U_ERROR;
     }
 
-    /* Enable IMU Gyroscope. */
-	status = LSM6DSO_GYRO_Enable(&imu);
-    if(status != LSM6DSO_OK) {
-        PRINTLN_ERROR("Failed to run LSM6DSO_GYRO_Enable() (Status: %d).", status);
+    /* Set accelerometer output data rate. */
+    status = lsm6dsv_xl_data_rate_set(&imu, LSM6DSV_ODR_AT_120Hz);
+    if(status != 0) {
+        PRINTLN_ERROR("Failed to set IMU Accelerometer Datarate via lsm6dsv_xl_data_rate_set() (Status: %d).", status);
         return U_ERROR;
     }
 
-    /* Set FIFO mode. */
-	status = LSM6DSO_FIFO_Set_Mode(&imu, 0); // 0 = 'LSM6DSO_BYPASS_MODE'
-    if(status != LSM6DSO_OK) {
-        PRINTLN_ERROR("Failed to run LSM6DSO_FIFO_Set_Mode() (Status: %d).", status);
-        return U_ERROR;
-    }
-
-    /* Disable Accelerometer Inactivity Detection. */
-	status = LSM6DSO_ACC_Disable_Inactivity_Detection(&imu);
-    if(status != LSM6DSO_OK) {
-        PRINTLN_ERROR("Failed to run LSM6DSO_ACC_Disable_Inactivity_Detection() (Status: %d).", status);
+    /* Set gyroscope output data rate. */
+    status = lsm6dsv_gy_data_rate_set(&imu, LSM6DSV_ODR_AT_120Hz);
+    if(status != 0) {
+        PRINTLN_ERROR("Failed to set IMU Gyroscope Datarate via lsm6dsv_gy_data_rate_set() (Status: %d).", status);
         return U_ERROR;
     }
 
@@ -216,22 +191,40 @@ int tempsensor_getHumidity(float *humidity) {
     return U_SUCCESS;
 }
 
-/* Gets the accelerometer axes (x, y, and z). */
-int imu_getAccelerometerData(LSM6DSO_Axes_t *axes) {
-    int status = LSM6DSO_ACC_GetAxes(&imu, axes);
-    if(status != LSM6DSO_OK) {
-        PRINTLN_ERROR("Failed to call LSM6DSO_ACC_GetAxes() (Status: %d).", status);
+/* Gets the IMU's acceleration reading. */
+int imu_getAcceleration(vector3_t* data) {
+    int16_t raw_data[3];
+    
+    /* Read raw accelerometer data. */
+    int status = lsm6dsv_acceleration_raw_get(&imu, raw_data);
+    if(status != 0) {
+        PRINTLN_ERROR("Failed to read accelerometer data.");
         return U_ERROR;
     }
+    
+    /* Convert to mg (milligravity). */
+    data->x = lsm6dsv_from_fs2_to_mg(raw_data[0]); // Somewhat important: These functions MUST match the full-scale settings configured in peripherals_init(). The conversions will be incorrect if you use the wrong functions.
+    data->y = lsm6dsv_from_fs2_to_mg(raw_data[1]);
+    data->z = lsm6dsv_from_fs2_to_mg(raw_data[2]);
+    
     return U_SUCCESS;
 }
 
-/* Gets the gyroscope axes (x, y, and z). */
-int imu_getGyroscopeData(LSM6DSO_Axes_t *axes) {
-    int status = LSM6DSO_GYRO_GetAxes(&imu, axes);
-    if(status != LSM6DSO_OK) {
-        PRINTLN_ERROR("Failed to call LSM6DSO_GYRO_GetAxes() (Status: %d).", status);
+/* Gets the IMU's angular rate reading. */
+int imu_getAngularRate(vector3_t* data) {
+    int16_t raw_data[3];
+    
+    /* Read raw gyroscope data. */
+    int status = lsm6dsv_angular_rate_raw_get(&imu, raw_data);
+    if(status != 0) {
+        PRINTLN_ERROR("Failed to read gyroscope data.");
         return U_ERROR;
     }
+    
+    /* Convert to mdps (millidegrees per second). */
+    data->x = lsm6dsv_from_fs2000_to_mdps(raw_data[0]); // Somewhat important: These functions MUST match the full-scale settings configured in peripherals_init(). The conversions will be incorrect if you use the wrong functions.
+    data->y = lsm6dsv_from_fs2000_to_mdps(raw_data[1]);
+    data->z = lsm6dsv_from_fs2000_to_mdps(raw_data[2]);
+    
     return U_SUCCESS;
 }
