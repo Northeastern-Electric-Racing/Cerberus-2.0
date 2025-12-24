@@ -94,7 +94,7 @@ int peripherals_init(void) {
         return U_ERROR;
     }
     if(id != LSM6DSV_ID) {
-        PRINTLN_ERROR("lsm6dv_device_id_get() returned an unexpected ID (id=%d, expected=%d). This means that the IMU is not configured correctly.", id, LSM6DSV_ID);
+        PRINTLN_ERROR("lsm6dsv_device_id_get() returned an unexpected ID (id=%d, expected=%d). This means that the IMU is not configured correctly.", id, LSM6DSV_ID);
         return U_ERROR;
     }
 
