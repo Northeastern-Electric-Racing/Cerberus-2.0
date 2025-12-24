@@ -8,7 +8,7 @@
 /* Wrapper for lsm6dsv SPI reading. */
 static int32_t _lsm6dsv_read(void* spi_handle, uint8_t reg, uint8_t* buffer, uint16_t length) {
     /* Prevent stack overflow? */
-    if((length + 1) >= IMU_MAX_BUFFER_SIZE) {
+    if((length + 1) > IMU_MAX_BUFFER_SIZE) {
         PRINTLN_ERROR("IMU buffer length is greater than IMU_MAX_BUFFER_SIZE, so cannot read from IMU (length+1=%d, IMU_MAX_BUFFER_SIZE=%d).", (length+1), IMU_MAX_BUFFER_SIZE);
         return -1;
     }
@@ -39,7 +39,7 @@ static int32_t _lsm6dsv_read(void* spi_handle, uint8_t reg, uint8_t* buffer, uin
 /* Wrapper for lsm6dsv SPI writing. */
 static int32_t _lsm6dsv_write(void* spi_handle, uint8_t reg, const uint8_t* data, uint16_t length) {
     /* Prevent stack overflow? */
-    if((length + 1) >= IMU_MAX_BUFFER_SIZE) {
+    if((length + 1) > IMU_MAX_BUFFER_SIZE) {
         PRINTLN_ERROR("IMU buffer length is greater than IMU_MAX_BUFFER_SIZE, so cannot write to IMU (length+1=%d, IMU_MAX_BUFFER_SIZE=%d).", (length+1), IMU_MAX_BUFFER_SIZE);
         return -1;
     }
