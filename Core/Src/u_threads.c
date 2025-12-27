@@ -154,7 +154,7 @@ void vCANOutgoing(ULONG thread_input) {
     while(1) {
 
         can_msg_t message;
-        uint8_t status;
+        HAL_StatusTypeDef status;
 
         /* Send outgoing messages */
         while(queue_receive(&can_outgoing, &message, TX_WAIT_FOREVER) == U_SUCCESS) {
