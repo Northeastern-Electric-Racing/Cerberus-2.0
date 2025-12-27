@@ -10,6 +10,8 @@
 #include "u_efuses.h"
 #include "u_statemachine.h"
 #include "u_tsms.h"
+#include "u_peripherals.h"
+#include "u_ethernet.h"
 #include "bitstream.h"
 
 /* Thread Priority Macros. */
@@ -27,6 +29,7 @@
 #define PRIO_vEFuses           2
 #define PRIO_vTSMS             2
 #define PRIO_vMux              2
+#define PRIO_vPeripherals      2
 
 /* Default Thread */
 static thread_t default_thread = {
@@ -68,7 +71,6 @@ void vEthernetIncoming(ULONG thread_input) {
     while(1) {
 
         ethernet_message_t message;
-        uint8_t status;
 
         /* Process incoming messages */
         while(queue_receive(&eth_incoming, &message, TX_WAIT_FOREVER) == U_SUCCESS) {
@@ -126,7 +128,6 @@ void vCANIncoming(ULONG thread_input) {
     while(1) {
 
         can_msg_t message;
-        uint8_t status;
 
         /* Process incoming messages */
         while(queue_receive(&can_incoming, &message, TX_WAIT_FOREVER) == U_SUCCESS) {
@@ -443,6 +444,94 @@ void vMux(ULONG thread_input) {
     }
 }
 
+/* Peripherals Thread. */
+static thread_t peripherals_thread = {
+        .name       = "Peripherals Thread",   /* Name */
+        .size       = 512,                    /* Stack Size (in bytes) */
+        .priority   = PRIO_vPeripherals,      /* Priority */
+        .threshold  = 0,                      /* Preemption Threshold */
+        .time_slice = TX_NO_TIME_SLICE,       /* Time Slice */
+        .auto_start = TX_AUTO_START,          /* Auto Start */
+        .sleep      = 100,                    /* Sleep (in ticks) */
+        .function   = vPeripherals            /* Thread Function */
+    };
+void vPeripherals(ULONG thread_input) {
+
+    /* Format for the temp sensor CAN data. */
+    typedef struct __attribute__((__packed__)) {
+		uint16_t temperature;
+        uint16_t humidity;
+	} tempsensor_CAN_t;
+
+    /* Format for the IMU Acceleration CAN data. */
+    typedef struct __attribute__((__packed__)) {
+		uint16_t x;
+        uint16_t y;
+        uint16_t z;
+	} acceleration_CAN_t;
+
+    /* Format for the IMU Gyro CAN data. */
+    typedef struct __attribute__((__packed__)) {
+		uint16_t x;
+        uint16_t y;
+        uint16_t z;
+	} gyro_CAN_t;
+    
+    while(1) {
+
+        /* Get the temp sensor data. */
+        float temperature = 0;
+        float humidity = 0;
+        int status = tempsensor_getTemperatureAndHumidity(&temperature, &humidity);
+        if(status != U_SUCCESS) {
+            PRINTLN_ERROR("Failed to called tempsensor_getTemperatureAndHumidity() in the peripherals thread (Status: %d).", status);
+        }
+
+        /* Fill the temp sensor message and send it over CAN. */
+        tempsensor_CAN_t tempsensor_CAN = { 0 };
+        tempsensor_CAN.temperature = (uint16_t)(temperature * 100);
+        tempsensor_CAN.humidity = (uint16_t)(humidity * 100);
+        can_msg_t temp_sensor_message = {.id = CANID_TEMP_SENSOR, .len = 4, .id_is_extended = false};
+        memcpy(temp_sensor_message.data, &tempsensor_CAN, temp_sensor_message.len);
+        queue_send(&can_outgoing, &temp_sensor_message, TX_NO_WAIT);
+
+        /* Get the IMU acceleration data. */
+        vector3_t acceleration;
+        status = imu_getAcceleration(&acceleration);
+        if(status != U_SUCCESS) {
+            PRINTLN_ERROR("Failed to call imu_getAcceleration() in the peripherals thread (Status: %d).", status);
+        }
+
+        /* Fill the IMU acceleration message and send it over CAN. */
+        acceleration_CAN_t acceleration_CAN = { 0 };
+        acceleration_CAN.x = (uint16_t)(acceleration.x * 100);
+        acceleration_CAN.y = (uint16_t)(acceleration.y * 100);
+        acceleration_CAN.z = (uint16_t)(acceleration.z * 100);
+        can_msg_t imu_acceleration_message = {.id = CANID_IMU_ACCEL, .len = 6, .id_is_extended = false};
+        memcpy(imu_acceleration_message.data, &acceleration_CAN, imu_acceleration_message.len);
+        queue_send(&can_outgoing, &imu_acceleration_message, TX_NO_WAIT);
+
+        /* Get the IMU Gyro data. */
+        vector3_t gyro;
+        status = imu_getAngularRate(&gyro);
+        if(status != U_SUCCESS) {
+            PRINTLN_ERROR("Failed to call imu_getAngularRate() in the peripherals thread (Status: %d).", status);
+        }
+
+        /* Fill the IMU Gyro message and send it over CAN. */
+        gyro_CAN_t gyro_CAN = { 0 };
+        gyro_CAN.x = (uint16_t)(gyro.x * 100);
+        gyro_CAN.y = (uint16_t)(gyro.y * 100);
+        gyro_CAN.z = (uint16_t)(gyro.z * 100);
+        can_msg_t imu_gyro_message = {.id = CANID_IMU_GYRO, .len = 6, .id_is_extended = false};
+        memcpy(imu_gyro_message.data, &gyro_CAN, imu_gyro_message.len);
+        queue_send(&can_outgoing, &imu_gyro_message, TX_NO_WAIT);
+
+        /* Sleep Thread for specified number of ticks. */
+        tx_thread_sleep(peripherals_thread.sleep);
+    }
+}
+
 /* Initializes all ThreadX threads. 
 *  Calls to _create_thread() should go in here
 */
@@ -462,6 +551,7 @@ uint8_t threads_init(TX_BYTE_POOL *byte_pool) {
     CATCH_ERROR(create_thread(byte_pool, &efuses_thread), U_SUCCESS);            // Create eFuses thread.
     CATCH_ERROR(create_thread(byte_pool, &tsms_thread), U_SUCCESS);              // Create TSMS thread.
     CATCH_ERROR(create_thread(byte_pool, &mux_thread), U_SUCCESS);               // Create Mux thread.
+    CATCH_ERROR(create_thread(byte_pool, &peripherals_thread), U_SUCCESS);       // Create Peripherals thread.
 
     // add more threads here if need
 

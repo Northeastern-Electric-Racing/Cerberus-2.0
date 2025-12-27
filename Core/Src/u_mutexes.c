@@ -51,6 +51,12 @@ mutex_t tsms_mutex = {
     .priority_inherit = TX_INHERIT /* Priority inheritance setting. */
 };
 
+/* Peripherals Mutex */
+mutex_t peripherals_mutex = {
+    .name = "Peripherals Mutex",   /* Name of the mutex. */
+    .priority_inherit = TX_INHERIT /* Priority inheritance setting. */
+};
+
 /* Initializes all ThreadX mutexes. 
 *  Calls to _create_mutex() should go in here
 */
@@ -64,6 +70,7 @@ uint8_t mutexes_init() {
     CATCH_ERROR(create_mutex(&dti_mutex), U_SUCCESS);          // Create DTI Mutex.
     CATCH_ERROR(create_mutex(&adc_mutex), U_SUCCESS);          // Create ADC Mutex.
     CATCH_ERROR(create_mutex(&tsms_mutex), U_SUCCESS);         // Create TSMS Mutex.
+    CATCH_ERROR(create_mutex(&peripherals_mutex), U_SUCCESS);  // Create Peripherals Mutex.
 
     // add more as necessary.
 

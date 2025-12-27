@@ -16,6 +16,7 @@ extern mutex_t torque_limit_mutex; // Torque Limit Mutex
 extern mutex_t dti_mutex;          // DTI Mutex
 extern mutex_t adc_mutex;          // ADC Mutex
 extern mutex_t tsms_mutex;         // TSMS Mutex
+extern mutex_t peripherals_mutex;  // Peripherals Mutex
 // add more as necessary...
 
 /* API */
