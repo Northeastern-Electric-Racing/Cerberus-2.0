@@ -29,8 +29,8 @@ static const _metadata faults[] = {
 
 
     [ONBOARD_PEDAL_DIFFERENCE_FAULT] = {"ONBOARD_PEDAL_DIFFERENCE_FAULT", CRITICAL, .timeout = 400},
-    [CAN_DISPATCH_FAULT] = {"CAN_DISPATCH_FAULT", CRITICAL, .timeout = 400},
-    [CAN_ROUTING_FAULT] = {"CAN_ROUTING_FAULT", CRITICAL, .timeout = 400},
+    [CAN_OUTGOING_FAULT] = {"CAN_OUTGOING_FAULT", CRITICAL, .timeout = 400},
+    [CAN_INCOMING_FAULT] = {"CAN_INCOMING_FAULT", CRITICAL, .timeout = 400},
     [BMS_CAN_MONITOR_FAULT] = {"BMS_CAN_MONITOR_FAULT", CRITICAL, .timeout = 400},
 
     /* Non-critical Faults */

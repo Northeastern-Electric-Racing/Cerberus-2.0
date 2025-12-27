@@ -161,7 +161,7 @@ void vCANOutgoing(ULONG thread_input) {
             status = can_send_msg(&can1, &message);
             if(status != HAL_OK) {
                 PRINTLN_WARNING("Failed to send message (on can1) after removing from outgoing queue (Message ID: %ld, Status: %d/%s).", message.id, status, hal_status_toString(status));
-                queue_send(&faults, &(fault_t){CAN_DISPATCH_FAULT}, TX_NO_WAIT);
+                queue_send(&faults, &(fault_t){CAN_OUTGOING_FAULT}, TX_NO_WAIT);
             }
         }
 

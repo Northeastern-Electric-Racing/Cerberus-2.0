@@ -125,7 +125,7 @@ void HAL_FDCAN_RxFifo0Callback(FDCAN_HandleTypeDef *hfdcan, uint32_t RxFifo0ITs)
     HAL_StatusTypeDef status = HAL_FDCAN_GetRxMessage(hfdcan, FDCAN_RX_FIFO0, &rx_header, message.data);
     if(status != HAL_OK) {
       PRINTLN_ERROR("Failed to call HAL_FDCAN_GetRxMessage() (Status: %ld/%s).", status, hal_status_toString(status));
-      queue_send(&faults, &(fault_t){CAN_ROUTING_FAULT}, TX_NO_WAIT);
+      queue_send(&faults, &(fault_t){CAN_INCOMING_FAULT}, TX_NO_WAIT);
       return;
     }
 
@@ -138,7 +138,7 @@ void HAL_FDCAN_RxFifo0Callback(FDCAN_HandleTypeDef *hfdcan, uint32_t RxFifo0ITs)
 		if (rx_header.DataLength > 8)
 		{
 			PRINTLN_ERROR("Recieved CAN message is larger than 8 bits (rx_header.DataLength: %ld).", rx_header.DataLength);
-      queue_send(&faults, &(fault_t){CAN_ROUTING_FAULT}, TX_NO_WAIT);
+      queue_send(&faults, &(fault_t){CAN_INCOMING_FAULT}, TX_NO_WAIT);
 			return;
 		}
 
