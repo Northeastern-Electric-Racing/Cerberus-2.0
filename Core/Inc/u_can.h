@@ -41,4 +41,9 @@ extern can_t can1;
 #define CANID_BMS_DCL_MSG      0x156
 #define LIGHT_BOARD_CAN_MSG_ID 0xCA
 
+/* Peripheral CAN IDs. */
+#define CANID_TEMP_SENSOR      0x004
+#define CANID_IMU_ACCEL	       0x506
+#define CANID_IMU_GYRO	       0x507
+
 #endif /* u_can.h */

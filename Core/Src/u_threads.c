@@ -27,6 +27,7 @@
 #define PRIO_vEFuses           2
 #define PRIO_vTSMS             2
 #define PRIO_vMux              2
+#define PRIO_vPeripherals      2
 
 /* Default Thread */
 static thread_t default_thread = {
@@ -440,6 +441,28 @@ void vMux(ULONG thread_input) {
 
         /* Sleep Thread for specified number of ticks. */
         tx_thread_sleep(mux_thread.sleep);
+    }
+}
+
+/* Peripherals Thread. */
+static thread_t peripherals_thread = {
+        .name       = "Peripherals Thread",   /* Name */
+        .size       = 512,                    /* Stack Size (in bytes) */
+        .priority   = PRIO_vPeripherals,      /* Priority */
+        .threshold  = 0,                      /* Preemption Threshold */
+        .time_slice = TX_NO_TIME_SLICE,       /* Time Slice */
+        .auto_start = TX_AUTO_START,          /* Auto Start */
+        .sleep      = 100,                    /* Sleep (in ticks) */
+        .function   = peripherals_thread      /* Thread Function */
+    };
+void vPeripherals(ULONG thread_input) {
+    
+    while(1) {
+
+        
+
+        /* Sleep Thread for specified number of ticks. */
+        tx_thread_sleep(peripherals_thread.sleep);
     }
 }
 
