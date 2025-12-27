@@ -485,6 +485,7 @@ void vPeripherals(ULONG thread_input) {
         int status = tempsensor_getTemperatureAndHumidity(&temperature, &humidity);
         if(status != U_SUCCESS) {
             PRINTLN_ERROR("Failed to called tempsensor_getTemperatureAndHumidity() in the peripherals thread (Status: %d).", status);
+            queue_send(&faults, &(fault_t){ONBOARD_TEMP_FAULT}, TX_NO_WAIT);
         }
 
         /* Fill the temp sensor message and send it over CAN. */
