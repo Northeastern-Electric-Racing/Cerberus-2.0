@@ -154,15 +154,15 @@ void vCANOutgoing(ULONG thread_input) {
     while(1) {
 
         can_msg_t message;
-        uint8_t status;
+        HAL_StatusTypeDef status;
 
         /* Send outgoing messages */
         while(queue_receive(&can_outgoing, &message, TX_WAIT_FOREVER) == U_SUCCESS) {
             status = can_send_msg(&can1, &message);
-            if(status != U_SUCCESS) {
-                PRINTLN_WARNING("Failed to send message (on can1) after removing from outgoing queue (Message ID: %ld).", message.id);
-                // u_TODO - maybe add the message back into the queue if it fails to send? not sure if this is a good idea tho
-                }
+            if(status != HAL_OK) {
+                PRINTLN_WARNING("Failed to send message (on can1) after removing from outgoing queue (Message ID: %ld, Status: %d/%s).", message.id, status, hal_status_toString(status));
+                queue_send(&faults, &(fault_t){CAN_OUTGOING_FAULT}, TX_NO_WAIT);
+            }
         }
 
         /* No sleep. Thread timing is controlled completely by the queue timeout. */
@@ -485,6 +485,7 @@ void vPeripherals(ULONG thread_input) {
         int status = tempsensor_getTemperatureAndHumidity(&temperature, &humidity);
         if(status != U_SUCCESS) {
             PRINTLN_ERROR("Failed to called tempsensor_getTemperatureAndHumidity() in the peripherals thread (Status: %d).", status);
+            queue_send(&faults, &(fault_t){ONBOARD_TEMP_FAULT}, TX_NO_WAIT);
         }
 
         /* Fill the temp sensor message and send it over CAN. */
@@ -500,6 +501,7 @@ void vPeripherals(ULONG thread_input) {
         status = imu_getAcceleration(&acceleration);
         if(status != U_SUCCESS) {
             PRINTLN_ERROR("Failed to call imu_getAcceleration() in the peripherals thread (Status: %d).", status);
+            queue_send(&faults, &(fault_t){IMU_ACCEL_FAULT}, TX_NO_WAIT);
         }
 
         /* Fill the IMU acceleration message and send it over CAN. */
@@ -516,6 +518,7 @@ void vPeripherals(ULONG thread_input) {
         status = imu_getAngularRate(&gyro);
         if(status != U_SUCCESS) {
             PRINTLN_ERROR("Failed to call imu_getAngularRate() in the peripherals thread (Status: %d).", status);
+            queue_send(&faults, &(fault_t){IMU_GYRO_FAULT}, TX_NO_WAIT);
         }
 
         /* Fill the IMU Gyro message and send it over CAN. */

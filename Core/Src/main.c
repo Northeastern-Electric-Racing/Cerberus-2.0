@@ -28,6 +28,7 @@
 
 #include "fdcan.h"
 #include "u_can.h"
+#include "u_faults.h"
 #include "u_queues.h"
 #include "u_debug.h"
 /* USER CODE END Includes */
@@ -120,22 +121,29 @@ void HAL_FDCAN_RxFifo0Callback(FDCAN_HandleTypeDef *hfdcan, uint32_t RxFifo0ITs)
 		can_msg_t message;
 		FDCAN_RxHeaderTypeDef rx_header;
 
-		if (HAL_FDCAN_GetRxMessage(hfdcan, FDCAN_RX_FIFO0, &rx_header, message.data) == HAL_OK)
+    /* Get the message. */
+    HAL_StatusTypeDef status = HAL_FDCAN_GetRxMessage(hfdcan, FDCAN_RX_FIFO0, &rx_header, message.data);
+    if(status != HAL_OK) {
+      PRINTLN_ERROR("Failed to call HAL_FDCAN_GetRxMessage() (Status: %ld/%s).", status, hal_status_toString(status));
+      queue_send(&faults, &(fault_t){CAN_INCOMING_FAULT}, TX_NO_WAIT);
+      return;
+    }
+
+    /* Pack the message into the struct. */
+    message.id = rx_header.Identifier;
+		message.id_is_extended = (rx_header.IdType == FDCAN_EXTENDED_ID);
+	  message.len = (uint8_t)rx_header.DataLength;
+
+		/* Check message size */
+		if (rx_header.DataLength > 8)
 		{
-			message.id = rx_header.Identifier;
-			message.id_is_extended = (rx_header.IdType == FDCAN_EXTENDED_ID);
-			message.len = (uint8_t)rx_header.DataLength;
-
-			/* Check size */
-			if (rx_header.DataLength > 8)
-			{
-				printf("[main.c/HAL_FDCAN_RxFifo0Callback()] ERROR: Recieved message is larger than 8 bytes.\n");
-				return;
-			}
-
-			/* Send message to incoming CAN queue */
-      queue_send(&can_incoming, &message, TX_NO_WAIT);
+			PRINTLN_ERROR("Recieved CAN message is larger than 8 bytes (rx_header.DataLength: %ld).", rx_header.DataLength);
+      queue_send(&faults, &(fault_t){CAN_INCOMING_FAULT}, TX_NO_WAIT);
+			return;
 		}
+
+		/* Send message to incoming CAN queue */
+    queue_send(&can_incoming, &message, TX_NO_WAIT);
 	}
 }
 

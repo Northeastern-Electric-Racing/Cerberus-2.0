@@ -2,6 +2,8 @@
 #include "main.h"
 #include "u_tx_timers.h"
 #include "u_rtds.h"
+#include "u_queues.h"
+#include "u_faults.h"
 #include "u_tx_debug.h"
 
 /* Timer for RTDS. */
@@ -84,6 +86,7 @@ int rtds_soundRTDS(void) {
     int status = timer_restart(&rtds_timer);
     if(status != U_SUCCESS) {
         PRINTLN_ERROR("Failed to restart RTDS timer (Status: %d).", status);
+        queue_send(&faults, &(fault_t){RTDS_FAULT}, TX_NO_WAIT);
         return U_ERROR;
     }
 
@@ -99,6 +102,7 @@ int rtds_startReverseSound(void) {
     int status = timer_start(&reverse_sound_timer);
     if(status != U_SUCCESS) {
         PRINTLN_ERROR("Failed to activate reverse sound timer (Status: %d).", status);
+        queue_send(&faults, &(fault_t){RTDS_FAULT}, TX_NO_WAIT);
         return U_ERROR;
     }
     
@@ -115,6 +119,7 @@ int rtds_stopReverseSound(void) {
     int status = timer_stop(&reverse_sound_timer);
     if(status != U_SUCCESS) {
         PRINTLN_ERROR("Failed to deactivate reverse sound timer (Status: %d).", status);
+        queue_send(&faults, &(fault_t){RTDS_FAULT}, TX_NO_WAIT);
         return U_ERROR;
     }
     
