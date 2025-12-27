@@ -169,24 +169,14 @@ int tempsensor_toggleHeater(bool enable) {
     return U_SUCCESS;
 }
 
-/* Gets the temp sensor's temperature reading. */
-int tempsensor_getTemperature(float *temperature) {
+/* Gets the temp sensor's temperature and humidity readings. */
+int tempsensor_getTemperatureAndHumidity(float *temperature, float *humidity) {
     int status = sht30_get_temp_humid(&temperature_sensor);
     if(status != 0) {
         PRINTLN_ERROR("Failed to read SHT30 temperature/humidity (Status: %d).", status);
         return U_ERROR;
     }
     *temperature = temperature_sensor.temp;
-    return U_SUCCESS;
-}
-
-/* Gets the temp sensor's humidity reading. */
-int tempsensor_getHumidity(float *humidity) {
-    int status = sht30_get_temp_humid(&temperature_sensor);
-    if(status != 0) {
-        PRINTLN_ERROR("Failed to read SHT30 temperature/humidity (Status: %d).", status);
-        return U_ERROR;
-    }
     *humidity = temperature_sensor.humidity;
     return U_SUCCESS;
 }

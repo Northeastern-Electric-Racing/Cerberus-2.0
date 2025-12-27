@@ -459,7 +459,10 @@ void vPeripherals(ULONG thread_input) {
     
     while(1) {
 
-        
+        /* Create and queue temperature sensor message. */
+        can_msg_t dashboard_msg = {.id = CANID_TEMP_SENSOR, .len = 8, .id_is_extended = false};
+        memcpy(dashboard_msg.data, &messages[EFUSE_DASHBOARD], dashboard_msg.len);
+        queue_send(&can_outgoing, &dashboard_msg, TX_NO_WAIT);
 
         /* Sleep Thread for specified number of ticks. */
         tx_thread_sleep(peripherals_thread.sleep);
