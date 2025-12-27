@@ -21,7 +21,6 @@ typedef enum {
 	IMU_GYRO_FAULT,
 	BSPD_PREFAULT,
 	RTDS_FAULT,
-	PDU_CURRENT_FAULT,
 
     /* Total number of faults (cannot exceed 64.) */
 	/* (always keep this at the end) */
