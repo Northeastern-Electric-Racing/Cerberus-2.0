@@ -159,9 +159,9 @@ void vCANOutgoing(ULONG thread_input) {
         /* Send outgoing messages */
         while(queue_receive(&can_outgoing, &message, TX_WAIT_FOREVER) == U_SUCCESS) {
             status = can_send_msg(&can1, &message);
-            if(status != U_SUCCESS) {
-                PRINTLN_WARNING("Failed to send message (on can1) after removing from outgoing queue (Message ID: %ld).", message.id);
-                // u_TODO - maybe add the message back into the queue if it fails to send? not sure if this is a good idea tho
+            if(status != HAL_OK) {
+                PRINTLN_WARNING("Failed to send message (on can1) after removing from outgoing queue (Message ID: %ld, Status: %d/%s).", message.id, status, hal_status_toString(status));
+                queue_send(&faults, &(fault_t){CAN_DISPATCH_FAULT}, TX_NO_WAIT);
                 }
         }
 
