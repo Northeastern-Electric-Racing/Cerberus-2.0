@@ -2,6 +2,7 @@
 #include "u_tx_debug.h"
 #include "main.h"
 #include "u_peripherals.h"
+#include "u_mutexes.h"
 
 #define IMU_MAX_BUFFER_SIZE 64 /* Max buffer size for the IMU VLAs. */
 
@@ -161,21 +162,26 @@ int peripherals_init(void) {
 
 /* Toggles the status of the temperature sensor's internal heater. */
 int tempsensor_toggleHeater(bool enable) {
+    mutex_get(&peripherals_mutex);
     HAL_StatusTypeDef status = sht30_toggle_heater(&temperature_sensor, enable);
     if(status != HAL_OK) {
         PRINTLN_ERROR("Failed to toggle SHT30 heater (Status: %d/%s).", status, hal_status_toString(status));
         return U_ERROR;
     }
+    mutex_put(&peripherals_mutex);
     return U_SUCCESS;
 }
 
 /* Gets the temp sensor's temperature and humidity readings. */
 int tempsensor_getTemperatureAndHumidity(float *temperature, float *humidity) {
+    mutex_get(&peripherals_mutex);
     int status = sht30_get_temp_humid(&temperature_sensor);
     if(status != 0) {
         PRINTLN_ERROR("Failed to read SHT30 temperature/humidity (Status: %d).", status);
         return U_ERROR;
     }
+    mutex_put(&peripherals_mutex);
+
     *temperature = temperature_sensor.temp;
     *humidity = temperature_sensor.humidity;
     return U_SUCCESS;
@@ -186,11 +192,13 @@ int imu_getAcceleration(vector3_t* data) {
     int16_t raw_data[3];
     
     /* Read raw accelerometer data. */
+    mutex_get(&peripherals_mutex);
     int status = lsm6dsv_acceleration_raw_get(&imu, raw_data);
     if(status != 0) {
         PRINTLN_ERROR("Failed to read accelerometer data.");
         return U_ERROR;
     }
+    mutex_put(&peripherals_mutex);
     
     /* Convert to mg (milligravity). */
     data->x = lsm6dsv_from_fs2_to_mg(raw_data[0]); // Somewhat important: These functions MUST match the full-scale settings configured in peripherals_init(). The conversions will be incorrect if you use the wrong functions.
@@ -205,11 +213,13 @@ int imu_getAngularRate(vector3_t* data) {
     int16_t raw_data[3];
     
     /* Read raw gyroscope data. */
+    mutex_get(&peripherals_mutex);      // u_TODO - All of these functions have to get the peripherals mutex. Since these funtions are (as of rn) being called on-after-another by the peripherals thread, this is inefficient (ideally, the mutex would just need to aquired once and put back once). It could be a good idea to have a convention where it's the caller's responsibility to acquire the mutex for these sorts of functions, and then have some kind of check in this funciton to make sure the mutex is owned by the caller's thread
     int status = lsm6dsv_angular_rate_raw_get(&imu, raw_data);
     if(status != 0) {
         PRINTLN_ERROR("Failed to read gyroscope data.");
         return U_ERROR;
     }
+    mutex_put(&peripherals_mutex);
     
     /* Convert to mdps (millidegrees per second). */
     data->x = lsm6dsv_from_fs2000_to_mdps(raw_data[0]); // Somewhat important: These functions MUST match the full-scale settings configured in peripherals_init(). The conversions will be incorrect if you use the wrong functions.
