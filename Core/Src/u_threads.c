@@ -501,6 +501,7 @@ void vPeripherals(ULONG thread_input) {
         status = imu_getAcceleration(&acceleration);
         if(status != U_SUCCESS) {
             PRINTLN_ERROR("Failed to call imu_getAcceleration() in the peripherals thread (Status: %d).", status);
+            queue_send(&faults, &(fault_t){IMU_ACCEL_FAULT}, TX_NO_WAIT);
         }
 
         /* Fill the IMU acceleration message and send it over CAN. */
@@ -517,6 +518,7 @@ void vPeripherals(ULONG thread_input) {
         status = imu_getAngularRate(&gyro);
         if(status != U_SUCCESS) {
             PRINTLN_ERROR("Failed to call imu_getAngularRate() in the peripherals thread (Status: %d).", status);
+            queue_send(&faults, &(fault_t){IMU_GYRO_FAULT}, TX_NO_WAIT);
         }
 
         /* Fill the IMU Gyro message and send it over CAN. */

@@ -33,7 +33,8 @@ static const _metadata faults[] = {
 
     /* Non-critical Faults */
     [ONBOARD_TEMP_FAULT] = {"ONBOARD_TEMP_FAULT", NON_CRITICAL, .timeout = 400},
-    [IMU_FAULT] = {"IMU_FAULT", NON_CRITICAL, .timeout = 400},
+    [IMU_ACCEL_FAULT] = {"IMU_ACCEL_FAULT", NON_CRITICAL, .timeout = 400},
+    [IMU_GYRO_FAULT] = {"IMU_GYRO_FAULT", NON_CRITICAL, .timeout = 400},
     [FUSE_MONITOR_FAULT] = {"FUSE_MONITOR_FAULT", NON_CRITICAL, .timeout = 400},
     [SHUTDOWN_MONITOR_FAULT] = {"SHUTDOWN_MONITOR_FAULT", NON_CRITICAL, .timeout = 400},
     [LV_MONITOR_FAULT] = {"LV_MONITOR_FAULT", NON_CRITICAL, .timeout = 400},
