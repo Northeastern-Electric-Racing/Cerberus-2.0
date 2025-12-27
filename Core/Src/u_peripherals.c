@@ -160,7 +160,7 @@ int peripherals_init(void) {
 }
 
 /* Toggles the status of the temperature sensor's internal heater. */
-int tempsensor_toggleHeaterStatus(bool enable) {
+int tempsensor_toggleHeater(bool enable) {
     HAL_StatusTypeDef status = sht30_toggle_heater(&temperature_sensor, enable);
     if(status != HAL_OK) {
         PRINTLN_ERROR("Failed to toggle SHT30 heater (Status: %d/%s).", status, hal_status_toString(status));
