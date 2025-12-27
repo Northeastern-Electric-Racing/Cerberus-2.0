@@ -37,7 +37,6 @@ static const _metadata faults[] = {
     [IMU_GYRO_FAULT] = {"IMU_GYRO_FAULT", NON_CRITICAL, .timeout = 400},
     [BSPD_PREFAULT] = {"BSPD_PREFAULT", NON_CRITICAL, .timeout = 400},
     [RTDS_FAULT] = {"RTDS_FAULT", NON_CRITICAL, .timeout = 400},
-    [PUMP_SENSORS_FAULT] = {"PUMP_SENSORS_FAULT", NON_CRITICAL, .timeout = 400},
     [PDU_CURRENT_FAULT] = {"PDU_CURRENT_FAULT", NON_CRITICAL, .timeout = 400},
 };
 
