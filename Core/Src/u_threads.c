@@ -460,7 +460,7 @@ void vPeripherals(ULONG thread_input) {
     /* Format for the temp sensor CAN data. */
     typedef struct __attribute__((__packed__)) {
 		int16_t temperature;
-        int16_t humidity;
+        uint16_t humidity;
 	} tempsensor_CAN_t;
 
     /* Format for the IMU Acceleration CAN data. */
@@ -490,7 +490,7 @@ void vPeripherals(ULONG thread_input) {
         /* Fill the temp sensor message and send it over CAN. */
         tempsensor_CAN_t tempsensor_CAN = { 0 };
         tempsensor_CAN.temperature = (int16_t)(temperature * 100);
-        tempsensor_CAN.humidity = (int16_t)(humidity * 100);
+        tempsensor_CAN.humidity = (uint16_t)(humidity * 100);
         can_msg_t temp_sensor_message = {.id = CANID_TEMP_SENSOR, .len = 4, .id_is_extended = false};
         memcpy(temp_sensor_message.data, &tempsensor_CAN, temp_sensor_message.len);
         queue_send(&can_outgoing, &temp_sensor_message, TX_NO_WAIT);
