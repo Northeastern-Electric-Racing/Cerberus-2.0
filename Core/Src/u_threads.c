@@ -10,6 +10,8 @@
 #include "u_efuses.h"
 #include "u_statemachine.h"
 #include "u_tsms.h"
+#include "u_peripherals.h"
+#include "u_ethernet.h"
 #include "bitstream.h"
 
 /* Thread Priority Macros. */
@@ -69,7 +71,6 @@ void vEthernetIncoming(ULONG thread_input) {
     while(1) {
 
         ethernet_message_t message;
-        uint8_t status;
 
         /* Process incoming messages */
         while(queue_receive(&eth_incoming, &message, TX_WAIT_FOREVER) == U_SUCCESS) {
@@ -127,7 +128,6 @@ void vCANIncoming(ULONG thread_input) {
     while(1) {
 
         can_msg_t message;
-        uint8_t status;
 
         /* Process incoming messages */
         while(queue_receive(&can_incoming, &message, TX_WAIT_FOREVER) == U_SUCCESS) {
@@ -453,7 +453,7 @@ static thread_t peripherals_thread = {
         .time_slice = TX_NO_TIME_SLICE,       /* Time Slice */
         .auto_start = TX_AUTO_START,          /* Auto Start */
         .sleep      = 100,                    /* Sleep (in ticks) */
-        .function   = peripherals_thread      /* Thread Function */
+        .function   = vPeripherals            /* Thread Function */
     };
 void vPeripherals(ULONG thread_input) {
 
@@ -551,6 +551,7 @@ uint8_t threads_init(TX_BYTE_POOL *byte_pool) {
     CATCH_ERROR(create_thread(byte_pool, &efuses_thread), U_SUCCESS);            // Create eFuses thread.
     CATCH_ERROR(create_thread(byte_pool, &tsms_thread), U_SUCCESS);              // Create TSMS thread.
     CATCH_ERROR(create_thread(byte_pool, &mux_thread), U_SUCCESS);               // Create Mux thread.
+    CATCH_ERROR(create_thread(byte_pool, &peripherals_thread), U_SUCCESS);       // Create Peripherals thread.
 
     // add more threads here if need
 
