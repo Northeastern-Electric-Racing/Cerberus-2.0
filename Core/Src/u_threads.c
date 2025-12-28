@@ -339,68 +339,77 @@ void vEFuses(ULONG thread_input) {
     
     while(1) {
 
-        /* Set data. */
-        efuse_data_t data = { 0 };
-        if(efuse_getData(&data) != U_SUCCESS) _SKIP(&efuses_thread);
-        efuse_message_t messages[NUM_EFUSES] = { 0 };
-        for(efuse_t efuse = 0; efuse < NUM_EFUSES; efuse++) {
-            /* Set the data for each eFuse. */
-            messages[efuse].raw = data.raw[efuse];
-            messages[efuse].voltage = (uint16_t)(data.voltage[efuse] * 1000);
-            messages[efuse].current = (uint16_t)(data.current[efuse] * 1000);
-            messages[efuse].faulted = data.faulted[efuse];
-            messages[efuse].enabled = data.enabled[efuse];
-        }
+        /* SECTION 1: Get eFuse data and send CAN messages. */
+        SECTION(
+            /* Get eFuse data. */
+            efuse_data_t data = { 0 };
+            int status = efuse_getData(&data);
+            if(status != U_SUCCESS) {
+                PRINTLN_WARNING("Call to eFuse_getData() failed in SECTION 1 of vEFuses. As a result, this section can't complete its routine and will exit early.");
+                break; // u_TODO - may be a good idea to add a fault for these kinds of early exits in threads
+            }
 
-        /* Create and queue dashboard message. */
-        can_msg_t dashboard_msg = {.id = CANID_EFUSE_DASHBOARD, .len = 8, .id_is_extended = true};
-        memcpy(dashboard_msg.data, &messages[EFUSE_DASHBOARD], dashboard_msg.len);
-        queue_send(&can_outgoing, &dashboard_msg, TX_NO_WAIT);
+            /* Set data. */
+            efuse_message_t messages[NUM_EFUSES] = { 0 };
+            for(efuse_t efuse = 0; efuse < NUM_EFUSES; efuse++) {
+                /* Set the data for each eFuse. */
+                messages[efuse].raw = data.raw[efuse];
+                messages[efuse].voltage = (uint16_t)(data.voltage[efuse] * 1000);
+                messages[efuse].current = (uint16_t)(data.current[efuse] * 1000);
+                messages[efuse].faulted = data.faulted[efuse];
+                messages[efuse].enabled = data.enabled[efuse];
+            }
 
-        /* Create and queue brake message. */
-        can_msg_t brake_msg = {.id = CANID_EFUSE_BRAKE, .len = 8, .id_is_extended = true};
-        memcpy(brake_msg.data, &messages[EFUSE_BRAKE], brake_msg.len);
-        queue_send(&can_outgoing, &brake_msg, TX_NO_WAIT);
+            /* Create and queue dashboard message. */
+            can_msg_t dashboard_msg = {.id = CANID_EFUSE_DASHBOARD, .len = 8, .id_is_extended = true};
+            memcpy(dashboard_msg.data, &messages[EFUSE_DASHBOARD], dashboard_msg.len);
+            queue_send(&can_outgoing, &dashboard_msg, TX_NO_WAIT);
 
-        /* Create and queue shutdown message. */
-        can_msg_t shutdown_msg = {.id = CANID_EFUSE_SHUTDOWN, .len = 8, .id_is_extended = true};
-        memcpy(shutdown_msg.data, &messages[EFUSE_SHUTDOWN], shutdown_msg.len);
-        queue_send(&can_outgoing, &shutdown_msg, TX_NO_WAIT);
+            /* Create and queue brake message. */
+            can_msg_t brake_msg = {.id = CANID_EFUSE_BRAKE, .len = 8, .id_is_extended = true};
+            memcpy(brake_msg.data, &messages[EFUSE_BRAKE], brake_msg.len);
+            queue_send(&can_outgoing, &brake_msg, TX_NO_WAIT);
 
-        /* Create and queue LV message. */
-        can_msg_t lv_msg = {.id = CANID_EFUSE_LV, .len = 8, .id_is_extended = true};
-        memcpy(lv_msg.data, &messages[EFUSE_LV], lv_msg.len);
-        queue_send(&can_outgoing, &lv_msg, TX_NO_WAIT);
+            /* Create and queue shutdown message. */
+            can_msg_t shutdown_msg = {.id = CANID_EFUSE_SHUTDOWN, .len = 8, .id_is_extended = true};
+            memcpy(shutdown_msg.data, &messages[EFUSE_SHUTDOWN], shutdown_msg.len);
+            queue_send(&can_outgoing, &shutdown_msg, TX_NO_WAIT);
 
-        /* Create and queue radfan message. */
-        can_msg_t radfan_msg = {.id = CANID_EFUSE_RADFAN, .len = 8, .id_is_extended = true};
-        memcpy(radfan_msg.data, &messages[EFUSE_RADFAN], radfan_msg.len);
-        queue_send(&can_outgoing, &radfan_msg, TX_NO_WAIT);
+            /* Create and queue LV message. */
+            can_msg_t lv_msg = {.id = CANID_EFUSE_LV, .len = 8, .id_is_extended = true};
+            memcpy(lv_msg.data, &messages[EFUSE_LV], lv_msg.len);
+            queue_send(&can_outgoing, &lv_msg, TX_NO_WAIT);
 
-        /* Create and queue fanbatt message. */
-        can_msg_t fanbatt_msg = {.id = CANID_EFUSE_FANBATT, .len = 8, .id_is_extended = true};
-        memcpy(fanbatt_msg.data, &messages[EFUSE_FANBATT], fanbatt_msg.len);
-        queue_send(&can_outgoing, &fanbatt_msg, TX_NO_WAIT);
+            /* Create and queue radfan message. */
+            can_msg_t radfan_msg = {.id = CANID_EFUSE_RADFAN, .len = 8, .id_is_extended = true};
+            memcpy(radfan_msg.data, &messages[EFUSE_RADFAN], radfan_msg.len);
+            queue_send(&can_outgoing, &radfan_msg, TX_NO_WAIT);
 
-        /* Create and queue pump1 message. */
-        can_msg_t pump1_msg = {.id = CANID_EFUSE_PUMP1, .len = 8, .id_is_extended = true};
-        memcpy(pump1_msg.data, &messages[EFUSE_PUMP1], pump1_msg.len);
-        queue_send(&can_outgoing, &pump1_msg, TX_NO_WAIT);
+            /* Create and queue fanbatt message. */
+            can_msg_t fanbatt_msg = {.id = CANID_EFUSE_FANBATT, .len = 8, .id_is_extended = true};
+            memcpy(fanbatt_msg.data, &messages[EFUSE_FANBATT], fanbatt_msg.len);
+            queue_send(&can_outgoing, &fanbatt_msg, TX_NO_WAIT);
 
-        /* Create and queue pump2 message. */
-        can_msg_t pump2_msg = {.id = CANID_EFUSE_PUMP2, .len = 8, .id_is_extended = true};
-        memcpy(pump2_msg.data, &messages[EFUSE_PUMP2], pump2_msg.len);
-        queue_send(&can_outgoing, &pump2_msg, TX_NO_WAIT);
+            /* Create and queue pump1 message. */
+            can_msg_t pump1_msg = {.id = CANID_EFUSE_PUMP1, .len = 8, .id_is_extended = true};
+            memcpy(pump1_msg.data, &messages[EFUSE_PUMP1], pump1_msg.len);
+            queue_send(&can_outgoing, &pump1_msg, TX_NO_WAIT);
 
-        /* Create and queue battbox message. */
-        can_msg_t battbox_msg = {.id = CANID_EFUSE_BATTBOX, .len = 8, .id_is_extended = true};
-        memcpy(battbox_msg.data, &messages[EFUSE_BATTBOX], battbox_msg.len);
-        queue_send(&can_outgoing, &battbox_msg, TX_NO_WAIT);
+            /* Create and queue pump2 message. */
+            can_msg_t pump2_msg = {.id = CANID_EFUSE_PUMP2, .len = 8, .id_is_extended = true};
+            memcpy(pump2_msg.data, &messages[EFUSE_PUMP2], pump2_msg.len);
+            queue_send(&can_outgoing, &pump2_msg, TX_NO_WAIT);
 
-        /* Create and queue MC message. */
-        can_msg_t mc_msg = {.id = CANID_EFUSE_MC, .len = 8, .id_is_extended = true};
-        memcpy(mc_msg.data, &messages[EFUSE_MC], mc_msg.len);
-        queue_send(&can_outgoing, &mc_msg, TX_NO_WAIT);
+            /* Create and queue battbox message. */
+            can_msg_t battbox_msg = {.id = CANID_EFUSE_BATTBOX, .len = 8, .id_is_extended = true};
+            memcpy(battbox_msg.data, &messages[EFUSE_BATTBOX], battbox_msg.len);
+            queue_send(&can_outgoing, &battbox_msg, TX_NO_WAIT);
+
+            /* Create and queue MC message. */
+            can_msg_t mc_msg = {.id = CANID_EFUSE_MC, .len = 8, .id_is_extended = true};
+            memcpy(mc_msg.data, &messages[EFUSE_MC], mc_msg.len);
+            queue_send(&can_outgoing, &mc_msg, TX_NO_WAIT);
+        );
 
         /* Sleep Thread for specified number of ticks. */
         SLEEP(&efuses_thread);
@@ -449,7 +458,7 @@ void vMux(ULONG thread_input) {
         adc_switchMuxState();
 
         /* Sleep Thread for specified number of ticks. */
-        _SLEEP(&mux_thread);
+        SLEEP(&mux_thread);
     }
 }
 
