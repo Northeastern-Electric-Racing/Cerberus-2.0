@@ -77,12 +77,12 @@ int adc_switchMuxState(void) {
         mux_state = HIGH;   // Update the mux state
 
         /* We are now in the HIGH state, so set the associated indexes in the buffer. */
-        mutex_get(&adc_mutex);
+        CATCH_ERROR(mutex_get(&adc_mutex), U_SUCCESS);
         _mux_buffer[SEL1_HIGH] = _adc1_buffer[ADC1_CHANNEL0];
         _mux_buffer[SEL2_HIGH] = _adc1_buffer[ADC1_CHANNEL15];
         _mux_buffer[SEL3_HIGH] = _adc1_buffer[ADC1_CHANNEL5];
         _mux_buffer[SEL4_HIGH] = _adc1_buffer[ADC1_CHANNEL9];
-        mutex_put(&adc_mutex);
+        CATCH_ERROR(mutex_put(&adc_mutex), U_SUCCESS);
     }
     else if(mux_state == HIGH) {
         /* Mux is currently HIGH, so switch to LOW. */
@@ -95,12 +95,12 @@ int adc_switchMuxState(void) {
         mux_state = LOW;   // Update the mux state
 
         /* We are now in the LOW state, so set the associated indexes in the buffer. */
-        mutex_get(&adc_mutex);
+        CATCH_ERROR(mutex_get(&adc_mutex), U_SUCCESS);
         _mux_buffer[SEL1_LOW] = _adc1_buffer[ADC1_CHANNEL0];
         _mux_buffer[SEL2_LOW] = _adc1_buffer[ADC1_CHANNEL15];
         _mux_buffer[SEL3_LOW] = _adc1_buffer[ADC1_CHANNEL5];
         _mux_buffer[SEL4_LOW] = _adc1_buffer[ADC1_CHANNEL9];
-        mutex_put(&adc_mutex);
+        CATCH_ERROR(mutex_put(&adc_mutex), U_SUCCESS);
     }
 
     return U_SUCCESS;
@@ -127,10 +127,10 @@ int adc_init(void) {
 }
 
 /* Get raw eFuse ADC Data. */
-raw_efuse_adc_t adc_getEFuseData(void) {
+int adc_getEFuseData(raw_efuse_adc_t* buffer) {
     raw_efuse_adc_t efuses = { 0 };
 
-    mutex_get(&adc_mutex);
+    CATCH_ERROR(mutex_get(&adc_mutex), U_SUCCESS);
     efuses.data[EFUSE_DASHBOARD] = _adc1_buffer[ADC1_CHANNEL3];
     efuses.data[EFUSE_BRAKE] = _mux_buffer[SEL1_HIGH];
     efuses.data[EFUSE_SHUTDOWN] = _mux_buffer[SEL3_LOW];
@@ -141,55 +141,59 @@ raw_efuse_adc_t adc_getEFuseData(void) {
     efuses.data[EFUSE_PUMP2] = _adc1_buffer[ADC1_CHANNEL13];
     efuses.data[EFUSE_BATTBOX] = _mux_buffer[SEL1_LOW];
     efuses.data[EFUSE_MC] = _adc1_buffer[ADC1_CHANNEL18];
-    mutex_put(&adc_mutex);
+    CATCH_ERROR(mutex_put(&adc_mutex), U_SUCCESS);
 
-    return efuses;
+    *buffer = efuses;
+    return U_SUCCESS;
 }
 
 /* Get raw pedal sensor ADC Data. */
-raw_pedal_adc_t adc_getPedalData(void) {
+int adc_getPedalData(raw_pedal_adc_t* buffer) {
     raw_pedal_adc_t sensors = { 0 };
 
-    mutex_get(&adc_mutex);
+    CATCH_ERROR(mutex_get(&adc_mutex), U_SUCCESS);
     sensors.data[PEDAL_ACCEL1] = _adc2_buffer[ADC2_CHANNEL12];
     sensors.data[PEDAL_ACCEL2] = _adc2_buffer[ADC2_CHANNEL10];
     sensors.data[PEDAL_BRAKE1] = _adc2_buffer[ADC2_CHANNEL2];
     sensors.data[PEDAL_BRAKE2] = _adc2_buffer[ADC2_CHANNEL6];
-    mutex_put(&adc_mutex);
+    CATCH_ERROR(mutex_put(&adc_mutex), U_SUCCESS);
 
-    return sensors;
+    *buffer = sensors;
+    return U_SUCCESS;
 }
 
 /* Get raw LFIU sensor ADC Data. */
-raw_lfiu_adc_t adc_getLfiuData(void) {
+int adc_getLfiuData(raw_lfiu_adc_t* buffer) {
     raw_lfiu_adc_t sensors = { 0 };
 
-    mutex_get(&adc_mutex);
+    CATCH_ERROR(mutex_get(&adc_mutex), U_SUCCESS);
     sensors.data[LFIU_1] = _mux_buffer[SEL2_HIGH];
     sensors.data[LFIU_2] = _mux_buffer[SEL2_LOW];
-    mutex_put(&adc_mutex);
+    CATCH_ERROR(mutex_put(&adc_mutex), U_SUCCESS);
 
-    return sensors;
+    *buffer = sensors;
+    return U_SUCCESS;
 }
 
 /* Get LV_BATT Voltage ADC data. */
-lvread_adc_t adc_getLVData(void) {
-    lvread_adc_t data = { 0 };
+int adc_getLVData(lvread_adc_t* buffer) {
+    lvread_adc_t sensor = { 0 };
 
     /* Get the raw ADC reading. */
-    mutex_get(&adc_mutex);
-    data.raw = _mux_buffer[SEL4_LOW];
-    mutex_put(&adc_mutex);
+    CATCH_ERROR(mutex_get(&adc_mutex), U_SUCCESS);
+    sensor.raw = _mux_buffer[SEL4_LOW];
+    CATCH_ERROR(mutex_put(&adc_mutex), U_SUCCESS);
 
     /* Calcualte the ADC voltage. */
     const float v_ref = 3.3f; // VREF is 3V3 for VCU.
-    float adc_voltage = (data.raw / 4095.0) * v_ref; // adc_voltage = (adc_raw / 4095.0) * 3.3
+    float adc_voltage = (sensor.raw / 4095.0) * v_ref; // adc_voltage = (adc_raw / 4095.0) * 3.3
 
     /* Scale the ADC Voltage back up to 24V. */
     // Before the ADC, there's a voltage divider that scales 24V down to 2.18V for the ADC. Here's the relavent math: Vout = Vin*(R2/(R1+R2)) = 24*(10,000/(100,000 + 10,000)) = 2.18V
     // This means that 2.18V is the value corresponding to 24V (even though v_ref=3.3V).
     // The adc_voltage should thus be scaled up by around *11 (since 24V/2.18V = 11.0):
-    data.voltage = adc_voltage * 11.0;
+    sensor.voltage = adc_voltage * 11.0;
 
-    return data;
+    *buffer = sensor;
+    return U_SUCCESS;
 }

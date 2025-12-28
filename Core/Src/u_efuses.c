@@ -37,8 +37,9 @@ static const _metadata efuses[] = {
 
 /* Returns an instance of efuse_data_t with all current eFuse data. */
 #define V_REF 3.3f // V_(REF) = 3V3
-efuse_data_t efuse_getData(void) {
-    raw_efuse_adc_t adc = adc_getEFuseData();
+int efuse_getData(efuse_data_t* buffer) {
+    raw_efuse_adc_t adc;
+    CATCH_ERROR(adc_getEFuseData(&adc), U_SUCCESS);
 
     /* Loop through each eFuse and calculate the necessary values. */
     efuse_data_t data = { 0 };
@@ -59,7 +60,8 @@ efuse_data_t efuse_getData(void) {
         data.enabled[efuse] = (bool)(HAL_GPIO_ReadPin(efuses[efuse].en_port, efuses[efuse].en_pin) == GPIO_PIN_SET);
     }
 
-    return data;
+    *buffer = data;
+    return U_SUCCESS;
 }
 
 /* Enables an eFuse. */

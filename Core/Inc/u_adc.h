@@ -13,21 +13,21 @@ int adc_switchMuxState(void); /* "Switches" the multiplexer (if it's currently H
 
 /* Get raw EFuse ADC Data. */
 typedef struct { uint16_t data[NUM_EFUSES]; } raw_efuse_adc_t; // Struct to store the data.
-raw_efuse_adc_t adc_getEFuseData(void);
+int adc_getEFuseData(raw_efuse_adc_t* buffer);
 
 /* Get raw pedal sensor ADC data. */
 typedef struct { uint16_t data[NUM_PEDALS]; } raw_pedal_adc_t; // Struct to store the data.
-raw_pedal_adc_t adc_getPedalData(void);
+int adc_getPedalData(raw_pedal_adc_t* buffer);
 
 /* Get LFIU sensor ADC data. */
 typedef struct { uint16_t data[NUM_LFIU]; } raw_lfiu_adc_t; // Struct to store the data.
-raw_lfiu_adc_t adc_getLfiuData(void);
+int adc_getLfiuData(raw_lfiu_adc_t* buffer);
 
 /* Get LV_BATT Voltage ADC data. */
 typedef struct { 
     uint16_t raw; 
     float voltage; 
 } lvread_adc_t; // Struct to store the data.
-lvread_adc_t adc_getLVData(void);
+int adc_getLVData(lvread_adc_t* buffer);
 
 #endif /* u_adc.h */

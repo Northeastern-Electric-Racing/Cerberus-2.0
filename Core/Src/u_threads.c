@@ -209,14 +209,14 @@ void vFaults(ULONG thread_input) {
     
     while(1) {
 
+        /* Sleep Thread for specified number of ticks. */
+        tx_thread_sleep(faults_thread.sleep);
+
         /* Send a CAN message containing the current fault statuses. */
         uint64_t faults = get_faults();
         can_msg_t msg = {.id = CANID_FAULT_MSG, .len = 8, .data = {0}};
         memcpy(msg.data, &faults, sizeof(faults));
         queue_send(&can_outgoing, &msg, TX_NO_WAIT);
-
-        /* Sleep Thread for specified number of ticks. */
-        tx_thread_sleep(faults_thread.sleep);
     }
 }
 
@@ -234,6 +234,9 @@ static thread_t shutdown_thread = {
 void vShutdown(ULONG thread_input) {
     
     while(1) {
+
+        /* Sleep Thread for specified number of ticks. */
+        tx_thread_sleep(shutdown_thread.sleep);
 
         /* Create bitstream. */
         bitstream_t bitstream;
@@ -257,9 +260,6 @@ void vShutdown(ULONG thread_input) {
         can_msg_t msg = {.id = CANID_SHUTDOWN_MSG, .len = 2, .data = {0}};
         memcpy(msg.data, &bitstream_data, sizeof(bitstream_data));
         queue_send(&can_outgoing, &msg, TX_NO_WAIT);
-
-        /* Sleep Thread for specified number of ticks. */
-        tx_thread_sleep(shutdown_thread.sleep);
     }
 }
 
@@ -278,10 +278,10 @@ void vStatemachine(ULONG thread_input) {
     
     while(1) {
 
-        statemachine_process();
-
         /* Sleep Thread for specified number of ticks. */
         tx_thread_sleep(statemachine_thread.sleep);
+
+        statemachine_process();
     }
 }
 
@@ -300,10 +300,11 @@ void vPedals(ULONG thread_input) {
     
     while(1) {
 
-        pedals_process();
-
         /* Sleep Thread for specified number of ticks. */
         tx_thread_sleep(pedals_thread.sleep);
+
+        pedals_process();
+
     }
 }
 

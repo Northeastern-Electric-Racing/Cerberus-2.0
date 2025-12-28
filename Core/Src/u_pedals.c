@@ -572,13 +572,14 @@ bool pedals_getLaunchControl(void)
 }
 
 /* Pedal Processing Function. Meant to be called by the pedals thread. */
-void pedals_process(void) {
+int pedals_process(void) {
 
     /* Get the pedal data mutex. */
-    mutex_get(&pedal_data_mutex);
+    CATCH_ERROR(mutex_get(&pedal_data_mutex), U_SUCCESS);
 
     /* Get pedal voltage data. */
-	raw_pedal_adc_t raw = adc_getPedalData();
+	raw_pedal_adc_t raw = { 0 };
+	CATCH_ERROR(adc_getPedalData(&raw), U_SUCCESS);
     pedal_data.voltage_accel1 = _adc_to_voltage(raw.data[PEDAL_ACCEL1]);
 	pedal_data.voltage_accel2 = _adc_to_voltage(raw.data[PEDAL_ACCEL2]);
 	pedal_data.voltage_brake1 = _adc_to_voltage(raw.data[PEDAL_BRAKE1]);
@@ -598,7 +599,7 @@ void pedals_process(void) {
     _calculate_brake_faults(pedal_data.voltage_brake1, pedal_data.voltage_brake2); // Check for faults.
 
     /* Set brake state, and turn brakelight on/off. */
-    mutex_get(&brake_state_mutex);
+    CATCH_ERROR(mutex_get(&brake_state_mutex), U_SUCCESS);
     if(pedal_data.percentage_brake > PEDAL_BRAKE_THRESH) {
         brake_pressed = true;
         efuse_enable(EFUSE_BRAKE);
@@ -607,7 +608,7 @@ void pedals_process(void) {
         brake_pressed = false;
         efuse_disable(EFUSE_BRAKE);
     }
-    mutex_put(&brake_state_mutex);
+    CATCH_ERROR(mutex_put(&brake_state_mutex), U_SUCCESS);
 
 	uint16_t dc_current = dti_get_dc_current();
     float mph = dti_get_mph();
@@ -643,7 +644,7 @@ void pedals_process(void) {
     }
 
     /* Return the pedal data mutex. */
-    mutex_put(&pedal_data_mutex);
+    CATCH_ERROR(mutex_put(&pedal_data_mutex), U_SUCCESS);
 
-    return;
+    return U_SUCCESS;
 }
