@@ -50,16 +50,17 @@ int bms_handleDclMessage(void)
 }
 
 /* Returns the battbox temperature. */
-uint16_t bms_getBattboxTemp(void) {
-    mutex_get(&bms_mutex);
-    uint16_t temp = battbox_temp;
-    mutex_put(&bms_mutex);
-    return temp;
+int bms_getBattboxTemp(uint16_t* buffer) {
+    CATCH_ERROR(mutex_get(&bms_mutex), U_SUCCESS);
+    *buffer = battbox_temp;
+    CATCH_ERROR(mutex_put(&bms_mutex), U_SUCCESS);
+    return U_SUCCESS;
 }
 
-/* Sets the battbox temperature. The "temp" parameter should be taken from the 'BMS/Cells/Temp_Avg_Value' CAN message. */
-void bms_setBattboxTemp(uint16_t temp) {
-    mutex_get(&bms_mutex);
-    battbox_temp = temp;
-    mutex_put(&bms_mutex);
+/* Sets the battbox temperature. The "temperature" parameter should be taken from the 'BMS/Cells/Temp_Avg_Value' CAN message. */
+int bms_setBattboxTemp(uint16_t temperature) {
+    CATCH_ERROR(mutex_get(&bms_mutex), U_SUCCESS);
+    battbox_temp = temperature;
+    CATCH_ERROR(mutex_put(&bms_mutex), U_SUCCESS);
+    return U_SUCCESS;
 }
