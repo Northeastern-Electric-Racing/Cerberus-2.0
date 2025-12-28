@@ -174,7 +174,7 @@ int tempsensor_toggleHeater(bool enable) {
 
 /* Gets the temp sensor's temperature and humidity readings. */
 int tempsensor_getTemperatureAndHumidity(float *temperature, float *humidity) {
-    CATCH_ERROR(mutex_get(&peripherals_mutex), U_SUCCESS)
+    CATCH_ERROR(mutex_get(&peripherals_mutex), U_SUCCESS);
     int status = sht30_get_temp_humid(&temperature_sensor);
     CATCH_ERROR(mutex_put(&peripherals_mutex), U_SUCCESS);
     if(status != 0) {

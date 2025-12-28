@@ -31,7 +31,7 @@ typedef struct {
 } efuse_data_t;
 
 /* API */
-efuse_data_t efuse_getData(void);  // Returns an instance of efuse_data_t with all current eFuse data.
+int efuse_getData(efuse_data_t* buffer);  // Returns an instance of efuse_data_t with all current eFuse data.
 void efuse_enable(efuse_t efuse);  // Enables an eFuse.
 void efuse_disable(efuse_t efuse); // Disables an eFuse.
 

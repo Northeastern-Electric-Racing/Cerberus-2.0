@@ -32,16 +32,14 @@
 #define PRIO_vPeripherals      2
 
 /* Helper to sleep thread based on the 'sleep' set in the config. */
-static inline void _SLEEP(thread_t* thread) {
-    tx_thread_sleep(thread->sleep);
-}
+#define _SLEEP(thread) tx_thread_sleep((thread)->sleep)
 
 /* Helper to 'skip' a thread's current iteration. Allows a thread to exit its routine early if something goes wrong, and to try again next time. Should only be used inside a thread's while(1) loop. */
-static inline void _SKIP(thread_t* thread) {
-    PRINTLN_WARNING("Thread had to use `_SKIP()`, meaning that something went wrong and its routine was not finished for this iteration (Thread: %s).", thread->name);
-    _SLEEP(thread); // Sleep the thread.
-    continue; // Once the thread wakes up, have it restart from the top.
-}
+#define _SKIP(thread) do { \
+    PRINTLN_WARNING("Thread had to use `_SKIP()`, meaning that something went wrong and its routine was not finished for this iteration (Thread: %s).", (thread)->name); \
+    _SLEEP(thread); \
+    continue; \
+} while(0)
 
 /* Default Thread */
 static thread_t default_thread = {
@@ -346,7 +344,8 @@ void vEFuses(ULONG thread_input) {
     while(1) {
 
         /* Set data. */
-        efuse_data_t data = efuse_getData();
+        efuse_data_t data = { 0 };
+        if(efuse_getData(&data) != U_SUCCESS) _SKIP(&efuses_thread);
         efuse_message_t messages[NUM_EFUSES] = { 0 };
         for(efuse_t efuse = 0; efuse < NUM_EFUSES; efuse++) {
             /* Set the data for each eFuse. */
