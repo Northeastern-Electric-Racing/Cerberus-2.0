@@ -46,7 +46,7 @@ void dti_init(void);
  * @param dti Pointer to DTI struct
  * @return int32_t The RPM of the motor
  */
-int32_t dti_get_rpm(void);
+int dti_get_rpm(int32_t* buffer);
 
 /**
  * @brief Process DTI ERPM CAN message.
@@ -54,7 +54,7 @@ int32_t dti_get_rpm(void);
  * @param mc Pointer to struct representing motor controller
  * @param msg CAN message to process
  */
-void dti_record_rpm(can_msg_t msg);
+int dti_record_rpm(can_msg_t msg);
 
 /**
  * @brief Get the MPH of the motor.
@@ -62,7 +62,7 @@ void dti_record_rpm(can_msg_t msg);
  * @param dti Pointer to DTI struct
  * @return float
  */
-float dti_get_mph(void);
+int dti_get_mph(float* buffer);
 
 /**
  * @brief Get the input voltage of the DTI.
@@ -131,17 +131,17 @@ void dti_set_drive_enable(bool drive_enable);
  * @param mc Pointer to DTI struct
  * @param msg CAN message containing temperature data
  */
-void dti_record_temp(can_msg_t msg);
+int dti_record_temp(can_msg_t msg);
 
 /**
  * @brief gets the current motor temperature from the DTI
  */
-uint16_t dti_get_motor_temp(void);
+int dti_get_motor_temp(int16_t* buffer);
 
 /**
  * @brief gets the motor controller tempature
  */
-uint16_t dti_get_controller_temp(void);
+int dti_get_controller_temp(int16_t* buffer);
 
 /**
  * @brief Record the currents from DTI
@@ -149,8 +149,8 @@ uint16_t dti_get_controller_temp(void);
  * @param mc Pointer to DTI struct
  * @param msg CAN message containing currents data
  */
-void dti_record_currents(can_msg_t msg);
+int dti_record_currents(can_msg_t msg);
 
-uint16_t dti_get_dc_current(void);
+int dti_get_dc_current(uint16_t* buffer);
 
 #endif

@@ -259,29 +259,33 @@ void dti_set_drive_enable(bool drive_enable)
 	queue_send(&can_outgoing, &msg, TX_NO_WAIT);
 }
 
-int32_t dti_get_rpm(void)
+int dti_get_rpm(int32_t* buffer)
 {
-	int32_t rpm;
-	mutex_get(&dti_mutex);
-	rpm = mc.rpm;
-	mutex_put(&dti_mutex);
-
-	return rpm;
+	CATCH_ERROR(mutex_get(&dti_mutex), U_SUCCESS);
+	*buffer = mc.rpm;
+	CATCH_ERROR(mutex_put(&dti_mutex), U_SUCCESS);
+	return U_SUCCESS;
 }
 
-float dti_get_mph(void)
+int dti_get_mph(float* buffer)
 {
+	/* Get RPM. */
+	int32_t rpm;
+	CATCH_ERROR(dti_get_rpm(&rpm), U_SUCCESS);
+
 	/* Convert RPM to MPH */
 	// rpm * gear ratio = wheel rpm
 	// tire diamter (in) to miles --> tire diamter miles
 	// wheel rpm * 60 --> wheel rph
 	// tire diamter miles * pi --> tire circumference
 	// rph * wheel circumference miles --> mph
-	return (dti_get_rpm() / (GEAR_RATIO)) * 60 *
+	*buffer = (rpm / (GEAR_RATIO)) * 60 *
 	       (TIRE_DIAMETER / 63360.0) * M_PI;
+	
+	return U_SUCCESS;
 }
 
-void dti_record_rpm(can_msg_t msg)
+int dti_record_rpm(can_msg_t msg)
 {
 	/* ERPM is first four bytes of can message in big endian format */
 	int32_t erpm = (msg.data[0] << 24) + (msg.data[1] << 16) +
@@ -289,12 +293,14 @@ void dti_record_rpm(can_msg_t msg)
 
 	int32_t rpm = erpm / POLE_PAIRS;
 
-	mutex_get(&dti_mutex);
+	CATCH_ERROR(mutex_get(&dti_mutex), U_SUCCESS);
 	mc.rpm = rpm;
-	mutex_put(&dti_mutex);
+	CATCH_ERROR(mutex_put(&dti_mutex), U_SUCCESS);
+
+	return U_SUCCESS;
 }
 
-void dti_record_temp(can_msg_t msg)
+int dti_record_temp(can_msg_t msg)
 {
 	uint16_t controllerTemp = (msg.data[0] << 8) + (msg.data[1]);
 	uint16_t motorTemp = (msg.data[2] << 8) + (msg.data[3]);
@@ -302,31 +308,32 @@ void dti_record_temp(can_msg_t msg)
 	controllerTemp /= 10;
 	motorTemp /= 10;
 
-	mutex_get(&dti_mutex);
+	CATCH_ERROR(mutex_get(&dti_mutex), U_SUCCESS);
 	mc.contr_temp = controllerTemp;
 	mc.motor_temp = motorTemp;
-	mutex_put(&dti_mutex);
+	CATCH_ERROR(mutex_put(&dti_mutex), U_SUCCESS);
+	return U_SUCCESS;
 }
 
-uint16_t dti_get_motor_temp(void)
+int dti_get_motor_temp(int16_t* buffer)
 {
-	mutex_get(&dti_mutex);
-	uint16_t temp = mc.motor_temp;
-	mutex_put(&dti_mutex);
-	return temp;
+	CATCH_ERROR(mutex_get(&dti_mutex), U_SUCCESS);
+	*buffer = mc.motor_temp;
+	CATCH_ERROR(mutex_put(&dti_mutex), U_SUCCESS);
+	return U_SUCCESS;
 }
 
-uint16_t dti_get_controller_temp(void)
+int dti_get_controller_temp(int16_t* buffer)
 {
-	mutex_get(&dti_mutex);
-	uint16_t temp = mc.contr_temp;
-	mutex_put(&dti_mutex);
-	return temp;
+	CATCH_ERROR(mutex_get(&dti_mutex), U_SUCCESS);
+	*buffer = mc.contr_temp;
+	CATCH_ERROR(mutex_put(&dti_mutex), U_SUCCESS);
+	return U_SUCCESS;
 }
 
-void dti_record_currents(can_msg_t msg)
+int dti_record_currents(can_msg_t msg)
 {	
-	mutex_get(&dti_mutex);
+	CATCH_ERROR(mutex_get(&dti_mutex), U_SUCCESS);
 
 	int16_t ac_current = (msg.data[0] << 8) + (msg.data[1]) / 10;
 	int16_t dc_current = (msg.data[2] << 8) + (msg.data[3]) / 10;
@@ -334,13 +341,14 @@ void dti_record_currents(can_msg_t msg)
 	mc.ac_current = ac_current;
 	mc.dc_current = dc_current;
 
-	mutex_put(&dti_mutex);
+	CATCH_ERROR(mutex_put(&dti_mutex), U_SUCCESS);
+	return U_SUCCESS;
 }
 
-uint16_t dti_get_dc_current(void)
+int dti_get_dc_current(uint16_t* buffer)
 {
-	mutex_get(&dti_mutex);
-	uint16_t temp = mc.dc_current;
-	mutex_put(&dti_mutex);
-	return temp;
+	CATCH_ERROR(mutex_get(&dti_mutex), U_SUCCESS);
+	*buffer = mc.dc_current;
+	CATCH_ERROR(mutex_put(&dti_mutex), U_SUCCESS);
+	return U_SUCCESS;
 }

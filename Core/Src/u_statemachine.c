@@ -41,15 +41,19 @@ static timer_t ts_rising_timer = {
 	.auto_activate = false
 };
 
-static void _send_nero_msg(void)
+static int _send_nero_msg(void)
 {
 	bitstream_t nero_msg;
 	uint8_t bitstream_data[6];
 	bitstream_init(&nero_msg, bitstream_data, 6); // Create 5-byte bitstream
 
+	/* Get MPH. */
+	float mph;
+	CATCH_ERROR(dti_get_mph(&mph), U_SUCCESS);
+
 	bitstream_add(&nero_msg, get_nero_state().home_mode, 4);
 	bitstream_add(&nero_msg, get_nero_state().nero_index, 4);
-	bitstream_add_signed(&nero_msg, dti_get_mph() * 10, 16);
+	bitstream_add_signed(&nero_msg, (mph * 10), 16);
 	bitstream_add(&nero_msg, tsms_get(), 1);
 	bitstream_add(&nero_msg, pedals_getTorqueLimitPercentage() * 100, 7);
 	bitstream_add(&nero_msg, cerberus_state.functional != F_REVERSE, 1);
@@ -62,6 +66,8 @@ static void _send_nero_msg(void)
 
 	/* Send CAN message */
 	queue_send(&can_outgoing, &msg, TX_NO_WAIT);
+
+	return U_SUCCESS;
 }
 
 int init_statemachine(void) {
@@ -191,7 +197,9 @@ static int transition_nero_state(nero_state_t new_state)
 		/* TSMS OFF and MPH = 0 to enter games */
 		if (new_state.nero_index == GAMES) {
 #ifndef TSMS_OVERRIDE
-			if (tsms_get() || dti_get_mph() >= 1) {
+			float mph; 
+			CATCH_ERROR(dti_get_mph(&mph), U_SUCCESS);
+			if (tsms_get() || mph >= 1) {
 				return 1;
 			}
 #endif

@@ -610,8 +610,13 @@ int pedals_process(void) {
     }
     CATCH_ERROR(mutex_put(&brake_state_mutex), U_SUCCESS);
 
-	uint16_t dc_current = dti_get_dc_current();
-    float mph = dti_get_mph();
+	/* Get DC Current. */
+	uint16_t dc_current;
+	CATCH_ERROR(dti_get_dc_current(&dc_current), U_SUCCESS);
+
+	/* Get MPH. */
+	float mph;
+	CATCH_ERROR(dti_get_mph(&mph), U_SUCCESS);
 
 	if (_calc_bspd_prefault(pedal_data.percentage_accel, pedal_data.percentage_brake, dc_current)) {
 		/* Prefault triggered */
