@@ -31,6 +31,18 @@
 #define PRIO_vMux              2
 #define PRIO_vPeripherals      2
 
+/* Helper to sleep thread based on the 'sleep' set in the config. */
+static inline void _SLEEP(thread_t* thread) {
+    tx_thread_sleep(thread->sleep);
+}
+
+/* Helper to 'skip' a thread's current iteration. Allows a thread to exit its routine early if something goes wrong, and to try again next time. Should only be used inside a thread's while(1) loop. */
+static inline void _SKIP(thread_t* thread) {
+    PRINTLN_WARNING("Thread had to use `_SKIP()`, meaning that something went wrong and its routine was not finished for this iteration (Thread: %s).", thread->name);
+    _SLEEP(thread); // Sleep the thread.
+    continue; // Once the thread wakes up, have it restart from the top.
+}
+
 /* Default Thread */
 static thread_t default_thread = {
         .name       = "Default Thread",  /* Name */
@@ -216,7 +228,7 @@ void vFaults(ULONG thread_input) {
         queue_send(&can_outgoing, &msg, TX_NO_WAIT);
 
         /* Sleep Thread for specified number of ticks. */
-        tx_thread_sleep(faults_thread.sleep);
+        _SLEEP(&faults_thread);
     }
 }
 
@@ -259,7 +271,7 @@ void vShutdown(ULONG thread_input) {
         queue_send(&can_outgoing, &msg, TX_NO_WAIT);
 
         /* Sleep Thread for specified number of ticks. */
-        tx_thread_sleep(shutdown_thread.sleep);
+        _SLEEP(&shutdown_thread);
     }
 }
 
@@ -278,10 +290,10 @@ void vStatemachine(ULONG thread_input) {
     
     while(1) {
 
-        /* Sleep Thread for specified number of ticks. */
-        tx_thread_sleep(statemachine_thread.sleep);
-
         statemachine_process();
+
+        /* Sleep Thread for specified number of ticks. */
+        _SLEEP(&statemachine_thread);
     }
 }
 
@@ -303,7 +315,7 @@ void vPedals(ULONG thread_input) {
         pedals_process();
 
         /* Sleep Thread for specified number of ticks. */
-        tx_thread_sleep(pedals_thread.sleep);
+        _SLEEP(&pedals_thread);
 
     }
 }
@@ -396,7 +408,7 @@ void vEFuses(ULONG thread_input) {
         queue_send(&can_outgoing, &mc_msg, TX_NO_WAIT);
 
         /* Sleep Thread for specified number of ticks. */
-        tx_thread_sleep(efuses_thread.sleep);
+        _SLEEP(&efuses_thread);
     }
 }
 
@@ -418,7 +430,8 @@ void vTSMS(ULONG thread_input) {
         tsms_update();
 
         /* Sleep Thread for specified number of ticks. */
-        tx_thread_sleep(tsms_thread.sleep);
+        _SLEEP(&tsms_thread);
+
     }
 }
 
@@ -441,7 +454,7 @@ void vMux(ULONG thread_input) {
         adc_switchMuxState();
 
         /* Sleep Thread for specified number of ticks. */
-        tx_thread_sleep(mux_thread.sleep);
+        _SLEEP(&mux_thread);
     }
 }
 
@@ -532,7 +545,7 @@ void vPeripherals(ULONG thread_input) {
         queue_send(&can_outgoing, &imu_gyro_message, TX_NO_WAIT);
 
         /* Sleep Thread for specified number of ticks. */
-        tx_thread_sleep(peripherals_thread.sleep);
+        _SLEEP(&peripherals_thread);
     }
 }
 
