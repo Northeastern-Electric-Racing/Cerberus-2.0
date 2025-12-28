@@ -32,14 +32,10 @@
 #define PRIO_vPeripherals      2
 
 /* Helper to sleep thread based on the 'sleep' set in the config. */
-#define _SLEEP(thread) tx_thread_sleep((thread)->sleep)
+static inline void SLEEP(thread_t* thread) { tx_thread_sleep(thread->sleep); }
 
-/* Helper to 'skip' a thread's current iteration. Allows a thread to exit its routine early if something goes wrong, and to try again next time. Should only be used inside a thread's while(1) loop. */
-#define _SKIP(thread) do { \
-    PRINTLN_WARNING("Thread had to use `_SKIP()`, meaning that something went wrong and its routine was not finished for this iteration (Thread: %s).", (thread)->name); \
-    _SLEEP(thread); \
-    continue; \
-} while(0)
+/* Helper macro that's just a wrapper for a do/while(0) statement. Makes it so specific sections within threads can be broken out of if something goes wrong. */
+#define SECTION(...) do { __VA_ARGS__ } while (0)
 
 /* Default Thread */
 static thread_t default_thread = {
@@ -61,7 +57,7 @@ void vDefault(ULONG thread_input) {
         HAL_GPIO_TogglePin(WATCHDOG_GPIO_Port, WATCHDOG_Pin); // External Watchdog
 
         /* Sleep Thread for specified number of ticks. */
-        tx_thread_sleep(default_thread.sleep);
+        SLEEP(&default_thread);
     }
 }
 
@@ -226,7 +222,7 @@ void vFaults(ULONG thread_input) {
         queue_send(&can_outgoing, &msg, TX_NO_WAIT);
 
         /* Sleep Thread for specified number of ticks. */
-        _SLEEP(&faults_thread);
+        SLEEP(&faults_thread);
     }
 }
 
@@ -269,7 +265,7 @@ void vShutdown(ULONG thread_input) {
         queue_send(&can_outgoing, &msg, TX_NO_WAIT);
 
         /* Sleep Thread for specified number of ticks. */
-        _SLEEP(&shutdown_thread);
+        SLEEP(&shutdown_thread);
     }
 }
 
@@ -291,7 +287,7 @@ void vStatemachine(ULONG thread_input) {
         statemachine_process();
 
         /* Sleep Thread for specified number of ticks. */
-        _SLEEP(&statemachine_thread);
+        SLEEP(&statemachine_thread);
     }
 }
 
@@ -313,7 +309,7 @@ void vPedals(ULONG thread_input) {
         pedals_process();
 
         /* Sleep Thread for specified number of ticks. */
-        _SLEEP(&pedals_thread);
+        SLEEP(&pedals_thread);
 
     }
 }
@@ -407,7 +403,7 @@ void vEFuses(ULONG thread_input) {
         queue_send(&can_outgoing, &mc_msg, TX_NO_WAIT);
 
         /* Sleep Thread for specified number of ticks. */
-        _SLEEP(&efuses_thread);
+        SLEEP(&efuses_thread);
     }
 }
 
@@ -429,7 +425,7 @@ void vTSMS(ULONG thread_input) {
         tsms_update();
 
         /* Sleep Thread for specified number of ticks. */
-        _SLEEP(&tsms_thread);
+        SLEEP(&tsms_thread);
 
     }
 }
@@ -544,7 +540,7 @@ void vPeripherals(ULONG thread_input) {
         queue_send(&can_outgoing, &imu_gyro_message, TX_NO_WAIT);
 
         /* Sleep Thread for specified number of ticks. */
-        _SLEEP(&peripherals_thread);
+        SLEEP(&peripherals_thread);
     }
 }
 
