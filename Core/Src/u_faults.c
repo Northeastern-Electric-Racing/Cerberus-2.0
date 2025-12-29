@@ -42,11 +42,11 @@ static const _metadata faults[] = {
 
 /* Fault Globals*/
 static timer_t timers[NUM_FAULTS]; // Array of fault timers. One timer per fault.
-static _Atomic uint64_t severity_mask = ATOMIC_VAR_INIT(0); // Mask that stores the severity configuration for each fault (0=NON_CRITICAL, 1=CRITICAL).
-static volatile _Atomic uint64_t fault_flags = ATOMIC_VAR_INIT(0); // Each bit is a separate fault (0=Not Faulted, 1=Faulted).
+static _Atomic uint32_t severity_mask = ATOMIC_VAR_INIT(0); // Mask that stores the severity configuration for each fault (0=NON_CRITICAL, 1=CRITICAL).
+static volatile _Atomic uint32_t fault_flags = ATOMIC_VAR_INIT(0); // Each bit is a separate fault (0=Not Faulted, 1=Faulted).
 
 /* Getter function for accessing faults in other files. */
-uint64_t get_faults(void) {
+uint32_t get_faults(void) {
     return fault_flags;
 }
 
@@ -55,7 +55,7 @@ static void _timer_callback(ULONG args) {
     fault_t fault_id = (fault_t)args;
 
     /* Clear the fault. */
-    fault_flags &= ~((uint64_t)(1 << fault_id));
+    fault_flags &= ~((uint32_t)(1 << fault_id));
     PRINTLN_INFO("Cleared fault (Fault: %s).", faults[fault_id].name);
 
     /* Check if there are any active critical faults. If not, unfault the car. */
@@ -72,7 +72,7 @@ int faults_init(void) {
 
         /* Initialize severity_mask. */
         if(faults[fault_id].severity == CRITICAL) {
-            severity_mask |= ((uint64_t)1 << fault_id);
+            severity_mask |= ((uint32_t)1 << fault_id);
         }
 
         /* Initialize all timers. */
@@ -99,7 +99,7 @@ int faults_init(void) {
 int trigger_fault(fault_t fault_id) {
 
     /* Set the relevant fault bit in the fault flags list. */
-    fault_flags |= (uint64_t)(1 << fault_id);
+    fault_flags |= (uint32_t)(1 << fault_id);
 
     switch(faults[fault_id].severity) {
         case CRITICAL:
@@ -144,5 +144,5 @@ void write_mcu_fault(bool status)
 /* Static Asserts */
 /* (These throw compile-time errors if certain rules are broken.) */
 /* Probably keep these at the bottom of this file */
-_Static_assert(NUM_FAULTS <= 64, "This project does not (currently) support more than 64 faults."); // Ensures there aren't more than 64 faults.
+_Static_assert(NUM_FAULTS <= 32, "This project does not (currently) support more than 32 faults."); // Ensures there aren't more than 32 faults.
 _Static_assert(sizeof(faults) / sizeof(faults[0]) == NUM_FAULTS, "Fault table size must match NUM_FAULTS. Make sure the fault table is consistent with the enum."); // Ensures the fault table size matches NUM_FAULTS.

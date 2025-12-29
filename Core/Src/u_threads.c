@@ -210,7 +210,7 @@ void vFaults(ULONG thread_input) {
     while(1) {
 
         /* Send a CAN message containing the current fault statuses. */
-        uint64_t faults = get_faults();
+        uint32_t faults = get_faults();
         can_msg_t msg = {.id = CANID_FAULT_MSG, .len = 8, .data = {0}};
         memcpy(msg.data, &faults, sizeof(faults));
         queue_send(&can_outgoing, &msg, TX_NO_WAIT);
