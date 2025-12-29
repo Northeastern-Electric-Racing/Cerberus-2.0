@@ -2,12 +2,6 @@
 #include "u_mutexes.h"
 #include "u_tx_debug.h"
 
-/* DTI Mutex */
-mutex_t dti_mutex = {
-    .name = "DTI Mutex",           /* Name of the mutex. */
-    .priority_inherit = TX_INHERIT /* Priority inheritance setting. */
-};
-
 /* Peripherals Mutex */
 mutex_t peripherals_mutex = {
     .name = "Peripherals Mutex",   /* Name of the mutex. */
@@ -19,7 +13,6 @@ mutex_t peripherals_mutex = {
 */
 uint8_t mutexes_init() {
     /* Create Mutexes. */
-    CATCH_ERROR(create_mutex(&dti_mutex), U_SUCCESS);          // Create DTI Mutex.
     CATCH_ERROR(create_mutex(&peripherals_mutex), U_SUCCESS);  // Create Peripherals Mutex.
 
     // add more as necessary.

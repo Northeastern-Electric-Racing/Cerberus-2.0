@@ -8,7 +8,6 @@
 #include <stdbool.h>
 
 /* Mutex List */
-extern mutex_t dti_mutex;          // DTI Mutex
 extern mutex_t peripherals_mutex;  // Peripherals Mutex
 // add more as necessary...
 

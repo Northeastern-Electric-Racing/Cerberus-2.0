@@ -15,6 +15,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+#include <stdatomic.h>
 
 #include "c_utils.h"
 #include "u_bms.h"
@@ -27,7 +28,21 @@
 #define SAMPLES \
 	3 /* determines number of torque request samples to average for dti*/
 
-static dti_t mc;
+
+/* Struct for all motor controller data. */
+static struct mc {
+	_Atomic int32_t rpm; 			/* SCALE: 1         UNITS: Rotations per Minute   */
+	_Atomic int16_t duty_cycle; 	/* SCALE: 10        UNITS: Percentage             */
+	_Atomic int16_t input_voltage; 	/* SCALE: 1         UNITS: Volts                  */
+	_Atomic int16_t ac_current; 	/* SCALE: 10        UNITS: Amps                   */
+	_Atomic int16_t dc_current; 	/* SCALE: 10        UNITS: Amps                   */
+	_Atomic int16_t contr_temp; 	/* SCALE: 10        UNITS: Degrees Celsius        */
+	_Atomic int16_t motor_temp; 	/* SCALE: 10        UNITS: Degrees Celsius        */
+	_Atomic uint8_t fault_code; 	/* SCALE: 1         UNITS: No units just a number */
+	_Atomic int8_t throttle_signal; /* SCALE: 1         UNITS: Percentage             */
+	_Atomic int8_t brake_signal; 	/* SCALE: 1         UNITS: Percentage             */
+	_Atomic int8_t drive_enable; 	/* SCALE: 1         UNITS: No units just a number */
+};
 
 void dti_init(void)
 {
@@ -261,12 +276,7 @@ void dti_set_drive_enable(bool drive_enable)
 
 int32_t dti_get_rpm(void)
 {
-	int32_t rpm;
-	mutex_get(&dti_mutex);
-	rpm = mc.rpm;
-	mutex_put(&dti_mutex);
-
-	return rpm;
+	return mc.rpm;
 }
 
 float dti_get_mph(void)
@@ -289,9 +299,7 @@ void dti_record_rpm(can_msg_t msg)
 
 	int32_t rpm = erpm / POLE_PAIRS;
 
-	mutex_get(&dti_mutex);
 	mc.rpm = rpm;
-	mutex_put(&dti_mutex);
 }
 
 void dti_record_temp(can_msg_t msg)
@@ -302,45 +310,31 @@ void dti_record_temp(can_msg_t msg)
 	controllerTemp /= 10;
 	motorTemp /= 10;
 
-	mutex_get(&dti_mutex);
 	mc.contr_temp = controllerTemp;
 	mc.motor_temp = motorTemp;
-	mutex_put(&dti_mutex);
 }
 
 uint16_t dti_get_motor_temp(void)
 {
-	mutex_get(&dti_mutex);
-	uint16_t temp = mc.motor_temp;
-	mutex_put(&dti_mutex);
-	return temp;
+	return mc.motor_temp;
 }
 
 uint16_t dti_get_controller_temp(void)
 {
-	mutex_get(&dti_mutex);
-	uint16_t temp = mc.contr_temp;
-	mutex_put(&dti_mutex);
-	return temp;
+	return mc.contr_temp;
 }
 
 void dti_record_currents(can_msg_t msg)
-{	
-	mutex_get(&dti_mutex);
+{
 
 	int16_t ac_current = (msg.data[0] << 8) + (msg.data[1]) / 10;
 	int16_t dc_current = (msg.data[2] << 8) + (msg.data[3]) / 10;
 
 	mc.ac_current = ac_current;
 	mc.dc_current = dc_current;
-
-	mutex_put(&dti_mutex);
 }
 
 uint16_t dti_get_dc_current(void)
 {
-	mutex_get(&dti_mutex);
-	uint16_t temp = mc.dc_current;
-	mutex_put(&dti_mutex);
-	return temp;
+	return mc.dc_current;
 }
