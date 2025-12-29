@@ -1,3 +1,4 @@
+#include <stdatomic.h>
 #include "main.h"
 #include "timer.h"
 #include "debounce.h"
@@ -16,11 +17,11 @@
 #include "u_adc.h"
 
 /* Globals. */
-static float torque_limit_percentage = 1.0;
 static uint16_t regen_limits[2] = { 0, 50 }; // [PERFORMANCE, ENDURANCE]
-static bool launch_control_enabled = false;
 static const float MPH_TO_KMH = 1.609;       // Factor for converting MPH to KMH
-static bool brake_pressed = false;
+static _Atomic bool brake_pressed = ATOMIC_VAR_INIT(false);
+static _Atomic bool launch_control_enabled = ATOMIC_VAR_INIT(false);
+static _Atomic float torque_limit_percentage = ATOMIC_VAR_INIT(1.0f);
 
 /* Pedal Data. */
 typedef struct {
