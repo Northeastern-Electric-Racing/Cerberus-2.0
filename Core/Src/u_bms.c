@@ -1,3 +1,4 @@
+#include <stdatomic.h>
 #include "tx_api.h"
 #include "u_tx_timers.h"
 #include "u_bms.h"
@@ -9,7 +10,7 @@
 #define BMS_CAN_MONITOR_DELAY 4000
 
 /* Globals. */
-static uint16_t battbox_temp;
+static _Atomic uint16_t battbox_temp;
 
 /* Fault callback(s). */
 static void _bms_fault_callback(ULONG args) {queue_send(&faults, &(fault_t){BMS_CAN_MONITOR_FAULT}, TX_NO_WAIT);}; // Queues the BMS CAN Monitor Fault.
@@ -51,15 +52,10 @@ int bms_handleDclMessage(void)
 
 /* Returns the battbox temperature. */
 uint16_t bms_getBattboxTemp(void) {
-    mutex_get(&bms_mutex);
-    uint16_t temp = battbox_temp;
-    mutex_put(&bms_mutex);
-    return temp;
+    return battbox_temp;
 }
 
 /* Sets the battbox temperature. The "temp" parameter should be taken from the 'BMS/Cells/Temp_Avg_Value' CAN message. */
 void bms_setBattboxTemp(uint16_t temp) {
-    mutex_get(&bms_mutex);
     battbox_temp = temp;
-    mutex_put(&bms_mutex);
 }
