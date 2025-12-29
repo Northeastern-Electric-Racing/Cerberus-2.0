@@ -9,7 +9,7 @@
 #define _TSMS_DEBOUNCE_TIME 10 // Ticks for TSMS signal to debounce.
 
 /* GLOBALS */
-static _Atomic bool tsms = ATOMIC_VAR_INIT(false); // Stores TSMS state.
+static _Atomic bool tsms = false; // Stores TSMS state.
 
 /* TSMS Timer */
 static void _timer_callback(ULONG args); // Forward declaration for the timer callback

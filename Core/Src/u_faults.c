@@ -42,8 +42,8 @@ static const _metadata faults[] = {
 
 /* Fault Globals*/
 static timer_t timers[NUM_FAULTS]; // Array of fault timers. One timer per fault.
-static _Atomic uint32_t severity_mask = ATOMIC_VAR_INIT(0); // Mask that stores the severity configuration for each fault (0=NON_CRITICAL, 1=CRITICAL).
-static volatile _Atomic uint32_t fault_flags = ATOMIC_VAR_INIT(0); // Each bit is a separate fault (0=Not Faulted, 1=Faulted).
+static _Atomic uint32_t severity_mask = 0; // Mask that stores the severity configuration for each fault (0=NON_CRITICAL, 1=CRITICAL).
+static volatile _Atomic uint32_t fault_flags = 0; // Each bit is a separate fault (0=Not Faulted, 1=Faulted).
 
 /* Getter function for accessing faults in other files. */
 uint32_t get_faults(void) {

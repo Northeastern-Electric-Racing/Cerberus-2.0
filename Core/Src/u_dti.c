@@ -30,7 +30,7 @@
 
 
 /* Struct for all motor controller data. */
-static struct mc {
+typedef struct {
 	_Atomic int32_t rpm; 			/* SCALE: 1         UNITS: Rotations per Minute   */
 	_Atomic int16_t duty_cycle; 	/* SCALE: 10        UNITS: Percentage             */
 	_Atomic int16_t input_voltage; 	/* SCALE: 1         UNITS: Volts                  */
@@ -42,7 +42,8 @@ static struct mc {
 	_Atomic int8_t throttle_signal; /* SCALE: 1         UNITS: Percentage             */
 	_Atomic int8_t brake_signal; 	/* SCALE: 1         UNITS: Percentage             */
 	_Atomic int8_t drive_enable; 	/* SCALE: 1         UNITS: No units just a number */
-};
+} dti_t;
+static dti_t mc = { 0 };
 
 void dti_init(void)
 {
