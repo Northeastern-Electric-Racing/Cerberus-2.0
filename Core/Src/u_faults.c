@@ -43,7 +43,7 @@ static const _metadata faults[] = {
 /* Fault Globals*/
 static timer_t timers[NUM_FAULTS]; // Array of fault timers. One timer per fault.
 static _Atomic uint32_t severity_mask = 0; // Mask that stores the severity configuration for each fault (0=NON_CRITICAL, 1=CRITICAL).
-static volatile _Atomic uint32_t fault_flags = 0; // Each bit is a separate fault (0=Not Faulted, 1=Faulted).
+static _Atomic uint32_t fault_flags = 0; // Each bit is a separate fault (0=Not Faulted, 1=Faulted).
 
 /* Getter function for accessing faults in other files. */
 uint32_t get_faults(void) {
@@ -55,7 +55,7 @@ static void _timer_callback(ULONG args) {
     fault_t fault_id = (fault_t)args;
 
     /* Clear the fault. */
-    fault_flags &= ~((uint32_t)(1 << fault_id));
+    atomic_fetch_and(&fault_flags, ~((uint32_t)(1 << fault_id))); // This is the _Atomic version of: fault_faults &= ~((uint32_t)(1 << fault_id));
     PRINTLN_INFO("Cleared fault (Fault: %s).", faults[fault_id].name);
 
     /* Check if there are any active critical faults. If not, unfault the car. */
@@ -72,7 +72,7 @@ int faults_init(void) {
 
         /* Initialize severity_mask. */
         if(faults[fault_id].severity == CRITICAL) {
-            severity_mask |= ((uint32_t)1 << fault_id);
+            atomic_fetch_or(&severity_mask, ((uint32_t)1 << fault_id)); // This is the _Atomic version of: severity_mask |= ((uint32_t)1 << fault_id);
         }
 
         /* Initialize all timers. */
@@ -99,7 +99,7 @@ int faults_init(void) {
 int trigger_fault(fault_t fault_id) {
 
     /* Set the relevant fault bit in the fault flags list. */
-    fault_flags |= (uint32_t)(1 << fault_id);
+    atomic_fetch_or(&fault_flags, (uint32_t)(1 << fault_id)); // This is the _Atomic version of: fault_flags |= (uint32_t)(1 << fault_id);
 
     switch(faults[fault_id].severity) {
         case CRITICAL:
