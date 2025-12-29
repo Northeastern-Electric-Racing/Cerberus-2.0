@@ -1,4 +1,5 @@
 #include <stdint.h>
+#include <stdatomic.h>
 #include "tx_api.h"
 #include "main.h"
 #include "u_tx_timers.h"
@@ -41,8 +42,8 @@ static const _metadata faults[] = {
 
 /* Fault Globals*/
 static timer_t timers[NUM_FAULTS]; // Array of fault timers. One timer per fault.
-static uint64_t severity_mask; // Mask that stores the severity configuration for each fault (0=NON_CRITICAL, 1=CRITICAL).
-static volatile uint64_t fault_flags; // Each bit is a separate fault (0=Not Faulted, 1=Faulted).
+static _Atomic uint64_t severity_mask = ATOMIC_VAR_INIT(0); // Mask that stores the severity configuration for each fault (0=NON_CRITICAL, 1=CRITICAL).
+static volatile _Atomic uint64_t fault_flags = ATOMIC_VAR_INIT(0); // Each bit is a separate fault (0=Not Faulted, 1=Faulted).
 
 /* Getter function for accessing faults in other files. */
 uint64_t get_faults(void) {
@@ -52,9 +53,6 @@ uint64_t get_faults(void) {
 /* Callback function. Clears fault after timer expires. */
 static void _timer_callback(ULONG args) {
     fault_t fault_id = (fault_t)args;
-
-    /* Get faults mutex. */
-    mutex_get(&faults_mutex);
 
     /* Clear the fault. */
     fault_flags &= ~((uint64_t)(1 << fault_id));
@@ -66,9 +64,6 @@ static void _timer_callback(ULONG args) {
              set_ready_mode();
         }
     }
-
-    /* Put faults mutex. */
-    mutex_put(&faults_mutex);
 }
 
 /* Initializes the fault seveity mask, and creates all timers. */
@@ -103,13 +98,8 @@ int faults_init(void) {
 /* If the fault is already triggered, this just resets the fault's timer. */
 int trigger_fault(fault_t fault_id) {
 
-    /* Get faults mutex. */
-    mutex_get(&faults_mutex);
-
-    fault_flags |= (uint64_t)(1 << fault_id); // Set the relevant fault bit.
-
-    /* Put faults mutex. */
-    mutex_put(&faults_mutex);
+    /* Set the relevant fault bit in the fault flags list. */
+    fault_flags |= (uint64_t)(1 << fault_id);
 
     switch(faults[fault_id].severity) {
         case CRITICAL:
