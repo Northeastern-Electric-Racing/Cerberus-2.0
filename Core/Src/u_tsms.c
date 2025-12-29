@@ -1,3 +1,4 @@
+#include <stdatomic.h>
 #include "u_tsms.h"
 #include "tx_api.h"
 #include "u_tx_debug.h"
@@ -8,7 +9,7 @@
 #define _TSMS_DEBOUNCE_TIME 10 // Ticks for TSMS signal to debounce.
 
 /* GLOBALS */
-static bool tsms = false; // Stores TSMS state.
+static _Atomic bool tsms = ATOMIC_VAR_INIT(false); // Stores TSMS state.
 
 /* TSMS Timer */
 static void _timer_callback(ULONG args); // Forward declaration for the timer callback
@@ -25,9 +26,7 @@ static timer_t timer = {
 static void _timer_callback(ULONG args) {
     /* If the TSMS pin is still HIGH, set 'tsms' to true. */
     if(HAL_GPIO_ReadPin(TSMS_GPIO_GPIO_Port, TSMS_GPIO_Pin) == GPIO_PIN_SET) {
-        mutex_get(&tsms_mutex);
         tsms = true;
-        mutex_put(&tsms_mutex);
     }
 }
 
@@ -64,17 +63,12 @@ void tsms_update(void) {
         
     } else {
         /* If TSMS pin is not high, no debouncing is needed. Just set 'tsms' to false (after getting the mutex).*/
-        mutex_get(&tsms_mutex);
         tsms = false;
-        mutex_put(&tsms_mutex);
     }
 }
 
 /* Gets the Offical TSMS State (not the raw pin state, but the state stored in the debounced 'tsms' bool). */
 bool tsms_get(void) {
-    mutex_get(&tsms_mutex);
-    bool state = tsms;
-    mutex_put(&tsms_mutex);
-    return state;
+    return tsms;
 }
 
