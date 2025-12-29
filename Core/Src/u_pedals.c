@@ -1,3 +1,4 @@
+#include <stdatomic.h>
 #include "main.h"
 #include "timer.h"
 #include "debounce.h"
@@ -16,11 +17,11 @@
 #include "u_adc.h"
 
 /* Globals. */
-static float torque_limit_percentage = 1.0;
 static uint16_t regen_limits[2] = { 0, 50 }; // [PERFORMANCE, ENDURANCE]
-static bool launch_control_enabled = false;
 static const float MPH_TO_KMH = 1.609;       // Factor for converting MPH to KMH
-static bool brake_pressed = false;
+static _Atomic bool brake_pressed = false;
+static _Atomic bool launch_control_enabled = false;
+static _Atomic float torque_limit_percentage = 1.0f;
 
 /* Pedal Data. */
 typedef struct {
@@ -89,9 +90,6 @@ static void _pedal_difference_fault_callback(void *arg) {queue_send(&faults, &(f
 static void _send_pedal_data(ULONG args) {
     (void)args; // The args parameter is unused for this callback.
 
-    /* Get the Pedal Data Mutex */
-    mutex_get(&pedal_data_mutex);
-
     /* Pedal Volts Message. */
     can_msg_t pedals_volts_msg = { .id = CANID_PEDALS_VOLTS_MSG, .len = 8, .data = { 0 } };
     struct __attribute__((__packed__)) {
@@ -129,9 +127,6 @@ static void _send_pedal_data(ULONG args) {
     /* Queue the Messages. */
     queue_send(&can_outgoing, &pedals_volts_msg, TX_NO_WAIT);
     queue_send(&can_outgoing, &pedals_norm_msg, TX_NO_WAIT);
-
-    /* Put the Pedal Data Mutex. */
-    mutex_put(&pedal_data_mutex);
 }
 
 /* Pedal Data Timer. */
@@ -468,48 +463,34 @@ int pedals_init(void) {
 
 /* Returns the brake state (true=brake pressed, false=brake not pressed). */
 bool pedals_getBrakeState(void) {
-    bool temp;
-    mutex_get(&brake_state_mutex);
-    temp = brake_pressed;
-    mutex_put(&brake_state_mutex);
-    return temp;
+    return brake_pressed;
 }
 
 /* Returns the torque limit percentgae. */
 float pedals_getTorqueLimitPercentage(void) {
-	float temp;
-	mutex_get(&torque_limit_mutex);
-	temp = torque_limit_percentage;
-	mutex_put(&torque_limit_mutex);
-	return temp;
+	return torque_limit_percentage;
 }
 
 void pedals_setTorqueLimitPercentage(float percentage) {
-	mutex_get(&torque_limit_mutex);
 	torque_limit_percentage = percentage;
-	mutex_put(&torque_limit_mutex);
 }
 
 void pedals_increaseTorqueLimit(void)
 {
-	mutex_get(&torque_limit_mutex);
 	if (torque_limit_percentage + 0.1 > 1) {
 		torque_limit_percentage = 1;
 	} else {
 		torque_limit_percentage += 0.1;
 	}
-	mutex_put(&torque_limit_mutex);
 }
 
 void pedals_decreaseTorqueLimit(void)
 {
-	mutex_get(&torque_limit_mutex);
 	if (torque_limit_percentage - 0.1 < 0) {
 		torque_limit_percentage = 0;
 	} else {
 		torque_limit_percentage -= 0.1;
 	}
-	mutex_put(&torque_limit_mutex);
 }
 
 void pedals_increaseRegenLimit(void)
@@ -574,9 +555,6 @@ bool pedals_getLaunchControl(void)
 /* Pedal Processing Function. Meant to be called by the pedals thread. */
 void pedals_process(void) {
 
-    /* Get the pedal data mutex. */
-    mutex_get(&pedal_data_mutex);
-
     /* Get pedal voltage data. */
 	raw_pedal_adc_t raw = adc_getPedalData();
     pedal_data.voltage_accel1 = _adc_to_voltage(raw.data[PEDAL_ACCEL1]);
@@ -598,7 +576,6 @@ void pedals_process(void) {
     _calculate_brake_faults(pedal_data.voltage_brake1, pedal_data.voltage_brake2); // Check for faults.
 
     /* Set brake state, and turn brakelight on/off. */
-    mutex_get(&brake_state_mutex);
     if(pedal_data.percentage_brake > PEDAL_BRAKE_THRESH) {
         brake_pressed = true;
         efuse_enable(EFUSE_BRAKE);
@@ -607,7 +584,6 @@ void pedals_process(void) {
         brake_pressed = false;
         efuse_disable(EFUSE_BRAKE);
     }
-    mutex_put(&brake_state_mutex);
 
 	uint16_t dc_current = dti_get_dc_current();
     float mph = dti_get_mph();
@@ -641,9 +617,6 @@ void pedals_process(void) {
             PRINTLN_ERROR("Failed to process pedals due to unknown functional state.");
             break;
     }
-
-    /* Return the pedal data mutex. */
-    mutex_put(&pedal_data_mutex);
 
     return;
 }

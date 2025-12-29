@@ -210,7 +210,7 @@ void vFaults(ULONG thread_input) {
     while(1) {
 
         /* Send a CAN message containing the current fault statuses. */
-        uint64_t faults = get_faults();
+        uint32_t faults = get_faults();
         can_msg_t msg = {.id = CANID_FAULT_MSG, .len = 8, .data = {0}};
         memcpy(msg.data, &faults, sizeof(faults));
         queue_send(&can_outgoing, &msg, TX_NO_WAIT);
@@ -479,56 +479,68 @@ void vPeripherals(ULONG thread_input) {
     
     while(1) {
 
-        /* Get the temp sensor data. */
-        float temperature = 0;
-        float humidity = 0;
-        int status = tempsensor_getTemperatureAndHumidity(&temperature, &humidity);
-        if(status != U_SUCCESS) {
-            PRINTLN_ERROR("Failed to called tempsensor_getTemperatureAndHumidity() in the peripherals thread (Status: %d).", status);
-            queue_send(&faults, &(fault_t){ONBOARD_TEMP_FAULT}, TX_NO_WAIT);
-        }
+        /* SECTION 1: Read the temperature sensor data and send it over CAN. */
+        do {
+            /* Get the temp sensor data. */
+            float temperature = 0;
+            float humidity = 0;
+            int status = tempsensor_getTemperatureAndHumidity(&temperature, &humidity);
+            if(status != U_SUCCESS) {
+                PRINTLN_ERROR("Failed to call tempsensor_getTemperatureAndHumidity() in the peripherals thread (Status: %d). This means that SECTION 1 of vPeripherals has been skipped.", status);
+                queue_send(&faults, &(fault_t){ONBOARD_TEMP_FAULT}, TX_NO_WAIT);
+                break; // Break from SECTION 1. We don't want to send the CAN message if reading the data failed.
+            }
 
-        /* Fill the temp sensor message and send it over CAN. */
-        tempsensor_CAN_t tempsensor_CAN = { 0 };
-        tempsensor_CAN.temperature = (int16_t)(temperature * 100);
-        tempsensor_CAN.humidity = (uint16_t)(humidity * 100);
-        can_msg_t temp_sensor_message = {.id = CANID_TEMP_SENSOR, .len = 4, .id_is_extended = false};
-        memcpy(temp_sensor_message.data, &tempsensor_CAN, temp_sensor_message.len);
-        queue_send(&can_outgoing, &temp_sensor_message, TX_NO_WAIT);
+            /* Fill the temp sensor message and send it over CAN. */
+            tempsensor_CAN_t tempsensor_CAN = { 0 };
+            tempsensor_CAN.temperature = (int16_t)(temperature * 100);
+            tempsensor_CAN.humidity = (uint16_t)(humidity * 100);
+            can_msg_t temp_sensor_message = {.id = CANID_TEMP_SENSOR, .len = 4, .id_is_extended = false};
+            memcpy(temp_sensor_message.data, &tempsensor_CAN, temp_sensor_message.len);
+            queue_send(&can_outgoing, &temp_sensor_message, TX_NO_WAIT);
+        } while (0);
 
-        /* Get the IMU acceleration data. */
-        vector3_t acceleration;
-        status = imu_getAcceleration(&acceleration);
-        if(status != U_SUCCESS) {
-            PRINTLN_ERROR("Failed to call imu_getAcceleration() in the peripherals thread (Status: %d).", status);
-            queue_send(&faults, &(fault_t){IMU_ACCEL_FAULT}, TX_NO_WAIT);
-        }
+        /* SECTION 2: Read IMU acceleration data and send it over CAN. */
+        do {
+            /* Get the IMU acceleration data. */
+            vector3_t acceleration;
+            int status = imu_getAcceleration(&acceleration);
+            if(status != U_SUCCESS) {
+                PRINTLN_ERROR("Failed to call imu_getAcceleration() in the peripherals thread (Status: %d). This means that SECTION 2 of vPeripherals has been skipped.", status);
+                queue_send(&faults, &(fault_t){IMU_ACCEL_FAULT}, TX_NO_WAIT);
+                break; // Break from SECTION 2. We don't want to send the CAN message if reading the data failed.
+            }
 
-        /* Fill the IMU acceleration message and send it over CAN. */
-        acceleration_CAN_t acceleration_CAN = { 0 };
-        acceleration_CAN.x = (int16_t)(acceleration.x * 100);
-        acceleration_CAN.y = (int16_t)(acceleration.y * 100);
-        acceleration_CAN.z = (int16_t)(acceleration.z * 100);
-        can_msg_t imu_acceleration_message = {.id = CANID_IMU_ACCEL, .len = 6, .id_is_extended = false};
-        memcpy(imu_acceleration_message.data, &acceleration_CAN, imu_acceleration_message.len);
-        queue_send(&can_outgoing, &imu_acceleration_message, TX_NO_WAIT);
+            /* Fill the IMU acceleration message and send it over CAN. */
+            acceleration_CAN_t acceleration_CAN = { 0 };
+            acceleration_CAN.x = (int16_t)(acceleration.x * 100);
+            acceleration_CAN.y = (int16_t)(acceleration.y * 100);
+            acceleration_CAN.z = (int16_t)(acceleration.z * 100);
+            can_msg_t imu_acceleration_message = {.id = CANID_IMU_ACCEL, .len = 6, .id_is_extended = false};
+            memcpy(imu_acceleration_message.data, &acceleration_CAN, imu_acceleration_message.len);
+            queue_send(&can_outgoing, &imu_acceleration_message, TX_NO_WAIT);
+        } while (0);
 
-        /* Get the IMU Gyro data. */
-        vector3_t gyro;
-        status = imu_getAngularRate(&gyro);
-        if(status != U_SUCCESS) {
-            PRINTLN_ERROR("Failed to call imu_getAngularRate() in the peripherals thread (Status: %d).", status);
-            queue_send(&faults, &(fault_t){IMU_GYRO_FAULT}, TX_NO_WAIT);
-        }
+        /* SECTION 3: Read IMU gyro data and send it over CAN. */
+        do {
+            /* Get the IMU Gyro data. */
+            vector3_t gyro;
+            int status = imu_getAngularRate(&gyro);
+            if(status != U_SUCCESS) {
+                PRINTLN_ERROR("Failed to call imu_getAngularRate() in the peripherals thread (Status: %d). This means that SECTION 3 of vPeripherals has been skipped.", status);
+                queue_send(&faults, &(fault_t){IMU_GYRO_FAULT}, TX_NO_WAIT);
+                break; // Break from SECTION 3. We don't want to send the CAN message if reading the data failed.
+            }
 
-        /* Fill the IMU Gyro message and send it over CAN. */
-        gyro_CAN_t gyro_CAN = { 0 };
-        gyro_CAN.x = (int16_t)(gyro.x * 100);
-        gyro_CAN.y = (int16_t)(gyro.y * 100);
-        gyro_CAN.z = (int16_t)(gyro.z * 100);
-        can_msg_t imu_gyro_message = {.id = CANID_IMU_GYRO, .len = 6, .id_is_extended = false};
-        memcpy(imu_gyro_message.data, &gyro_CAN, imu_gyro_message.len);
-        queue_send(&can_outgoing, &imu_gyro_message, TX_NO_WAIT);
+            /* Fill the IMU Gyro message and send it over CAN. */
+            gyro_CAN_t gyro_CAN = { 0 };
+            gyro_CAN.x = (int16_t)(gyro.x * 100);
+            gyro_CAN.y = (int16_t)(gyro.y * 100);
+            gyro_CAN.z = (int16_t)(gyro.z * 100);
+            can_msg_t imu_gyro_message = {.id = CANID_IMU_GYRO, .len = 6, .id_is_extended = false};
+            memcpy(imu_gyro_message.data, &gyro_CAN, imu_gyro_message.len);
+            queue_send(&can_outgoing, &imu_gyro_message, TX_NO_WAIT);
+        } while (0);
 
         /* Sleep Thread for specified number of ticks. */
         tx_thread_sleep(peripherals_thread.sleep);

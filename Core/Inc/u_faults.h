@@ -22,7 +22,7 @@ typedef enum {
 	BSPD_PREFAULT,
 	RTDS_FAULT,
 
-    /* Total number of faults (cannot exceed 64.) */
+    /* Total number of faults (cannot exceed 32.) */
 	/* (always keep this at the end) */
     NUM_FAULTS
 
@@ -30,7 +30,7 @@ typedef enum {
 
 int faults_init(void);
 int trigger_fault(fault_t fault_id);
-uint64_t get_faults(void);
+uint32_t get_faults(void);
 void write_mcu_fault(bool status); /* Write the VCU FAULT line (from the microcontroller to the car). true = faulted, false = unfaulted. */
 
 #endif /* u_faults.h */

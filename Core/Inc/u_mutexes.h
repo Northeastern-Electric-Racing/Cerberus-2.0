@@ -8,14 +8,6 @@
 #include <stdbool.h>
 
 /* Mutex List */
-extern mutex_t faults_mutex;       // Faults Mutex
-extern mutex_t brake_state_mutex;  // Brake State Mutex
-extern mutex_t pedal_data_mutex;   // Pedal Data Mutex
-extern mutex_t bms_mutex;          // BMS Mutex
-extern mutex_t torque_limit_mutex; // Torque Limit Mutex
-extern mutex_t dti_mutex;          // DTI Mutex
-extern mutex_t adc_mutex;          // ADC Mutex
-extern mutex_t tsms_mutex;         // TSMS Mutex
 extern mutex_t peripherals_mutex;  // Peripherals Mutex
 // add more as necessary...
 

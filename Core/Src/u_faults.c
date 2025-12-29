@@ -1,4 +1,5 @@
 #include <stdint.h>
+#include <stdatomic.h>
 #include "tx_api.h"
 #include "main.h"
 #include "u_tx_timers.h"
@@ -41,11 +42,11 @@ static const _metadata faults[] = {
 
 /* Fault Globals*/
 static timer_t timers[NUM_FAULTS]; // Array of fault timers. One timer per fault.
-static uint64_t severity_mask; // Mask that stores the severity configuration for each fault (0=NON_CRITICAL, 1=CRITICAL).
-static volatile uint64_t fault_flags; // Each bit is a separate fault (0=Not Faulted, 1=Faulted).
+static _Atomic uint32_t severity_mask = 0; // Mask that stores the severity configuration for each fault (0=NON_CRITICAL, 1=CRITICAL).
+static _Atomic uint32_t fault_flags = 0; // Each bit is a separate fault (0=Not Faulted, 1=Faulted).
 
 /* Getter function for accessing faults in other files. */
-uint64_t get_faults(void) {
+uint32_t get_faults(void) {
     return fault_flags;
 }
 
@@ -53,11 +54,8 @@ uint64_t get_faults(void) {
 static void _timer_callback(ULONG args) {
     fault_t fault_id = (fault_t)args;
 
-    /* Get faults mutex. */
-    mutex_get(&faults_mutex);
-
     /* Clear the fault. */
-    fault_flags &= ~((uint64_t)(1 << fault_id));
+    atomic_fetch_and(&fault_flags, ~((uint32_t)(1 << fault_id))); // This is the _Atomic version of: fault_faults &= ~((uint32_t)(1 << fault_id));
     PRINTLN_INFO("Cleared fault (Fault: %s).", faults[fault_id].name);
 
     /* Check if there are any active critical faults. If not, unfault the car. */
@@ -66,9 +64,6 @@ static void _timer_callback(ULONG args) {
              set_ready_mode();
         }
     }
-
-    /* Put faults mutex. */
-    mutex_put(&faults_mutex);
 }
 
 /* Initializes the fault seveity mask, and creates all timers. */
@@ -77,7 +72,7 @@ int faults_init(void) {
 
         /* Initialize severity_mask. */
         if(faults[fault_id].severity == CRITICAL) {
-            severity_mask |= ((uint64_t)1 << fault_id);
+            atomic_fetch_or(&severity_mask, ((uint32_t)1 << fault_id)); // This is the _Atomic version of: severity_mask |= ((uint32_t)1 << fault_id);
         }
 
         /* Initialize all timers. */
@@ -103,13 +98,8 @@ int faults_init(void) {
 /* If the fault is already triggered, this just resets the fault's timer. */
 int trigger_fault(fault_t fault_id) {
 
-    /* Get faults mutex. */
-    mutex_get(&faults_mutex);
-
-    fault_flags |= (uint64_t)(1 << fault_id); // Set the relevant fault bit.
-
-    /* Put faults mutex. */
-    mutex_put(&faults_mutex);
+    /* Set the relevant fault bit in the fault flags list. */
+    atomic_fetch_or(&fault_flags, (uint32_t)(1 << fault_id)); // This is the _Atomic version of: fault_flags |= (uint32_t)(1 << fault_id);
 
     switch(faults[fault_id].severity) {
         case CRITICAL:
@@ -154,5 +144,5 @@ void write_mcu_fault(bool status)
 /* Static Asserts */
 /* (These throw compile-time errors if certain rules are broken.) */
 /* Probably keep these at the bottom of this file */
-_Static_assert(NUM_FAULTS <= 64, "This project does not (currently) support more than 64 faults."); // Ensures there aren't more than 64 faults.
+_Static_assert(NUM_FAULTS <= 32, "This project does not (currently) support more than 32 faults."); // Ensures there aren't more than 32 faults.
 _Static_assert(sizeof(faults) / sizeof(faults[0]) == NUM_FAULTS, "Fault table size must match NUM_FAULTS. Make sure the fault table is consistent with the enum."); // Ensures the fault table size matches NUM_FAULTS.

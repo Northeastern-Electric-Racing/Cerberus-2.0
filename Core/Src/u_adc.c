@@ -22,7 +22,7 @@ typedef enum {
     /* Total number of channels/indexes for ADC1. */
     ADC1_SIZE,
 } _adc1_t;
-static uint16_t _adc1_buffer[ADC1_SIZE]; // Buffer for the ADC DMA readings (note: has to be uint16_t to correspond with the "Half Word" GPDMA setting in CubeMX).
+static volatile uint16_t _adc1_buffer[ADC1_SIZE]; // Buffer for the ADC DMA readings (note: has to be uint16_t to correspond with the "Half Word" GPDMA setting in CubeMX).
 
 /* ADC2 Config. */
 typedef enum {
@@ -36,7 +36,7 @@ typedef enum {
     /* Total number of indexes for ADC2. */
     ADC2_SIZE
 } _adc2_t;
-static uint16_t _adc2_buffer[ADC2_SIZE]; // Buffer for the ADC DMA readings (note: has to be uint16_t to correspond with the "Half Word" GPDMA setting in CubeMX).
+static volatile uint16_t _adc2_buffer[ADC2_SIZE]; // Buffer for the ADC DMA readings (note: has to be uint16_t to correspond with the "Half Word" GPDMA setting in CubeMX).
 
 /* Multiplexer buffer. */
 typedef enum {
@@ -59,7 +59,7 @@ typedef enum {
     /* Total number of indexes for the multiplexer buffer. */
     MUX_SIZE
 } _mux_t;
-static uint16_t _mux_buffer[MUX_SIZE] = { 0 };
+static volatile uint16_t _mux_buffer[MUX_SIZE] = { 0 };
 
 /* Manage muxs and updates the mux buffer. */
 typedef enum { HIGH, LOW } _mux_state_t;
@@ -77,12 +77,10 @@ int adc_switchMuxState(void) {
         mux_state = HIGH;   // Update the mux state
 
         /* We are now in the HIGH state, so set the associated indexes in the buffer. */
-        mutex_get(&adc_mutex);
         _mux_buffer[SEL1_HIGH] = _adc1_buffer[ADC1_CHANNEL0];
         _mux_buffer[SEL2_HIGH] = _adc1_buffer[ADC1_CHANNEL15];
         _mux_buffer[SEL3_HIGH] = _adc1_buffer[ADC1_CHANNEL5];
         _mux_buffer[SEL4_HIGH] = _adc1_buffer[ADC1_CHANNEL9];
-        mutex_put(&adc_mutex);
     }
     else if(mux_state == HIGH) {
         /* Mux is currently HIGH, so switch to LOW. */
@@ -95,12 +93,10 @@ int adc_switchMuxState(void) {
         mux_state = LOW;   // Update the mux state
 
         /* We are now in the LOW state, so set the associated indexes in the buffer. */
-        mutex_get(&adc_mutex);
         _mux_buffer[SEL1_LOW] = _adc1_buffer[ADC1_CHANNEL0];
         _mux_buffer[SEL2_LOW] = _adc1_buffer[ADC1_CHANNEL15];
         _mux_buffer[SEL3_LOW] = _adc1_buffer[ADC1_CHANNEL5];
         _mux_buffer[SEL4_LOW] = _adc1_buffer[ADC1_CHANNEL9];
-        mutex_put(&adc_mutex);
     }
 
     return U_SUCCESS;
@@ -130,7 +126,6 @@ int adc_init(void) {
 raw_efuse_adc_t adc_getEFuseData(void) {
     raw_efuse_adc_t efuses = { 0 };
 
-    mutex_get(&adc_mutex);
     efuses.data[EFUSE_DASHBOARD] = _adc1_buffer[ADC1_CHANNEL3];
     efuses.data[EFUSE_BRAKE] = _mux_buffer[SEL1_HIGH];
     efuses.data[EFUSE_SHUTDOWN] = _mux_buffer[SEL3_LOW];
@@ -141,7 +136,6 @@ raw_efuse_adc_t adc_getEFuseData(void) {
     efuses.data[EFUSE_PUMP2] = _adc1_buffer[ADC1_CHANNEL13];
     efuses.data[EFUSE_BATTBOX] = _mux_buffer[SEL1_LOW];
     efuses.data[EFUSE_MC] = _adc1_buffer[ADC1_CHANNEL18];
-    mutex_put(&adc_mutex);
 
     return efuses;
 }
@@ -150,12 +144,10 @@ raw_efuse_adc_t adc_getEFuseData(void) {
 raw_pedal_adc_t adc_getPedalData(void) {
     raw_pedal_adc_t sensors = { 0 };
 
-    mutex_get(&adc_mutex);
     sensors.data[PEDAL_ACCEL1] = _adc2_buffer[ADC2_CHANNEL12];
     sensors.data[PEDAL_ACCEL2] = _adc2_buffer[ADC2_CHANNEL10];
     sensors.data[PEDAL_BRAKE1] = _adc2_buffer[ADC2_CHANNEL2];
     sensors.data[PEDAL_BRAKE2] = _adc2_buffer[ADC2_CHANNEL6];
-    mutex_put(&adc_mutex);
 
     return sensors;
 }
@@ -164,10 +156,8 @@ raw_pedal_adc_t adc_getPedalData(void) {
 raw_lfiu_adc_t adc_getLfiuData(void) {
     raw_lfiu_adc_t sensors = { 0 };
 
-    mutex_get(&adc_mutex);
     sensors.data[LFIU_1] = _mux_buffer[SEL2_HIGH];
     sensors.data[LFIU_2] = _mux_buffer[SEL2_LOW];
-    mutex_put(&adc_mutex);
 
     return sensors;
 }
@@ -177,9 +167,7 @@ lvread_adc_t adc_getLVData(void) {
     lvread_adc_t data = { 0 };
 
     /* Get the raw ADC reading. */
-    mutex_get(&adc_mutex);
     data.raw = _mux_buffer[SEL4_LOW];
-    mutex_put(&adc_mutex);
 
     /* Calcualte the ADC voltage. */
     const float v_ref = 3.3f; // VREF is 3V3 for VCU.
