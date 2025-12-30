@@ -8,59 +8,18 @@
 
 /* Wrapper for lsm6dsv SPI reading. */
 static int32_t _lsm6dsv_read(void* spi_handle, uint8_t reg, uint8_t* buffer, uint16_t length) {
-    /* Prevent stack overflow? */
-    if((length + 1) > IMU_MAX_BUFFER_SIZE) {
-        PRINTLN_ERROR("IMU buffer length is greater than IMU_MAX_BUFFER_SIZE, so cannot read from IMU (length+1=%d, IMU_MAX_BUFFER_SIZE=%d).", (length+1), IMU_MAX_BUFFER_SIZE);
-        return -1;
-    }
-    
-    uint8_t tx_buffer[length + 1];
-    uint8_t rx_buffer[length + 1];
-    
-    tx_buffer[0] = reg | 0x80; // For SPI reads, set MSB = 1 for read operation.
-    memset(&tx_buffer[1], 0x00, length);
-    
-    HAL_GPIO_WritePin(SPI2_NSS_GPIO_Port, SPI2_NSS_Pin, GPIO_PIN_RESET); // Setting the CS pin LOW selects the IMU for SPI.
-    
-    /* Recieve the data. */
-    HAL_StatusTypeDef status = HAL_SPI_TransmitReceive((SPI_HandleTypeDef*)spi_handle, tx_buffer, rx_buffer, length + 1, HAL_MAX_DELAY);
-    if(status != HAL_OK) {
-        HAL_GPIO_WritePin(SPI2_NSS_GPIO_Port, SPI2_NSS_Pin, GPIO_PIN_SET);
-        PRINTLN_ERROR("Failed to recieve data to the IMU over SPI (Status: %d/%s).", status, hal_status_toString(status));
-        return -1;
-    }
-
-    HAL_GPIO_WritePin(SPI2_NSS_GPIO_Port, SPI2_NSS_Pin, GPIO_PIN_SET); // Setting the CS pin HIGH deselects the IMU for SPI.
-    
-    memcpy(buffer, &rx_buffer[1], length);
+    /* For SPI reads, set MSB = 1 for read operation. */
+    uint8_t spi_reg = (uint8_t)(register_address | 0x80);
+    HAL_StatusTypeDef status;
     
     return 0;
 }
 
 /* Wrapper for lsm6dsv SPI writing. */
 static int32_t _lsm6dsv_write(void* spi_handle, uint8_t reg, const uint8_t* data, uint16_t length) {
-    /* Prevent stack overflow? */
-    if((length + 1) > IMU_MAX_BUFFER_SIZE) {
-        PRINTLN_ERROR("IMU buffer length is greater than IMU_MAX_BUFFER_SIZE, so cannot write to IMU (length+1=%d, IMU_MAX_BUFFER_SIZE=%d).", (length+1), IMU_MAX_BUFFER_SIZE);
-        return -1;
-    }
-    
-    uint8_t tx_buffer[length + 1];
-    tx_buffer[0] = reg & 0x7F; // For SPI writes, clear MSB = 0 for write operation.
-    memcpy(&tx_buffer[1], data, length);
-    
-    HAL_GPIO_WritePin(SPI2_NSS_GPIO_Port, SPI2_NSS_Pin, GPIO_PIN_RESET); // Setting the CS pin LOW selects the IMU for SPI.
-    
-    /* Transmit the data. */
-    HAL_StatusTypeDef status = HAL_SPI_Transmit((SPI_HandleTypeDef*)spi_handle, tx_buffer, length + 1, HAL_MAX_DELAY);
-    if(status != HAL_OK) {
-        HAL_GPIO_WritePin(SPI2_NSS_GPIO_Port, SPI2_NSS_Pin, GPIO_PIN_SET);
-        PRINTLN_ERROR("Failed to transmit data to the IMU over SPI (Status: %d/%s).", status, hal_status_toString(status));
-        return -1;
-    }
-
-    HAL_GPIO_WritePin(SPI2_NSS_GPIO_Port, SPI2_NSS_Pin, GPIO_PIN_SET); // Setting the CS pin HIGH deselects the IMU for SPI.
-    return 0;
+    /* For SPI writes, clear MSB = 0 for write operation. */
+    uint8_t spi_reg = (uint8_t)(register_address & 0x7F);
+    HAL_StatusTypeDef status;
 }
 
 /* Wrapper for sht30 I2C reading. */
