@@ -8,6 +8,9 @@
 
 /* Wrapper for lsm6dsv SPI reading. */
 static int32_t _lsm6dsv_read(void* spi_handle, uint8_t reg, uint8_t* buffer, uint16_t length) {
+    
+    /* Set lsm6dsv's CS pin HIGH. */
+    
     /* For SPI reads, set MSB = 1 for read operation. */
     uint8_t spi_reg = (uint8_t)(register_address | 0x80);
     HAL_StatusTypeDef status;

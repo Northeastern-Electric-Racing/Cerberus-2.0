@@ -199,8 +199,8 @@ void Error_Handler(void);
 #define FAULT_MCU_GPIO_Port GPIOG
 #define JTDO_Pin GPIO_PIN_3
 #define JTDO_GPIO_Port GPIOB
-#define SPI2_NSS_Pin GPIO_PIN_9
-#define SPI2_NSS_GPIO_Port GPIOB
+#define IMU_CS_Pin GPIO_PIN_9
+#define IMU_CS_GPIO_Port GPIOB
 #define IMD_GPIO_Pin GPIO_PIN_0
 #define IMD_GPIO_GPIO_Port GPIOE
 
