@@ -4,62 +4,67 @@
 #include "u_peripherals.h"
 #include "u_mutexes.h"
 
-#define IMU_MAX_BUFFER_SIZE 64 /* Max buffer size for the IMU VLAs. */
-
 /* Wrapper for lsm6dsv SPI reading. */
 static int32_t _lsm6dsv_read(void* spi_handle, uint8_t reg, uint8_t* buffer, uint16_t length) {
-    /* Prevent stack overflow? */
-    if((length + 1) > IMU_MAX_BUFFER_SIZE) {
-        PRINTLN_ERROR("IMU buffer length is greater than IMU_MAX_BUFFER_SIZE, so cannot read from IMU (length+1=%d, IMU_MAX_BUFFER_SIZE=%d).", (length+1), IMU_MAX_BUFFER_SIZE);
-        return -1;
-    }
     
-    uint8_t tx_buffer[length + 1];
-    uint8_t rx_buffer[length + 1];
+    SPI_HandleTypeDef *handle = (SPI_HandleTypeDef *)spi_handle;
+    HAL_StatusTypeDef status;
+
+    /* Select the IMU by setting its CS pin LOW. */
+    HAL_GPIO_WritePin(IMU_CS_GPIO_Port, IMU_CS_Pin, GPIO_PIN_RESET);
     
-    tx_buffer[0] = reg | 0x80; // For SPI reads, set MSB = 1 for read operation.
-    memset(&tx_buffer[1], 0x00, length);
-    
-    HAL_GPIO_WritePin(SPI2_NSS_GPIO_Port, SPI2_NSS_Pin, GPIO_PIN_RESET); // Setting the CS pin LOW selects the IMU for SPI.
-    
-    /* Recieve the data. */
-    HAL_StatusTypeDef status = HAL_SPI_TransmitReceive((SPI_HandleTypeDef*)spi_handle, tx_buffer, rx_buffer, length + 1, HAL_MAX_DELAY);
+    /* Tell the IMU you want to read from 'reg'. */
+    uint8_t spi_reg = (uint8_t)(reg | 0b10000000); // Bits 0 through 6 store 'reg' (the register address), while Bit 7 lets you chose if it's a read or write operation (1=read, 0=write).
+    status = HAL_SPI_Transmit(handle, &spi_reg, sizeof(spi_reg), HAL_MAX_DELAY);
     if(status != HAL_OK) {
-        HAL_GPIO_WritePin(SPI2_NSS_GPIO_Port, SPI2_NSS_Pin, GPIO_PIN_SET);
-        PRINTLN_ERROR("Failed to recieve data to the IMU over SPI (Status: %d/%s).", status, hal_status_toString(status));
+        PRINTLN_ERROR("Failed to call HAL_SPI_Transmit() to write the first SPI command (Status: %d/%s).", status, hal_status_toString(status));
+        HAL_GPIO_WritePin(IMU_CS_GPIO_Port, IMU_CS_Pin, GPIO_PIN_SET); // Deselect IMU since error.
         return -1;
     }
 
-    HAL_GPIO_WritePin(SPI2_NSS_GPIO_Port, SPI2_NSS_Pin, GPIO_PIN_SET); // Setting the CS pin HIGH deselects the IMU for SPI.
-    
-    memcpy(buffer, &rx_buffer[1], length);
+    /* Read from 'reg'. */
+    status = HAL_SPI_Receive(handle, buffer, length, HAL_MAX_DELAY);
+    if(status != HAL_OK) {
+        PRINTLN_ERROR("Failed to call HAL_SPI_Receive() to read from 'reg' (Status: %d/%s).", status, hal_status_toString(status));
+        HAL_GPIO_WritePin(IMU_CS_GPIO_Port, IMU_CS_Pin, GPIO_PIN_SET); // Deselect IMU since error.
+        return -1;
+    }
+
+    /* Deselect the IMU by setting its CS pin HIGH. */
+    HAL_GPIO_WritePin(IMU_CS_GPIO_Port, IMU_CS_Pin, GPIO_PIN_SET);
     
     return 0;
 }
 
 /* Wrapper for lsm6dsv SPI writing. */
 static int32_t _lsm6dsv_write(void* spi_handle, uint8_t reg, const uint8_t* data, uint16_t length) {
-    /* Prevent stack overflow? */
-    if((length + 1) > IMU_MAX_BUFFER_SIZE) {
-        PRINTLN_ERROR("IMU buffer length is greater than IMU_MAX_BUFFER_SIZE, so cannot write to IMU (length+1=%d, IMU_MAX_BUFFER_SIZE=%d).", (length+1), IMU_MAX_BUFFER_SIZE);
-        return -1;
-    }
     
-    uint8_t tx_buffer[length + 1];
-    tx_buffer[0] = reg & 0x7F; // For SPI writes, clear MSB = 0 for write operation.
-    memcpy(&tx_buffer[1], data, length);
+    SPI_HandleTypeDef *handle = (SPI_HandleTypeDef *)spi_handle;
+    HAL_StatusTypeDef status;
+
+    /* Select the IMU by setting its CS pin LOW. */
+    HAL_GPIO_WritePin(IMU_CS_GPIO_Port, IMU_CS_Pin, GPIO_PIN_RESET);
     
-    HAL_GPIO_WritePin(SPI2_NSS_GPIO_Port, SPI2_NSS_Pin, GPIO_PIN_RESET); // Setting the CS pin LOW selects the IMU for SPI.
-    
-    /* Transmit the data. */
-    HAL_StatusTypeDef status = HAL_SPI_Transmit((SPI_HandleTypeDef*)spi_handle, tx_buffer, length + 1, HAL_MAX_DELAY);
+    /* Tell the IMU you want to write to 'reg'. */
+    uint8_t spi_reg = (uint8_t)(reg & 0b01111111); // Bits 0 through 6 store 'reg' (the register address), while Bit 7 lets you chose if it's a read or write operation (1=read, 0=write).
+    status = HAL_SPI_Transmit(handle, &spi_reg, sizeof(spi_reg), HAL_MAX_DELAY);
     if(status != HAL_OK) {
-        HAL_GPIO_WritePin(SPI2_NSS_GPIO_Port, SPI2_NSS_Pin, GPIO_PIN_SET);
-        PRINTLN_ERROR("Failed to transmit data to the IMU over SPI (Status: %d/%s).", status, hal_status_toString(status));
+        PRINTLN_ERROR("Failed to call HAL_SPI_Transmit() to write the first SPI command (Status: %d/%s).", status, hal_status_toString(status));
+        HAL_GPIO_WritePin(IMU_CS_GPIO_Port, IMU_CS_Pin, GPIO_PIN_SET); // Deselect IMU since error.
         return -1;
     }
 
-    HAL_GPIO_WritePin(SPI2_NSS_GPIO_Port, SPI2_NSS_Pin, GPIO_PIN_SET); // Setting the CS pin HIGH deselects the IMU for SPI.
+    /* Write to 'reg'. */
+    status = HAL_SPI_Transmit(handle, data, length, HAL_MAX_DELAY);
+    if(status != HAL_OK) {
+        PRINTLN_ERROR("Failed to call HAL_SPI_Transmit() to write to 'reg' (Status: %d/%s).", status, hal_status_toString(status));
+        HAL_GPIO_WritePin(IMU_CS_GPIO_Port, IMU_CS_Pin, GPIO_PIN_SET); // Deselect IMU since error.
+        return -1;
+    }
+
+    /* Deselect the IMU by setting its CS pin HIGH. */
+    HAL_GPIO_WritePin(IMU_CS_GPIO_Port, IMU_CS_Pin, GPIO_PIN_SET);
+
     return 0;
 }
 
