@@ -4,25 +4,68 @@
 #include "u_peripherals.h"
 #include "u_mutexes.h"
 
-#define IMU_MAX_BUFFER_SIZE 64 /* Max buffer size for the IMU VLAs. */
-
 /* Wrapper for lsm6dsv SPI reading. */
 static int32_t _lsm6dsv_read(void* spi_handle, uint8_t reg, uint8_t* buffer, uint16_t length) {
     
-    /* Set lsm6dsv's CS pin HIGH. */
-    
-    /* For SPI reads, set MSB = 1 for read operation. */
-    uint8_t spi_reg = (uint8_t)(register_address | 0x80);
+    SPI_HandleTypeDef *handle = (SPI_HandleTypeDef *)spi_handle;
     HAL_StatusTypeDef status;
+
+    /* Select the IMU by setting its CS pin LOW. */
+    HAL_GPIO_WritePin(IMU_CS_GPIO_Port, IMU_CS_Pin, GPIO_PIN_RESET);
+    
+    /* Tell the IMU you want to read from 'reg'. */
+    uint8_t spi_reg = (uint8_t)(reg | 0b10000000); // Bits 0 through 6 store 'reg' (the register address), while Bit 7 lets you chose if it's a read or write operation (1=read, 0=write).
+    status = HAL_SPI_Transmit(handle, &spi_reg, sizeof(spi_reg), HAL_MAX_DELAY);
+    if(status != HAL_OK) {
+        PRINTLN_ERROR("Failed to call HAL_SPI_Transmit() to write the first SPI command (Status: %d/%s).", status, hal_status_toString(status));
+        HAL_GPIO_WritePin(IMU_CS_GPIO_Port, IMU_CS_Pin, GPIO_PIN_SET); // Deselect IMU since error.
+        return -1;
+    }
+
+    /* Read from 'reg'. */
+    status = HAL_SPI_Receive(handle, buffer, length, HAL_MAX_DELAY);
+    if(status != HAL_OK) {
+        PRINTLN_ERROR("Failed to call HAL_SPI_Receive() to read from 'reg' (Status: %d/%s).", status, hal_status_toString(status));
+        HAL_GPIO_WritePin(IMU_CS_GPIO_Port, IMU_CS_Pin, GPIO_PIN_SET); // Deselect IMU since error.
+        return -1;
+    }
+
+    /* Deselect the IMU by setting its CS pin HIGH. */
+    HAL_GPIO_WritePin(IMU_CS_GPIO_Port, IMU_CS_Pin, GPIO_PIN_SET);
     
     return 0;
 }
 
 /* Wrapper for lsm6dsv SPI writing. */
 static int32_t _lsm6dsv_write(void* spi_handle, uint8_t reg, const uint8_t* data, uint16_t length) {
-    /* For SPI writes, clear MSB = 0 for write operation. */
-    uint8_t spi_reg = (uint8_t)(register_address & 0x7F);
+    
+    SPI_HandleTypeDef *handle = (SPI_HandleTypeDef *)spi_handle;
     HAL_StatusTypeDef status;
+
+    /* Select the IMU by setting its CS pin LOW. */
+    HAL_GPIO_WritePin(IMU_CS_GPIO_Port, IMU_CS_Pin, GPIO_PIN_RESET);
+    
+    /* Tell the IMU you want to write to 'reg'. */
+    uint8_t spi_reg = (uint8_t)(reg & 0b01111111); // Bits 0 through 6 store 'reg' (the register address), while Bit 7 lets you chose if it's a read or write operation (1=read, 0=write).
+    status = HAL_SPI_Transmit(handle, &spi_reg, sizeof(spi_reg), HAL_MAX_DELAY);
+    if(status != HAL_OK) {
+        PRINTLN_ERROR("Failed to call HAL_SPI_Transmit() to write the first SPI command (Status: %d/%s).", status, hal_status_toString(status));
+        HAL_GPIO_WritePin(IMU_CS_GPIO_Port, IMU_CS_Pin, GPIO_PIN_SET); // Deselect IMU since error.
+        return -1;
+    }
+
+    /* Write to 'reg'. */
+    status = HAL_SPI_Transmit(handle, data, length, HAL_MAX_DELAY);
+    if(status != HAL_OK) {
+        PRINTLN_ERROR("Failed to call HAL_SPI_Transmit() to write to 'reg' (Status: %d/%s).", status, hal_status_toString(status));
+        HAL_GPIO_WritePin(IMU_CS_GPIO_Port, IMU_CS_Pin, GPIO_PIN_SET); // Deselect IMU since error.
+        return -1;
+    }
+
+    /* Deselect the IMU by setting its CS pin HIGH. */
+    HAL_GPIO_WritePin(IMU_CS_GPIO_Port, IMU_CS_Pin, GPIO_PIN_SET);
+
+    return 0;
 }
 
 /* Wrapper for sht30 I2C reading. */
