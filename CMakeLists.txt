@@ -99,6 +99,7 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     "./Core/Src/u_statemachine.c"
     "./Core/Src/u_queues.c"
     "./Core/Src/u_can.c"
+    "./Core/Src/can_messages_tx.c"
     "./Core/Src/u_faults.c"
     "./Core/Src/u_mutexes.c"
     "./Core/Src/u_efuses.c"
