@@ -23,11 +23,6 @@ typedef struct {
 /* This table should be kept in the same order as the fault_t enum in the header file. */
 static const _metadata faults[] = {
     /* Critical Faults */
-    [ONBOARD_BRAKE_OPEN_CIRCUIT_FAULT] = {"ONBOARD_BRAKE_OPEN_CIRCUIT_FAULT", CRITICAL, .timeout = 5000},
-    [ONBOARD_ACCEL_OPEN_CIRCUIT_FAULT] = {"ONBOARD_ACCEL_OPEN_CIRCUIT_FAULT", CRITICAL, .timeout = 5000},
-    [ONBOARD_BRAKE_SHORT_CIRCUIT_FAULT] = {"ONBOARD_BRAKE_SHORT_CIRCUIT_FAULT", CRITICAL, .timeout = 5000},
-    [ONBOARD_ACCEL_SHORT_CIRCUIT_FAULT] = {"ONBOARD_ACCEL_SHORT_CIRCUIT_FAULT", CRITICAL, .timeout = 5000},
-    [ONBOARD_PEDAL_DIFFERENCE_FAULT] = {"ONBOARD_PEDAL_DIFFERENCE_FAULT", CRITICAL, .timeout = 5000},
     [CAN_OUTGOING_FAULT] = {"CAN_OUTGOING_FAULT", CRITICAL, .timeout = 5000},
     [CAN_INCOMING_FAULT] = {"CAN_INCOMING_FAULT", CRITICAL, .timeout = 5000},
     [BMS_CAN_MONITOR_FAULT] = {"BMS_CAN_MONITOR_FAULT", CRITICAL, .timeout = 5000},
@@ -37,6 +32,11 @@ static const _metadata faults[] = {
     [IMU_ACCEL_FAULT] = {"IMU_ACCEL_FAULT", NON_CRITICAL, .timeout = 5000},
     [IMU_GYRO_FAULT] = {"IMU_GYRO_FAULT", NON_CRITICAL, .timeout = 5000},
     [BSPD_PREFAULT] = {"BSPD_PREFAULT", NON_CRITICAL, .timeout = 5000},
+    [ONBOARD_BRAKE_OPEN_CIRCUIT_FAULT] = {"ONBOARD_BRAKE_OPEN_CIRCUIT_FAULT", NON_CRITICAL, .timeout = 5000},
+    [ONBOARD_ACCEL_OPEN_CIRCUIT_FAULT] = {"ONBOARD_ACCEL_OPEN_CIRCUIT_FAULT", NON_CRITICAL, .timeout = 5000},
+    [ONBOARD_BRAKE_SHORT_CIRCUIT_FAULT] = {"ONBOARD_BRAKE_SHORT_CIRCUIT_FAULT", NON_CRITICAL, .timeout = 5000},
+    [ONBOARD_ACCEL_SHORT_CIRCUIT_FAULT] = {"ONBOARD_ACCEL_SHORT_CIRCUIT_FAULT", NON_CRITICAL, .timeout = 5000},
+    [ONBOARD_PEDAL_DIFFERENCE_FAULT] = {"ONBOARD_PEDAL_DIFFERENCE_FAULT", NON_CRITICAL, .timeout = 5000},
     [RTDS_FAULT] = {"RTDS_FAULT", NON_CRITICAL, .timeout = 5000},
 };
 
@@ -59,7 +59,7 @@ static void _timer_callback(ULONG args) {
     PRINTLN_INFO("Cleared fault (Fault: %s).", faults[fault_id].name);
 
     /* Check if there are any active critical faults. If not, unfault the car. */
-    if((fault_flags & severity_mask) == 0) {        
+    if((fault_flags & severity_mask) == 0) {
         if(get_func_state() == FAULTED) {
              set_ready_mode();
         }
@@ -124,7 +124,7 @@ int trigger_fault(fault_t fault_id) {
 
 /* Write the VCU FAULT line (from the microcontroller to the car). */
 void write_mcu_fault(bool status)
-{   
+{
     // The MCU Fault pin is kind of "swapped".
     // Setting the pin to HIGH indicates that there is no fault.
     // Setting the pin to LOW indicates that there is a fault.
