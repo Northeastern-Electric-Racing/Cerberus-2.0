@@ -685,4 +685,4 @@ void pedals_process(void) {
     return;
 }
 
-_Static_assert(NUM_LOCKS <= sizeof(drive_lock_map) * 8, "Increase the drive lock map to accomodate more drive locks."); // Ensures there aren't more than 32 faults.
+_Static_assert(NUM_LOCKS <= sizeof(drive_lock_map) * 8, "Increase the drive lock map to accomodate more drive locks."); // Ensures there aren't more locks than the bitmap can hold.
