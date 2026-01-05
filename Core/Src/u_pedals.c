@@ -19,6 +19,18 @@
 /* Globals. */
 static uint16_t regen_limits[2] = { 0, 50 }; // [PERFORMANCE, ENDURANCE]
 static const float MPH_TO_KMH = 1.609;       // Factor for converting MPH to KMH
+
+typedef enum {
+    BRAKE_OC,
+    BRAKE_SC,
+    ACCEL_OC,
+    ACCEL_SC,
+    ACCEL_DIFF,
+    BSPD_PREF,
+    NUM_LOCKS,
+} drive_lock_t; // Add to this enum anything that can lock the drive
+static uint8_t drive_lock_map = 0;
+
 static _Atomic bool brake_pressed = false;
 static _Atomic bool launch_control_enabled = false;
 static _Atomic float torque_limit_percentage = 1.0f;
@@ -77,14 +89,43 @@ static pedal_data_t pedal_data = { 0 };
 #define APPS_THRESHOLD_TOLERANCE    0.45 // (Volts). Tolerance margin around the accelerator pedal.
 #define BRAKE_THRESHOLD_TOLERANCE   0.25 // (Volts). Tolerance margin around the brake pedal.
 
-static void _onboard_brake_open_circuit_fault_callback(void *arg) {queue_send(&faults, &(fault_t){ONBOARD_BRAKE_OPEN_CIRCUIT_FAULT}, TX_NO_WAIT);};   // Queues the Brake Open Circuit Fault.
-static void _onboard_brake_short_circuit_fault_callback(void *arg) {queue_send(&faults, &(fault_t){ONBOARD_BRAKE_SHORT_CIRCUIT_FAULT}, TX_NO_WAIT);};   // Queues the Brake Short Circuit Fault.
-static void _onboard_accel_open_circuit_fault_callback(void *arg) {queue_send(&faults, &(fault_t){ONBOARD_ACCEL_OPEN_CIRCUIT_FAULT}, TX_NO_WAIT);};   // Queues the Accel Open Circuit Fault.
-static void _onboard_accel_short_circuit_fault_callback(void *arg) {queue_send(&faults, &(fault_t){ONBOARD_ACCEL_SHORT_CIRCUIT_FAULT}, TX_NO_WAIT);};   // Queues the Accel Short Circuit Fault.
+
+/* Set a drive lock, remember to unset when the fault condition disappears*/
+static void drive_lock_set(drive_lock_t lock) {
+    NER_SET_BIT(drive_lock_map, lock);
+}
+/* Unset drive lock */
+static void drive_lock_unset(drive_lock_t lock) {
+    NER_CLEAR_BIT(drive_lock_map, lock);
+}
+
+/* Unset drive lock */
+static bool is_drive_locked(void) {
+    return drive_lock_map > 0;
+}
 
 
+static void _onboard_brake_open_circuit_fault_callback(void *arg) {
+    queue_send(&faults, &(fault_t){ONBOARD_BRAKE_OPEN_CIRCUIT_FAULT}, TX_NO_WAIT);
+    drive_lock_set(BRAKE_OC);
+} // Queues the Brake Open Circuit Fault.
+static void _onboard_brake_short_circuit_fault_callback(void *arg) {
+    queue_send(&faults, &(fault_t){ONBOARD_BRAKE_SHORT_CIRCUIT_FAULT}, TX_NO_WAIT);
+    drive_lock_set(BRAKE_SC);
+} // Queues the Brake Short Circuit Fault.
+static void _onboard_accel_open_circuit_fault_callback(void *arg) {
+    queue_send(&faults, &(fault_t){ONBOARD_ACCEL_OPEN_CIRCUIT_FAULT}, TX_NO_WAIT);
+    drive_lock_set(ACCEL_OC);
+} // Queues the Accel Open Circuit Fault.
+static void _onboard_accel_short_circuit_fault_callback(void *arg) {
+    queue_send(&faults, &(fault_t){ONBOARD_ACCEL_SHORT_CIRCUIT_FAULT}, TX_NO_WAIT);
+    drive_lock_set(ACCEL_SC);
+} // Queues the Accel Short Circuit Fault.
+static void _pedal_difference_fault_callback(void *arg) {
+    queue_send(&faults, &(fault_t){ONBOARD_PEDAL_DIFFERENCE_FAULT}, TX_NO_WAIT);
+    drive_lock_set(ACCEL_DIFF);
+} // Queues the Pedal Difference Fault.
 
-static void _pedal_difference_fault_callback(void *arg) {queue_send(&faults, &(fault_t){ONBOARD_PEDAL_DIFFERENCE_FAULT}, TX_NO_WAIT);}; // Queues the Pedal Difference Fault.
 
 /* Send Pedal Data Callback */
 static void _send_pedal_data(ULONG args) {
@@ -146,14 +187,20 @@ static void _calculate_brake_faults(float voltage_brake1, float voltage_brake2) 
     static nertimer_t short_circuit_timer; // Timer for the Short Circuit Fault
 
     /* EV3.5.4: For analog acceleration control signals, this error checking must detect open circuit, short to ground and short to sensor power. */
-    
+
     /* Open Circuit Fault */
     bool open_circuit_fault = (voltage_brake1 > BRAKE_SENSOR_IRREGULAR_HIGH + BRAKE_THRESHOLD_TOLERANCE) || (voltage_brake2 > BRAKE_SENSOR_IRREGULAR_HIGH + BRAKE_THRESHOLD_TOLERANCE);
     debounce(open_circuit_fault, &open_circuit_timer, BRAKE_FAULT_DEBOUNCE, &_onboard_brake_open_circuit_fault_callback, NULL);
+    if (!open_circuit_fault) {
+        drive_lock_unset(BRAKE_OC);
+    }
 
     /* Short Circuit Fault */
     bool short_circuit_fault = (voltage_brake1 < BRAKE_SENSOR_IRREGULAR_LOW - BRAKE_THRESHOLD_TOLERANCE) || (voltage_brake2 < BRAKE_SENSOR_IRREGULAR_LOW - BRAKE_THRESHOLD_TOLERANCE);
     debounce(short_circuit_fault, &short_circuit_timer, BRAKE_FAULT_DEBOUNCE, &_onboard_brake_short_circuit_fault_callback, NULL);
+    if (!short_circuit_fault) {
+        drive_lock_unset(BRAKE_SC);
+    }
 }
 
 /* Calculates Pedal Faults. */
@@ -168,14 +215,24 @@ static void _calculate_accel_faults(float voltage_accel1, float voltage_accel2, 
     /* Open Circuit Fault */
     bool open_circuit_fault = (voltage_accel1 > MAX_VOLTS_UNSCALED - APPS_THRESHOLD_TOLERANCE) || (voltage_accel2 > MAX_VOLTS_UNSCALED - APPS_THRESHOLD_TOLERANCE);
     debounce(open_circuit_fault, &open_circuit_timer, PEDAL_FAULT_DEBOUNCE, &_onboard_accel_open_circuit_fault_callback, NULL);
+    if (!open_circuit_fault) {
+        drive_lock_unset(ACCEL_OC);
+    }
 
     /* Short Circuit Fault */
     bool short_circuit_fault = (voltage_accel1 < MIN_APPS1_VOLTS - APPS_THRESHOLD_TOLERANCE) || (voltage_accel2 < MIN_APPS2_VOLTS - APPS_THRESHOLD_TOLERANCE);
     debounce(short_circuit_fault, &short_circuit_timer, PEDAL_FAULT_DEBOUNCE, &_onboard_accel_short_circuit_fault_callback, NULL);
+    if (!short_circuit_fault) {
+        drive_lock_unset(ACCEL_SC);
+    }
+
     /* Pedal Difference Fault */
     /* Detects if the two accelerator pedal sensors give readings that differ by more than PEDAL_DIFF_THRESH. */
     bool pedal_difference_fault = fabs(percentage_accel1 - percentage_accel2) > PEDAL_DIFF_THRESH;
     debounce(pedal_difference_fault, &pedal_difference_timer, PEDAL_FAULT_DEBOUNCE, &_pedal_difference_fault_callback, NULL);
+    if (!pedal_difference_fault) {
+        drive_lock_unset(ACCEL_DIFF);
+    }
 }
 
 /**
@@ -250,7 +307,7 @@ static void _power_regression_accel_to_torque(float percentage_accel)
 
 /**
  * @brief Derate torque target to keep car below the maximum pit/reverse mode speed.
- * 
+ *
  * @param mph Speed of the car
  * @param percentage_accel Percent travel of the acceleration pedal from 0-1
  * @return int16_t Derated torque
@@ -291,7 +348,7 @@ static int16_t _derate_torque(float mph, float percentage_accel)
 
 /**
  * @brief Calculate and send torque command to motor controller.
- * 
+ *
  * @param percentage_accel Accelerator pedal percent travel from 0-1
  */
 static void _accel_pedal_regen_torque(float percentage_accel)
@@ -312,7 +369,7 @@ static void _accel_pedal_regen_torque(float percentage_accel)
 
 /**
  * @brief Calculate regen braking AC current target based on accelerator pedal percent travel.
- * 
+ *
  * @param percentage_accel Accelerator pedal percent travel from 0-1
  */
 static void _accel_pedal_regen_braking(float percentage_accel)
@@ -394,7 +451,7 @@ static void _handle_performance(float mph, float percentage_accel)
 
 /**
  * @brief Torque calculations for efficiency mode. If the driver is braking, do regenerative braking.
- * 
+ *
  * @param mph mph of the car
  * @param percentage_accel adjusted value of the acceleration pedal
  */
@@ -413,7 +470,7 @@ static void _handle_endurance(float mph, float percentage_accel)
 
 /**
  * @brief Drive forward with a speed limit of 5 mph.
- * 
+ *
  * @param mph Current speed of the car.
  * @param percentage_accel % pedal travel of the accelerator pedal.
  */
@@ -424,7 +481,7 @@ static void _handle_pit(float mph, float percentage_accel)
 
 /**
  * @brief Drive in speed limited reverse mode.
- * 
+ *
  * @param mph Current speed of the car.
  * @param percentage_accel % pedal travel of the accelerator pedal.
  */
@@ -590,9 +647,16 @@ void pedals_process(void) {
 
 	if (_calc_bspd_prefault(pedal_data.percentage_accel, pedal_data.percentage_brake, dc_current)) {
 		/* Prefault triggered */
-		// dti_set_torque(0);
-		// osDelay(delay_time);
+		drive_lock_set(BSPD_PREF);
+    } else {
+        drive_lock_unset(BSPD_PREF);
     }
+
+	// if we have a drive lock condition, set torque to zero and bail
+	if (is_drive_locked()) {
+        dti_set_torque(0);
+	    return;
+	}
 
     switch(get_func_state()) {
         case READY:
@@ -620,3 +684,5 @@ void pedals_process(void) {
 
     return;
 }
+
+_Static_assert(NUM_LOCKS <= sizeof(drive_lock_map) * 8, "Increase the drive lock map to accomodate more drive locks."); // Ensures there aren't more than 32 faults.
