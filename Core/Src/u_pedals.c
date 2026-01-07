@@ -92,10 +92,12 @@ static pedal_data_t pedal_data = { 0 };
 
 /* Set a drive lock, remember to unset when the fault condition disappears*/
 static void drive_lock_set(drive_lock_t lock) {
+    PRINTLN_INFO("Drive Lock %d set", lock);
     NER_SET_BIT(drive_lock_map, lock);
 }
 /* Unset drive lock */
 static void drive_lock_unset(drive_lock_t lock) {
+    PRINTLN_INFO("Drive Lock %d unset", lock);
     NER_CLEAR_BIT(drive_lock_map, lock);
 }
 
