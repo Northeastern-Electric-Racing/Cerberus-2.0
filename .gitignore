@@ -78,3 +78,5 @@ ctrlp.root
 
 # macOS files
 .DS_Store
+
+.cache

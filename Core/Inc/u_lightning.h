@@ -12,6 +12,6 @@ typedef enum {
  *
  * @param status the desired light status (ex: LIGHT_OFF, LIGHT_RED, LIGHT_GREEN)
  */
-void send_lightning_board_light_status(Lightning_Board_Light_Status msg);
+void send_lightning_board_status(Lightning_Board_Light_Status msg);
 
 #endif /* u_lightning.h */
