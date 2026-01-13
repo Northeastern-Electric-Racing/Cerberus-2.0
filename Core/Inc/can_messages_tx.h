@@ -120,6 +120,22 @@ uint8_t send_mc_efuse
 
 /**
 * Contents of this message:
+* VCU/Shutdown/BMS_GPIO - 
+* VCU/Shutdown/BOTS_GPIO - 
+* VCU/Shutdown/SPARE_GPIO - 
+* VCU/Shutdown/BSPD_GPIO - 
+* VCU/Shutdown/HV_C_GPIO - 
+* VCU/Shutdown/HVD_GPIO - 
+* VCU/Shutdown/IMD_GPIO - 
+* VCU/Shutdown/CKPT_GPIO - 
+* VCU/Shutdown/INERTIA_SW_GPIO - 
+* VCU/Shutdown/TSMS_GPIO - 
+*/
+uint8_t send_shutdown_pins
+(bool bms_gpio,bool bots_gpio,bool spare_gpio,bool bspd_gpio,bool hv_c,bool hvd_gpio,bool imd_gpio,bool ckpt_gpio,bool inertia_sw_gpio,bool tsms_gpio,uint8_t UNUSED);
+
+/**
+* Contents of this message:
 * VCU/Faults/ONBOARD_PEDAL_OPEN_CIRCUIT_FAULT - Onboard Pedal Open Circuit Fault.
 * VCU/Faults/ONBOARD_PEDAL_SHORT_CIRCUIT_FAULT - Onboard Pedal Short Circuit Fault.
 * VCU/Faults/ONBOARD_PEDAL_DIFFERENCE_FAULT - Onboard Pedal Difference Fault.

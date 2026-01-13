@@ -19,345 +19,284 @@ static void handle_bitstream_overflow(bitstream_t *bitstream_res,
 uint8_t send_dashboard_efuse
 (uint16_t ADC,float voltage,float current,bool is_faulted,bool is_enabled)
 {
+    can_msg_t msg;
+    msg.id = 0xEF0;
+
     bitstream_t dashboard_efuse_msg;
 	uint8_t bitstream_data[8];
 	bitstream_init(&dashboard_efuse_msg, bitstream_data, 8);
-
 	
-    voltage = voltage*1000;
-    current = current*1000;
-
-
-    endian_swap(&ADC, sizeof(ADC));
-    endian_swap(&voltage, sizeof(voltage));
-    endian_swap(&current, sizeof(current));
-    
-	bitstream_add(&dashboard_efuse_msg, ADC, 16);
-    bitstream_add(&dashboard_efuse_msg, voltage, 16);
-    bitstream_add(&dashboard_efuse_msg, current, 16);
+    bitstream_add(&dashboard_efuse_msg, ADC, 16);
+    bitstream_add(&dashboard_efuse_msg, voltage*1000, 16);
+    bitstream_add(&dashboard_efuse_msg, current*1000, 16);
     bitstream_add(&dashboard_efuse_msg, is_faulted, 8);
     bitstream_add(&dashboard_efuse_msg, is_enabled, 8);
+
+    handle_bitstream_overflow(&dashboard_efuse_msg, msg.id);
     
-    can_msg_t msg;
-    msg.id = 0xEF0;
     msg.len = sizeof(bitstream_data);
     memcpy(msg.data, &bitstream_data, sizeof(bitstream_data));
 
-    
-    handle_bitstream_overflow(&dashboard_efuse_msg, msg.id);
-    
     return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
 }
 
 uint8_t send_brake_efuse
 (uint16_t ADC,float voltage,float current,bool is_faulted,bool is_enabled)
 {
+    can_msg_t msg;
+    msg.id = 0xEF1;
+
     bitstream_t brake_efuse_msg;
 	uint8_t bitstream_data[8];
 	bitstream_init(&brake_efuse_msg, bitstream_data, 8);
-
 	
-    voltage = voltage*1000;
-    current = current*1000;
-
-
-    endian_swap(&ADC, sizeof(ADC));
-    endian_swap(&voltage, sizeof(voltage));
-    endian_swap(&current, sizeof(current));
-    
-	bitstream_add(&brake_efuse_msg, ADC, 16);
-    bitstream_add(&brake_efuse_msg, voltage, 16);
-    bitstream_add(&brake_efuse_msg, current, 16);
+    bitstream_add(&brake_efuse_msg, ADC, 16);
+    bitstream_add(&brake_efuse_msg, voltage*1000, 16);
+    bitstream_add(&brake_efuse_msg, current*1000, 16);
     bitstream_add(&brake_efuse_msg, is_faulted, 8);
     bitstream_add(&brake_efuse_msg, is_enabled, 8);
+
+    handle_bitstream_overflow(&brake_efuse_msg, msg.id);
     
-    can_msg_t msg;
-    msg.id = 0xEF1;
     msg.len = sizeof(bitstream_data);
     memcpy(msg.data, &bitstream_data, sizeof(bitstream_data));
 
-    
-    handle_bitstream_overflow(&brake_efuse_msg, msg.id);
-    
     return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
 }
 
 uint8_t send_shutdown_efuse
 (uint16_t ADC,float voltage,float current,bool is_faulted,bool is_enabled)
 {
+    can_msg_t msg;
+    msg.id = 0xEF2;
+
     bitstream_t shutdown_efuse_msg;
 	uint8_t bitstream_data[8];
 	bitstream_init(&shutdown_efuse_msg, bitstream_data, 8);
-
 	
-    voltage = voltage*1000;
-    current = current*1000;
-
-
-    endian_swap(&ADC, sizeof(ADC));
-    endian_swap(&voltage, sizeof(voltage));
-    endian_swap(&current, sizeof(current));
-    
-	bitstream_add(&shutdown_efuse_msg, ADC, 16);
-    bitstream_add(&shutdown_efuse_msg, voltage, 16);
-    bitstream_add(&shutdown_efuse_msg, current, 16);
+    bitstream_add(&shutdown_efuse_msg, ADC, 16);
+    bitstream_add(&shutdown_efuse_msg, voltage*1000, 16);
+    bitstream_add(&shutdown_efuse_msg, current*1000, 16);
     bitstream_add(&shutdown_efuse_msg, is_faulted, 8);
     bitstream_add(&shutdown_efuse_msg, is_enabled, 8);
+
+    handle_bitstream_overflow(&shutdown_efuse_msg, msg.id);
     
-    can_msg_t msg;
-    msg.id = 0xEF2;
     msg.len = sizeof(bitstream_data);
     memcpy(msg.data, &bitstream_data, sizeof(bitstream_data));
 
-    
-    handle_bitstream_overflow(&shutdown_efuse_msg, msg.id);
-    
     return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
 }
 
 uint8_t send_lv_efuse
 (uint16_t ADC,float voltage,float current,bool is_faulted,bool is_enabled)
 {
+    can_msg_t msg;
+    msg.id = 0xEF3;
+
     bitstream_t lv_efuse_msg;
 	uint8_t bitstream_data[8];
 	bitstream_init(&lv_efuse_msg, bitstream_data, 8);
-
 	
-    voltage = voltage*1000;
-    current = current*1000;
-
-
-    endian_swap(&ADC, sizeof(ADC));
-    endian_swap(&voltage, sizeof(voltage));
-    endian_swap(&current, sizeof(current));
-    
-	bitstream_add(&lv_efuse_msg, ADC, 16);
-    bitstream_add(&lv_efuse_msg, voltage, 16);
-    bitstream_add(&lv_efuse_msg, current, 16);
+    bitstream_add(&lv_efuse_msg, ADC, 16);
+    bitstream_add(&lv_efuse_msg, voltage*1000, 16);
+    bitstream_add(&lv_efuse_msg, current*1000, 16);
     bitstream_add(&lv_efuse_msg, is_faulted, 8);
     bitstream_add(&lv_efuse_msg, is_enabled, 8);
+
+    handle_bitstream_overflow(&lv_efuse_msg, msg.id);
     
-    can_msg_t msg;
-    msg.id = 0xEF3;
     msg.len = sizeof(bitstream_data);
     memcpy(msg.data, &bitstream_data, sizeof(bitstream_data));
 
-    
-    handle_bitstream_overflow(&lv_efuse_msg, msg.id);
-    
     return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
 }
 
 uint8_t send_radfan_efuse
 (uint16_t ADC,float voltage,float current,bool is_faulted,bool is_enabled)
 {
+    can_msg_t msg;
+    msg.id = 0xEF4;
+
     bitstream_t radfan_efuse_msg;
 	uint8_t bitstream_data[8];
 	bitstream_init(&radfan_efuse_msg, bitstream_data, 8);
-
 	
-    voltage = voltage*1000;
-    current = current*1000;
-
-
-    endian_swap(&ADC, sizeof(ADC));
-    endian_swap(&voltage, sizeof(voltage));
-    endian_swap(&current, sizeof(current));
-    
-	bitstream_add(&radfan_efuse_msg, ADC, 16);
-    bitstream_add(&radfan_efuse_msg, voltage, 16);
-    bitstream_add(&radfan_efuse_msg, current, 16);
+    bitstream_add(&radfan_efuse_msg, ADC, 16);
+    bitstream_add(&radfan_efuse_msg, voltage*1000, 16);
+    bitstream_add(&radfan_efuse_msg, current*1000, 16);
     bitstream_add(&radfan_efuse_msg, is_faulted, 8);
     bitstream_add(&radfan_efuse_msg, is_enabled, 8);
+
+    handle_bitstream_overflow(&radfan_efuse_msg, msg.id);
     
-    can_msg_t msg;
-    msg.id = 0xEF4;
     msg.len = sizeof(bitstream_data);
     memcpy(msg.data, &bitstream_data, sizeof(bitstream_data));
 
-    
-    handle_bitstream_overflow(&radfan_efuse_msg, msg.id);
-    
     return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
 }
 
 uint8_t send_fanbatt_efuse
 (uint16_t ADC,float voltage,float current,bool is_faulted,bool is_enabled)
 {
+    can_msg_t msg;
+    msg.id = 0xEF5;
+
     bitstream_t fanbatt_efuse_msg;
 	uint8_t bitstream_data[8];
 	bitstream_init(&fanbatt_efuse_msg, bitstream_data, 8);
-
 	
-    voltage = voltage*1000;
-    current = current*1000;
-
-
-    endian_swap(&ADC, sizeof(ADC));
-    endian_swap(&voltage, sizeof(voltage));
-    endian_swap(&current, sizeof(current));
-    
-	bitstream_add(&fanbatt_efuse_msg, ADC, 16);
-    bitstream_add(&fanbatt_efuse_msg, voltage, 16);
-    bitstream_add(&fanbatt_efuse_msg, current, 16);
+    bitstream_add(&fanbatt_efuse_msg, ADC, 16);
+    bitstream_add(&fanbatt_efuse_msg, voltage*1000, 16);
+    bitstream_add(&fanbatt_efuse_msg, current*1000, 16);
     bitstream_add(&fanbatt_efuse_msg, is_faulted, 8);
     bitstream_add(&fanbatt_efuse_msg, is_enabled, 8);
+
+    handle_bitstream_overflow(&fanbatt_efuse_msg, msg.id);
     
-    can_msg_t msg;
-    msg.id = 0xEF5;
     msg.len = sizeof(bitstream_data);
     memcpy(msg.data, &bitstream_data, sizeof(bitstream_data));
 
-    
-    handle_bitstream_overflow(&fanbatt_efuse_msg, msg.id);
-    
     return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
 }
 
 uint8_t send_pumpone_efuse
 (uint16_t ADC,float voltage,float current,bool is_faulted,bool is_enabled)
 {
+    can_msg_t msg;
+    msg.id = 0xEF6;
+
     bitstream_t pumpone_efuse_msg;
 	uint8_t bitstream_data[8];
 	bitstream_init(&pumpone_efuse_msg, bitstream_data, 8);
-
 	
-    voltage = voltage*1000;
-    current = current*1000;
-
-
-    endian_swap(&ADC, sizeof(ADC));
-    endian_swap(&voltage, sizeof(voltage));
-    endian_swap(&current, sizeof(current));
-    
-	bitstream_add(&pumpone_efuse_msg, ADC, 16);
-    bitstream_add(&pumpone_efuse_msg, voltage, 16);
-    bitstream_add(&pumpone_efuse_msg, current, 16);
+    bitstream_add(&pumpone_efuse_msg, ADC, 16);
+    bitstream_add(&pumpone_efuse_msg, voltage*1000, 16);
+    bitstream_add(&pumpone_efuse_msg, current*1000, 16);
     bitstream_add(&pumpone_efuse_msg, is_faulted, 8);
     bitstream_add(&pumpone_efuse_msg, is_enabled, 8);
+
+    handle_bitstream_overflow(&pumpone_efuse_msg, msg.id);
     
-    can_msg_t msg;
-    msg.id = 0xEF6;
     msg.len = sizeof(bitstream_data);
     memcpy(msg.data, &bitstream_data, sizeof(bitstream_data));
 
-    
-    handle_bitstream_overflow(&pumpone_efuse_msg, msg.id);
-    
     return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
 }
 
 uint8_t send_pumptwo_efuse
 (uint16_t ADC,float voltage,float current,bool is_faulted,bool is_enabled)
 {
+    can_msg_t msg;
+    msg.id = 0xEF7;
+
     bitstream_t pumptwo_efuse_msg;
 	uint8_t bitstream_data[8];
 	bitstream_init(&pumptwo_efuse_msg, bitstream_data, 8);
-
 	
-    voltage = voltage*1000;
-    current = current*1000;
-
-
-    endian_swap(&ADC, sizeof(ADC));
-    endian_swap(&voltage, sizeof(voltage));
-    endian_swap(&current, sizeof(current));
-    
-	bitstream_add(&pumptwo_efuse_msg, ADC, 16);
-    bitstream_add(&pumptwo_efuse_msg, voltage, 16);
-    bitstream_add(&pumptwo_efuse_msg, current, 16);
+    bitstream_add(&pumptwo_efuse_msg, ADC, 16);
+    bitstream_add(&pumptwo_efuse_msg, voltage*1000, 16);
+    bitstream_add(&pumptwo_efuse_msg, current*1000, 16);
     bitstream_add(&pumptwo_efuse_msg, is_faulted, 8);
     bitstream_add(&pumptwo_efuse_msg, is_enabled, 8);
+
+    handle_bitstream_overflow(&pumptwo_efuse_msg, msg.id);
     
-    can_msg_t msg;
-    msg.id = 0xEF7;
     msg.len = sizeof(bitstream_data);
     memcpy(msg.data, &bitstream_data, sizeof(bitstream_data));
 
-    
-    handle_bitstream_overflow(&pumptwo_efuse_msg, msg.id);
-    
     return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
 }
 
 uint8_t send_battbox_efuse
 (uint16_t ADC,float voltage,float current,bool is_faulted,bool is_enabled)
 {
+    can_msg_t msg;
+    msg.id = 0xEF8;
+
     bitstream_t battbox_efuse_msg;
 	uint8_t bitstream_data[8];
 	bitstream_init(&battbox_efuse_msg, bitstream_data, 8);
-
 	
-    voltage = voltage*1000;
-    current = current*1000;
-
-
-    endian_swap(&ADC, sizeof(ADC));
-    endian_swap(&voltage, sizeof(voltage));
-    endian_swap(&current, sizeof(current));
-    
-	bitstream_add(&battbox_efuse_msg, ADC, 16);
-    bitstream_add(&battbox_efuse_msg, voltage, 16);
-    bitstream_add(&battbox_efuse_msg, current, 16);
+    bitstream_add(&battbox_efuse_msg, ADC, 16);
+    bitstream_add(&battbox_efuse_msg, voltage*1000, 16);
+    bitstream_add(&battbox_efuse_msg, current*1000, 16);
     bitstream_add(&battbox_efuse_msg, is_faulted, 8);
     bitstream_add(&battbox_efuse_msg, is_enabled, 8);
+
+    handle_bitstream_overflow(&battbox_efuse_msg, msg.id);
     
-    can_msg_t msg;
-    msg.id = 0xEF8;
     msg.len = sizeof(bitstream_data);
     memcpy(msg.data, &bitstream_data, sizeof(bitstream_data));
 
-    
-    handle_bitstream_overflow(&battbox_efuse_msg, msg.id);
-    
     return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
 }
 
 uint8_t send_mc_efuse
 (uint16_t ADC,float voltage,float current,bool is_faulted,bool is_enabled)
 {
+    can_msg_t msg;
+    msg.id = 0xEF9;
+
     bitstream_t mc_efuse_msg;
 	uint8_t bitstream_data[8];
 	bitstream_init(&mc_efuse_msg, bitstream_data, 8);
-
 	
-    voltage = voltage*1000;
-    current = current*1000;
-
-
-    endian_swap(&ADC, sizeof(ADC));
-    endian_swap(&voltage, sizeof(voltage));
-    endian_swap(&current, sizeof(current));
-    
-	bitstream_add(&mc_efuse_msg, ADC, 16);
-    bitstream_add(&mc_efuse_msg, voltage, 16);
-    bitstream_add(&mc_efuse_msg, current, 16);
+    bitstream_add(&mc_efuse_msg, ADC, 16);
+    bitstream_add(&mc_efuse_msg, voltage*1000, 16);
+    bitstream_add(&mc_efuse_msg, current*1000, 16);
     bitstream_add(&mc_efuse_msg, is_faulted, 8);
     bitstream_add(&mc_efuse_msg, is_enabled, 8);
+
+    handle_bitstream_overflow(&mc_efuse_msg, msg.id);
     
-    can_msg_t msg;
-    msg.id = 0xEF9;
     msg.len = sizeof(bitstream_data);
     memcpy(msg.data, &bitstream_data, sizeof(bitstream_data));
 
+    return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
+}
+
+uint8_t send_shutdown_pins
+(bool bms_gpio,bool bots_gpio,bool spare_gpio,bool bspd_gpio,bool hv_c,bool hvd_gpio,bool imd_gpio,bool ckpt_gpio,bool inertia_sw_gpio,bool tsms_gpio,uint8_t UNUSED)
+{
+    can_msg_t msg;
+    msg.id = 0x123;
+
+    bitstream_t shutdown_pins_msg;
+	uint8_t bitstream_data[2];
+	bitstream_init(&shutdown_pins_msg, bitstream_data, 2);
+	
+    bitstream_add(&shutdown_pins_msg, bms_gpio, 1);
+    bitstream_add(&shutdown_pins_msg, bots_gpio, 1);
+    bitstream_add(&shutdown_pins_msg, spare_gpio, 1);
+    bitstream_add(&shutdown_pins_msg, bspd_gpio, 1);
+    bitstream_add(&shutdown_pins_msg, hv_c, 1);
+    bitstream_add(&shutdown_pins_msg, hvd_gpio, 1);
+    bitstream_add(&shutdown_pins_msg, imd_gpio, 1);
+    bitstream_add(&shutdown_pins_msg, ckpt_gpio, 1);
+    bitstream_add(&shutdown_pins_msg, inertia_sw_gpio, 1);
+    bitstream_add(&shutdown_pins_msg, tsms_gpio, 1);
+    bitstream_add(&shutdown_pins_msg, UNUSED, 6);
+
+    handle_bitstream_overflow(&shutdown_pins_msg, msg.id);
     
-    handle_bitstream_overflow(&mc_efuse_msg, msg.id);
-    
+    msg.len = sizeof(bitstream_data);
+    memcpy(msg.data, &bitstream_data, sizeof(bitstream_data));
+
     return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
 }
 
 uint8_t send_faults
 (bool ONBOARD_PEDAL_OPEN_CIRCUIT_FAULT,bool ONBOARD_PEDAL_SHORT_CIRCUIT_FAULT,bool ONBOARD_PEDAL_DIFFERENCE_FAULT,bool CAN_DISPATCH_FAULT,bool CAN_ROUTING_FAULT,bool BMS_CAN_MONITOR_FAULT,bool ONBOARD_TEMP_FAULT,bool IMU_FAULT,bool FUSE_MONITOR_FAULT,bool SHUTDOWN_MONITOR_FAULT,bool LV_MONITOR_FAULT,bool BSPD_PREFAULT,bool RTDS_FAULT,bool PUMP_SENSORS_FAULT,bool PDU_CURRENT_FAULT)
 {
+    can_msg_t msg;
+    msg.id = 0x502;
+
     bitstream_t faults_msg;
-	uint8_t bitstream_data[1];
-	bitstream_init(&faults_msg, bitstream_data, 1);
-
+	uint8_t bitstream_data[2];
+	bitstream_init(&faults_msg, bitstream_data, 2);
 	
-
-
-    
-	bitstream_add(&faults_msg, ONBOARD_PEDAL_OPEN_CIRCUIT_FAULT, 1);
+    bitstream_add(&faults_msg, ONBOARD_PEDAL_OPEN_CIRCUIT_FAULT, 1);
     bitstream_add(&faults_msg, ONBOARD_PEDAL_SHORT_CIRCUIT_FAULT, 1);
     bitstream_add(&faults_msg, ONBOARD_PEDAL_DIFFERENCE_FAULT, 1);
     bitstream_add(&faults_msg, CAN_DISPATCH_FAULT, 1);
@@ -373,222 +312,173 @@ uint8_t send_faults
     bitstream_add(&faults_msg, PUMP_SENSORS_FAULT, 1);
     bitstream_add(&faults_msg, PDU_CURRENT_FAULT, 1);
     
-    can_msg_t msg;
-    msg.id = 0x502;
+
+    handle_bitstream_overflow(&faults_msg, msg.id);
+    
     msg.len = sizeof(bitstream_data);
     memcpy(msg.data, &bitstream_data, sizeof(bitstream_data));
 
-    
-    handle_bitstream_overflow(&faults_msg, msg.id);
-    
     return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
 }
 
 uint8_t send_car_state
 (bool home_mode,uint8_t nero_index,int32_t car_speed,bool tsms,uint32_t torque_limit_percentage,bool reverse,uint16_t regen_limit,bool launch_control)
 {
+    can_msg_t msg;
+    msg.id = 0x501;
+
     bitstream_t car_state_msg;
-	uint8_t bitstream_data[5];
-	bitstream_init(&car_state_msg, bitstream_data, 5);
-
+	uint8_t bitstream_data[6];
+	bitstream_init(&car_state_msg, bitstream_data, 6);
 	
-    car_speed = car_speed*10;
-    torque_limit_percentage = torque_limit_percentage*100;
-
-
-    
-	bitstream_add(&car_state_msg, home_mode, 4);
+    bitstream_add(&car_state_msg, home_mode, 4);
     bitstream_add(&car_state_msg, nero_index, 4);
-    bitstream_add(&car_state_msg, car_speed, 16);
+    bitstream_add_signed(&car_state_msg, car_speed*10, 16);
     bitstream_add(&car_state_msg, tsms, 1);
-    bitstream_add(&car_state_msg, torque_limit_percentage, 7);
+    bitstream_add(&car_state_msg, torque_limit_percentage*100, 7);
     bitstream_add(&car_state_msg, reverse, 1);
     bitstream_add(&car_state_msg, regen_limit, 10);
     bitstream_add(&car_state_msg, launch_control, 1);
     
-    can_msg_t msg;
-    msg.id = 0x501;
+
+    handle_bitstream_overflow(&car_state_msg, msg.id);
+    
     msg.len = sizeof(bitstream_data);
     memcpy(msg.data, &bitstream_data, sizeof(bitstream_data));
 
-    
-    handle_bitstream_overflow(&car_state_msg, msg.id);
-    
     return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
 }
 
 uint8_t send_pedal_percent_pressed_values
 (uint16_t accel_norm,uint16_t brake_norm)
 {
+    can_msg_t msg;
+    msg.id = 0x505;
+
     bitstream_t pedal_percent_pressed_values_msg;
 	uint8_t bitstream_data[4];
 	bitstream_init(&pedal_percent_pressed_values_msg, bitstream_data, 4);
-
 	
-    accel_norm = accel_norm*100;
-    brake_norm = brake_norm*100;
+    bitstream_add(&pedal_percent_pressed_values_msg, accel_norm*100, 16);
+    bitstream_add(&pedal_percent_pressed_values_msg, brake_norm*100, 16);
 
-
+    handle_bitstream_overflow(&pedal_percent_pressed_values_msg, msg.id);
     
-	bitstream_add(&pedal_percent_pressed_values_msg, accel_norm, 16);
-    bitstream_add(&pedal_percent_pressed_values_msg, brake_norm, 16);
-    
-    can_msg_t msg;
-    msg.id = 0x505;
     msg.len = sizeof(bitstream_data);
     memcpy(msg.data, &bitstream_data, sizeof(bitstream_data));
 
-    
-    handle_bitstream_overflow(&pedal_percent_pressed_values_msg, msg.id);
-    
     return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
 }
 
 uint8_t send_pedal_sensor_voltages
 (uint16_t accel1_volts,uint16_t accel2_volts,uint16_t brake1_volts,uint16_t brake2_volts)
 {
+    can_msg_t msg;
+    msg.id = 0x504;
+
     bitstream_t pedal_sensor_voltages_msg;
 	uint8_t bitstream_data[8];
 	bitstream_init(&pedal_sensor_voltages_msg, bitstream_data, 8);
-
 	
-    accel1_volts = accel1_volts*100;
-    accel2_volts = accel2_volts*100;
-    brake1_volts = brake1_volts*100;
-    brake2_volts = brake2_volts*100;
+    bitstream_add(&pedal_sensor_voltages_msg, accel1_volts*100, 16);
+    bitstream_add(&pedal_sensor_voltages_msg, accel2_volts*100, 16);
+    bitstream_add(&pedal_sensor_voltages_msg, brake1_volts*100, 16);
+    bitstream_add(&pedal_sensor_voltages_msg, brake2_volts*100, 16);
 
-
+    handle_bitstream_overflow(&pedal_sensor_voltages_msg, msg.id);
     
-	bitstream_add(&pedal_sensor_voltages_msg, accel1_volts, 16);
-    bitstream_add(&pedal_sensor_voltages_msg, accel2_volts, 16);
-    bitstream_add(&pedal_sensor_voltages_msg, brake1_volts, 16);
-    bitstream_add(&pedal_sensor_voltages_msg, brake2_volts, 16);
-    
-    can_msg_t msg;
-    msg.id = 0x504;
     msg.len = sizeof(bitstream_data);
     memcpy(msg.data, &bitstream_data, sizeof(bitstream_data));
 
-    
-    handle_bitstream_overflow(&pedal_sensor_voltages_msg, msg.id);
-    
     return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
 }
 
 uint8_t send_lightning_board_light_status
 (uint8_t status)
 {
+    can_msg_t msg;
+    msg.id = 0xCA;
+
     bitstream_t lightning_board_light_status_msg;
 	uint8_t bitstream_data[1];
 	bitstream_init(&lightning_board_light_status_msg, bitstream_data, 1);
-
 	
-
-
+    bitstream_add(&lightning_board_light_status_msg, status, 2);
     
-	bitstream_add(&lightning_board_light_status_msg, status, 2);
+
+    handle_bitstream_overflow(&lightning_board_light_status_msg, msg.id);
     
-    can_msg_t msg;
-    msg.id = 0xCA;
     msg.len = sizeof(bitstream_data);
     memcpy(msg.data, &bitstream_data, sizeof(bitstream_data));
 
-    
-    handle_bitstream_overflow(&lightning_board_light_status_msg, msg.id);
-    
     return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
 }
 
 uint8_t send_temperature_sensor
 (float vcu_temperature,float vcu_humidity)
 {
-    bitstream_t temperature_sensor_msg;
-	uint8_t bitstream_data[4];
-	bitstream_init(&temperature_sensor_msg, bitstream_data, 4);
-
-	
-    vcu_temperature = vcu_temperature*100;
-    vcu_humidity = vcu_humidity*100;
-
-
-    endian_swap(&vcu_temperature, sizeof(vcu_temperature));
-    endian_swap(&vcu_humidity, sizeof(vcu_humidity));
-    
-	bitstream_add(&temperature_sensor_msg, vcu_temperature, 16);
-    bitstream_add(&temperature_sensor_msg, vcu_humidity, 16);
-    
     can_msg_t msg;
-    msg.id = 0x004;
+    msg.id = 0x508;
+
+    
+    struct __attribute__((__packed__)) {
+        int16_t vcu_temperature;
+        uint16_t vcu_humidity;
+        
+    } bitstream_data;
+
+    bitstream_data.vcu_temperature = (int16_t) vcu_temperature*100;
+    bitstream_data.vcu_humidity = (uint16_t) vcu_humidity*100;
+    
+    endian_swap(&bitstream_data.vcu_humidity, sizeof(bitstream_data.vcu_humidity));
+    
     msg.len = sizeof(bitstream_data);
     memcpy(msg.data, &bitstream_data, sizeof(bitstream_data));
 
-    
-    handle_bitstream_overflow(&temperature_sensor_msg, msg.id);
-    
     return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
 }
 
 uint8_t send_imu_accelerometer
 (float imu_accelerometer_x,float imu_accelerometer_y,float imu_accelerometer_z)
 {
+    can_msg_t msg;
+    msg.id = 0x506;
+
     bitstream_t imu_accelerometer_msg;
 	uint8_t bitstream_data[6];
 	bitstream_init(&imu_accelerometer_msg, bitstream_data, 6);
-
 	
-    imu_accelerometer_x = imu_accelerometer_x*100;
-    imu_accelerometer_y = imu_accelerometer_y*100;
-    imu_accelerometer_z = imu_accelerometer_z*100;
+    bitstream_add_signed(&imu_accelerometer_msg, imu_accelerometer_x*100, 16);
+    bitstream_add_signed(&imu_accelerometer_msg, imu_accelerometer_y*100, 16);
+    bitstream_add_signed(&imu_accelerometer_msg, imu_accelerometer_z*100, 16);
 
-
-    endian_swap(&imu_accelerometer_x, sizeof(imu_accelerometer_x));
-    endian_swap(&imu_accelerometer_y, sizeof(imu_accelerometer_y));
-    endian_swap(&imu_accelerometer_z, sizeof(imu_accelerometer_z));
+    handle_bitstream_overflow(&imu_accelerometer_msg, msg.id);
     
-	bitstream_add(&imu_accelerometer_msg, imu_accelerometer_x, 16);
-    bitstream_add(&imu_accelerometer_msg, imu_accelerometer_y, 16);
-    bitstream_add(&imu_accelerometer_msg, imu_accelerometer_z, 16);
-    
-    can_msg_t msg;
-    msg.id = 0x506;
     msg.len = sizeof(bitstream_data);
     memcpy(msg.data, &bitstream_data, sizeof(bitstream_data));
 
-    
-    handle_bitstream_overflow(&imu_accelerometer_msg, msg.id);
-    
     return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
 }
 
 uint8_t send_imu_gyro
 (float imu_gyro_x,float imu_gyro_y,float imu_gyro_z)
 {
+    can_msg_t msg;
+    msg.id = 0x507;
+
     bitstream_t imu_gyro_msg;
 	uint8_t bitstream_data[6];
 	bitstream_init(&imu_gyro_msg, bitstream_data, 6);
-
 	
-    imu_gyro_x = imu_gyro_x*100;
-    imu_gyro_y = imu_gyro_y*100;
-    imu_gyro_z = imu_gyro_z*100;
+    bitstream_add_signed(&imu_gyro_msg, imu_gyro_x*100, 16);
+    bitstream_add_signed(&imu_gyro_msg, imu_gyro_y*100, 16);
+    bitstream_add_signed(&imu_gyro_msg, imu_gyro_z*100, 16);
 
-
-    endian_swap(&imu_gyro_x, sizeof(imu_gyro_x));
-    endian_swap(&imu_gyro_y, sizeof(imu_gyro_y));
-    endian_swap(&imu_gyro_z, sizeof(imu_gyro_z));
+    handle_bitstream_overflow(&imu_gyro_msg, msg.id);
     
-	bitstream_add(&imu_gyro_msg, imu_gyro_x, 16);
-    bitstream_add(&imu_gyro_msg, imu_gyro_y, 16);
-    bitstream_add(&imu_gyro_msg, imu_gyro_z, 16);
-    
-    can_msg_t msg;
-    msg.id = 0x507;
     msg.len = sizeof(bitstream_data);
     memcpy(msg.data, &bitstream_data, sizeof(bitstream_data));
 
-    
-    handle_bitstream_overflow(&imu_gyro_msg, msg.id);
-    
     return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
 }
 
