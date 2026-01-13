@@ -420,17 +420,14 @@ uint8_t send_temperature_sensor
     can_msg_t msg;
     msg.id = 0x508;
 
-    
-    struct __attribute__((__packed__)) {
-        int16_t vcu_temperature;
-        uint16_t vcu_humidity;
-        
-    } bitstream_data;
+    bitstream_t temperature_sensor_msg;
+	uint8_t bitstream_data[4];
+	bitstream_init(&temperature_sensor_msg, bitstream_data, 4);
+	
+    bitstream_add_signed(&temperature_sensor_msg, vcu_temperature*100, 16);
+    bitstream_add(&temperature_sensor_msg, vcu_humidity*100, 16);
 
-    bitstream_data.vcu_temperature = (int16_t) vcu_temperature*100;
-    bitstream_data.vcu_humidity = (uint16_t) vcu_humidity*100;
-    
-    endian_swap(&bitstream_data.vcu_humidity, sizeof(bitstream_data.vcu_humidity));
+    handle_bitstream_overflow(&temperature_sensor_msg, msg.id);
     
     msg.len = sizeof(bitstream_data);
     memcpy(msg.data, &bitstream_data, sizeof(bitstream_data));
