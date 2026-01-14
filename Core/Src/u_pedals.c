@@ -2,6 +2,7 @@
 #include "main.h"
 #include "timer.h"
 #include "debounce.h"
+#include "can_messages_tx.h"
 #include "c_utils.h"
 #include "u_tx_timers.h"
 #include "u_can.h"
@@ -133,43 +134,19 @@ static void _pedal_difference_fault_callback(void *arg) {
 static void _send_pedal_data(ULONG args) {
     (void)args; // The args parameter is unused for this callback.
 
-    /* Pedal Volts Message. */
-    can_msg_t pedals_volts_msg = { .id = CANID_PEDALS_VOLTS_MSG, .len = 8, .data = { 0 } };
-    struct __attribute__((__packed__)) {
-		uint16_t accel_1;
-		uint16_t accel_2;
-		uint16_t brake_1;
-		uint16_t brake_2;
-	} pedal_volts_data;
+    /* Send Pedal Volts Message. */
+	send_pedal_sensor_voltages(
+		(uint16_t)(pedal_data.voltage_accel1 * 100),
+		(uint16_t)(pedal_data.voltage_accel2 * 100),
+		(uint16_t)(pedal_data.voltage_brake1 * 100),
+		(uint16_t)(pedal_data.voltage_brake2 * 100)
+	);
 
-    /* Normalized Pedals Message. */
-    can_msg_t pedals_norm_msg = { .id = CAN_ID_PEDALS_NORM_MSG, .len = 4, .data = { 0 } };
-	struct __attribute((__packed__)) {
-		uint16_t accel_norm;
-		uint16_t brake_norm;
-	} pedal_norm_data;
-
-    /* Fill the Pedal Volts Message with the data. */
-	pedal_volts_data.accel_1 = (uint16_t)(pedal_data.voltage_accel1 * 100);
-	pedal_volts_data.accel_2 = (uint16_t)(pedal_data.voltage_accel2 * 100);
-	pedal_volts_data.brake_1 = (uint16_t)(pedal_data.voltage_brake1 * 100);
-	pedal_volts_data.brake_2 = (uint16_t)(pedal_data.voltage_brake2 * 100);
-	endian_swap(&pedal_volts_data.accel_1, sizeof(pedal_volts_data.accel_1));
-	endian_swap(&pedal_volts_data.accel_2, sizeof(pedal_volts_data.accel_2));
-	endian_swap(&pedal_volts_data.brake_1, sizeof(pedal_volts_data.brake_1));
-	endian_swap(&pedal_volts_data.brake_2, sizeof(pedal_volts_data.brake_2));
-    memcpy(pedals_volts_msg.data, &pedal_volts_data, pedals_volts_msg.len);
-
-    /* Fill the Normalized Pedals Message with the data. */
-	pedal_norm_data.accel_norm = (uint16_t)(pedal_data.percentage_accel * 100);
-	pedal_norm_data.brake_norm = (uint16_t)(pedal_data.percentage_brake * 100);
-	endian_swap(&pedal_norm_data.accel_norm, sizeof(pedal_norm_data.accel_norm));
-	endian_swap(&pedal_norm_data.brake_norm, sizeof(pedal_norm_data.brake_norm));
-    memcpy(pedals_norm_msg.data, &pedal_norm_data, pedals_norm_msg.len);
-
-    /* Queue the Messages. */
-    queue_send(&can_outgoing, &pedals_volts_msg, TX_NO_WAIT);
-    queue_send(&can_outgoing, &pedals_norm_msg, TX_NO_WAIT);
+	/* Send Pedals Percent Pressed Message. */
+	send_pedal_percent_pressed_values(
+		(uint16_t)(pedal_data.percentage_accel * 100),
+		(uint16_t)(pedal_data.percentage_brake * 100)
+	);
 }
 
 /* Pedal Data Timer. */
