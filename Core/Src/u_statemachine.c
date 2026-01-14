@@ -43,25 +43,17 @@ static timer_t ts_rising_timer = {
 
 static void _send_nero_msg(void)
 {
-	bitstream_t nero_msg;
-	uint8_t bitstream_data[6];
-	bitstream_init(&nero_msg, bitstream_data, 6); // Create 5-byte bitstream
-
-	bitstream_add(&nero_msg, get_nero_state().home_mode, 4);
-	bitstream_add(&nero_msg, get_nero_state().nero_index, 4);
-	bitstream_add_signed(&nero_msg, dti_get_mph() * 10, 16);
-	bitstream_add(&nero_msg, tsms_get(), 1);
-	bitstream_add(&nero_msg, pedals_getTorqueLimitPercentage() * 100, 7);
-	bitstream_add(&nero_msg, cerberus_state.functional != F_REVERSE, 1);
-	bitstream_add(&nero_msg, pedals_getRegenLimit(), 10);
-	bitstream_add(&nero_msg, pedals_getLaunchControl(), 1);
-
-	can_msg_t msg = { .id = 0x501, .len = sizeof(bitstream_data) };
-
-	memcpy(msg.data, &bitstream_data, sizeof(bitstream_data));
-
-	/* Send CAN message */
-	queue_send(&can_outgoing, &msg, TX_NO_WAIT);
+	/* Send the nero (car state) message. */
+	send_car_state(
+		get_nero_state().home_mode,
+		get_nero_state().nero_index,
+		dti_get_mph(),
+		tsms_get(),
+		pedals_getTorqueLimitPercentage(),
+		(cerberus_state.functional != F_REVERSE),
+		pedals_getRegenLimit(),
+		pedals_getLaunchControl()
+	);
 }
 
 int init_statemachine(void) {
