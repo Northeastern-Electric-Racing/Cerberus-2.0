@@ -154,7 +154,7 @@ uint8_t send_car_state
 * VCU/Pedals/Percentages/brake_pedal - How far the brake pedal is pressed, ranging from 0 to 1.
 */
 uint8_t send_pedal_percent_pressed_values
-(uint16_t accel_norm,uint16_t brake_norm);
+(float accel_norm,float brake_norm);
 
 /**
 * Contents of this message:
@@ -164,7 +164,7 @@ uint8_t send_pedal_percent_pressed_values
 * VCU/Pedals/Voltages/brake_2 - Voltage reading from Brake Pedal Sensor 2
 */
 uint8_t send_pedal_sensor_voltages
-(uint16_t accel1_volts,uint16_t accel2_volts,uint16_t brake1_volts,uint16_t brake2_volts);
+(float accel1_volts,float accel2_volts,float brake1_volts,float brake2_volts);
 
 /**
 * Contents of this message:

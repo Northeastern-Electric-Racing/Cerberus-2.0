@@ -315,7 +315,7 @@ uint8_t send_car_state
 }
 
 uint8_t send_pedal_percent_pressed_values
-(uint16_t accel_norm,uint16_t brake_norm)
+(float accel_norm,float brake_norm)
 {
     can_msg_t msg;
     msg.id = 0x505;
@@ -336,7 +336,7 @@ uint8_t send_pedal_percent_pressed_values
 }
 
 uint8_t send_pedal_sensor_voltages
-(uint16_t accel1_volts,uint16_t accel2_volts,uint16_t brake1_volts,uint16_t brake2_volts)
+(float accel1_volts,float accel2_volts,float brake1_volts,float brake2_volts)
 {
     can_msg_t msg;
     msg.id = 0x504;

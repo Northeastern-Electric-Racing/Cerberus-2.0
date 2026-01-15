@@ -136,16 +136,16 @@ static void _send_pedal_data(ULONG args) {
 
     /* Send Pedal Volts Message. */
 	send_pedal_sensor_voltages(
-		(uint16_t)(pedal_data.voltage_accel1 * 100),
-		(uint16_t)(pedal_data.voltage_accel2 * 100),
-		(uint16_t)(pedal_data.voltage_brake1 * 100),
-		(uint16_t)(pedal_data.voltage_brake2 * 100)
+		pedal_data.voltage_accel1,
+		pedal_data.voltage_accel2,
+		pedal_data.voltage_brake1,
+		pedal_data.voltage_brake2
 	);
 
 	/* Send Pedals Percent Pressed Message. */
 	send_pedal_percent_pressed_values(
-		(uint16_t)(pedal_data.percentage_accel * 100),
-		(uint16_t)(pedal_data.percentage_brake * 100)
+		pedal_data.percentage_accel,
+		pedal_data.percentage_brake
 	);
 }
 
