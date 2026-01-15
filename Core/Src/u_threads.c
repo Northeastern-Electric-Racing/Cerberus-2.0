@@ -1,5 +1,6 @@
 #include "main.h"
 #include "u_tx_debug.h"
+#include "can_messages_tx.h"
 #include "u_threads.h"
 #include "u_queues.h"
 #include "u_can.h"
@@ -247,28 +248,20 @@ void vShutdown(ULONG thread_input) {
     
     while(1) {
 
-        /* Create bitstream. */
-        bitstream_t bitstream;
-        uint8_t bitstream_data[2];
-        bitstream_init(&bitstream, bitstream_data, 2);
-
-        /* Read the shutdown pins and add them to the bitstream. */
-        bitstream_add(&bitstream, (HAL_GPIO_ReadPin(BMS_GPIO_GPIO_Port, BMS_GPIO_Pin) == GPIO_PIN_SET), 1);               // Read BMS_GPIO pin.
-        bitstream_add(&bitstream, (HAL_GPIO_ReadPin(BOTS_GPIO_GPIO_Port, BOTS_GPIO_Pin) == GPIO_PIN_SET), 1);             // Read BOTS_GPIO pin.
-        bitstream_add(&bitstream, (HAL_GPIO_ReadPin(SPARE_GPIO_GPIO_Port, SPARE_GPIO_Pin) == GPIO_PIN_SET), 1);           // Read SPARE_GPIO pin.
-        bitstream_add(&bitstream, (HAL_GPIO_ReadPin(BSPD_GPIO_GPIO_Port, BSPD_GPIO_Pin) == GPIO_PIN_SET), 1);             // Read BSPD_GPIO pin.
-        bitstream_add(&bitstream, (HAL_GPIO_ReadPin(HV_C_GPIO_GPIO_Port, HV_C_GPIO_Pin) == GPIO_PIN_SET), 1);             // Read HV_C_GPIO pin.
-        bitstream_add(&bitstream, (HAL_GPIO_ReadPin(HVD_GPIO_GPIO_Port, HVD_GPIO_Pin) == GPIO_PIN_SET), 1);               // Read HVD_GPIO pin.
-        bitstream_add(&bitstream, (HAL_GPIO_ReadPin(IMD_GPIO_GPIO_Port, IMD_GPIO_Pin) == GPIO_PIN_SET), 1);               // Read IMD_GPIO pin.
-        bitstream_add(&bitstream, (HAL_GPIO_ReadPin(CKPT_GPIO_GPIO_Port, CKPT_GPIO_Pin) == GPIO_PIN_SET), 1);             // Read CKPT_GPIO pin.
-        bitstream_add(&bitstream, (HAL_GPIO_ReadPin(INERTIA_SW_GPIO_GPIO_Port, INERTIA_SW_GPIO_Pin) == GPIO_PIN_SET), 1); // Read INERTIA_SW_GPIO pin.
-        bitstream_add(&bitstream, (HAL_GPIO_ReadPin(TSMS_GPIO_GPIO_Port, TSMS_GPIO_Pin) == GPIO_PIN_SET), 1);             // Read TSMS_GPIO pin.
-        bitstream_add(&bitstream, 0, 6); // Extra (6 bits).
-
-        /* Send CAN message. */
-        can_msg_t msg = {.id = CANID_SHUTDOWN_MSG, .len = 2, .data = {0}};
-        memcpy(msg.data, &bitstream_data, sizeof(bitstream_data));
-        queue_send(&can_outgoing, &msg, TX_NO_WAIT);
+        /* Send Shutdown Pins CAN message. */
+        send_shutdown_pins(
+            (HAL_GPIO_ReadPin(BMS_GPIO_GPIO_Port, BMS_GPIO_Pin) == GPIO_PIN_SET),
+            (HAL_GPIO_ReadPin(BOTS_GPIO_GPIO_Port, BOTS_GPIO_Pin) == GPIO_PIN_SET),
+            (HAL_GPIO_ReadPin(SPARE_GPIO_GPIO_Port, SPARE_GPIO_Pin) == GPIO_PIN_SET),
+            (HAL_GPIO_ReadPin(BSPD_GPIO_GPIO_Port, BSPD_GPIO_Pin) == GPIO_PIN_SET),
+            (HAL_GPIO_ReadPin(HV_C_GPIO_GPIO_Port, HV_C_GPIO_Pin) == GPIO_PIN_SET),
+            (HAL_GPIO_ReadPin(HVD_GPIO_GPIO_Port, HVD_GPIO_Pin) == GPIO_PIN_SET),
+            (HAL_GPIO_ReadPin(IMD_GPIO_GPIO_Port, IMD_GPIO_Pin) == GPIO_PIN_SET),
+            (HAL_GPIO_ReadPin(CKPT_GPIO_GPIO_Port, CKPT_GPIO_Pin) == GPIO_PIN_SET),
+            (HAL_GPIO_ReadPin(INERTIA_SW_GPIO_GPIO_Port, INERTIA_SW_GPIO_Pin) == GPIO_PIN_SET),
+            (HAL_GPIO_ReadPin(TSMS_GPIO_GPIO_Port, TSMS_GPIO_Pin) == GPIO_PIN_SET),
+            0
+        );
 
         /* Sleep Thread for specified number of ticks. */
         tx_thread_sleep(shutdown_thread.sleep);
