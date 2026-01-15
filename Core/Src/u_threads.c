@@ -527,13 +527,11 @@ void vPeripherals(ULONG thread_input) {
                 break; // Break from SECTION 1. We don't want to send the CAN message if reading the data failed.
             }
 
-            /* Fill the temp sensor message and send it over CAN. */
-            tempsensor_CAN_t tempsensor_CAN = { 0 };
-            tempsensor_CAN.temperature = (int16_t)(temperature * 100);
-            tempsensor_CAN.humidity = (uint16_t)(humidity * 100);
-            can_msg_t temp_sensor_message = {.id = CANID_TEMP_SENSOR, .len = 4, .id_is_extended = false};
-            memcpy(temp_sensor_message.data, &tempsensor_CAN, temp_sensor_message.len);
-            queue_send(&can_outgoing, &temp_sensor_message, TX_NO_WAIT);
+            /* Send the temp sensor message. */
+            send_temperature_sensor(
+                temperature,
+                humidity
+            );
         } while (0);
 
         /* SECTION 2: Read IMU acceleration data and send it over CAN. */
@@ -547,14 +545,12 @@ void vPeripherals(ULONG thread_input) {
                 break; // Break from SECTION 2. We don't want to send the CAN message if reading the data failed.
             }
 
-            /* Fill the IMU acceleration message and send it over CAN. */
-            acceleration_CAN_t acceleration_CAN = { 0 };
-            acceleration_CAN.x = (int16_t)(acceleration.x * 100);
-            acceleration_CAN.y = (int16_t)(acceleration.y * 100);
-            acceleration_CAN.z = (int16_t)(acceleration.z * 100);
-            can_msg_t imu_acceleration_message = {.id = CANID_IMU_ACCEL, .len = 6, .id_is_extended = false};
-            memcpy(imu_acceleration_message.data, &acceleration_CAN, imu_acceleration_message.len);
-            queue_send(&can_outgoing, &imu_acceleration_message, TX_NO_WAIT);
+            /* Send the IMU acceleration message. */
+            send_imu_accelerometer(
+                acceleration.x,
+                acceleration.y,
+                acceleration.z
+            );
         } while (0);
 
         /* SECTION 3: Read IMU gyro data and send it over CAN. */
@@ -568,14 +564,12 @@ void vPeripherals(ULONG thread_input) {
                 break; // Break from SECTION 3. We don't want to send the CAN message if reading the data failed.
             }
 
-            /* Fill the IMU Gyro message and send it over CAN. */
-            gyro_CAN_t gyro_CAN = { 0 };
-            gyro_CAN.x = (int16_t)(gyro.x * 100);
-            gyro_CAN.y = (int16_t)(gyro.y * 100);
-            gyro_CAN.z = (int16_t)(gyro.z * 100);
-            can_msg_t imu_gyro_message = {.id = CANID_IMU_GYRO, .len = 6, .id_is_extended = false};
-            memcpy(imu_gyro_message.data, &gyro_CAN, imu_gyro_message.len);
-            queue_send(&can_outgoing, &imu_gyro_message, TX_NO_WAIT);
+            /* Send the IMU Gyro message. */
+            send_imu_gyro(
+                gyro.x,
+                gyro.y,
+                gyro.z
+            );
         } while (0);
 
         /* Sleep Thread for specified number of ticks. */
