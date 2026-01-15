@@ -1,5 +1,6 @@
 #include "main.h"
 #include "u_tx_debug.h"
+#include "can_messages_tx.h"
 #include "u_threads.h"
 #include "u_queues.h"
 #include "u_can.h"
@@ -210,10 +211,22 @@ void vFaults(ULONG thread_input) {
     while(1) {
 
         /* Send a CAN message containing the current fault statuses. */
-        uint32_t faults = get_faults();
-        can_msg_t msg = {.id = CANID_FAULT_MSG, .len = 8, .data = {0}};
-        memcpy(msg.data, &faults, sizeof(faults));
-        queue_send(&can_outgoing, &msg, TX_NO_WAIT);
+        send_faults(
+            get_fault(CAN_OUTGOING_FAULT),
+            get_fault(CAN_INCOMING_FAULT),
+            get_fault(BMS_CAN_MONITOR_FAULT),
+            get_fault(ONBOARD_TEMP_FAULT),
+            get_fault(IMU_ACCEL_FAULT),
+            get_fault(IMU_GYRO_FAULT),
+            get_fault(BSPD_PREFAULT),
+            get_fault(ONBOARD_BRAKE_OPEN_CIRCUIT_FAULT),
+            get_fault(ONBOARD_ACCEL_OPEN_CIRCUIT_FAULT),
+            get_fault(ONBOARD_BRAKE_SHORT_CIRCUIT_FAULT),
+            get_fault(ONBOARD_ACCEL_SHORT_CIRCUIT_FAULT),
+            get_fault(ONBOARD_PEDAL_DIFFERENCE_FAULT),
+            get_fault(RTDS_FAULT),
+            0
+        );
 
         /* Sleep Thread for specified number of ticks. */
         tx_thread_sleep(faults_thread.sleep);
@@ -235,28 +248,20 @@ void vShutdown(ULONG thread_input) {
     
     while(1) {
 
-        /* Create bitstream. */
-        bitstream_t bitstream;
-        uint8_t bitstream_data[2];
-        bitstream_init(&bitstream, bitstream_data, 2);
-
-        /* Read the shutdown pins and add them to the bitstream. */
-        bitstream_add(&bitstream, (HAL_GPIO_ReadPin(BMS_GPIO_GPIO_Port, BMS_GPIO_Pin) == GPIO_PIN_SET), 1);               // Read BMS_GPIO pin.
-        bitstream_add(&bitstream, (HAL_GPIO_ReadPin(BOTS_GPIO_GPIO_Port, BOTS_GPIO_Pin) == GPIO_PIN_SET), 1);             // Read BOTS_GPIO pin.
-        bitstream_add(&bitstream, (HAL_GPIO_ReadPin(SPARE_GPIO_GPIO_Port, SPARE_GPIO_Pin) == GPIO_PIN_SET), 1);           // Read SPARE_GPIO pin.
-        bitstream_add(&bitstream, (HAL_GPIO_ReadPin(BSPD_GPIO_GPIO_Port, BSPD_GPIO_Pin) == GPIO_PIN_SET), 1);             // Read BSPD_GPIO pin.
-        bitstream_add(&bitstream, (HAL_GPIO_ReadPin(HV_C_GPIO_GPIO_Port, HV_C_GPIO_Pin) == GPIO_PIN_SET), 1);             // Read HV_C_GPIO pin.
-        bitstream_add(&bitstream, (HAL_GPIO_ReadPin(HVD_GPIO_GPIO_Port, HVD_GPIO_Pin) == GPIO_PIN_SET), 1);               // Read HVD_GPIO pin.
-        bitstream_add(&bitstream, (HAL_GPIO_ReadPin(IMD_GPIO_GPIO_Port, IMD_GPIO_Pin) == GPIO_PIN_SET), 1);               // Read IMD_GPIO pin.
-        bitstream_add(&bitstream, (HAL_GPIO_ReadPin(CKPT_GPIO_GPIO_Port, CKPT_GPIO_Pin) == GPIO_PIN_SET), 1);             // Read CKPT_GPIO pin.
-        bitstream_add(&bitstream, (HAL_GPIO_ReadPin(INERTIA_SW_GPIO_GPIO_Port, INERTIA_SW_GPIO_Pin) == GPIO_PIN_SET), 1); // Read INERTIA_SW_GPIO pin.
-        bitstream_add(&bitstream, (HAL_GPIO_ReadPin(TSMS_GPIO_GPIO_Port, TSMS_GPIO_Pin) == GPIO_PIN_SET), 1);             // Read TSMS_GPIO pin.
-        bitstream_add(&bitstream, 0, 6); // Extra (6 bits).
-
-        /* Send CAN message. */
-        can_msg_t msg = {.id = CANID_SHUTDOWN_MSG, .len = 2, .data = {0}};
-        memcpy(msg.data, &bitstream_data, sizeof(bitstream_data));
-        queue_send(&can_outgoing, &msg, TX_NO_WAIT);
+        /* Send Shutdown Pins CAN message. */
+        send_shutdown_pins(
+            (HAL_GPIO_ReadPin(BMS_GPIO_GPIO_Port, BMS_GPIO_Pin) == GPIO_PIN_SET),
+            (HAL_GPIO_ReadPin(BOTS_GPIO_GPIO_Port, BOTS_GPIO_Pin) == GPIO_PIN_SET),
+            (HAL_GPIO_ReadPin(SPARE_GPIO_GPIO_Port, SPARE_GPIO_Pin) == GPIO_PIN_SET),
+            (HAL_GPIO_ReadPin(BSPD_GPIO_GPIO_Port, BSPD_GPIO_Pin) == GPIO_PIN_SET),
+            (HAL_GPIO_ReadPin(HV_C_GPIO_GPIO_Port, HV_C_GPIO_Pin) == GPIO_PIN_SET),
+            (HAL_GPIO_ReadPin(HVD_GPIO_GPIO_Port, HVD_GPIO_Pin) == GPIO_PIN_SET),
+            (HAL_GPIO_ReadPin(IMD_GPIO_GPIO_Port, IMD_GPIO_Pin) == GPIO_PIN_SET),
+            (HAL_GPIO_ReadPin(CKPT_GPIO_GPIO_Port, CKPT_GPIO_Pin) == GPIO_PIN_SET),
+            (HAL_GPIO_ReadPin(INERTIA_SW_GPIO_GPIO_Port, INERTIA_SW_GPIO_Pin) == GPIO_PIN_SET),
+            (HAL_GPIO_ReadPin(TSMS_GPIO_GPIO_Port, TSMS_GPIO_Pin) == GPIO_PIN_SET),
+            0
+        );
 
         /* Sleep Thread for specified number of ticks. */
         tx_thread_sleep(shutdown_thread.sleep);
@@ -332,67 +337,98 @@ void vEFuses(ULONG thread_input) {
     
     while(1) {
 
-        /* Set data. */
+        /* Get data. */
         efuse_data_t data = efuse_getData();
-        efuse_message_t messages[NUM_EFUSES] = { 0 };
-        for(efuse_t efuse = 0; efuse < NUM_EFUSES; efuse++) {
-            /* Set the data for each eFuse. */
-            messages[efuse].raw = data.raw[efuse];
-            messages[efuse].voltage = (uint16_t)(data.voltage[efuse] * 1000);
-            messages[efuse].current = (uint16_t)(data.current[efuse] * 1000);
-            messages[efuse].faulted = data.faulted[efuse];
-            messages[efuse].enabled = data.enabled[efuse];
-        }
 
-        /* Create and queue dashboard message. */
-        can_msg_t dashboard_msg = {.id = CANID_EFUSE_DASHBOARD, .len = 8, .id_is_extended = true};
-        memcpy(dashboard_msg.data, &messages[EFUSE_DASHBOARD], dashboard_msg.len);
-        queue_send(&can_outgoing, &dashboard_msg, TX_NO_WAIT);
+        /* Send dashboard eFuse message. */
+        send_dashboard_efuse(
+            data.raw[EFUSE_DASHBOARD], 
+            data.voltage[EFUSE_DASHBOARD], 
+            data.current[EFUSE_DASHBOARD], 
+            data.faulted[EFUSE_DASHBOARD], 
+            data.enabled[EFUSE_DASHBOARD]
+        );
 
-        /* Create and queue brake message. */
-        can_msg_t brake_msg = {.id = CANID_EFUSE_BRAKE, .len = 8, .id_is_extended = true};
-        memcpy(brake_msg.data, &messages[EFUSE_BRAKE], brake_msg.len);
-        queue_send(&can_outgoing, &brake_msg, TX_NO_WAIT);
+        /* Send brake eFuse message. */
+        send_brake_efuse(
+            data.raw[EFUSE_BRAKE], 
+            data.voltage[EFUSE_BRAKE],
+            data.current[EFUSE_BRAKE],
+            data.faulted[EFUSE_BRAKE],
+            data.enabled[EFUSE_BRAKE]
+        );
 
-        /* Create and queue shutdown message. */
-        can_msg_t shutdown_msg = {.id = CANID_EFUSE_SHUTDOWN, .len = 8, .id_is_extended = true};
-        memcpy(shutdown_msg.data, &messages[EFUSE_SHUTDOWN], shutdown_msg.len);
-        queue_send(&can_outgoing, &shutdown_msg, TX_NO_WAIT);
+        /* Send shutdown eFuse message. */
+        send_shutdown_efuse(
+            data.raw[EFUSE_SHUTDOWN], 
+            data.voltage[EFUSE_SHUTDOWN],
+            data.current[EFUSE_SHUTDOWN],
+            data.faulted[EFUSE_SHUTDOWN],
+            data.enabled[EFUSE_SHUTDOWN]
+        );
+        
+        /* Send LV eFuse message. */
+        send_lv_efuse(
+            data.raw[EFUSE_LV], 
+            data.voltage[EFUSE_LV],
+            data.current[EFUSE_LV],
+            data.faulted[EFUSE_LV],
+            data.enabled[EFUSE_LV]
+        );
 
-        /* Create and queue LV message. */
-        can_msg_t lv_msg = {.id = CANID_EFUSE_LV, .len = 8, .id_is_extended = true};
-        memcpy(lv_msg.data, &messages[EFUSE_LV], lv_msg.len);
-        queue_send(&can_outgoing, &lv_msg, TX_NO_WAIT);
+        /* Send radfan eFuse message. */
+        send_radfan_efuse(
+            data.raw[EFUSE_RADFAN], 
+            data.voltage[EFUSE_RADFAN],
+            data.current[EFUSE_RADFAN],
+            data.faulted[EFUSE_RADFAN],
+            data.enabled[EFUSE_RADFAN]
+        );
 
-        /* Create and queue radfan message. */
-        can_msg_t radfan_msg = {.id = CANID_EFUSE_RADFAN, .len = 8, .id_is_extended = true};
-        memcpy(radfan_msg.data, &messages[EFUSE_RADFAN], radfan_msg.len);
-        queue_send(&can_outgoing, &radfan_msg, TX_NO_WAIT);
+        /* Send fanbatt eFuse message. */
+        send_fanbatt_efuse(
+            data.raw[EFUSE_FANBATT], 
+            data.voltage[EFUSE_FANBATT],
+            data.current[EFUSE_FANBATT],
+            data.faulted[EFUSE_FANBATT],
+            data.enabled[EFUSE_FANBATT]
+        );
 
-        /* Create and queue fanbatt message. */
-        can_msg_t fanbatt_msg = {.id = CANID_EFUSE_FANBATT, .len = 8, .id_is_extended = true};
-        memcpy(fanbatt_msg.data, &messages[EFUSE_FANBATT], fanbatt_msg.len);
-        queue_send(&can_outgoing, &fanbatt_msg, TX_NO_WAIT);
+        /* Send pump1 eFuse message. */
+        send_pumpone_efuse(
+            data.raw[EFUSE_PUMP1], 
+            data.voltage[EFUSE_PUMP1],
+            data.current[EFUSE_PUMP1],
+            data.faulted[EFUSE_PUMP1],
+            data.enabled[EFUSE_PUMP1]
+        );
 
-        /* Create and queue pump1 message. */
-        can_msg_t pump1_msg = {.id = CANID_EFUSE_PUMP1, .len = 8, .id_is_extended = true};
-        memcpy(pump1_msg.data, &messages[EFUSE_PUMP1], pump1_msg.len);
-        queue_send(&can_outgoing, &pump1_msg, TX_NO_WAIT);
+        /* Send pump2 eFuse message. */
+        send_pumptwo_efuse(
+            data.raw[EFUSE_PUMP2], 
+            data.voltage[EFUSE_PUMP2],
+            data.current[EFUSE_PUMP2],
+            data.faulted[EFUSE_PUMP2],
+            data.enabled[EFUSE_PUMP2]
+        );
 
-        /* Create and queue pump2 message. */
-        can_msg_t pump2_msg = {.id = CANID_EFUSE_PUMP2, .len = 8, .id_is_extended = true};
-        memcpy(pump2_msg.data, &messages[EFUSE_PUMP2], pump2_msg.len);
-        queue_send(&can_outgoing, &pump2_msg, TX_NO_WAIT);
+        /* Send battbox eFuse message. */
+        send_battbox_efuse(
+            data.raw[EFUSE_BATTBOX], 
+            data.voltage[EFUSE_BATTBOX],
+            data.current[EFUSE_BATTBOX],
+            data.faulted[EFUSE_BATTBOX],
+            data.enabled[EFUSE_BATTBOX]
+        );
 
-        /* Create and queue battbox message. */
-        can_msg_t battbox_msg = {.id = CANID_EFUSE_BATTBOX, .len = 8, .id_is_extended = true};
-        memcpy(battbox_msg.data, &messages[EFUSE_BATTBOX], battbox_msg.len);
-        queue_send(&can_outgoing, &battbox_msg, TX_NO_WAIT);
-
-        /* Create and queue MC message. */
-        can_msg_t mc_msg = {.id = CANID_EFUSE_MC, .len = 8, .id_is_extended = true};
-        memcpy(mc_msg.data, &messages[EFUSE_MC], mc_msg.len);
-        queue_send(&can_outgoing, &mc_msg, TX_NO_WAIT);
+        /* Send MC eFuse message. */
+        send_mc_efuse(
+            data.raw[EFUSE_MC], 
+            data.voltage[EFUSE_MC],
+            data.current[EFUSE_MC],
+            data.faulted[EFUSE_MC],
+            data.enabled[EFUSE_MC]
+        );
 
         /* Sleep Thread for specified number of ticks. */
         tx_thread_sleep(efuses_thread.sleep);
@@ -491,13 +527,11 @@ void vPeripherals(ULONG thread_input) {
                 break; // Break from SECTION 1. We don't want to send the CAN message if reading the data failed.
             }
 
-            /* Fill the temp sensor message and send it over CAN. */
-            tempsensor_CAN_t tempsensor_CAN = { 0 };
-            tempsensor_CAN.temperature = (int16_t)(temperature * 100);
-            tempsensor_CAN.humidity = (uint16_t)(humidity * 100);
-            can_msg_t temp_sensor_message = {.id = CANID_TEMP_SENSOR, .len = 4, .id_is_extended = false};
-            memcpy(temp_sensor_message.data, &tempsensor_CAN, temp_sensor_message.len);
-            queue_send(&can_outgoing, &temp_sensor_message, TX_NO_WAIT);
+            /* Send the temp sensor message. */
+            send_temperature_sensor(
+                temperature,
+                humidity
+            );
         } while (0);
 
         /* SECTION 2: Read IMU acceleration data and send it over CAN. */
@@ -511,14 +545,12 @@ void vPeripherals(ULONG thread_input) {
                 break; // Break from SECTION 2. We don't want to send the CAN message if reading the data failed.
             }
 
-            /* Fill the IMU acceleration message and send it over CAN. */
-            acceleration_CAN_t acceleration_CAN = { 0 };
-            acceleration_CAN.x = (int16_t)(acceleration.x * 100);
-            acceleration_CAN.y = (int16_t)(acceleration.y * 100);
-            acceleration_CAN.z = (int16_t)(acceleration.z * 100);
-            can_msg_t imu_acceleration_message = {.id = CANID_IMU_ACCEL, .len = 6, .id_is_extended = false};
-            memcpy(imu_acceleration_message.data, &acceleration_CAN, imu_acceleration_message.len);
-            queue_send(&can_outgoing, &imu_acceleration_message, TX_NO_WAIT);
+            /* Send the IMU acceleration message. */
+            send_imu_accelerometer(
+                acceleration.x,
+                acceleration.y,
+                acceleration.z
+            );
         } while (0);
 
         /* SECTION 3: Read IMU gyro data and send it over CAN. */
@@ -532,14 +564,12 @@ void vPeripherals(ULONG thread_input) {
                 break; // Break from SECTION 3. We don't want to send the CAN message if reading the data failed.
             }
 
-            /* Fill the IMU Gyro message and send it over CAN. */
-            gyro_CAN_t gyro_CAN = { 0 };
-            gyro_CAN.x = (int16_t)(gyro.x * 100);
-            gyro_CAN.y = (int16_t)(gyro.y * 100);
-            gyro_CAN.z = (int16_t)(gyro.z * 100);
-            can_msg_t imu_gyro_message = {.id = CANID_IMU_GYRO, .len = 6, .id_is_extended = false};
-            memcpy(imu_gyro_message.data, &gyro_CAN, imu_gyro_message.len);
-            queue_send(&can_outgoing, &imu_gyro_message, TX_NO_WAIT);
+            /* Send the IMU Gyro message. */
+            send_imu_gyro(
+                gyro.x,
+                gyro.y,
+                gyro.z
+            );
         } while (0);
 
         /* Sleep Thread for specified number of ticks. */

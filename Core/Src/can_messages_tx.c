@@ -286,41 +286,6 @@ uint8_t send_shutdown_pins
     return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
 }
 
-uint8_t send_faults
-(bool ONBOARD_PEDAL_OPEN_CIRCUIT_FAULT,bool ONBOARD_PEDAL_SHORT_CIRCUIT_FAULT,bool ONBOARD_PEDAL_DIFFERENCE_FAULT,bool CAN_DISPATCH_FAULT,bool CAN_ROUTING_FAULT,bool BMS_CAN_MONITOR_FAULT,bool ONBOARD_TEMP_FAULT,bool IMU_FAULT,bool FUSE_MONITOR_FAULT,bool SHUTDOWN_MONITOR_FAULT,bool LV_MONITOR_FAULT,bool BSPD_PREFAULT,bool RTDS_FAULT,bool PUMP_SENSORS_FAULT,bool PDU_CURRENT_FAULT)
-{
-    can_msg_t msg;
-    msg.id = 0x502;
-
-    bitstream_t faults_msg;
-	uint8_t bitstream_data[2];
-	bitstream_init(&faults_msg, bitstream_data, 2);
-	
-    bitstream_add(&faults_msg, ONBOARD_PEDAL_OPEN_CIRCUIT_FAULT, 1);
-    bitstream_add(&faults_msg, ONBOARD_PEDAL_SHORT_CIRCUIT_FAULT, 1);
-    bitstream_add(&faults_msg, ONBOARD_PEDAL_DIFFERENCE_FAULT, 1);
-    bitstream_add(&faults_msg, CAN_DISPATCH_FAULT, 1);
-    bitstream_add(&faults_msg, CAN_ROUTING_FAULT, 1);
-    bitstream_add(&faults_msg, BMS_CAN_MONITOR_FAULT, 1);
-    bitstream_add(&faults_msg, ONBOARD_TEMP_FAULT, 1);
-    bitstream_add(&faults_msg, IMU_FAULT, 1);
-    bitstream_add(&faults_msg, FUSE_MONITOR_FAULT, 1);
-    bitstream_add(&faults_msg, SHUTDOWN_MONITOR_FAULT, 1);
-    bitstream_add(&faults_msg, LV_MONITOR_FAULT, 1);
-    bitstream_add(&faults_msg, BSPD_PREFAULT, 1);
-    bitstream_add(&faults_msg, RTDS_FAULT, 1);
-    bitstream_add(&faults_msg, PUMP_SENSORS_FAULT, 1);
-    bitstream_add(&faults_msg, PDU_CURRENT_FAULT, 1);
-    
-
-    handle_bitstream_overflow(&faults_msg, msg.id);
-    
-    msg.len = sizeof(bitstream_data);
-    memcpy(msg.data, &bitstream_data, sizeof(bitstream_data));
-
-    return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
-}
-
 uint8_t send_car_state
 (bool home_mode,uint8_t nero_index,int32_t car_speed,bool tsms,uint32_t torque_limit_percentage,bool reverse,uint16_t regen_limit,bool launch_control)
 {
@@ -350,7 +315,7 @@ uint8_t send_car_state
 }
 
 uint8_t send_pedal_percent_pressed_values
-(uint16_t accel_norm,uint16_t brake_norm)
+(float accel_norm,float brake_norm)
 {
     can_msg_t msg;
     msg.id = 0x505;
@@ -371,7 +336,7 @@ uint8_t send_pedal_percent_pressed_values
 }
 
 uint8_t send_pedal_sensor_voltages
-(uint16_t accel1_volts,uint16_t accel2_volts,uint16_t brake1_volts,uint16_t brake2_volts)
+(float accel1_volts,float accel2_volts,float brake1_volts,float brake2_volts)
 {
     can_msg_t msg;
     msg.id = 0x504;
@@ -472,6 +437,39 @@ uint8_t send_imu_gyro
     bitstream_add_signed(&imu_gyro_msg, imu_gyro_z*100, 16);
 
     handle_bitstream_overflow(&imu_gyro_msg, msg.id);
+    
+    msg.len = sizeof(bitstream_data);
+    memcpy(msg.data, &bitstream_data, sizeof(bitstream_data));
+
+    return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
+}
+
+uint8_t send_faults
+(bool CAN_OUTGOING_FAULT,bool CAN_INCOMING_FAULT,bool BMS_CAN_MONITOR_FAULT,bool ONBOARD_TEMP_FAULT,bool IMU_ACCEL_FAULT,bool IMU_GYRO_FAULT,bool BSPD_PREFAULT,bool ONBOARD_BRAKE_OPEN_CIRCUIT_FAULT,bool ONBOARD_ACCEL_OPEN_CIRCUIT_FAULT,bool ONBOARD_BRAKE_SHORT_CIRCUIT_FAULT,bool ONBOARD_ACCEL_SHORT_CIRCUIT_FAULT,bool ONBOARD_PEDAL_DIFFERENCE_FAULT,bool RTDS_FAULT,int EXTRA)
+{
+    can_msg_t msg;
+    msg.id = 0x502;
+
+    bitstream_t faults_msg;
+	uint8_t bitstream_data[2];
+	bitstream_init(&faults_msg, bitstream_data, 2);
+	
+    bitstream_add(&faults_msg, CAN_OUTGOING_FAULT, 1);
+    bitstream_add(&faults_msg, CAN_INCOMING_FAULT, 1);
+    bitstream_add(&faults_msg, BMS_CAN_MONITOR_FAULT, 1);
+    bitstream_add(&faults_msg, ONBOARD_TEMP_FAULT, 1);
+    bitstream_add(&faults_msg, IMU_ACCEL_FAULT, 1);
+    bitstream_add(&faults_msg, IMU_GYRO_FAULT, 1);
+    bitstream_add(&faults_msg, BSPD_PREFAULT, 1);
+    bitstream_add(&faults_msg, ONBOARD_BRAKE_OPEN_CIRCUIT_FAULT, 1);
+    bitstream_add(&faults_msg, ONBOARD_ACCEL_OPEN_CIRCUIT_FAULT, 1);
+    bitstream_add(&faults_msg, ONBOARD_BRAKE_SHORT_CIRCUIT_FAULT, 1);
+    bitstream_add(&faults_msg, ONBOARD_ACCEL_SHORT_CIRCUIT_FAULT, 1);
+    bitstream_add(&faults_msg, ONBOARD_PEDAL_DIFFERENCE_FAULT, 1);
+    bitstream_add(&faults_msg, RTDS_FAULT, 1);
+    bitstream_add(&faults_msg, EXTRA, 3);
+
+    handle_bitstream_overflow(&faults_msg, msg.id);
     
     msg.len = sizeof(bitstream_data);
     memcpy(msg.data, &bitstream_data, sizeof(bitstream_data));

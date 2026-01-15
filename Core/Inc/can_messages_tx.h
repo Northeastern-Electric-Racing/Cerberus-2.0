@@ -136,27 +136,6 @@ uint8_t send_shutdown_pins
 
 /**
 * Contents of this message:
-* VCU/Faults/ONBOARD_PEDAL_OPEN_CIRCUIT_FAULT - Onboard Pedal Open Circuit Fault.
-* VCU/Faults/ONBOARD_PEDAL_SHORT_CIRCUIT_FAULT - Onboard Pedal Short Circuit Fault.
-* VCU/Faults/ONBOARD_PEDAL_DIFFERENCE_FAULT - Onboard Pedal Difference Fault.
-* VCU/Faults/CAN_DISPATCH_FAULT - CAN Dispatch Fault
-* VCU/Faults/CAN_ROUTING_FAULT - CAN Routing Fault.
-* VCU/Faults/BMS_CAN_MONITOR_FAULT - BMS CAN Monitor Fault.
-* VCU/Faults/ONBOARD_TEMP_FAULT - Onboard Temperature Fault.
-* VCU/Faults/IMU_FAULT - IMU Fault.
-* VCU/Faults/FUSE_MONITOR_FAULT - Fuse Monitor Fault
-* VCU/Faults/SHUTDOWN_MONITOR_FAULT - Shutdown Monitor Fault.
-* VCU/Faults/LV_MONITOR_FAULT - LV Monitor Fault
-* VCU/Faults/BSPD_PREFAULT - BSPD Prefault.
-* VCU/Faults/RTDS_FAULT - RTDS Fault.
-* VCU/Faults/PUMP_SENSORS_FAULT - Pump Sensors Fault.
-* VCU/Faults/PDU_CURRENT_FAULT - PDU Current Fault.
-*/
-uint8_t send_faults
-(bool ONBOARD_PEDAL_OPEN_CIRCUIT_FAULT,bool ONBOARD_PEDAL_SHORT_CIRCUIT_FAULT,bool ONBOARD_PEDAL_DIFFERENCE_FAULT,bool CAN_DISPATCH_FAULT,bool CAN_ROUTING_FAULT,bool BMS_CAN_MONITOR_FAULT,bool ONBOARD_TEMP_FAULT,bool IMU_FAULT,bool FUSE_MONITOR_FAULT,bool SHUTDOWN_MONITOR_FAULT,bool LV_MONITOR_FAULT,bool BSPD_PREFAULT,bool RTDS_FAULT,bool PUMP_SENSORS_FAULT,bool PDU_CURRENT_FAULT);
-
-/**
-* Contents of this message:
 * VCU/CarState/home_mode - Whether or not VCU is in home mode.
 * VCU/CarState/nero_index - VCU's current nero_index value.
 * VCU/CarState/speed - Speed of the car, in miles per hour.
@@ -175,7 +154,7 @@ uint8_t send_car_state
 * VCU/Pedals/Percentages/brake_pedal - How far the brake pedal is pressed, ranging from 0 to 1.
 */
 uint8_t send_pedal_percent_pressed_values
-(uint16_t accel_norm,uint16_t brake_norm);
+(float accel_norm,float brake_norm);
 
 /**
 * Contents of this message:
@@ -185,7 +164,7 @@ uint8_t send_pedal_percent_pressed_values
 * VCU/Pedals/Voltages/brake_2 - Voltage reading from Brake Pedal Sensor 2
 */
 uint8_t send_pedal_sensor_voltages
-(uint16_t accel1_volts,uint16_t accel2_volts,uint16_t brake1_volts,uint16_t brake2_volts);
+(float accel1_volts,float accel2_volts,float brake1_volts,float brake2_volts);
 
 /**
 * Contents of this message:
@@ -215,4 +194,23 @@ uint8_t send_imu_accelerometer
 */
 uint8_t send_imu_gyro
 (float imu_gyro_x,float imu_gyro_y,float imu_gyro_z);
+
+/**
+* Contents of this message:
+* VCU/Faults/CAN_OUTGOING_FAULT - 
+* VCU/Faults/CAN_INCOMING_FAULT - 
+* VCU/Faults/BMS_CAN_MONITOR_FAULT - 
+* VCU/Faults/ONBOARD_TEMP_FAULT - 
+* VCU/Faults/IMU_ACCEL_FAULT - 
+* VCU/Faults/IMU_GYRO_FAULT - 
+* VCU/Faults/BSPD_PREFAULT - 
+* VCU/Faults/ONBOARD_BRAKE_OPEN_CIRCUIT_FAULT - 
+* VCU/Faults/ONBOARD_ACCEL_OPEN_CIRCUIT_FAULT - 
+* VCU/Faults/ONBOARD_BRAKE_SHORT_CIRCUIT_FAULT - 
+* VCU/Faults/ONBOARD_ACCEL_SHORT_CIRCUIT_FAULT - 
+* VCU/Faults/ONBOARD_PEDAL_DIFFERENCE_FAULT - 
+* VCU/Faults/RTDS_FAULT - 
+*/
+uint8_t send_faults
+(bool CAN_OUTGOING_FAULT,bool CAN_INCOMING_FAULT,bool BMS_CAN_MONITOR_FAULT,bool ONBOARD_TEMP_FAULT,bool IMU_ACCEL_FAULT,bool IMU_GYRO_FAULT,bool BSPD_PREFAULT,bool ONBOARD_BRAKE_OPEN_CIRCUIT_FAULT,bool ONBOARD_ACCEL_OPEN_CIRCUIT_FAULT,bool ONBOARD_BRAKE_SHORT_CIRCUIT_FAULT,bool ONBOARD_ACCEL_SHORT_CIRCUIT_FAULT,bool ONBOARD_PEDAL_DIFFERENCE_FAULT,bool RTDS_FAULT,int EXTRA);
 #endif
