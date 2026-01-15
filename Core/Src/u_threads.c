@@ -210,10 +210,22 @@ void vFaults(ULONG thread_input) {
     while(1) {
 
         /* Send a CAN message containing the current fault statuses. */
-        uint32_t faults = get_faults();
-        can_msg_t msg = {.id = CANID_FAULT_MSG, .len = 8, .data = {0}};
-        memcpy(msg.data, &faults, sizeof(faults));
-        queue_send(&can_outgoing, &msg, TX_NO_WAIT);
+        send_faults(
+            get_fault(CAN_OUTGOING_FAULT),
+            get_fault(CAN_INCOMING_FAULT),
+            get_fault(BMS_CAN_MONITOR_FAULT),
+            get_fault(ONBOARD_TEMP_FAULT),
+            get_fault(IMU_ACCEL_FAULT),
+            get_fault(IMU_GYRO_FAULT),
+            get_fault(BSPD_PREFAULT),
+            get_fault(ONBOARD_BRAKE_OPEN_CIRCUIT_FAULT),
+            get_fault(ONBOARD_ACCEL_OPEN_CIRCUIT_FAULT),
+            get_fault(ONBOARD_BRAKE_SHORT_CIRCUIT_FAULT),
+            get_fault(ONBOARD_ACCEL_SHORT_CIRCUIT_FAULT),
+            get_fault(ONBOARD_PEDAL_DIFFERENCE_FAULT),
+            get_fault(RTDS_FAULT),
+            0
+        );
 
         /* Sleep Thread for specified number of ticks. */
         tx_thread_sleep(faults_thread.sleep);
