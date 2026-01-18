@@ -505,6 +505,29 @@ uint8_t send_faults
     return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
 }
 
+uint8_t send_lv_voltage
+(uint16_t ADC,float Voltage)
+{
+    can_msg_t msg;
+    msg.id = 0x509;
+    
+    msg.id_is_extended = false;
+
+    bitstream_t lv_voltage_msg;
+	uint8_t bitstream_data[6];
+	bitstream_init(&lv_voltage_msg, bitstream_data, 6);
+	
+    bitstream_add(&lv_voltage_msg, ADC, 16);
+    bitstream_add(&lv_voltage_msg, Voltage*1000, 32);
+
+    handle_bitstream_overflow(&lv_voltage_msg, msg.id);
+    
+    msg.len = sizeof(bitstream_data);
+    memcpy(msg.data, &bitstream_data, sizeof(bitstream_data));
+
+    return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
+}
+
 
 
 /// @brief A helper which sends appropriate error to stdout and CAN if a bistream overflows

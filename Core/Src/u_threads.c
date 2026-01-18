@@ -572,6 +572,18 @@ void vPeripherals(ULONG thread_input) {
             );
         } while (0);
 
+        /* SECTION 4: Send LV ADC Message. */
+        do {
+            lvread_adc_t lv_data = adc_getLVData();
+
+            /* Send the LV Voltage message. */
+            send_lv_voltage(
+                lv_data.raw, 
+                lv_data.voltage
+            );
+
+        } while (0);
+
         /* Sleep Thread for specified number of ticks. */
         tx_thread_sleep(peripherals_thread.sleep);
     }
