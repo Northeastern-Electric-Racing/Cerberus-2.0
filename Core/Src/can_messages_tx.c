@@ -272,6 +272,7 @@ uint8_t send_shutdown_pins
     can_msg_t msg;
     msg.id = 0x123;
     
+    msg.id_is_extended = false;
 
     bitstream_t shutdown_pins_msg;
 	uint8_t bitstream_data[2];
@@ -303,6 +304,7 @@ uint8_t send_car_state
     can_msg_t msg;
     msg.id = 0x501;
     
+    msg.id_is_extended = false;
 
     bitstream_t car_state_msg;
 	uint8_t bitstream_data[6];
@@ -332,6 +334,7 @@ uint8_t send_pedal_percent_pressed_values
     can_msg_t msg;
     msg.id = 0x505;
     
+    msg.id_is_extended = false;
 
     bitstream_t pedal_percent_pressed_values_msg;
 	uint8_t bitstream_data[4];
@@ -354,6 +357,7 @@ uint8_t send_pedal_sensor_voltages
     can_msg_t msg;
     msg.id = 0x504;
     
+    msg.id_is_extended = false;
 
     bitstream_t pedal_sensor_voltages_msg;
 	uint8_t bitstream_data[8];
@@ -378,6 +382,7 @@ uint8_t send_lightning_board_light_status
     can_msg_t msg;
     msg.id = 0xCA;
     
+    msg.id_is_extended = false;
 
     bitstream_t lightning_board_light_status_msg;
 	uint8_t bitstream_data[1];
@@ -400,6 +405,7 @@ uint8_t send_temperature_sensor
     can_msg_t msg;
     msg.id = 0x508;
     
+    msg.id_is_extended = false;
 
     bitstream_t temperature_sensor_msg;
 	uint8_t bitstream_data[4];
@@ -422,6 +428,7 @@ uint8_t send_imu_accelerometer
     can_msg_t msg;
     msg.id = 0x506;
     
+    msg.id_is_extended = false;
 
     bitstream_t imu_accelerometer_msg;
 	uint8_t bitstream_data[6];
@@ -445,6 +452,7 @@ uint8_t send_imu_gyro
     can_msg_t msg;
     msg.id = 0x507;
     
+    msg.id_is_extended = false;
 
     bitstream_t imu_gyro_msg;
 	uint8_t bitstream_data[6];
@@ -468,6 +476,7 @@ uint8_t send_faults
     can_msg_t msg;
     msg.id = 0x502;
     
+    msg.id_is_extended = false;
 
     bitstream_t faults_msg;
 	uint8_t bitstream_data[2];
