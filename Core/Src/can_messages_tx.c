@@ -21,6 +21,7 @@ uint8_t send_dashboard_efuse
 {
     can_msg_t msg;
     msg.id = 0xEF0;
+    msg.id_is_extended = true;
 
     bitstream_t dashboard_efuse_msg;
 	uint8_t bitstream_data[8];
@@ -45,6 +46,7 @@ uint8_t send_brake_efuse
 {
     can_msg_t msg;
     msg.id = 0xEF1;
+    msg.id_is_extended = true;
 
     bitstream_t brake_efuse_msg;
 	uint8_t bitstream_data[8];
@@ -69,6 +71,7 @@ uint8_t send_shutdown_efuse
 {
     can_msg_t msg;
     msg.id = 0xEF2;
+    msg.id_is_extended = true;
 
     bitstream_t shutdown_efuse_msg;
 	uint8_t bitstream_data[8];
@@ -93,6 +96,7 @@ uint8_t send_lv_efuse
 {
     can_msg_t msg;
     msg.id = 0xEF3;
+    msg.id_is_extended = true;
 
     bitstream_t lv_efuse_msg;
 	uint8_t bitstream_data[8];
@@ -117,6 +121,7 @@ uint8_t send_radfan_efuse
 {
     can_msg_t msg;
     msg.id = 0xEF4;
+    msg.id_is_extended = true;
 
     bitstream_t radfan_efuse_msg;
 	uint8_t bitstream_data[8];
@@ -141,6 +146,7 @@ uint8_t send_fanbatt_efuse
 {
     can_msg_t msg;
     msg.id = 0xEF5;
+    msg.id_is_extended = true;
 
     bitstream_t fanbatt_efuse_msg;
 	uint8_t bitstream_data[8];
@@ -165,6 +171,7 @@ uint8_t send_pumpone_efuse
 {
     can_msg_t msg;
     msg.id = 0xEF6;
+    msg.id_is_extended = true;
 
     bitstream_t pumpone_efuse_msg;
 	uint8_t bitstream_data[8];
@@ -189,6 +196,7 @@ uint8_t send_pumptwo_efuse
 {
     can_msg_t msg;
     msg.id = 0xEF7;
+    msg.id_is_extended = true;
 
     bitstream_t pumptwo_efuse_msg;
 	uint8_t bitstream_data[8];
@@ -213,6 +221,7 @@ uint8_t send_battbox_efuse
 {
     can_msg_t msg;
     msg.id = 0xEF8;
+    msg.id_is_extended = true;
 
     bitstream_t battbox_efuse_msg;
 	uint8_t bitstream_data[8];
@@ -237,6 +246,7 @@ uint8_t send_mc_efuse
 {
     can_msg_t msg;
     msg.id = 0xEF9;
+    msg.id_is_extended = true;
 
     bitstream_t mc_efuse_msg;
 	uint8_t bitstream_data[8];
@@ -261,6 +271,7 @@ uint8_t send_shutdown_pins
 {
     can_msg_t msg;
     msg.id = 0x123;
+    
 
     bitstream_t shutdown_pins_msg;
 	uint8_t bitstream_data[2];
@@ -291,6 +302,7 @@ uint8_t send_car_state
 {
     can_msg_t msg;
     msg.id = 0x501;
+    
 
     bitstream_t car_state_msg;
 	uint8_t bitstream_data[6];
@@ -319,6 +331,7 @@ uint8_t send_pedal_percent_pressed_values
 {
     can_msg_t msg;
     msg.id = 0x505;
+    
 
     bitstream_t pedal_percent_pressed_values_msg;
 	uint8_t bitstream_data[4];
@@ -340,6 +353,7 @@ uint8_t send_pedal_sensor_voltages
 {
     can_msg_t msg;
     msg.id = 0x504;
+    
 
     bitstream_t pedal_sensor_voltages_msg;
 	uint8_t bitstream_data[8];
@@ -363,6 +377,7 @@ uint8_t send_lightning_board_light_status
 {
     can_msg_t msg;
     msg.id = 0xCA;
+    
 
     bitstream_t lightning_board_light_status_msg;
 	uint8_t bitstream_data[1];
@@ -384,6 +399,7 @@ uint8_t send_temperature_sensor
 {
     can_msg_t msg;
     msg.id = 0x508;
+    
 
     bitstream_t temperature_sensor_msg;
 	uint8_t bitstream_data[4];
@@ -405,6 +421,7 @@ uint8_t send_imu_accelerometer
 {
     can_msg_t msg;
     msg.id = 0x506;
+    
 
     bitstream_t imu_accelerometer_msg;
 	uint8_t bitstream_data[6];
@@ -427,6 +444,7 @@ uint8_t send_imu_gyro
 {
     can_msg_t msg;
     msg.id = 0x507;
+    
 
     bitstream_t imu_gyro_msg;
 	uint8_t bitstream_data[6];
@@ -449,6 +467,7 @@ uint8_t send_faults
 {
     can_msg_t msg;
     msg.id = 0x502;
+    
 
     bitstream_t faults_msg;
 	uint8_t bitstream_data[2];
