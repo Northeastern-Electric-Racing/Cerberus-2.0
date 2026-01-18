@@ -213,4 +213,12 @@ uint8_t send_imu_gyro
 */
 uint8_t send_faults
 (bool CAN_OUTGOING_FAULT,bool CAN_INCOMING_FAULT,bool BMS_CAN_MONITOR_FAULT,bool ONBOARD_TEMP_FAULT,bool IMU_ACCEL_FAULT,bool IMU_GYRO_FAULT,bool BSPD_PREFAULT,bool ONBOARD_BRAKE_OPEN_CIRCUIT_FAULT,bool ONBOARD_ACCEL_OPEN_CIRCUIT_FAULT,bool ONBOARD_BRAKE_SHORT_CIRCUIT_FAULT,bool ONBOARD_ACCEL_SHORT_CIRCUIT_FAULT,bool ONBOARD_PEDAL_DIFFERENCE_FAULT,bool RTDS_FAULT,int EXTRA);
+
+/**
+* Contents of this message:
+* VCU/LV/raw - 
+* VCU/LV/voltage - 
+*/
+uint8_t send_lv_voltage
+(uint16_t ADC,float Voltage);
 #endif
