@@ -35,8 +35,8 @@
 /* Default Thread */
 static thread_t default_thread = {
         .name       = "Default Thread",  /* Name */
-        .size       = 512,               /* Stack Size (in bytes) */
-        .priority   = PRIO_vDefault, /* Priority */
+        .size       = 2048,              /* Stack Size (in bytes) */
+        .priority   = PRIO_vDefault,     /* Priority */
         .threshold  = 0,                 /* Preemption Threshold */
         .time_slice = TX_NO_TIME_SLICE,  /* Time Slice */
         .auto_start = TX_AUTO_START,     /* Auto Start */
@@ -59,7 +59,7 @@ void vDefault(ULONG thread_input) {
 /* Incoming Ethernet Thread. Processes incoming messages. */
 static thread_t ethernet_incoming_thread = {
         .name       = "Incoming Ethernet Thread",  /* Name */
-        .size       = 512,                         /* Stack Size (in bytes) */
+        .size       = 2048,                        /* Stack Size (in bytes) */
         .priority   = PRIO_vEthernetIncoming,      /* Priority */
         .threshold  = 0,                           /* Preemption Threshold */
         .time_slice = TX_NO_TIME_SLICE,            /* Time Slice */
@@ -85,7 +85,7 @@ void vEthernetIncoming(ULONG thread_input) {
 /* Outgoing Ethernet Thread. Sends outgoing messages. */
 static thread_t ethernet_outgoing_thread = {
         .name       = "Outgoing Ethernet Thread",  /* Name */
-        .size       = 512,                         /* Stack Size (in bytes) */
+        .size       = 2048,                        /* Stack Size (in bytes) */
         .priority   = PRIO_vEthernetOutgoing,      /* Priority */
         .threshold  = 0,                           /* Preemption Threshold */
         .time_slice = TX_NO_TIME_SLICE,            /* Time Slice */
@@ -116,7 +116,7 @@ void vEthernetOutgoing(ULONG thread_input) {
 /* Incoming CAN Thread. Processes incoming messages. */
 static thread_t can_incoming_thread = {
         .name       = "Incoming CAN Thread",     /* Name */
-        .size       = 512,                       /* Stack Size (in bytes) */
+        .size       = 2048,                      /* Stack Size (in bytes) */
         .priority   = PRIO_vCANIncoming,         /* Priority */
         .threshold  = 0,                         /* Preemption Threshold */
         .time_slice = TX_NO_TIME_SLICE,          /* Time Slice */
@@ -142,7 +142,7 @@ void vCANIncoming(ULONG thread_input) {
 /* Outgoing CAN Thread. Sends outgoing messages. */
 static thread_t can_outgoing_thread = {
         .name       = "Outgoing CAN Thread",     /* Name */
-        .size       = 512,                       /* Stack Size (in bytes) */
+        .size       = 2048,                      /* Stack Size (in bytes) */
         .priority   = PRIO_vCANOutgoing,         /* Priority */
         .threshold  = 0,                         /* Preemption Threshold */
         .time_slice = TX_NO_TIME_SLICE,          /* Time Slice */
@@ -173,7 +173,7 @@ void vCANOutgoing(ULONG thread_input) {
 /* Faults Queue Thread. */
 static thread_t faults_queue_thread = {
         .name       = "Faults Queue Thread",  /* Name */
-        .size       = 512,                    /* Stack Size (in bytes) */
+        .size       = 2048,                   /* Stack Size (in bytes) */
         .priority   = PRIO_vFaultsQueue,      /* Priority */
         .threshold  = 0,                      /* Preemption Threshold */
         .time_slice = TX_NO_TIME_SLICE,       /* Time Slice */
@@ -197,8 +197,8 @@ void vFaultsQueue(ULONG thread_input) {
 
 /* Faults Thread. */
 static thread_t faults_thread = {
-        .name       = "Faults Thread",  /* Name */
-        .size       = 512,                    /* Stack Size (in bytes) */
+        .name       = "Faults Thread",        /* Name */
+        .size       = 2048,                   /* Stack Size (in bytes) */
         .priority   = PRIO_vFaults,           /* Priority */
         .threshold  = 0,                      /* Preemption Threshold */
         .time_slice = TX_NO_TIME_SLICE,       /* Time Slice */
@@ -236,8 +236,8 @@ void vFaults(ULONG thread_input) {
 /* Shutdown Thread. Reads the shutdown (aka. "External Faults") pins and sends them in a CAN message. */
 static thread_t shutdown_thread = {
         .name       = "Shutdown Thread",  /* Name */
-        .size       = 512,                /* Stack Size (in bytes) */
-        .priority   = PRIO_vShutdown, /* Priority */
+        .size       = 2048,               /* Stack Size (in bytes) */
+        .priority   = PRIO_vShutdown,     /* Priority */
         .threshold  = 0,                  /* Preemption Threshold */
         .time_slice = TX_NO_TIME_SLICE,   /* Time Slice */
         .auto_start = TX_AUTO_START,      /* Auto Start */
@@ -271,7 +271,7 @@ void vShutdown(ULONG thread_input) {
 /* State Machine Thread. */
 static thread_t statemachine_thread = {
         .name       = "State Machine Thread", /* Name */
-        .size       = 512,                    /* Stack Size (in bytes) */
+        .size       = 2048,                   /* Stack Size (in bytes) */
         .priority   = PRIO_vStatemachine,     /* Priority */
         .threshold  = 0,                      /* Preemption Threshold */
         .time_slice = TX_NO_TIME_SLICE,       /* Time Slice */
@@ -293,7 +293,7 @@ void vStatemachine(ULONG thread_input) {
 /* Pedals Thread. */
 static thread_t pedals_thread = {
         .name       = "Pedals Thread",        /* Name */
-        .size       = 512,                    /* Stack Size (in bytes) */
+        .size       = 2048,                   /* Stack Size (in bytes) */
         .priority   = PRIO_vPedals,           /* Priority */
         .threshold  = 0,                      /* Preemption Threshold */
         .time_slice = TX_NO_TIME_SLICE,       /* Time Slice */
@@ -315,8 +315,8 @@ void vPedals(ULONG thread_input) {
 /* eFuses Thread. */
 static thread_t efuses_thread = {
         .name       = "eFuses Thread",        /* Name */
-        .size       = 512,                    /* Stack Size (in bytes) */
-        .priority   = PRIO_vEFuses,       /* Priority */
+        .size       = 2048,                   /* Stack Size (in bytes) */
+        .priority   = PRIO_vEFuses,           /* Priority */
         .threshold  = 0,                      /* Preemption Threshold */
         .time_slice = TX_NO_TIME_SLICE,       /* Time Slice */
         .auto_start = TX_AUTO_START,          /* Auto Start */
@@ -438,8 +438,8 @@ void vEFuses(ULONG thread_input) {
 /* TSMS Thread. */
 static thread_t tsms_thread = {
         .name       = "TSMS Thread",          /* Name */
-        .size       = 512,                    /* Stack Size (in bytes) */
-        .priority   = PRIO_vTSMS,         /* Priority */
+        .size       = 2048,                   /* Stack Size (in bytes) */
+        .priority   = PRIO_vTSMS,             /* Priority */
         .threshold  = 0,                      /* Preemption Threshold */
         .time_slice = TX_NO_TIME_SLICE,       /* Time Slice */
         .auto_start = TX_AUTO_START,          /* Auto Start */
@@ -460,8 +460,8 @@ void vTSMS(ULONG thread_input) {
 /* Mux Thread (for the ADC multiplexer). */
 static thread_t mux_thread = {
         .name       = "Mux Thread",           /* Name */
-        .size       = 512,                    /* Stack Size (in bytes) */
-        .priority   = PRIO_vMux,          /* Priority */
+        .size       = 2048,                   /* Stack Size (in bytes) */
+        .priority   = PRIO_vMux,              /* Priority */
         .threshold  = 0,                      /* Preemption Threshold */
         .time_slice = TX_NO_TIME_SLICE,       /* Time Slice */
         .auto_start = TX_AUTO_START,          /* Auto Start */
@@ -483,7 +483,7 @@ void vMux(ULONG thread_input) {
 /* Peripherals Thread. */
 static thread_t peripherals_thread = {
         .name       = "Peripherals Thread",   /* Name */
-        .size       = 512,                    /* Stack Size (in bytes) */
+        .size       = 2048,                   /* Stack Size (in bytes) */
         .priority   = PRIO_vPeripherals,      /* Priority */
         .threshold  = 0,                      /* Preemption Threshold */
         .time_slice = TX_NO_TIME_SLICE,       /* Time Slice */
