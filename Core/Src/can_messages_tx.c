@@ -23,45 +23,40 @@ uint8_t send_dashboard_efuse(uint16_t ADC, float voltage, float current, bool is
     msg.len = 8;
 
     uint64_t data = 0;
-    /* Check unsigned point for overflow. If value exceeds bounds, cap it and print a warning message. */
-    uint16_t ADC_i = (uint16_t)(ADC);
-    if (ADC_i > 65535)
+    uint32_t ADC_i = (uint32_t)(ADC);
+    if (ADC_i > 65535ULL)
     {
         PRINTLN_WARNING("Overflow occured for point ADC! Capping point to its max value (point is 16 bits, so max_value=65535).");
         ADC_i = 65535;
     }
     data |= ((ADC_i) & 0xFFFFULL) << 48;
 
-    /* Check unsigned point for overflow. If value exceeds bounds, cap it and print a warning message. */
-    uint16_t voltage_i = (uint16_t)(voltage * 1000);
-    if (voltage_i > 65535)
+    uint32_t voltage_i = (uint32_t)(voltage * 1000);
+    if (voltage_i > 65535ULL)
     {
         PRINTLN_WARNING("Overflow occured for point voltage! Capping point to its max value (point is 16 bits, so max_value=65535).");
         voltage_i = 65535;
     }
     data |= ((voltage_i) & 0xFFFFULL) << 32;
 
-    /* Check unsigned point for overflow. If value exceeds bounds, cap it and print a warning message. */
-    uint16_t current_i = (uint16_t)(current * 1000);
-    if (current_i > 65535)
+    uint32_t current_i = (uint32_t)(current * 1000);
+    if (current_i > 65535ULL)
     {
         PRINTLN_WARNING("Overflow occured for point current! Capping point to its max value (point is 16 bits, so max_value=65535).");
         current_i = 65535;
     }
     data |= ((current_i) & 0xFFFFULL) << 16;
 
-    /* Check unsigned point for overflow. If value exceeds bounds, cap it and print a warning message. */
-    uint8_t is_faulted_i = (uint8_t)(is_faulted);
-    if (is_faulted_i > 255)
+    uint32_t is_faulted_i = (uint32_t)(is_faulted);
+    if (is_faulted_i > 255ULL)
     {
         PRINTLN_WARNING("Overflow occured for point is_faulted! Capping point to its max value (point is 8 bits, so max_value=255).");
         is_faulted_i = 255;
     }
     data |= ((is_faulted_i) & 0xFFULL) << 8;
 
-    /* Check unsigned point for overflow. If value exceeds bounds, cap it and print a warning message. */
-    uint8_t is_enabled_i = (uint8_t)(is_enabled);
-    if (is_enabled_i > 255)
+    uint32_t is_enabled_i = (uint32_t)(is_enabled);
+    if (is_enabled_i > 255ULL)
     {
         PRINTLN_WARNING("Overflow occured for point is_enabled! Capping point to its max value (point is 8 bits, so max_value=255).");
         is_enabled_i = 255;
@@ -82,45 +77,40 @@ uint8_t send_brake_efuse(uint16_t ADC, float voltage, float current, bool is_fau
     msg.len = 8;
 
     uint64_t data = 0;
-    /* Check unsigned point for overflow. If value exceeds bounds, cap it and print a warning message. */
-    uint16_t ADC_i = (uint16_t)(ADC);
-    if (ADC_i > 65535)
+    uint32_t ADC_i = (uint32_t)(ADC);
+    if (ADC_i > 65535ULL)
     {
         PRINTLN_WARNING("Overflow occured for point ADC! Capping point to its max value (point is 16 bits, so max_value=65535).");
         ADC_i = 65535;
     }
     data |= ((ADC_i) & 0xFFFFULL) << 48;
 
-    /* Check unsigned point for overflow. If value exceeds bounds, cap it and print a warning message. */
-    uint16_t voltage_i = (uint16_t)(voltage * 1000);
-    if (voltage_i > 65535)
+    uint32_t voltage_i = (uint32_t)(voltage * 1000);
+    if (voltage_i > 65535ULL)
     {
         PRINTLN_WARNING("Overflow occured for point voltage! Capping point to its max value (point is 16 bits, so max_value=65535).");
         voltage_i = 65535;
     }
     data |= ((voltage_i) & 0xFFFFULL) << 32;
 
-    /* Check unsigned point for overflow. If value exceeds bounds, cap it and print a warning message. */
-    uint16_t current_i = (uint16_t)(current * 1000);
-    if (current_i > 65535)
+    uint32_t current_i = (uint32_t)(current * 1000);
+    if (current_i > 65535ULL)
     {
         PRINTLN_WARNING("Overflow occured for point current! Capping point to its max value (point is 16 bits, so max_value=65535).");
         current_i = 65535;
     }
     data |= ((current_i) & 0xFFFFULL) << 16;
 
-    /* Check unsigned point for overflow. If value exceeds bounds, cap it and print a warning message. */
-    uint8_t is_faulted_i = (uint8_t)(is_faulted);
-    if (is_faulted_i > 255)
+    uint32_t is_faulted_i = (uint32_t)(is_faulted);
+    if (is_faulted_i > 255ULL)
     {
         PRINTLN_WARNING("Overflow occured for point is_faulted! Capping point to its max value (point is 8 bits, so max_value=255).");
         is_faulted_i = 255;
     }
     data |= ((is_faulted_i) & 0xFFULL) << 8;
 
-    /* Check unsigned point for overflow. If value exceeds bounds, cap it and print a warning message. */
-    uint8_t is_enabled_i = (uint8_t)(is_enabled);
-    if (is_enabled_i > 255)
+    uint32_t is_enabled_i = (uint32_t)(is_enabled);
+    if (is_enabled_i > 255ULL)
     {
         PRINTLN_WARNING("Overflow occured for point is_enabled! Capping point to its max value (point is 8 bits, so max_value=255).");
         is_enabled_i = 255;
@@ -141,45 +131,40 @@ uint8_t send_shutdown_efuse(uint16_t ADC, float voltage, float current, bool is_
     msg.len = 8;
 
     uint64_t data = 0;
-    /* Check unsigned point for overflow. If value exceeds bounds, cap it and print a warning message. */
-    uint16_t ADC_i = (uint16_t)(ADC);
-    if (ADC_i > 65535)
+    uint32_t ADC_i = (uint32_t)(ADC);
+    if (ADC_i > 65535ULL)
     {
         PRINTLN_WARNING("Overflow occured for point ADC! Capping point to its max value (point is 16 bits, so max_value=65535).");
         ADC_i = 65535;
     }
     data |= ((ADC_i) & 0xFFFFULL) << 48;
 
-    /* Check unsigned point for overflow. If value exceeds bounds, cap it and print a warning message. */
-    uint16_t voltage_i = (uint16_t)(voltage * 1000);
-    if (voltage_i > 65535)
+    uint32_t voltage_i = (uint32_t)(voltage * 1000);
+    if (voltage_i > 65535ULL)
     {
         PRINTLN_WARNING("Overflow occured for point voltage! Capping point to its max value (point is 16 bits, so max_value=65535).");
         voltage_i = 65535;
     }
     data |= ((voltage_i) & 0xFFFFULL) << 32;
 
-    /* Check unsigned point for overflow. If value exceeds bounds, cap it and print a warning message. */
-    uint16_t current_i = (uint16_t)(current * 1000);
-    if (current_i > 65535)
+    uint32_t current_i = (uint32_t)(current * 1000);
+    if (current_i > 65535ULL)
     {
         PRINTLN_WARNING("Overflow occured for point current! Capping point to its max value (point is 16 bits, so max_value=65535).");
         current_i = 65535;
     }
     data |= ((current_i) & 0xFFFFULL) << 16;
 
-    /* Check unsigned point for overflow. If value exceeds bounds, cap it and print a warning message. */
-    uint8_t is_faulted_i = (uint8_t)(is_faulted);
-    if (is_faulted_i > 255)
+    uint32_t is_faulted_i = (uint32_t)(is_faulted);
+    if (is_faulted_i > 255ULL)
     {
         PRINTLN_WARNING("Overflow occured for point is_faulted! Capping point to its max value (point is 8 bits, so max_value=255).");
         is_faulted_i = 255;
     }
     data |= ((is_faulted_i) & 0xFFULL) << 8;
 
-    /* Check unsigned point for overflow. If value exceeds bounds, cap it and print a warning message. */
-    uint8_t is_enabled_i = (uint8_t)(is_enabled);
-    if (is_enabled_i > 255)
+    uint32_t is_enabled_i = (uint32_t)(is_enabled);
+    if (is_enabled_i > 255ULL)
     {
         PRINTLN_WARNING("Overflow occured for point is_enabled! Capping point to its max value (point is 8 bits, so max_value=255).");
         is_enabled_i = 255;
@@ -200,45 +185,40 @@ uint8_t send_lv_efuse(uint16_t ADC, float voltage, float current, bool is_faulte
     msg.len = 8;
 
     uint64_t data = 0;
-    /* Check unsigned point for overflow. If value exceeds bounds, cap it and print a warning message. */
-    uint16_t ADC_i = (uint16_t)(ADC);
-    if (ADC_i > 65535)
+    uint32_t ADC_i = (uint32_t)(ADC);
+    if (ADC_i > 65535ULL)
     {
         PRINTLN_WARNING("Overflow occured for point ADC! Capping point to its max value (point is 16 bits, so max_value=65535).");
         ADC_i = 65535;
     }
     data |= ((ADC_i) & 0xFFFFULL) << 48;
 
-    /* Check unsigned point for overflow. If value exceeds bounds, cap it and print a warning message. */
-    uint16_t voltage_i = (uint16_t)(voltage * 1000);
-    if (voltage_i > 65535)
+    uint32_t voltage_i = (uint32_t)(voltage * 1000);
+    if (voltage_i > 65535ULL)
     {
         PRINTLN_WARNING("Overflow occured for point voltage! Capping point to its max value (point is 16 bits, so max_value=65535).");
         voltage_i = 65535;
     }
     data |= ((voltage_i) & 0xFFFFULL) << 32;
 
-    /* Check unsigned point for overflow. If value exceeds bounds, cap it and print a warning message. */
-    uint16_t current_i = (uint16_t)(current * 1000);
-    if (current_i > 65535)
+    uint32_t current_i = (uint32_t)(current * 1000);
+    if (current_i > 65535ULL)
     {
         PRINTLN_WARNING("Overflow occured for point current! Capping point to its max value (point is 16 bits, so max_value=65535).");
         current_i = 65535;
     }
     data |= ((current_i) & 0xFFFFULL) << 16;
 
-    /* Check unsigned point for overflow. If value exceeds bounds, cap it and print a warning message. */
-    uint8_t is_faulted_i = (uint8_t)(is_faulted);
-    if (is_faulted_i > 255)
+    uint32_t is_faulted_i = (uint32_t)(is_faulted);
+    if (is_faulted_i > 255ULL)
     {
         PRINTLN_WARNING("Overflow occured for point is_faulted! Capping point to its max value (point is 8 bits, so max_value=255).");
         is_faulted_i = 255;
     }
     data |= ((is_faulted_i) & 0xFFULL) << 8;
 
-    /* Check unsigned point for overflow. If value exceeds bounds, cap it and print a warning message. */
-    uint8_t is_enabled_i = (uint8_t)(is_enabled);
-    if (is_enabled_i > 255)
+    uint32_t is_enabled_i = (uint32_t)(is_enabled);
+    if (is_enabled_i > 255ULL)
     {
         PRINTLN_WARNING("Overflow occured for point is_enabled! Capping point to its max value (point is 8 bits, so max_value=255).");
         is_enabled_i = 255;
@@ -259,45 +239,40 @@ uint8_t send_radfan_efuse(uint16_t ADC, float voltage, float current, bool is_fa
     msg.len = 8;
 
     uint64_t data = 0;
-    /* Check unsigned point for overflow. If value exceeds bounds, cap it and print a warning message. */
-    uint16_t ADC_i = (uint16_t)(ADC);
-    if (ADC_i > 65535)
+    uint32_t ADC_i = (uint32_t)(ADC);
+    if (ADC_i > 65535ULL)
     {
         PRINTLN_WARNING("Overflow occured for point ADC! Capping point to its max value (point is 16 bits, so max_value=65535).");
         ADC_i = 65535;
     }
     data |= ((ADC_i) & 0xFFFFULL) << 48;
 
-    /* Check unsigned point for overflow. If value exceeds bounds, cap it and print a warning message. */
-    uint16_t voltage_i = (uint16_t)(voltage * 1000);
-    if (voltage_i > 65535)
+    uint32_t voltage_i = (uint32_t)(voltage * 1000);
+    if (voltage_i > 65535ULL)
     {
         PRINTLN_WARNING("Overflow occured for point voltage! Capping point to its max value (point is 16 bits, so max_value=65535).");
         voltage_i = 65535;
     }
     data |= ((voltage_i) & 0xFFFFULL) << 32;
 
-    /* Check unsigned point for overflow. If value exceeds bounds, cap it and print a warning message. */
-    uint16_t current_i = (uint16_t)(current * 1000);
-    if (current_i > 65535)
+    uint32_t current_i = (uint32_t)(current * 1000);
+    if (current_i > 65535ULL)
     {
         PRINTLN_WARNING("Overflow occured for point current! Capping point to its max value (point is 16 bits, so max_value=65535).");
         current_i = 65535;
     }
     data |= ((current_i) & 0xFFFFULL) << 16;
 
-    /* Check unsigned point for overflow. If value exceeds bounds, cap it and print a warning message. */
-    uint8_t is_faulted_i = (uint8_t)(is_faulted);
-    if (is_faulted_i > 255)
+    uint32_t is_faulted_i = (uint32_t)(is_faulted);
+    if (is_faulted_i > 255ULL)
     {
         PRINTLN_WARNING("Overflow occured for point is_faulted! Capping point to its max value (point is 8 bits, so max_value=255).");
         is_faulted_i = 255;
     }
     data |= ((is_faulted_i) & 0xFFULL) << 8;
 
-    /* Check unsigned point for overflow. If value exceeds bounds, cap it and print a warning message. */
-    uint8_t is_enabled_i = (uint8_t)(is_enabled);
-    if (is_enabled_i > 255)
+    uint32_t is_enabled_i = (uint32_t)(is_enabled);
+    if (is_enabled_i > 255ULL)
     {
         PRINTLN_WARNING("Overflow occured for point is_enabled! Capping point to its max value (point is 8 bits, so max_value=255).");
         is_enabled_i = 255;
@@ -318,45 +293,40 @@ uint8_t send_fanbatt_efuse(uint16_t ADC, float voltage, float current, bool is_f
     msg.len = 8;
 
     uint64_t data = 0;
-    /* Check unsigned point for overflow. If value exceeds bounds, cap it and print a warning message. */
-    uint16_t ADC_i = (uint16_t)(ADC);
-    if (ADC_i > 65535)
+    uint32_t ADC_i = (uint32_t)(ADC);
+    if (ADC_i > 65535ULL)
     {
         PRINTLN_WARNING("Overflow occured for point ADC! Capping point to its max value (point is 16 bits, so max_value=65535).");
         ADC_i = 65535;
     }
     data |= ((ADC_i) & 0xFFFFULL) << 48;
 
-    /* Check unsigned point for overflow. If value exceeds bounds, cap it and print a warning message. */
-    uint16_t voltage_i = (uint16_t)(voltage * 1000);
-    if (voltage_i > 65535)
+    uint32_t voltage_i = (uint32_t)(voltage * 1000);
+    if (voltage_i > 65535ULL)
     {
         PRINTLN_WARNING("Overflow occured for point voltage! Capping point to its max value (point is 16 bits, so max_value=65535).");
         voltage_i = 65535;
     }
     data |= ((voltage_i) & 0xFFFFULL) << 32;
 
-    /* Check unsigned point for overflow. If value exceeds bounds, cap it and print a warning message. */
-    uint16_t current_i = (uint16_t)(current * 1000);
-    if (current_i > 65535)
+    uint32_t current_i = (uint32_t)(current * 1000);
+    if (current_i > 65535ULL)
     {
         PRINTLN_WARNING("Overflow occured for point current! Capping point to its max value (point is 16 bits, so max_value=65535).");
         current_i = 65535;
     }
     data |= ((current_i) & 0xFFFFULL) << 16;
 
-    /* Check unsigned point for overflow. If value exceeds bounds, cap it and print a warning message. */
-    uint8_t is_faulted_i = (uint8_t)(is_faulted);
-    if (is_faulted_i > 255)
+    uint32_t is_faulted_i = (uint32_t)(is_faulted);
+    if (is_faulted_i > 255ULL)
     {
         PRINTLN_WARNING("Overflow occured for point is_faulted! Capping point to its max value (point is 8 bits, so max_value=255).");
         is_faulted_i = 255;
     }
     data |= ((is_faulted_i) & 0xFFULL) << 8;
 
-    /* Check unsigned point for overflow. If value exceeds bounds, cap it and print a warning message. */
-    uint8_t is_enabled_i = (uint8_t)(is_enabled);
-    if (is_enabled_i > 255)
+    uint32_t is_enabled_i = (uint32_t)(is_enabled);
+    if (is_enabled_i > 255ULL)
     {
         PRINTLN_WARNING("Overflow occured for point is_enabled! Capping point to its max value (point is 8 bits, so max_value=255).");
         is_enabled_i = 255;
@@ -377,45 +347,40 @@ uint8_t send_pumpone_efuse(uint16_t ADC, float voltage, float current, bool is_f
     msg.len = 8;
 
     uint64_t data = 0;
-    /* Check unsigned point for overflow. If value exceeds bounds, cap it and print a warning message. */
-    uint16_t ADC_i = (uint16_t)(ADC);
-    if (ADC_i > 65535)
+    uint32_t ADC_i = (uint32_t)(ADC);
+    if (ADC_i > 65535ULL)
     {
         PRINTLN_WARNING("Overflow occured for point ADC! Capping point to its max value (point is 16 bits, so max_value=65535).");
         ADC_i = 65535;
     }
     data |= ((ADC_i) & 0xFFFFULL) << 48;
 
-    /* Check unsigned point for overflow. If value exceeds bounds, cap it and print a warning message. */
-    uint16_t voltage_i = (uint16_t)(voltage * 1000);
-    if (voltage_i > 65535)
+    uint32_t voltage_i = (uint32_t)(voltage * 1000);
+    if (voltage_i > 65535ULL)
     {
         PRINTLN_WARNING("Overflow occured for point voltage! Capping point to its max value (point is 16 bits, so max_value=65535).");
         voltage_i = 65535;
     }
     data |= ((voltage_i) & 0xFFFFULL) << 32;
 
-    /* Check unsigned point for overflow. If value exceeds bounds, cap it and print a warning message. */
-    uint16_t current_i = (uint16_t)(current * 1000);
-    if (current_i > 65535)
+    uint32_t current_i = (uint32_t)(current * 1000);
+    if (current_i > 65535ULL)
     {
         PRINTLN_WARNING("Overflow occured for point current! Capping point to its max value (point is 16 bits, so max_value=65535).");
         current_i = 65535;
     }
     data |= ((current_i) & 0xFFFFULL) << 16;
 
-    /* Check unsigned point for overflow. If value exceeds bounds, cap it and print a warning message. */
-    uint8_t is_faulted_i = (uint8_t)(is_faulted);
-    if (is_faulted_i > 255)
+    uint32_t is_faulted_i = (uint32_t)(is_faulted);
+    if (is_faulted_i > 255ULL)
     {
         PRINTLN_WARNING("Overflow occured for point is_faulted! Capping point to its max value (point is 8 bits, so max_value=255).");
         is_faulted_i = 255;
     }
     data |= ((is_faulted_i) & 0xFFULL) << 8;
 
-    /* Check unsigned point for overflow. If value exceeds bounds, cap it and print a warning message. */
-    uint8_t is_enabled_i = (uint8_t)(is_enabled);
-    if (is_enabled_i > 255)
+    uint32_t is_enabled_i = (uint32_t)(is_enabled);
+    if (is_enabled_i > 255ULL)
     {
         PRINTLN_WARNING("Overflow occured for point is_enabled! Capping point to its max value (point is 8 bits, so max_value=255).");
         is_enabled_i = 255;
@@ -436,45 +401,40 @@ uint8_t send_pumptwo_efuse(uint16_t ADC, float voltage, float current, bool is_f
     msg.len = 8;
 
     uint64_t data = 0;
-    /* Check unsigned point for overflow. If value exceeds bounds, cap it and print a warning message. */
-    uint16_t ADC_i = (uint16_t)(ADC);
-    if (ADC_i > 65535)
+    uint32_t ADC_i = (uint32_t)(ADC);
+    if (ADC_i > 65535ULL)
     {
         PRINTLN_WARNING("Overflow occured for point ADC! Capping point to its max value (point is 16 bits, so max_value=65535).");
         ADC_i = 65535;
     }
     data |= ((ADC_i) & 0xFFFFULL) << 48;
 
-    /* Check unsigned point for overflow. If value exceeds bounds, cap it and print a warning message. */
-    uint16_t voltage_i = (uint16_t)(voltage * 1000);
-    if (voltage_i > 65535)
+    uint32_t voltage_i = (uint32_t)(voltage * 1000);
+    if (voltage_i > 65535ULL)
     {
         PRINTLN_WARNING("Overflow occured for point voltage! Capping point to its max value (point is 16 bits, so max_value=65535).");
         voltage_i = 65535;
     }
     data |= ((voltage_i) & 0xFFFFULL) << 32;
 
-    /* Check unsigned point for overflow. If value exceeds bounds, cap it and print a warning message. */
-    uint16_t current_i = (uint16_t)(current * 1000);
-    if (current_i > 65535)
+    uint32_t current_i = (uint32_t)(current * 1000);
+    if (current_i > 65535ULL)
     {
         PRINTLN_WARNING("Overflow occured for point current! Capping point to its max value (point is 16 bits, so max_value=65535).");
         current_i = 65535;
     }
     data |= ((current_i) & 0xFFFFULL) << 16;
 
-    /* Check unsigned point for overflow. If value exceeds bounds, cap it and print a warning message. */
-    uint8_t is_faulted_i = (uint8_t)(is_faulted);
-    if (is_faulted_i > 255)
+    uint32_t is_faulted_i = (uint32_t)(is_faulted);
+    if (is_faulted_i > 255ULL)
     {
         PRINTLN_WARNING("Overflow occured for point is_faulted! Capping point to its max value (point is 8 bits, so max_value=255).");
         is_faulted_i = 255;
     }
     data |= ((is_faulted_i) & 0xFFULL) << 8;
 
-    /* Check unsigned point for overflow. If value exceeds bounds, cap it and print a warning message. */
-    uint8_t is_enabled_i = (uint8_t)(is_enabled);
-    if (is_enabled_i > 255)
+    uint32_t is_enabled_i = (uint32_t)(is_enabled);
+    if (is_enabled_i > 255ULL)
     {
         PRINTLN_WARNING("Overflow occured for point is_enabled! Capping point to its max value (point is 8 bits, so max_value=255).");
         is_enabled_i = 255;
@@ -495,45 +455,40 @@ uint8_t send_battbox_efuse(uint16_t ADC, float voltage, float current, bool is_f
     msg.len = 8;
 
     uint64_t data = 0;
-    /* Check unsigned point for overflow. If value exceeds bounds, cap it and print a warning message. */
-    uint16_t ADC_i = (uint16_t)(ADC);
-    if (ADC_i > 65535)
+    uint32_t ADC_i = (uint32_t)(ADC);
+    if (ADC_i > 65535ULL)
     {
         PRINTLN_WARNING("Overflow occured for point ADC! Capping point to its max value (point is 16 bits, so max_value=65535).");
         ADC_i = 65535;
     }
     data |= ((ADC_i) & 0xFFFFULL) << 48;
 
-    /* Check unsigned point for overflow. If value exceeds bounds, cap it and print a warning message. */
-    uint16_t voltage_i = (uint16_t)(voltage * 1000);
-    if (voltage_i > 65535)
+    uint32_t voltage_i = (uint32_t)(voltage * 1000);
+    if (voltage_i > 65535ULL)
     {
         PRINTLN_WARNING("Overflow occured for point voltage! Capping point to its max value (point is 16 bits, so max_value=65535).");
         voltage_i = 65535;
     }
     data |= ((voltage_i) & 0xFFFFULL) << 32;
 
-    /* Check unsigned point for overflow. If value exceeds bounds, cap it and print a warning message. */
-    uint16_t current_i = (uint16_t)(current * 1000);
-    if (current_i > 65535)
+    uint32_t current_i = (uint32_t)(current * 1000);
+    if (current_i > 65535ULL)
     {
         PRINTLN_WARNING("Overflow occured for point current! Capping point to its max value (point is 16 bits, so max_value=65535).");
         current_i = 65535;
     }
     data |= ((current_i) & 0xFFFFULL) << 16;
 
-    /* Check unsigned point for overflow. If value exceeds bounds, cap it and print a warning message. */
-    uint8_t is_faulted_i = (uint8_t)(is_faulted);
-    if (is_faulted_i > 255)
+    uint32_t is_faulted_i = (uint32_t)(is_faulted);
+    if (is_faulted_i > 255ULL)
     {
         PRINTLN_WARNING("Overflow occured for point is_faulted! Capping point to its max value (point is 8 bits, so max_value=255).");
         is_faulted_i = 255;
     }
     data |= ((is_faulted_i) & 0xFFULL) << 8;
 
-    /* Check unsigned point for overflow. If value exceeds bounds, cap it and print a warning message. */
-    uint8_t is_enabled_i = (uint8_t)(is_enabled);
-    if (is_enabled_i > 255)
+    uint32_t is_enabled_i = (uint32_t)(is_enabled);
+    if (is_enabled_i > 255ULL)
     {
         PRINTLN_WARNING("Overflow occured for point is_enabled! Capping point to its max value (point is 8 bits, so max_value=255).");
         is_enabled_i = 255;
@@ -554,45 +509,40 @@ uint8_t send_mc_efuse(uint16_t ADC, float voltage, float current, bool is_faulte
     msg.len = 8;
 
     uint64_t data = 0;
-    /* Check unsigned point for overflow. If value exceeds bounds, cap it and print a warning message. */
-    uint16_t ADC_i = (uint16_t)(ADC);
-    if (ADC_i > 65535)
+    uint32_t ADC_i = (uint32_t)(ADC);
+    if (ADC_i > 65535ULL)
     {
         PRINTLN_WARNING("Overflow occured for point ADC! Capping point to its max value (point is 16 bits, so max_value=65535).");
         ADC_i = 65535;
     }
     data |= ((ADC_i) & 0xFFFFULL) << 48;
 
-    /* Check unsigned point for overflow. If value exceeds bounds, cap it and print a warning message. */
-    uint16_t voltage_i = (uint16_t)(voltage * 1000);
-    if (voltage_i > 65535)
+    uint32_t voltage_i = (uint32_t)(voltage * 1000);
+    if (voltage_i > 65535ULL)
     {
         PRINTLN_WARNING("Overflow occured for point voltage! Capping point to its max value (point is 16 bits, so max_value=65535).");
         voltage_i = 65535;
     }
     data |= ((voltage_i) & 0xFFFFULL) << 32;
 
-    /* Check unsigned point for overflow. If value exceeds bounds, cap it and print a warning message. */
-    uint16_t current_i = (uint16_t)(current * 1000);
-    if (current_i > 65535)
+    uint32_t current_i = (uint32_t)(current * 1000);
+    if (current_i > 65535ULL)
     {
         PRINTLN_WARNING("Overflow occured for point current! Capping point to its max value (point is 16 bits, so max_value=65535).");
         current_i = 65535;
     }
     data |= ((current_i) & 0xFFFFULL) << 16;
 
-    /* Check unsigned point for overflow. If value exceeds bounds, cap it and print a warning message. */
-    uint8_t is_faulted_i = (uint8_t)(is_faulted);
-    if (is_faulted_i > 255)
+    uint32_t is_faulted_i = (uint32_t)(is_faulted);
+    if (is_faulted_i > 255ULL)
     {
         PRINTLN_WARNING("Overflow occured for point is_faulted! Capping point to its max value (point is 8 bits, so max_value=255).");
         is_faulted_i = 255;
     }
     data |= ((is_faulted_i) & 0xFFULL) << 8;
 
-    /* Check unsigned point for overflow. If value exceeds bounds, cap it and print a warning message. */
-    uint8_t is_enabled_i = (uint8_t)(is_enabled);
-    if (is_enabled_i > 255)
+    uint32_t is_enabled_i = (uint32_t)(is_enabled);
+    if (is_enabled_i > 255ULL)
     {
         PRINTLN_WARNING("Overflow occured for point is_enabled! Capping point to its max value (point is 8 bits, so max_value=255).");
         is_enabled_i = 255;
@@ -613,99 +563,88 @@ uint8_t send_shutdown_pins(bool bms_gpio, bool bots_gpio, bool spare_gpio, bool 
     msg.len = 2;
 
     uint16_t data = 0;
-    /* Check unsigned point for overflow. If value exceeds bounds, cap it and print a warning message. */
-    uint8_t bms_gpio_i = (uint8_t)(bms_gpio);
-    if (bms_gpio_i > 1)
+    uint32_t bms_gpio_i = (uint32_t)(bms_gpio);
+    if (bms_gpio_i > 1ULL)
     {
         PRINTLN_WARNING("Overflow occured for point bms_gpio! Capping point to its max value (point is 1 bits, so max_value=1).");
         bms_gpio_i = 1;
     }
     data |= ((bms_gpio_i) & 0x1ULL) << 15;
 
-    /* Check unsigned point for overflow. If value exceeds bounds, cap it and print a warning message. */
-    uint8_t bots_gpio_i = (uint8_t)(bots_gpio);
-    if (bots_gpio_i > 1)
+    uint32_t bots_gpio_i = (uint32_t)(bots_gpio);
+    if (bots_gpio_i > 1ULL)
     {
         PRINTLN_WARNING("Overflow occured for point bots_gpio! Capping point to its max value (point is 1 bits, so max_value=1).");
         bots_gpio_i = 1;
     }
     data |= ((bots_gpio_i) & 0x1ULL) << 14;
 
-    /* Check unsigned point for overflow. If value exceeds bounds, cap it and print a warning message. */
-    uint8_t spare_gpio_i = (uint8_t)(spare_gpio);
-    if (spare_gpio_i > 1)
+    uint32_t spare_gpio_i = (uint32_t)(spare_gpio);
+    if (spare_gpio_i > 1ULL)
     {
         PRINTLN_WARNING("Overflow occured for point spare_gpio! Capping point to its max value (point is 1 bits, so max_value=1).");
         spare_gpio_i = 1;
     }
     data |= ((spare_gpio_i) & 0x1ULL) << 13;
 
-    /* Check unsigned point for overflow. If value exceeds bounds, cap it and print a warning message. */
-    uint8_t bspd_gpio_i = (uint8_t)(bspd_gpio);
-    if (bspd_gpio_i > 1)
+    uint32_t bspd_gpio_i = (uint32_t)(bspd_gpio);
+    if (bspd_gpio_i > 1ULL)
     {
         PRINTLN_WARNING("Overflow occured for point bspd_gpio! Capping point to its max value (point is 1 bits, so max_value=1).");
         bspd_gpio_i = 1;
     }
     data |= ((bspd_gpio_i) & 0x1ULL) << 12;
 
-    /* Check unsigned point for overflow. If value exceeds bounds, cap it and print a warning message. */
-    uint8_t hv_c_i = (uint8_t)(hv_c);
-    if (hv_c_i > 1)
+    uint32_t hv_c_i = (uint32_t)(hv_c);
+    if (hv_c_i > 1ULL)
     {
         PRINTLN_WARNING("Overflow occured for point hv_c! Capping point to its max value (point is 1 bits, so max_value=1).");
         hv_c_i = 1;
     }
     data |= ((hv_c_i) & 0x1ULL) << 11;
 
-    /* Check unsigned point for overflow. If value exceeds bounds, cap it and print a warning message. */
-    uint8_t hvd_gpio_i = (uint8_t)(hvd_gpio);
-    if (hvd_gpio_i > 1)
+    uint32_t hvd_gpio_i = (uint32_t)(hvd_gpio);
+    if (hvd_gpio_i > 1ULL)
     {
         PRINTLN_WARNING("Overflow occured for point hvd_gpio! Capping point to its max value (point is 1 bits, so max_value=1).");
         hvd_gpio_i = 1;
     }
     data |= ((hvd_gpio_i) & 0x1ULL) << 10;
 
-    /* Check unsigned point for overflow. If value exceeds bounds, cap it and print a warning message. */
-    uint8_t imd_gpio_i = (uint8_t)(imd_gpio);
-    if (imd_gpio_i > 1)
+    uint32_t imd_gpio_i = (uint32_t)(imd_gpio);
+    if (imd_gpio_i > 1ULL)
     {
         PRINTLN_WARNING("Overflow occured for point imd_gpio! Capping point to its max value (point is 1 bits, so max_value=1).");
         imd_gpio_i = 1;
     }
     data |= ((imd_gpio_i) & 0x1ULL) << 9;
 
-    /* Check unsigned point for overflow. If value exceeds bounds, cap it and print a warning message. */
-    uint8_t ckpt_gpio_i = (uint8_t)(ckpt_gpio);
-    if (ckpt_gpio_i > 1)
+    uint32_t ckpt_gpio_i = (uint32_t)(ckpt_gpio);
+    if (ckpt_gpio_i > 1ULL)
     {
         PRINTLN_WARNING("Overflow occured for point ckpt_gpio! Capping point to its max value (point is 1 bits, so max_value=1).");
         ckpt_gpio_i = 1;
     }
     data |= ((ckpt_gpio_i) & 0x1ULL) << 8;
 
-    /* Check unsigned point for overflow. If value exceeds bounds, cap it and print a warning message. */
-    uint8_t inertia_sw_gpio_i = (uint8_t)(inertia_sw_gpio);
-    if (inertia_sw_gpio_i > 1)
+    uint32_t inertia_sw_gpio_i = (uint32_t)(inertia_sw_gpio);
+    if (inertia_sw_gpio_i > 1ULL)
     {
         PRINTLN_WARNING("Overflow occured for point inertia_sw_gpio! Capping point to its max value (point is 1 bits, so max_value=1).");
         inertia_sw_gpio_i = 1;
     }
     data |= ((inertia_sw_gpio_i) & 0x1ULL) << 7;
 
-    /* Check unsigned point for overflow. If value exceeds bounds, cap it and print a warning message. */
-    uint8_t tsms_gpio_i = (uint8_t)(tsms_gpio);
-    if (tsms_gpio_i > 1)
+    uint32_t tsms_gpio_i = (uint32_t)(tsms_gpio);
+    if (tsms_gpio_i > 1ULL)
     {
         PRINTLN_WARNING("Overflow occured for point tsms_gpio! Capping point to its max value (point is 1 bits, so max_value=1).");
         tsms_gpio_i = 1;
     }
     data |= ((tsms_gpio_i) & 0x1ULL) << 6;
 
-    /* Check unsigned point for overflow. If value exceeds bounds, cap it and print a warning message. */
-    uint8_t UNUSED_i = (uint8_t)(UNUSED);
-    if (UNUSED_i > 63)
+    uint32_t UNUSED_i = (uint32_t)(UNUSED);
+    if (UNUSED_i > 63ULL)
     {
         PRINTLN_WARNING("Overflow occured for point UNUSED! Capping point to its max value (point is 6 bits, so max_value=63).");
         UNUSED_i = 63;
@@ -726,26 +665,23 @@ uint8_t send_car_state(bool home_mode, uint8_t nero_index, int32_t car_speed, bo
     msg.len = 6;
 
     uint64_t data = 0;
-    /* Check unsigned point for overflow. If value exceeds bounds, cap it and print a warning message. */
-    uint8_t home_mode_i = (uint8_t)(home_mode);
-    if (home_mode_i > 15)
+    uint32_t home_mode_i = (uint32_t)(home_mode);
+    if (home_mode_i > 15ULL)
     {
         PRINTLN_WARNING("Overflow occured for point home_mode! Capping point to its max value (point is 4 bits, so max_value=15).");
         home_mode_i = 15;
     }
     data |= ((home_mode_i) & 0xFULL) << 60;
 
-    /* Check unsigned point for overflow. If value exceeds bounds, cap it and print a warning message. */
-    uint8_t nero_index_i = (uint8_t)(nero_index);
-    if (nero_index_i > 15)
+    uint32_t nero_index_i = (uint32_t)(nero_index);
+    if (nero_index_i > 15ULL)
     {
         PRINTLN_WARNING("Overflow occured for point nero_index! Capping point to its max value (point is 4 bits, so max_value=15).");
         nero_index_i = 15;
     }
     data |= ((nero_index_i) & 0xFULL) << 56;
 
-    /* Check signed point for overflow/underflow. If value exceeds bounds, cap it and print a warning message. */
-    int16_t car_speed_i = (int16_t)(car_speed * 10);
+    int32_t car_speed_i = (int32_t)(car_speed * 10);
     if (car_speed_i > 32767)
     {
         PRINTLN_WARNING("Overflow occured for point car_speed! Capping point to its max value (point is 16 bits signed, so max_value=32767).");
@@ -756,47 +692,42 @@ uint8_t send_car_state(bool home_mode, uint8_t nero_index, int32_t car_speed, bo
         PRINTLN_WARNING("Underflow occured for point car_speed! Capping point to its min value (point is 16 bits signed, so min_value=-32768).");
         car_speed_i = -32768;
     }
-    data |= ((uint16_t)(car_speed_i) & 0xFFFFULL) << 40;
+    data |= ((uint32_t)(car_speed_i) & 0xFFFFULL) << 40;
 
-    /* Check unsigned point for overflow. If value exceeds bounds, cap it and print a warning message. */
-    uint8_t tsms_i = (uint8_t)(tsms);
-    if (tsms_i > 1)
+    uint32_t tsms_i = (uint32_t)(tsms);
+    if (tsms_i > 1ULL)
     {
         PRINTLN_WARNING("Overflow occured for point tsms! Capping point to its max value (point is 1 bits, so max_value=1).");
         tsms_i = 1;
     }
     data |= ((tsms_i) & 0x1ULL) << 39;
 
-    /* Check unsigned point for overflow. If value exceeds bounds, cap it and print a warning message. */
-    uint8_t torque_limit_percentage_i = (uint8_t)(torque_limit_percentage * 100);
-    if (torque_limit_percentage_i > 127)
+    uint32_t torque_limit_percentage_i = (uint32_t)(torque_limit_percentage * 100);
+    if (torque_limit_percentage_i > 127ULL)
     {
         PRINTLN_WARNING("Overflow occured for point torque_limit_percentage! Capping point to its max value (point is 7 bits, so max_value=127).");
         torque_limit_percentage_i = 127;
     }
     data |= ((torque_limit_percentage_i) & 0x7FULL) << 32;
 
-    /* Check unsigned point for overflow. If value exceeds bounds, cap it and print a warning message. */
-    uint8_t reverse_i = (uint8_t)(reverse);
-    if (reverse_i > 1)
+    uint32_t reverse_i = (uint32_t)(reverse);
+    if (reverse_i > 1ULL)
     {
         PRINTLN_WARNING("Overflow occured for point reverse! Capping point to its max value (point is 1 bits, so max_value=1).");
         reverse_i = 1;
     }
     data |= ((reverse_i) & 0x1ULL) << 31;
 
-    /* Check unsigned point for overflow. If value exceeds bounds, cap it and print a warning message. */
-    uint16_t regen_limit_i = (uint16_t)(regen_limit);
-    if (regen_limit_i > 1023)
+    uint32_t regen_limit_i = (uint32_t)(regen_limit);
+    if (regen_limit_i > 1023ULL)
     {
         PRINTLN_WARNING("Overflow occured for point regen_limit! Capping point to its max value (point is 10 bits, so max_value=1023).");
         regen_limit_i = 1023;
     }
     data |= ((regen_limit_i) & 0x3FFULL) << 21;
 
-    /* Check unsigned point for overflow. If value exceeds bounds, cap it and print a warning message. */
-    uint8_t launch_control_i = (uint8_t)(launch_control);
-    if (launch_control_i > 1)
+    uint32_t launch_control_i = (uint32_t)(launch_control);
+    if (launch_control_i > 1ULL)
     {
         PRINTLN_WARNING("Overflow occured for point launch_control! Capping point to its max value (point is 1 bits, so max_value=1).");
         launch_control_i = 1;
@@ -817,18 +748,16 @@ uint8_t send_pedal_percent_pressed_values(float accel_norm, float brake_norm)
     msg.len = 4;
 
     uint32_t data = 0;
-    /* Check unsigned point for overflow. If value exceeds bounds, cap it and print a warning message. */
-    uint16_t accel_norm_i = (uint16_t)(accel_norm * 100);
-    if (accel_norm_i > 65535)
+    uint32_t accel_norm_i = (uint32_t)(accel_norm * 100);
+    if (accel_norm_i > 65535ULL)
     {
         PRINTLN_WARNING("Overflow occured for point accel_norm! Capping point to its max value (point is 16 bits, so max_value=65535).");
         accel_norm_i = 65535;
     }
     data |= ((accel_norm_i) & 0xFFFFULL) << 16;
 
-    /* Check unsigned point for overflow. If value exceeds bounds, cap it and print a warning message. */
-    uint16_t brake_norm_i = (uint16_t)(brake_norm * 100);
-    if (brake_norm_i > 65535)
+    uint32_t brake_norm_i = (uint32_t)(brake_norm * 100);
+    if (brake_norm_i > 65535ULL)
     {
         PRINTLN_WARNING("Overflow occured for point brake_norm! Capping point to its max value (point is 16 bits, so max_value=65535).");
         brake_norm_i = 65535;
@@ -849,36 +778,32 @@ uint8_t send_pedal_sensor_voltages(float accel1_volts, float accel2_volts, float
     msg.len = 8;
 
     uint64_t data = 0;
-    /* Check unsigned point for overflow. If value exceeds bounds, cap it and print a warning message. */
-    uint16_t accel1_volts_i = (uint16_t)(accel1_volts * 100);
-    if (accel1_volts_i > 65535)
+    uint32_t accel1_volts_i = (uint32_t)(accel1_volts * 100);
+    if (accel1_volts_i > 65535ULL)
     {
         PRINTLN_WARNING("Overflow occured for point accel1_volts! Capping point to its max value (point is 16 bits, so max_value=65535).");
         accel1_volts_i = 65535;
     }
     data |= ((accel1_volts_i) & 0xFFFFULL) << 48;
 
-    /* Check unsigned point for overflow. If value exceeds bounds, cap it and print a warning message. */
-    uint16_t accel2_volts_i = (uint16_t)(accel2_volts * 100);
-    if (accel2_volts_i > 65535)
+    uint32_t accel2_volts_i = (uint32_t)(accel2_volts * 100);
+    if (accel2_volts_i > 65535ULL)
     {
         PRINTLN_WARNING("Overflow occured for point accel2_volts! Capping point to its max value (point is 16 bits, so max_value=65535).");
         accel2_volts_i = 65535;
     }
     data |= ((accel2_volts_i) & 0xFFFFULL) << 32;
 
-    /* Check unsigned point for overflow. If value exceeds bounds, cap it and print a warning message. */
-    uint16_t brake1_volts_i = (uint16_t)(brake1_volts * 100);
-    if (brake1_volts_i > 65535)
+    uint32_t brake1_volts_i = (uint32_t)(brake1_volts * 100);
+    if (brake1_volts_i > 65535ULL)
     {
         PRINTLN_WARNING("Overflow occured for point brake1_volts! Capping point to its max value (point is 16 bits, so max_value=65535).");
         brake1_volts_i = 65535;
     }
     data |= ((brake1_volts_i) & 0xFFFFULL) << 16;
 
-    /* Check unsigned point for overflow. If value exceeds bounds, cap it and print a warning message. */
-    uint16_t brake2_volts_i = (uint16_t)(brake2_volts * 100);
-    if (brake2_volts_i > 65535)
+    uint32_t brake2_volts_i = (uint32_t)(brake2_volts * 100);
+    if (brake2_volts_i > 65535ULL)
     {
         PRINTLN_WARNING("Overflow occured for point brake2_volts! Capping point to its max value (point is 16 bits, so max_value=65535).");
         brake2_volts_i = 65535;
@@ -899,9 +824,8 @@ uint8_t send_lightning_board_light_status(uint8_t status)
     msg.len = 1;
 
     uint8_t data = 0;
-    /* Check unsigned point for overflow. If value exceeds bounds, cap it and print a warning message. */
-    uint8_t status_i = (uint8_t)(status);
-    if (status_i > 3)
+    uint32_t status_i = (uint32_t)(status);
+    if (status_i > 3ULL)
     {
         PRINTLN_WARNING("Overflow occured for point status! Capping point to its max value (point is 2 bits, so max_value=3).");
         status_i = 3;
@@ -921,8 +845,7 @@ uint8_t send_temperature_sensor(float vcu_temperature, float vcu_humidity)
     msg.len = 4;
 
     uint32_t data = 0;
-    /* Check signed point for overflow/underflow. If value exceeds bounds, cap it and print a warning message. */
-    int16_t vcu_temperature_i = (int16_t)(vcu_temperature * 100);
+    int32_t vcu_temperature_i = (int32_t)(vcu_temperature * 100);
     if (vcu_temperature_i > 32767)
     {
         PRINTLN_WARNING("Overflow occured for point vcu_temperature! Capping point to its max value (point is 16 bits signed, so max_value=32767).");
@@ -933,11 +856,10 @@ uint8_t send_temperature_sensor(float vcu_temperature, float vcu_humidity)
         PRINTLN_WARNING("Underflow occured for point vcu_temperature! Capping point to its min value (point is 16 bits signed, so min_value=-32768).");
         vcu_temperature_i = -32768;
     }
-    data |= ((uint16_t)(vcu_temperature_i) & 0xFFFFULL) << 16;
+    data |= ((uint32_t)(vcu_temperature_i) & 0xFFFFULL) << 16;
 
-    /* Check unsigned point for overflow. If value exceeds bounds, cap it and print a warning message. */
-    uint16_t vcu_humidity_i = (uint16_t)(vcu_humidity * 100);
-    if (vcu_humidity_i > 65535)
+    uint32_t vcu_humidity_i = (uint32_t)(vcu_humidity * 100);
+    if (vcu_humidity_i > 65535ULL)
     {
         PRINTLN_WARNING("Overflow occured for point vcu_humidity! Capping point to its max value (point is 16 bits, so max_value=65535).");
         vcu_humidity_i = 65535;
@@ -958,8 +880,7 @@ uint8_t send_imu_accelerometer(float imu_accelerometer_x, float imu_acceleromete
     msg.len = 6;
 
     uint64_t data = 0;
-    /* Check signed point for overflow/underflow. If value exceeds bounds, cap it and print a warning message. */
-    int16_t imu_accelerometer_x_i = (int16_t)(imu_accelerometer_x * 100);
+    int32_t imu_accelerometer_x_i = (int32_t)(imu_accelerometer_x * 100);
     if (imu_accelerometer_x_i > 32767)
     {
         PRINTLN_WARNING("Overflow occured for point imu_accelerometer_x! Capping point to its max value (point is 16 bits signed, so max_value=32767).");
@@ -970,10 +891,9 @@ uint8_t send_imu_accelerometer(float imu_accelerometer_x, float imu_acceleromete
         PRINTLN_WARNING("Underflow occured for point imu_accelerometer_x! Capping point to its min value (point is 16 bits signed, so min_value=-32768).");
         imu_accelerometer_x_i = -32768;
     }
-    data |= ((uint16_t)(imu_accelerometer_x_i) & 0xFFFFULL) << 48;
+    data |= ((uint32_t)(imu_accelerometer_x_i) & 0xFFFFULL) << 48;
 
-    /* Check signed point for overflow/underflow. If value exceeds bounds, cap it and print a warning message. */
-    int16_t imu_accelerometer_y_i = (int16_t)(imu_accelerometer_y * 100);
+    int32_t imu_accelerometer_y_i = (int32_t)(imu_accelerometer_y * 100);
     if (imu_accelerometer_y_i > 32767)
     {
         PRINTLN_WARNING("Overflow occured for point imu_accelerometer_y! Capping point to its max value (point is 16 bits signed, so max_value=32767).");
@@ -984,10 +904,9 @@ uint8_t send_imu_accelerometer(float imu_accelerometer_x, float imu_acceleromete
         PRINTLN_WARNING("Underflow occured for point imu_accelerometer_y! Capping point to its min value (point is 16 bits signed, so min_value=-32768).");
         imu_accelerometer_y_i = -32768;
     }
-    data |= ((uint16_t)(imu_accelerometer_y_i) & 0xFFFFULL) << 32;
+    data |= ((uint32_t)(imu_accelerometer_y_i) & 0xFFFFULL) << 32;
 
-    /* Check signed point for overflow/underflow. If value exceeds bounds, cap it and print a warning message. */
-    int16_t imu_accelerometer_z_i = (int16_t)(imu_accelerometer_z * 100);
+    int32_t imu_accelerometer_z_i = (int32_t)(imu_accelerometer_z * 100);
     if (imu_accelerometer_z_i > 32767)
     {
         PRINTLN_WARNING("Overflow occured for point imu_accelerometer_z! Capping point to its max value (point is 16 bits signed, so max_value=32767).");
@@ -998,7 +917,7 @@ uint8_t send_imu_accelerometer(float imu_accelerometer_x, float imu_acceleromete
         PRINTLN_WARNING("Underflow occured for point imu_accelerometer_z! Capping point to its min value (point is 16 bits signed, so min_value=-32768).");
         imu_accelerometer_z_i = -32768;
     }
-    data |= ((uint16_t)(imu_accelerometer_z_i) & 0xFFFFULL) << 16;
+    data |= ((uint32_t)(imu_accelerometer_z_i) & 0xFFFFULL) << 16;
 
     uint64_t data_bigendian = __builtin_bswap64(data);
     memcpy(msg.data, &data_bigendian, 8);
@@ -1014,8 +933,7 @@ uint8_t send_imu_gyro(float imu_gyro_x, float imu_gyro_y, float imu_gyro_z)
     msg.len = 6;
 
     uint64_t data = 0;
-    /* Check signed point for overflow/underflow. If value exceeds bounds, cap it and print a warning message. */
-    int16_t imu_gyro_x_i = (int16_t)(imu_gyro_x * 100);
+    int32_t imu_gyro_x_i = (int32_t)(imu_gyro_x * 100);
     if (imu_gyro_x_i > 32767)
     {
         PRINTLN_WARNING("Overflow occured for point imu_gyro_x! Capping point to its max value (point is 16 bits signed, so max_value=32767).");
@@ -1026,10 +944,9 @@ uint8_t send_imu_gyro(float imu_gyro_x, float imu_gyro_y, float imu_gyro_z)
         PRINTLN_WARNING("Underflow occured for point imu_gyro_x! Capping point to its min value (point is 16 bits signed, so min_value=-32768).");
         imu_gyro_x_i = -32768;
     }
-    data |= ((uint16_t)(imu_gyro_x_i) & 0xFFFFULL) << 48;
+    data |= ((uint32_t)(imu_gyro_x_i) & 0xFFFFULL) << 48;
 
-    /* Check signed point for overflow/underflow. If value exceeds bounds, cap it and print a warning message. */
-    int16_t imu_gyro_y_i = (int16_t)(imu_gyro_y * 100);
+    int32_t imu_gyro_y_i = (int32_t)(imu_gyro_y * 100);
     if (imu_gyro_y_i > 32767)
     {
         PRINTLN_WARNING("Overflow occured for point imu_gyro_y! Capping point to its max value (point is 16 bits signed, so max_value=32767).");
@@ -1040,10 +957,9 @@ uint8_t send_imu_gyro(float imu_gyro_x, float imu_gyro_y, float imu_gyro_z)
         PRINTLN_WARNING("Underflow occured for point imu_gyro_y! Capping point to its min value (point is 16 bits signed, so min_value=-32768).");
         imu_gyro_y_i = -32768;
     }
-    data |= ((uint16_t)(imu_gyro_y_i) & 0xFFFFULL) << 32;
+    data |= ((uint32_t)(imu_gyro_y_i) & 0xFFFFULL) << 32;
 
-    /* Check signed point for overflow/underflow. If value exceeds bounds, cap it and print a warning message. */
-    int16_t imu_gyro_z_i = (int16_t)(imu_gyro_z * 100);
+    int32_t imu_gyro_z_i = (int32_t)(imu_gyro_z * 100);
     if (imu_gyro_z_i > 32767)
     {
         PRINTLN_WARNING("Overflow occured for point imu_gyro_z! Capping point to its max value (point is 16 bits signed, so max_value=32767).");
@@ -1054,7 +970,7 @@ uint8_t send_imu_gyro(float imu_gyro_x, float imu_gyro_y, float imu_gyro_z)
         PRINTLN_WARNING("Underflow occured for point imu_gyro_z! Capping point to its min value (point is 16 bits signed, so min_value=-32768).");
         imu_gyro_z_i = -32768;
     }
-    data |= ((uint16_t)(imu_gyro_z_i) & 0xFFFFULL) << 16;
+    data |= ((uint32_t)(imu_gyro_z_i) & 0xFFFFULL) << 16;
 
     uint64_t data_bigendian = __builtin_bswap64(data);
     memcpy(msg.data, &data_bigendian, 8);
@@ -1070,126 +986,112 @@ uint8_t send_faults(bool CAN_OUTGOING_FAULT, bool CAN_INCOMING_FAULT, bool BMS_C
     msg.len = 2;
 
     uint16_t data = 0;
-    /* Check unsigned point for overflow. If value exceeds bounds, cap it and print a warning message. */
-    uint8_t CAN_OUTGOING_FAULT_i = (uint8_t)(CAN_OUTGOING_FAULT);
-    if (CAN_OUTGOING_FAULT_i > 1)
+    uint32_t CAN_OUTGOING_FAULT_i = (uint32_t)(CAN_OUTGOING_FAULT);
+    if (CAN_OUTGOING_FAULT_i > 1ULL)
     {
         PRINTLN_WARNING("Overflow occured for point CAN_OUTGOING_FAULT! Capping point to its max value (point is 1 bits, so max_value=1).");
         CAN_OUTGOING_FAULT_i = 1;
     }
     data |= ((CAN_OUTGOING_FAULT_i) & 0x1ULL) << 15;
 
-    /* Check unsigned point for overflow. If value exceeds bounds, cap it and print a warning message. */
-    uint8_t CAN_INCOMING_FAULT_i = (uint8_t)(CAN_INCOMING_FAULT);
-    if (CAN_INCOMING_FAULT_i > 1)
+    uint32_t CAN_INCOMING_FAULT_i = (uint32_t)(CAN_INCOMING_FAULT);
+    if (CAN_INCOMING_FAULT_i > 1ULL)
     {
         PRINTLN_WARNING("Overflow occured for point CAN_INCOMING_FAULT! Capping point to its max value (point is 1 bits, so max_value=1).");
         CAN_INCOMING_FAULT_i = 1;
     }
     data |= ((CAN_INCOMING_FAULT_i) & 0x1ULL) << 14;
 
-    /* Check unsigned point for overflow. If value exceeds bounds, cap it and print a warning message. */
-    uint8_t BMS_CAN_MONITOR_FAULT_i = (uint8_t)(BMS_CAN_MONITOR_FAULT);
-    if (BMS_CAN_MONITOR_FAULT_i > 1)
+    uint32_t BMS_CAN_MONITOR_FAULT_i = (uint32_t)(BMS_CAN_MONITOR_FAULT);
+    if (BMS_CAN_MONITOR_FAULT_i > 1ULL)
     {
         PRINTLN_WARNING("Overflow occured for point BMS_CAN_MONITOR_FAULT! Capping point to its max value (point is 1 bits, so max_value=1).");
         BMS_CAN_MONITOR_FAULT_i = 1;
     }
     data |= ((BMS_CAN_MONITOR_FAULT_i) & 0x1ULL) << 13;
 
-    /* Check unsigned point for overflow. If value exceeds bounds, cap it and print a warning message. */
-    uint8_t ONBOARD_TEMP_FAULT_i = (uint8_t)(ONBOARD_TEMP_FAULT);
-    if (ONBOARD_TEMP_FAULT_i > 1)
+    uint32_t ONBOARD_TEMP_FAULT_i = (uint32_t)(ONBOARD_TEMP_FAULT);
+    if (ONBOARD_TEMP_FAULT_i > 1ULL)
     {
         PRINTLN_WARNING("Overflow occured for point ONBOARD_TEMP_FAULT! Capping point to its max value (point is 1 bits, so max_value=1).");
         ONBOARD_TEMP_FAULT_i = 1;
     }
     data |= ((ONBOARD_TEMP_FAULT_i) & 0x1ULL) << 12;
 
-    /* Check unsigned point for overflow. If value exceeds bounds, cap it and print a warning message. */
-    uint8_t IMU_ACCEL_FAULT_i = (uint8_t)(IMU_ACCEL_FAULT);
-    if (IMU_ACCEL_FAULT_i > 1)
+    uint32_t IMU_ACCEL_FAULT_i = (uint32_t)(IMU_ACCEL_FAULT);
+    if (IMU_ACCEL_FAULT_i > 1ULL)
     {
         PRINTLN_WARNING("Overflow occured for point IMU_ACCEL_FAULT! Capping point to its max value (point is 1 bits, so max_value=1).");
         IMU_ACCEL_FAULT_i = 1;
     }
     data |= ((IMU_ACCEL_FAULT_i) & 0x1ULL) << 11;
 
-    /* Check unsigned point for overflow. If value exceeds bounds, cap it and print a warning message. */
-    uint8_t IMU_GYRO_FAULT_i = (uint8_t)(IMU_GYRO_FAULT);
-    if (IMU_GYRO_FAULT_i > 1)
+    uint32_t IMU_GYRO_FAULT_i = (uint32_t)(IMU_GYRO_FAULT);
+    if (IMU_GYRO_FAULT_i > 1ULL)
     {
         PRINTLN_WARNING("Overflow occured for point IMU_GYRO_FAULT! Capping point to its max value (point is 1 bits, so max_value=1).");
         IMU_GYRO_FAULT_i = 1;
     }
     data |= ((IMU_GYRO_FAULT_i) & 0x1ULL) << 10;
 
-    /* Check unsigned point for overflow. If value exceeds bounds, cap it and print a warning message. */
-    uint8_t BSPD_PREFAULT_i = (uint8_t)(BSPD_PREFAULT);
-    if (BSPD_PREFAULT_i > 1)
+    uint32_t BSPD_PREFAULT_i = (uint32_t)(BSPD_PREFAULT);
+    if (BSPD_PREFAULT_i > 1ULL)
     {
         PRINTLN_WARNING("Overflow occured for point BSPD_PREFAULT! Capping point to its max value (point is 1 bits, so max_value=1).");
         BSPD_PREFAULT_i = 1;
     }
     data |= ((BSPD_PREFAULT_i) & 0x1ULL) << 9;
 
-    /* Check unsigned point for overflow. If value exceeds bounds, cap it and print a warning message. */
-    uint8_t ONBOARD_BRAKE_OPEN_CIRCUIT_FAULT_i = (uint8_t)(ONBOARD_BRAKE_OPEN_CIRCUIT_FAULT);
-    if (ONBOARD_BRAKE_OPEN_CIRCUIT_FAULT_i > 1)
+    uint32_t ONBOARD_BRAKE_OPEN_CIRCUIT_FAULT_i = (uint32_t)(ONBOARD_BRAKE_OPEN_CIRCUIT_FAULT);
+    if (ONBOARD_BRAKE_OPEN_CIRCUIT_FAULT_i > 1ULL)
     {
         PRINTLN_WARNING("Overflow occured for point ONBOARD_BRAKE_OPEN_CIRCUIT_FAULT! Capping point to its max value (point is 1 bits, so max_value=1).");
         ONBOARD_BRAKE_OPEN_CIRCUIT_FAULT_i = 1;
     }
     data |= ((ONBOARD_BRAKE_OPEN_CIRCUIT_FAULT_i) & 0x1ULL) << 8;
 
-    /* Check unsigned point for overflow. If value exceeds bounds, cap it and print a warning message. */
-    uint8_t ONBOARD_ACCEL_OPEN_CIRCUIT_FAULT_i = (uint8_t)(ONBOARD_ACCEL_OPEN_CIRCUIT_FAULT);
-    if (ONBOARD_ACCEL_OPEN_CIRCUIT_FAULT_i > 1)
+    uint32_t ONBOARD_ACCEL_OPEN_CIRCUIT_FAULT_i = (uint32_t)(ONBOARD_ACCEL_OPEN_CIRCUIT_FAULT);
+    if (ONBOARD_ACCEL_OPEN_CIRCUIT_FAULT_i > 1ULL)
     {
         PRINTLN_WARNING("Overflow occured for point ONBOARD_ACCEL_OPEN_CIRCUIT_FAULT! Capping point to its max value (point is 1 bits, so max_value=1).");
         ONBOARD_ACCEL_OPEN_CIRCUIT_FAULT_i = 1;
     }
     data |= ((ONBOARD_ACCEL_OPEN_CIRCUIT_FAULT_i) & 0x1ULL) << 7;
 
-    /* Check unsigned point for overflow. If value exceeds bounds, cap it and print a warning message. */
-    uint8_t ONBOARD_BRAKE_SHORT_CIRCUIT_FAULT_i = (uint8_t)(ONBOARD_BRAKE_SHORT_CIRCUIT_FAULT);
-    if (ONBOARD_BRAKE_SHORT_CIRCUIT_FAULT_i > 1)
+    uint32_t ONBOARD_BRAKE_SHORT_CIRCUIT_FAULT_i = (uint32_t)(ONBOARD_BRAKE_SHORT_CIRCUIT_FAULT);
+    if (ONBOARD_BRAKE_SHORT_CIRCUIT_FAULT_i > 1ULL)
     {
         PRINTLN_WARNING("Overflow occured for point ONBOARD_BRAKE_SHORT_CIRCUIT_FAULT! Capping point to its max value (point is 1 bits, so max_value=1).");
         ONBOARD_BRAKE_SHORT_CIRCUIT_FAULT_i = 1;
     }
     data |= ((ONBOARD_BRAKE_SHORT_CIRCUIT_FAULT_i) & 0x1ULL) << 6;
 
-    /* Check unsigned point for overflow. If value exceeds bounds, cap it and print a warning message. */
-    uint8_t ONBOARD_ACCEL_SHORT_CIRCUIT_FAULT_i = (uint8_t)(ONBOARD_ACCEL_SHORT_CIRCUIT_FAULT);
-    if (ONBOARD_ACCEL_SHORT_CIRCUIT_FAULT_i > 1)
+    uint32_t ONBOARD_ACCEL_SHORT_CIRCUIT_FAULT_i = (uint32_t)(ONBOARD_ACCEL_SHORT_CIRCUIT_FAULT);
+    if (ONBOARD_ACCEL_SHORT_CIRCUIT_FAULT_i > 1ULL)
     {
         PRINTLN_WARNING("Overflow occured for point ONBOARD_ACCEL_SHORT_CIRCUIT_FAULT! Capping point to its max value (point is 1 bits, so max_value=1).");
         ONBOARD_ACCEL_SHORT_CIRCUIT_FAULT_i = 1;
     }
     data |= ((ONBOARD_ACCEL_SHORT_CIRCUIT_FAULT_i) & 0x1ULL) << 5;
 
-    /* Check unsigned point for overflow. If value exceeds bounds, cap it and print a warning message. */
-    uint8_t ONBOARD_PEDAL_DIFFERENCE_FAULT_i = (uint8_t)(ONBOARD_PEDAL_DIFFERENCE_FAULT);
-    if (ONBOARD_PEDAL_DIFFERENCE_FAULT_i > 1)
+    uint32_t ONBOARD_PEDAL_DIFFERENCE_FAULT_i = (uint32_t)(ONBOARD_PEDAL_DIFFERENCE_FAULT);
+    if (ONBOARD_PEDAL_DIFFERENCE_FAULT_i > 1ULL)
     {
         PRINTLN_WARNING("Overflow occured for point ONBOARD_PEDAL_DIFFERENCE_FAULT! Capping point to its max value (point is 1 bits, so max_value=1).");
         ONBOARD_PEDAL_DIFFERENCE_FAULT_i = 1;
     }
     data |= ((ONBOARD_PEDAL_DIFFERENCE_FAULT_i) & 0x1ULL) << 4;
 
-    /* Check unsigned point for overflow. If value exceeds bounds, cap it and print a warning message. */
-    uint8_t RTDS_FAULT_i = (uint8_t)(RTDS_FAULT);
-    if (RTDS_FAULT_i > 1)
+    uint32_t RTDS_FAULT_i = (uint32_t)(RTDS_FAULT);
+    if (RTDS_FAULT_i > 1ULL)
     {
         PRINTLN_WARNING("Overflow occured for point RTDS_FAULT! Capping point to its max value (point is 1 bits, so max_value=1).");
         RTDS_FAULT_i = 1;
     }
     data |= ((RTDS_FAULT_i) & 0x1ULL) << 3;
 
-    /* Check unsigned point for overflow. If value exceeds bounds, cap it and print a warning message. */
-    uint8_t EXTRA_i = (uint8_t)(EXTRA);
-    if (EXTRA_i > 7)
+    uint32_t EXTRA_i = (uint32_t)(EXTRA);
+    if (EXTRA_i > 7ULL)
     {
         PRINTLN_WARNING("Overflow occured for point EXTRA! Capping point to its max value (point is 3 bits, so max_value=7).");
         EXTRA_i = 7;
@@ -1210,18 +1112,16 @@ uint8_t send_lv_voltage(uint16_t ADC, float Voltage)
     msg.len = 6;
 
     uint64_t data = 0;
-    /* Check unsigned point for overflow. If value exceeds bounds, cap it and print a warning message. */
-    uint16_t ADC_i = (uint16_t)(ADC);
-    if (ADC_i > 65535)
+    uint32_t ADC_i = (uint32_t)(ADC);
+    if (ADC_i > 65535ULL)
     {
         PRINTLN_WARNING("Overflow occured for point ADC! Capping point to its max value (point is 16 bits, so max_value=65535).");
         ADC_i = 65535;
     }
     data |= ((ADC_i) & 0xFFFFULL) << 48;
 
-    /* Check unsigned point for overflow. If value exceeds bounds, cap it and print a warning message. */
     uint32_t Voltage_i = (uint32_t)(Voltage * 1000);
-    if (Voltage_i > 4294967295)
+    if (Voltage_i > 4294967295ULL)
     {
         PRINTLN_WARNING("Overflow occured for point Voltage! Capping point to its max value (point is 32 bits, so max_value=4294967295).");
         Voltage_i = 4294967295;
