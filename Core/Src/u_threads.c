@@ -26,9 +26,9 @@
 #define PRIO_vCANOutgoing      1
 #define PRIO_vPedals           1
 #define PRIO_vStatemachine     1
-#define PRIO_vShutdown         2
+#define PRIO_vTSMS             1
+#define PRIO_vShutdown         1
 #define PRIO_vEFuses           2
-#define PRIO_vTSMS             2
 #define PRIO_vMux              2
 #define PRIO_vPeripherals      2
 
