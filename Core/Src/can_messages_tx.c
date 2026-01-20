@@ -21,22 +21,20 @@ uint8_t send_dashboard_efuse
 {
     can_msg_t msg;
     msg.id = 0xEF0;
-    msg.id_is_extended = true;
+    msg.id_is_extended = true;msg.len = 8;
 
-    bitstream_t dashboard_efuse_msg;
-	uint8_t bitstream_data[8];
-	bitstream_init(&dashboard_efuse_msg, bitstream_data, 8);
-	
-    bitstream_add(&dashboard_efuse_msg, ADC, 16);
-    bitstream_add(&dashboard_efuse_msg, voltage*1000, 16);
-    bitstream_add(&dashboard_efuse_msg, current*1000, 16);
-    bitstream_add(&dashboard_efuse_msg, is_faulted, 8);
-    bitstream_add(&dashboard_efuse_msg, is_enabled, 8);
-
-    handle_bitstream_overflow(&dashboard_efuse_msg, msg.id);
     
-    msg.len = sizeof(bitstream_data);
-    memcpy(msg.data, &bitstream_data, sizeof(bitstream_data));
+    uint64_t data = 0;
+    data |= ((uint16_t)(ADC) & 0xFFFFULL) << 48;
+    data |= ((uint16_t)(voltage*1000) & 0xFFFFULL) << 32;
+    data |= ((uint16_t)(current*1000) & 0xFFFFULL) << 16;
+    data |= ((uint8_t)(is_faulted) & 0xFFULL) << 8;
+    data |= ((uint8_t)(is_enabled) & 0xFFULL) << 0;
+
+    
+    uint64_t data_bigendian = __builtin_bswap64(data);
+    memcpy(msg.data, &data_bigendian, 8);
+    
 
     return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
 }
@@ -46,22 +44,20 @@ uint8_t send_brake_efuse
 {
     can_msg_t msg;
     msg.id = 0xEF1;
-    msg.id_is_extended = true;
+    msg.id_is_extended = true;msg.len = 8;
 
-    bitstream_t brake_efuse_msg;
-	uint8_t bitstream_data[8];
-	bitstream_init(&brake_efuse_msg, bitstream_data, 8);
-	
-    bitstream_add(&brake_efuse_msg, ADC, 16);
-    bitstream_add(&brake_efuse_msg, voltage*1000, 16);
-    bitstream_add(&brake_efuse_msg, current*1000, 16);
-    bitstream_add(&brake_efuse_msg, is_faulted, 8);
-    bitstream_add(&brake_efuse_msg, is_enabled, 8);
-
-    handle_bitstream_overflow(&brake_efuse_msg, msg.id);
     
-    msg.len = sizeof(bitstream_data);
-    memcpy(msg.data, &bitstream_data, sizeof(bitstream_data));
+    uint64_t data = 0;
+    data |= ((uint16_t)(ADC) & 0xFFFFULL) << 48;
+    data |= ((uint16_t)(voltage*1000) & 0xFFFFULL) << 32;
+    data |= ((uint16_t)(current*1000) & 0xFFFFULL) << 16;
+    data |= ((uint8_t)(is_faulted) & 0xFFULL) << 8;
+    data |= ((uint8_t)(is_enabled) & 0xFFULL) << 0;
+
+    
+    uint64_t data_bigendian = __builtin_bswap64(data);
+    memcpy(msg.data, &data_bigendian, 8);
+    
 
     return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
 }
@@ -71,22 +67,20 @@ uint8_t send_shutdown_efuse
 {
     can_msg_t msg;
     msg.id = 0xEF2;
-    msg.id_is_extended = true;
+    msg.id_is_extended = true;msg.len = 8;
 
-    bitstream_t shutdown_efuse_msg;
-	uint8_t bitstream_data[8];
-	bitstream_init(&shutdown_efuse_msg, bitstream_data, 8);
-	
-    bitstream_add(&shutdown_efuse_msg, ADC, 16);
-    bitstream_add(&shutdown_efuse_msg, voltage*1000, 16);
-    bitstream_add(&shutdown_efuse_msg, current*1000, 16);
-    bitstream_add(&shutdown_efuse_msg, is_faulted, 8);
-    bitstream_add(&shutdown_efuse_msg, is_enabled, 8);
-
-    handle_bitstream_overflow(&shutdown_efuse_msg, msg.id);
     
-    msg.len = sizeof(bitstream_data);
-    memcpy(msg.data, &bitstream_data, sizeof(bitstream_data));
+    uint64_t data = 0;
+    data |= ((uint16_t)(ADC) & 0xFFFFULL) << 48;
+    data |= ((uint16_t)(voltage*1000) & 0xFFFFULL) << 32;
+    data |= ((uint16_t)(current*1000) & 0xFFFFULL) << 16;
+    data |= ((uint8_t)(is_faulted) & 0xFFULL) << 8;
+    data |= ((uint8_t)(is_enabled) & 0xFFULL) << 0;
+
+    
+    uint64_t data_bigendian = __builtin_bswap64(data);
+    memcpy(msg.data, &data_bigendian, 8);
+    
 
     return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
 }
@@ -96,22 +90,20 @@ uint8_t send_lv_efuse
 {
     can_msg_t msg;
     msg.id = 0xEF3;
-    msg.id_is_extended = true;
+    msg.id_is_extended = true;msg.len = 8;
 
-    bitstream_t lv_efuse_msg;
-	uint8_t bitstream_data[8];
-	bitstream_init(&lv_efuse_msg, bitstream_data, 8);
-	
-    bitstream_add(&lv_efuse_msg, ADC, 16);
-    bitstream_add(&lv_efuse_msg, voltage*1000, 16);
-    bitstream_add(&lv_efuse_msg, current*1000, 16);
-    bitstream_add(&lv_efuse_msg, is_faulted, 8);
-    bitstream_add(&lv_efuse_msg, is_enabled, 8);
-
-    handle_bitstream_overflow(&lv_efuse_msg, msg.id);
     
-    msg.len = sizeof(bitstream_data);
-    memcpy(msg.data, &bitstream_data, sizeof(bitstream_data));
+    uint64_t data = 0;
+    data |= ((uint16_t)(ADC) & 0xFFFFULL) << 48;
+    data |= ((uint16_t)(voltage*1000) & 0xFFFFULL) << 32;
+    data |= ((uint16_t)(current*1000) & 0xFFFFULL) << 16;
+    data |= ((uint8_t)(is_faulted) & 0xFFULL) << 8;
+    data |= ((uint8_t)(is_enabled) & 0xFFULL) << 0;
+
+    
+    uint64_t data_bigendian = __builtin_bswap64(data);
+    memcpy(msg.data, &data_bigendian, 8);
+    
 
     return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
 }
@@ -121,22 +113,20 @@ uint8_t send_radfan_efuse
 {
     can_msg_t msg;
     msg.id = 0xEF4;
-    msg.id_is_extended = true;
+    msg.id_is_extended = true;msg.len = 8;
 
-    bitstream_t radfan_efuse_msg;
-	uint8_t bitstream_data[8];
-	bitstream_init(&radfan_efuse_msg, bitstream_data, 8);
-	
-    bitstream_add(&radfan_efuse_msg, ADC, 16);
-    bitstream_add(&radfan_efuse_msg, voltage*1000, 16);
-    bitstream_add(&radfan_efuse_msg, current*1000, 16);
-    bitstream_add(&radfan_efuse_msg, is_faulted, 8);
-    bitstream_add(&radfan_efuse_msg, is_enabled, 8);
-
-    handle_bitstream_overflow(&radfan_efuse_msg, msg.id);
     
-    msg.len = sizeof(bitstream_data);
-    memcpy(msg.data, &bitstream_data, sizeof(bitstream_data));
+    uint64_t data = 0;
+    data |= ((uint16_t)(ADC) & 0xFFFFULL) << 48;
+    data |= ((uint16_t)(voltage*1000) & 0xFFFFULL) << 32;
+    data |= ((uint16_t)(current*1000) & 0xFFFFULL) << 16;
+    data |= ((uint8_t)(is_faulted) & 0xFFULL) << 8;
+    data |= ((uint8_t)(is_enabled) & 0xFFULL) << 0;
+
+    
+    uint64_t data_bigendian = __builtin_bswap64(data);
+    memcpy(msg.data, &data_bigendian, 8);
+    
 
     return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
 }
@@ -146,22 +136,20 @@ uint8_t send_fanbatt_efuse
 {
     can_msg_t msg;
     msg.id = 0xEF5;
-    msg.id_is_extended = true;
+    msg.id_is_extended = true;msg.len = 8;
 
-    bitstream_t fanbatt_efuse_msg;
-	uint8_t bitstream_data[8];
-	bitstream_init(&fanbatt_efuse_msg, bitstream_data, 8);
-	
-    bitstream_add(&fanbatt_efuse_msg, ADC, 16);
-    bitstream_add(&fanbatt_efuse_msg, voltage*1000, 16);
-    bitstream_add(&fanbatt_efuse_msg, current*1000, 16);
-    bitstream_add(&fanbatt_efuse_msg, is_faulted, 8);
-    bitstream_add(&fanbatt_efuse_msg, is_enabled, 8);
-
-    handle_bitstream_overflow(&fanbatt_efuse_msg, msg.id);
     
-    msg.len = sizeof(bitstream_data);
-    memcpy(msg.data, &bitstream_data, sizeof(bitstream_data));
+    uint64_t data = 0;
+    data |= ((uint16_t)(ADC) & 0xFFFFULL) << 48;
+    data |= ((uint16_t)(voltage*1000) & 0xFFFFULL) << 32;
+    data |= ((uint16_t)(current*1000) & 0xFFFFULL) << 16;
+    data |= ((uint8_t)(is_faulted) & 0xFFULL) << 8;
+    data |= ((uint8_t)(is_enabled) & 0xFFULL) << 0;
+
+    
+    uint64_t data_bigendian = __builtin_bswap64(data);
+    memcpy(msg.data, &data_bigendian, 8);
+    
 
     return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
 }
@@ -171,22 +159,20 @@ uint8_t send_pumpone_efuse
 {
     can_msg_t msg;
     msg.id = 0xEF6;
-    msg.id_is_extended = true;
+    msg.id_is_extended = true;msg.len = 8;
 
-    bitstream_t pumpone_efuse_msg;
-	uint8_t bitstream_data[8];
-	bitstream_init(&pumpone_efuse_msg, bitstream_data, 8);
-	
-    bitstream_add(&pumpone_efuse_msg, ADC, 16);
-    bitstream_add(&pumpone_efuse_msg, voltage*1000, 16);
-    bitstream_add(&pumpone_efuse_msg, current*1000, 16);
-    bitstream_add(&pumpone_efuse_msg, is_faulted, 8);
-    bitstream_add(&pumpone_efuse_msg, is_enabled, 8);
-
-    handle_bitstream_overflow(&pumpone_efuse_msg, msg.id);
     
-    msg.len = sizeof(bitstream_data);
-    memcpy(msg.data, &bitstream_data, sizeof(bitstream_data));
+    uint64_t data = 0;
+    data |= ((uint16_t)(ADC) & 0xFFFFULL) << 48;
+    data |= ((uint16_t)(voltage*1000) & 0xFFFFULL) << 32;
+    data |= ((uint16_t)(current*1000) & 0xFFFFULL) << 16;
+    data |= ((uint8_t)(is_faulted) & 0xFFULL) << 8;
+    data |= ((uint8_t)(is_enabled) & 0xFFULL) << 0;
+
+    
+    uint64_t data_bigendian = __builtin_bswap64(data);
+    memcpy(msg.data, &data_bigendian, 8);
+    
 
     return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
 }
@@ -196,22 +182,20 @@ uint8_t send_pumptwo_efuse
 {
     can_msg_t msg;
     msg.id = 0xEF7;
-    msg.id_is_extended = true;
+    msg.id_is_extended = true;msg.len = 8;
 
-    bitstream_t pumptwo_efuse_msg;
-	uint8_t bitstream_data[8];
-	bitstream_init(&pumptwo_efuse_msg, bitstream_data, 8);
-	
-    bitstream_add(&pumptwo_efuse_msg, ADC, 16);
-    bitstream_add(&pumptwo_efuse_msg, voltage*1000, 16);
-    bitstream_add(&pumptwo_efuse_msg, current*1000, 16);
-    bitstream_add(&pumptwo_efuse_msg, is_faulted, 8);
-    bitstream_add(&pumptwo_efuse_msg, is_enabled, 8);
-
-    handle_bitstream_overflow(&pumptwo_efuse_msg, msg.id);
     
-    msg.len = sizeof(bitstream_data);
-    memcpy(msg.data, &bitstream_data, sizeof(bitstream_data));
+    uint64_t data = 0;
+    data |= ((uint16_t)(ADC) & 0xFFFFULL) << 48;
+    data |= ((uint16_t)(voltage*1000) & 0xFFFFULL) << 32;
+    data |= ((uint16_t)(current*1000) & 0xFFFFULL) << 16;
+    data |= ((uint8_t)(is_faulted) & 0xFFULL) << 8;
+    data |= ((uint8_t)(is_enabled) & 0xFFULL) << 0;
+
+    
+    uint64_t data_bigendian = __builtin_bswap64(data);
+    memcpy(msg.data, &data_bigendian, 8);
+    
 
     return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
 }
@@ -221,22 +205,20 @@ uint8_t send_battbox_efuse
 {
     can_msg_t msg;
     msg.id = 0xEF8;
-    msg.id_is_extended = true;
+    msg.id_is_extended = true;msg.len = 8;
 
-    bitstream_t battbox_efuse_msg;
-	uint8_t bitstream_data[8];
-	bitstream_init(&battbox_efuse_msg, bitstream_data, 8);
-	
-    bitstream_add(&battbox_efuse_msg, ADC, 16);
-    bitstream_add(&battbox_efuse_msg, voltage*1000, 16);
-    bitstream_add(&battbox_efuse_msg, current*1000, 16);
-    bitstream_add(&battbox_efuse_msg, is_faulted, 8);
-    bitstream_add(&battbox_efuse_msg, is_enabled, 8);
-
-    handle_bitstream_overflow(&battbox_efuse_msg, msg.id);
     
-    msg.len = sizeof(bitstream_data);
-    memcpy(msg.data, &bitstream_data, sizeof(bitstream_data));
+    uint64_t data = 0;
+    data |= ((uint16_t)(ADC) & 0xFFFFULL) << 48;
+    data |= ((uint16_t)(voltage*1000) & 0xFFFFULL) << 32;
+    data |= ((uint16_t)(current*1000) & 0xFFFFULL) << 16;
+    data |= ((uint8_t)(is_faulted) & 0xFFULL) << 8;
+    data |= ((uint8_t)(is_enabled) & 0xFFULL) << 0;
+
+    
+    uint64_t data_bigendian = __builtin_bswap64(data);
+    memcpy(msg.data, &data_bigendian, 8);
+    
 
     return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
 }
@@ -246,22 +228,20 @@ uint8_t send_mc_efuse
 {
     can_msg_t msg;
     msg.id = 0xEF9;
-    msg.id_is_extended = true;
+    msg.id_is_extended = true;msg.len = 8;
 
-    bitstream_t mc_efuse_msg;
-	uint8_t bitstream_data[8];
-	bitstream_init(&mc_efuse_msg, bitstream_data, 8);
-	
-    bitstream_add(&mc_efuse_msg, ADC, 16);
-    bitstream_add(&mc_efuse_msg, voltage*1000, 16);
-    bitstream_add(&mc_efuse_msg, current*1000, 16);
-    bitstream_add(&mc_efuse_msg, is_faulted, 8);
-    bitstream_add(&mc_efuse_msg, is_enabled, 8);
-
-    handle_bitstream_overflow(&mc_efuse_msg, msg.id);
     
-    msg.len = sizeof(bitstream_data);
-    memcpy(msg.data, &bitstream_data, sizeof(bitstream_data));
+    uint64_t data = 0;
+    data |= ((uint16_t)(ADC) & 0xFFFFULL) << 48;
+    data |= ((uint16_t)(voltage*1000) & 0xFFFFULL) << 32;
+    data |= ((uint16_t)(current*1000) & 0xFFFFULL) << 16;
+    data |= ((uint8_t)(is_faulted) & 0xFFULL) << 8;
+    data |= ((uint8_t)(is_enabled) & 0xFFULL) << 0;
+
+    
+    uint64_t data_bigendian = __builtin_bswap64(data);
+    memcpy(msg.data, &data_bigendian, 8);
+    
 
     return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
 }
@@ -271,29 +251,27 @@ uint8_t send_shutdown_pins
 {
     can_msg_t msg;
     msg.id = 0x123;
-    
     msg.id_is_extended = false;
+    msg.len = 2;
 
-    bitstream_t shutdown_pins_msg;
-	uint8_t bitstream_data[2];
-	bitstream_init(&shutdown_pins_msg, bitstream_data, 2);
-	
-    bitstream_add(&shutdown_pins_msg, bms_gpio, 1);
-    bitstream_add(&shutdown_pins_msg, bots_gpio, 1);
-    bitstream_add(&shutdown_pins_msg, spare_gpio, 1);
-    bitstream_add(&shutdown_pins_msg, bspd_gpio, 1);
-    bitstream_add(&shutdown_pins_msg, hv_c, 1);
-    bitstream_add(&shutdown_pins_msg, hvd_gpio, 1);
-    bitstream_add(&shutdown_pins_msg, imd_gpio, 1);
-    bitstream_add(&shutdown_pins_msg, ckpt_gpio, 1);
-    bitstream_add(&shutdown_pins_msg, inertia_sw_gpio, 1);
-    bitstream_add(&shutdown_pins_msg, tsms_gpio, 1);
-    bitstream_add(&shutdown_pins_msg, UNUSED, 6);
-
-    handle_bitstream_overflow(&shutdown_pins_msg, msg.id);
     
-    msg.len = sizeof(bitstream_data);
-    memcpy(msg.data, &bitstream_data, sizeof(bitstream_data));
+    uint16_t data = 0;
+    data |= ((uint8_t)(bms_gpio) & 0x1ULL) << 15;
+    data |= ((uint8_t)(bots_gpio) & 0x1ULL) << 14;
+    data |= ((uint8_t)(spare_gpio) & 0x1ULL) << 13;
+    data |= ((uint8_t)(bspd_gpio) & 0x1ULL) << 12;
+    data |= ((uint8_t)(hv_c) & 0x1ULL) << 11;
+    data |= ((uint8_t)(hvd_gpio) & 0x1ULL) << 10;
+    data |= ((uint8_t)(imd_gpio) & 0x1ULL) << 9;
+    data |= ((uint8_t)(ckpt_gpio) & 0x1ULL) << 8;
+    data |= ((uint8_t)(inertia_sw_gpio) & 0x1ULL) << 7;
+    data |= ((uint8_t)(tsms_gpio) & 0x1ULL) << 6;
+    data |= ((uint8_t)(UNUSED) & 0x3FULL) << 0;
+
+    
+    uint16_t data_bigendian = __builtin_bswap16(data);
+    memcpy(msg.data, &data_bigendian, 2);
+    
 
     return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
 }
@@ -303,27 +281,24 @@ uint8_t send_car_state
 {
     can_msg_t msg;
     msg.id = 0x501;
-    
     msg.id_is_extended = false;
+    msg.len = 6;
 
-    bitstream_t car_state_msg;
-	uint8_t bitstream_data[6];
-	bitstream_init(&car_state_msg, bitstream_data, 6);
-	
-    bitstream_add(&car_state_msg, home_mode, 4);
-    bitstream_add(&car_state_msg, nero_index, 4);
-    bitstream_add_signed(&car_state_msg, car_speed*10, 16);
-    bitstream_add(&car_state_msg, tsms, 1);
-    bitstream_add(&car_state_msg, torque_limit_percentage*100, 7);
-    bitstream_add(&car_state_msg, reverse, 1);
-    bitstream_add(&car_state_msg, regen_limit, 10);
-    bitstream_add(&car_state_msg, launch_control, 1);
     
+    uint64_t data = 0;
+    data |= ((uint8_t)(home_mode) & 0xFULL) << 44;
+    data |= ((uint8_t)(nero_index) & 0xFULL) << 40;
+    data |= ((uint16_t)(int16_t)(car_speed*10) & 0xFFFFULL) << 24;
+    data |= ((uint8_t)(tsms) & 0x1ULL) << 23;
+    data |= ((uint8_t)(torque_limit_percentage*100) & 0x7FULL) << 16;
+    data |= ((uint8_t)(reverse) & 0x1ULL) << 15;
+    data |= ((uint16_t)(regen_limit) & 0x3FFULL) << 5;
+    data |= ((uint8_t)(launch_control) & 0x1ULL) << 4;
 
-    handle_bitstream_overflow(&car_state_msg, msg.id);
     
-    msg.len = sizeof(bitstream_data);
-    memcpy(msg.data, &bitstream_data, sizeof(bitstream_data));
+    uint64_t data_bigendian = __builtin_bswap64(data);
+    memcpy(msg.data, &data_bigendian, 8);
+    
 
     return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
 }
@@ -333,20 +308,18 @@ uint8_t send_pedal_percent_pressed_values
 {
     can_msg_t msg;
     msg.id = 0x505;
-    
     msg.id_is_extended = false;
+    msg.len = 4;
 
-    bitstream_t pedal_percent_pressed_values_msg;
-	uint8_t bitstream_data[4];
-	bitstream_init(&pedal_percent_pressed_values_msg, bitstream_data, 4);
-	
-    bitstream_add(&pedal_percent_pressed_values_msg, accel_norm*100, 16);
-    bitstream_add(&pedal_percent_pressed_values_msg, brake_norm*100, 16);
-
-    handle_bitstream_overflow(&pedal_percent_pressed_values_msg, msg.id);
     
-    msg.len = sizeof(bitstream_data);
-    memcpy(msg.data, &bitstream_data, sizeof(bitstream_data));
+    uint32_t data = 0;
+    data |= ((uint16_t)(accel_norm*100) & 0xFFFFULL) << 16;
+    data |= ((uint16_t)(brake_norm*100) & 0xFFFFULL) << 0;
+
+    
+    uint32_t data_bigendian = __builtin_bswap32(data);
+    memcpy(msg.data, &data_bigendian, 4);
+    
 
     return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
 }
@@ -356,22 +329,20 @@ uint8_t send_pedal_sensor_voltages
 {
     can_msg_t msg;
     msg.id = 0x504;
-    
     msg.id_is_extended = false;
+    msg.len = 8;
 
-    bitstream_t pedal_sensor_voltages_msg;
-	uint8_t bitstream_data[8];
-	bitstream_init(&pedal_sensor_voltages_msg, bitstream_data, 8);
-	
-    bitstream_add(&pedal_sensor_voltages_msg, accel1_volts*100, 16);
-    bitstream_add(&pedal_sensor_voltages_msg, accel2_volts*100, 16);
-    bitstream_add(&pedal_sensor_voltages_msg, brake1_volts*100, 16);
-    bitstream_add(&pedal_sensor_voltages_msg, brake2_volts*100, 16);
-
-    handle_bitstream_overflow(&pedal_sensor_voltages_msg, msg.id);
     
-    msg.len = sizeof(bitstream_data);
-    memcpy(msg.data, &bitstream_data, sizeof(bitstream_data));
+    uint64_t data = 0;
+    data |= ((uint16_t)(accel1_volts*100) & 0xFFFFULL) << 48;
+    data |= ((uint16_t)(accel2_volts*100) & 0xFFFFULL) << 32;
+    data |= ((uint16_t)(brake1_volts*100) & 0xFFFFULL) << 16;
+    data |= ((uint16_t)(brake2_volts*100) & 0xFFFFULL) << 0;
+
+    
+    uint64_t data_bigendian = __builtin_bswap64(data);
+    memcpy(msg.data, &data_bigendian, 8);
+    
 
     return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
 }
@@ -381,20 +352,16 @@ uint8_t send_lightning_board_light_status
 {
     can_msg_t msg;
     msg.id = 0xCA;
-    
     msg.id_is_extended = false;
+    msg.len = 1;
 
-    bitstream_t lightning_board_light_status_msg;
-	uint8_t bitstream_data[1];
-	bitstream_init(&lightning_board_light_status_msg, bitstream_data, 1);
-	
-    bitstream_add(&lightning_board_light_status_msg, status, 2);
     
+    uint8_t data = 0;
+    data |= ((uint8_t)(status) & 0x3ULL) << 6;
 
-    handle_bitstream_overflow(&lightning_board_light_status_msg, msg.id);
     
-    msg.len = sizeof(bitstream_data);
-    memcpy(msg.data, &bitstream_data, sizeof(bitstream_data));
+    msg.data[0] = data;
+    
 
     return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
 }
@@ -404,20 +371,18 @@ uint8_t send_temperature_sensor
 {
     can_msg_t msg;
     msg.id = 0x508;
-    
     msg.id_is_extended = false;
+    msg.len = 4;
 
-    bitstream_t temperature_sensor_msg;
-	uint8_t bitstream_data[4];
-	bitstream_init(&temperature_sensor_msg, bitstream_data, 4);
-	
-    bitstream_add_signed(&temperature_sensor_msg, vcu_temperature*100, 16);
-    bitstream_add(&temperature_sensor_msg, vcu_humidity*100, 16);
-
-    handle_bitstream_overflow(&temperature_sensor_msg, msg.id);
     
-    msg.len = sizeof(bitstream_data);
-    memcpy(msg.data, &bitstream_data, sizeof(bitstream_data));
+    uint32_t data = 0;
+    data |= ((uint16_t)(int16_t)(vcu_temperature*100) & 0xFFFFULL) << 16;
+    data |= ((uint16_t)(vcu_humidity*100) & 0xFFFFULL) << 0;
+
+    
+    uint32_t data_bigendian = __builtin_bswap32(data);
+    memcpy(msg.data, &data_bigendian, 4);
+    
 
     return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
 }
@@ -427,21 +392,19 @@ uint8_t send_imu_accelerometer
 {
     can_msg_t msg;
     msg.id = 0x506;
-    
     msg.id_is_extended = false;
+    msg.len = 6;
 
-    bitstream_t imu_accelerometer_msg;
-	uint8_t bitstream_data[6];
-	bitstream_init(&imu_accelerometer_msg, bitstream_data, 6);
-	
-    bitstream_add_signed(&imu_accelerometer_msg, imu_accelerometer_x*100, 16);
-    bitstream_add_signed(&imu_accelerometer_msg, imu_accelerometer_y*100, 16);
-    bitstream_add_signed(&imu_accelerometer_msg, imu_accelerometer_z*100, 16);
-
-    handle_bitstream_overflow(&imu_accelerometer_msg, msg.id);
     
-    msg.len = sizeof(bitstream_data);
-    memcpy(msg.data, &bitstream_data, sizeof(bitstream_data));
+    uint64_t data = 0;
+    data |= ((uint16_t)(int16_t)(imu_accelerometer_x*100) & 0xFFFFULL) << 32;
+    data |= ((uint16_t)(int16_t)(imu_accelerometer_y*100) & 0xFFFFULL) << 16;
+    data |= ((uint16_t)(int16_t)(imu_accelerometer_z*100) & 0xFFFFULL) << 0;
+
+    
+    uint64_t data_bigendian = __builtin_bswap64(data);
+    memcpy(msg.data, &data_bigendian, 8);
+    
 
     return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
 }
@@ -451,21 +414,19 @@ uint8_t send_imu_gyro
 {
     can_msg_t msg;
     msg.id = 0x507;
-    
     msg.id_is_extended = false;
+    msg.len = 6;
 
-    bitstream_t imu_gyro_msg;
-	uint8_t bitstream_data[6];
-	bitstream_init(&imu_gyro_msg, bitstream_data, 6);
-	
-    bitstream_add_signed(&imu_gyro_msg, imu_gyro_x*100, 16);
-    bitstream_add_signed(&imu_gyro_msg, imu_gyro_y*100, 16);
-    bitstream_add_signed(&imu_gyro_msg, imu_gyro_z*100, 16);
-
-    handle_bitstream_overflow(&imu_gyro_msg, msg.id);
     
-    msg.len = sizeof(bitstream_data);
-    memcpy(msg.data, &bitstream_data, sizeof(bitstream_data));
+    uint64_t data = 0;
+    data |= ((uint16_t)(int16_t)(imu_gyro_x*100) & 0xFFFFULL) << 32;
+    data |= ((uint16_t)(int16_t)(imu_gyro_y*100) & 0xFFFFULL) << 16;
+    data |= ((uint16_t)(int16_t)(imu_gyro_z*100) & 0xFFFFULL) << 0;
+
+    
+    uint64_t data_bigendian = __builtin_bswap64(data);
+    memcpy(msg.data, &data_bigendian, 8);
+    
 
     return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
 }
@@ -475,32 +436,30 @@ uint8_t send_faults
 {
     can_msg_t msg;
     msg.id = 0x502;
-    
     msg.id_is_extended = false;
+    msg.len = 2;
 
-    bitstream_t faults_msg;
-	uint8_t bitstream_data[2];
-	bitstream_init(&faults_msg, bitstream_data, 2);
-	
-    bitstream_add(&faults_msg, CAN_OUTGOING_FAULT, 1);
-    bitstream_add(&faults_msg, CAN_INCOMING_FAULT, 1);
-    bitstream_add(&faults_msg, BMS_CAN_MONITOR_FAULT, 1);
-    bitstream_add(&faults_msg, ONBOARD_TEMP_FAULT, 1);
-    bitstream_add(&faults_msg, IMU_ACCEL_FAULT, 1);
-    bitstream_add(&faults_msg, IMU_GYRO_FAULT, 1);
-    bitstream_add(&faults_msg, BSPD_PREFAULT, 1);
-    bitstream_add(&faults_msg, ONBOARD_BRAKE_OPEN_CIRCUIT_FAULT, 1);
-    bitstream_add(&faults_msg, ONBOARD_ACCEL_OPEN_CIRCUIT_FAULT, 1);
-    bitstream_add(&faults_msg, ONBOARD_BRAKE_SHORT_CIRCUIT_FAULT, 1);
-    bitstream_add(&faults_msg, ONBOARD_ACCEL_SHORT_CIRCUIT_FAULT, 1);
-    bitstream_add(&faults_msg, ONBOARD_PEDAL_DIFFERENCE_FAULT, 1);
-    bitstream_add(&faults_msg, RTDS_FAULT, 1);
-    bitstream_add(&faults_msg, EXTRA, 3);
-
-    handle_bitstream_overflow(&faults_msg, msg.id);
     
-    msg.len = sizeof(bitstream_data);
-    memcpy(msg.data, &bitstream_data, sizeof(bitstream_data));
+    uint16_t data = 0;
+    data |= ((uint8_t)(CAN_OUTGOING_FAULT) & 0x1ULL) << 15;
+    data |= ((uint8_t)(CAN_INCOMING_FAULT) & 0x1ULL) << 14;
+    data |= ((uint8_t)(BMS_CAN_MONITOR_FAULT) & 0x1ULL) << 13;
+    data |= ((uint8_t)(ONBOARD_TEMP_FAULT) & 0x1ULL) << 12;
+    data |= ((uint8_t)(IMU_ACCEL_FAULT) & 0x1ULL) << 11;
+    data |= ((uint8_t)(IMU_GYRO_FAULT) & 0x1ULL) << 10;
+    data |= ((uint8_t)(BSPD_PREFAULT) & 0x1ULL) << 9;
+    data |= ((uint8_t)(ONBOARD_BRAKE_OPEN_CIRCUIT_FAULT) & 0x1ULL) << 8;
+    data |= ((uint8_t)(ONBOARD_ACCEL_OPEN_CIRCUIT_FAULT) & 0x1ULL) << 7;
+    data |= ((uint8_t)(ONBOARD_BRAKE_SHORT_CIRCUIT_FAULT) & 0x1ULL) << 6;
+    data |= ((uint8_t)(ONBOARD_ACCEL_SHORT_CIRCUIT_FAULT) & 0x1ULL) << 5;
+    data |= ((uint8_t)(ONBOARD_PEDAL_DIFFERENCE_FAULT) & 0x1ULL) << 4;
+    data |= ((uint8_t)(RTDS_FAULT) & 0x1ULL) << 3;
+    data |= ((uint8_t)(EXTRA) & 0x7ULL) << 0;
+
+    
+    uint16_t data_bigendian = __builtin_bswap16(data);
+    memcpy(msg.data, &data_bigendian, 2);
+    
 
     return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
 }
@@ -510,20 +469,18 @@ uint8_t send_lv_voltage
 {
     can_msg_t msg;
     msg.id = 0x509;
-    
     msg.id_is_extended = false;
+    msg.len = 6;
 
-    bitstream_t lv_voltage_msg;
-	uint8_t bitstream_data[6];
-	bitstream_init(&lv_voltage_msg, bitstream_data, 6);
-	
-    bitstream_add(&lv_voltage_msg, ADC, 16);
-    bitstream_add(&lv_voltage_msg, Voltage*1000, 32);
-
-    handle_bitstream_overflow(&lv_voltage_msg, msg.id);
     
-    msg.len = sizeof(bitstream_data);
-    memcpy(msg.data, &bitstream_data, sizeof(bitstream_data));
+    uint64_t data = 0;
+    data |= ((uint16_t)(ADC) & 0xFFFFULL) << 32;
+    data |= ((uint32_t)(Voltage*1000) & 0xFFFFFFFFULL) << 0;
+
+    
+    uint64_t data_bigendian = __builtin_bswap64(data);
+    memcpy(msg.data, &data_bigendian, 8);
+    
 
     return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
 }
