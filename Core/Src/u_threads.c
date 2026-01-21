@@ -46,6 +46,8 @@ static thread_t default_thread = {
     };
 void vDefault(ULONG thread_input) {
 
+    PRINTLN_INFO("Starting default thread...");
+
     /* Initialize ethernet (you have to do this in a thread for some reason). */
     int status = ethernet1_init();
     if(status != NX_SUCCESS) {
@@ -76,7 +78,6 @@ void vDefault(ULONG thread_input) {
             state_red = !state_red;
         }
 
-        
         PRINTLN_INFO("Ran default thread");
 
         /* Sleep Thread for specified number of ticks. */
