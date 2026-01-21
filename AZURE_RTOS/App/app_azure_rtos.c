@@ -78,7 +78,6 @@ static TX_BYTE_POOL nx_app_byte_pool;
 VOID tx_application_define(VOID *first_unused_memory)
 {
   /* USER CODE BEGIN  tx_application_define_1*/
-
   /* USER CODE END  tx_application_define_1 */
 #if (USE_STATIC_ALLOCATION == 1)
   UINT status = TX_SUCCESS;
@@ -139,7 +138,7 @@ VOID tx_application_define(VOID *first_unused_memory)
       /* USER CODE END  MX_NetXDuo_Init_Error */
     }
     /* USER CODE BEGIN  MX_NetXDuo_Init_Success */
-
+    PRINTLN_INFO("GOT HERE!!!!!!!");
     /* USER CODE END MX_NetXDuo_Init_Success */
 
   }
