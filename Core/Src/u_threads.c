@@ -45,6 +45,12 @@ static thread_t default_thread = {
         .function   = vDefault           /* Thread Function */
     };
 void vDefault(ULONG thread_input) {
+
+    /* Initialize ethernet (you have to do this in a thread for some reason). */
+    int status = ethernet1_init();
+    if(status != NX_SUCCESS) {
+        PRINTLN_ERROR("Failed to call ethernet1_init() (Status: %d/%s).", status, nx_status_toString(status));
+    }
     
     while(1) {
 
@@ -656,9 +662,9 @@ uint8_t threads_init(TX_BYTE_POOL *byte_pool) {
     //CATCH_ERROR(create_thread(byte_pool, &pedals_thread), U_SUCCESS);            // Create Pedals thread.
     //CATCH_ERROR(create_thread(byte_pool, &efuses_thread), U_SUCCESS);            // Create eFuses thread.
     //CATCH_ERROR(create_thread(byte_pool, &mux_thread), U_SUCCESS);               // Create Mux thread.
-    CATCH_ERROR(create_thread(byte_pool, &peripherals_thread), U_SUCCESS);       // Create Peripherals thread.
-    //CATCH_ERROR(create_thread(byte_pool, &ethernet_incoming_thread), U_SUCCESS); // Create Incoming Ethernet thread.
-    //CATCH_ERROR(create_thread(byte_pool, &ethernet_outgoing_thread), U_SUCCESS); // Create Outgoing Ethernet thread.
+    //CATCH_ERROR(create_thread(byte_pool, &peripherals_thread), U_SUCCESS);       // Create Peripherals thread.
+    CATCH_ERROR(create_thread(byte_pool, &ethernet_incoming_thread), U_SUCCESS); // Create Incoming Ethernet thread.
+    CATCH_ERROR(create_thread(byte_pool, &ethernet_outgoing_thread), U_SUCCESS); // Create Outgoing Ethernet thread.
 
     // add more threads here if need
 
