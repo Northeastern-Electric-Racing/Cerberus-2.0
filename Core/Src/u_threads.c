@@ -8,6 +8,7 @@
 #include "u_faults.h"
 #include "u_pedals.h"
 #include "u_adc.h"
+#include "u_debug.h"
 #include "u_efuses.h"
 #include "u_statemachine.h"
 #include "u_tsms.h"
@@ -51,6 +52,27 @@ void vDefault(ULONG thread_input) {
         HAL_IWDG_Refresh(&hiwdg); // Internal Watchdog
         HAL_GPIO_TogglePin(WATCHDOG_GPIO_Port, WATCHDOG_Pin); // External Watchdog
 
+        static bool state_green = false;
+        if(state_green) {
+            debug_enableGreenLED();
+            state_green = !state_green;
+        } else {
+            debug_disableGreenLED();
+            state_green = !state_green;
+        }
+
+        static bool state_red = true;
+        if(state_red) {
+            debug_enableRedLED();
+            state_red = !state_red;
+        } else {
+            debug_disableRedLED();
+            state_red = !state_red;
+        }
+
+        
+        PRINTLN_INFO("Ran default thread");
+
         /* Sleep Thread for specified number of ticks. */
         tx_thread_sleep(default_thread.sleep);
     }
@@ -70,6 +92,8 @@ static thread_t ethernet_incoming_thread = {
 void vEthernetIncoming(ULONG thread_input) {
 
     while(1) {
+
+        PRINTLN_INFO("thread ran");
 
         ethernet_message_t message;
 
@@ -96,6 +120,8 @@ static thread_t ethernet_outgoing_thread = {
 void vEthernetOutgoing(ULONG thread_input) {
 
     while(1) {
+
+        PRINTLN_INFO("thread ran");
 
         ethernet_message_t message;
         uint8_t status;
@@ -130,6 +156,8 @@ void vCANIncoming(ULONG thread_input) {
 
         can_msg_t message;
 
+        PRINTLN_INFO("thread ran");
+
         /* Process incoming messages */
         while(queue_receive(&can_incoming, &message, TX_WAIT_FOREVER) == U_SUCCESS) {
             can_inbox(&message);
@@ -156,6 +184,8 @@ void vCANOutgoing(ULONG thread_input) {
 
         can_msg_t message;
         HAL_StatusTypeDef status;
+
+        PRINTLN_INFO("thread ran");
 
         /* Send outgoing messages */
         while(queue_receive(&can_outgoing, &message, TX_WAIT_FOREVER) == U_SUCCESS) {
@@ -185,6 +215,8 @@ void vFaultsQueue(ULONG thread_input) {
     
     while(1) {
 
+        PRINTLN_INFO("thread ran");
+
         /* Process queued faults */
         fault_t fault_id;
         while(queue_receive(&faults, &fault_id, TX_WAIT_FOREVER) == U_SUCCESS) {
@@ -209,6 +241,8 @@ static thread_t faults_thread = {
 void vFaults(ULONG thread_input) {
     
     while(1) {
+
+        PRINTLN_INFO("thread ran");
 
         /* Send a CAN message containing the current fault statuses. */
         send_faults(
@@ -248,6 +282,8 @@ void vShutdown(ULONG thread_input) {
     
     while(1) {
 
+        PRINTLN_INFO("thread ran");
+
         /* Send Shutdown Pins CAN message. */
         send_shutdown_pins(
             (HAL_GPIO_ReadPin(BMS_GPIO_GPIO_Port, BMS_GPIO_Pin) == GPIO_PIN_SET),
@@ -283,6 +319,8 @@ void vStatemachine(ULONG thread_input) {
     
     while(1) {
 
+        PRINTLN_INFO("thread ran");
+
         statemachine_process();
 
         /* Sleep Thread for specified number of ticks. */
@@ -304,6 +342,8 @@ static thread_t pedals_thread = {
 void vPedals(ULONG thread_input) {
     
     while(1) {
+
+        PRINTLN_INFO("thread ran");
 
         pedals_process();
 
@@ -336,6 +376,8 @@ void vEFuses(ULONG thread_input) {
 	} efuse_message_t;
     
     while(1) {
+
+        PRINTLN_INFO("thread ran");
 
         /* Get data. */
         efuse_data_t data = efuse_getData();
@@ -450,6 +492,8 @@ void vTSMS(ULONG thread_input) {
     
     while(1) {
 
+        PRINTLN_INFO("thread ran");
+
         tsms_update();
 
         /* Sleep Thread for specified number of ticks. */
@@ -471,6 +515,8 @@ static thread_t mux_thread = {
 void vMux(ULONG thread_input) {
     
     while(1) {
+
+        PRINTLN_INFO("thread ran");
 
         /* Switches the multiplexer state and updates the buffer. */
         adc_switchMuxState();
@@ -515,6 +561,8 @@ void vPeripherals(ULONG thread_input) {
     
     while(1) {
 
+        PRINTLN_INFO("thread ran");
+
         /* SECTION 1: Read the temperature sensor data and send it over CAN. */
         do {
             /* Get the temp sensor data. */
@@ -526,6 +574,8 @@ void vPeripherals(ULONG thread_input) {
                 queue_send(&faults, &(fault_t){ONBOARD_TEMP_FAULT}, TX_NO_WAIT);
                 break; // Break from SECTION 1. We don't want to send the CAN message if reading the data failed.
             }
+
+            PRINTLN_INFO("SHT30 Temp: %f", temperature);
 
             /* Send the temp sensor message. */
             send_temperature_sensor(
@@ -596,19 +646,19 @@ uint8_t threads_init(TX_BYTE_POOL *byte_pool) {
 
     /* Create Threads */
     CATCH_ERROR(create_thread(byte_pool, &default_thread), U_SUCCESS);           // Create Default thread.
-    CATCH_ERROR(create_thread(byte_pool, &can_incoming_thread), U_SUCCESS);      // Create Incoming CAN thread.
+    //CATCH_ERROR(create_thread(byte_pool, &can_incoming_thread), U_SUCCESS);      // Create Incoming CAN thread.
     CATCH_ERROR(create_thread(byte_pool, &can_outgoing_thread), U_SUCCESS);      // Create Outgoing CAN thread.
-    CATCH_ERROR(create_thread(byte_pool, &faults_queue_thread), U_SUCCESS);      // Create Faults Queue thread.
-    CATCH_ERROR(create_thread(byte_pool, &faults_thread), U_SUCCESS);            // Create Faults thread.
-    CATCH_ERROR(create_thread(byte_pool, &tsms_thread), U_SUCCESS);              // Create TSMS thread.
-    CATCH_ERROR(create_thread(byte_pool, &shutdown_thread), U_SUCCESS);          // Create Shutdown thread.
-    CATCH_ERROR(create_thread(byte_pool, &statemachine_thread), U_SUCCESS);      // Create State Machine thread.
-    CATCH_ERROR(create_thread(byte_pool, &pedals_thread), U_SUCCESS);            // Create Pedals thread.
-    CATCH_ERROR(create_thread(byte_pool, &efuses_thread), U_SUCCESS);            // Create eFuses thread.
-    CATCH_ERROR(create_thread(byte_pool, &mux_thread), U_SUCCESS);               // Create Mux thread.
+    //CATCH_ERROR(create_thread(byte_pool, &faults_queue_thread), U_SUCCESS);      // Create Faults Queue thread.
+    //CATCH_ERROR(create_thread(byte_pool, &faults_thread), U_SUCCESS);            // Create Faults thread.
+    //CATCH_ERROR(create_thread(byte_pool, &tsms_thread), U_SUCCESS);              // Create TSMS thread.
+    //CATCH_ERROR(create_thread(byte_pool, &shutdown_thread), U_SUCCESS);          // Create Shutdown thread.
+    //CATCH_ERROR(create_thread(byte_pool, &statemachine_thread), U_SUCCESS);      // Create State Machine thread.
+    //CATCH_ERROR(create_thread(byte_pool, &pedals_thread), U_SUCCESS);            // Create Pedals thread.
+    //CATCH_ERROR(create_thread(byte_pool, &efuses_thread), U_SUCCESS);            // Create eFuses thread.
+    //CATCH_ERROR(create_thread(byte_pool, &mux_thread), U_SUCCESS);               // Create Mux thread.
     CATCH_ERROR(create_thread(byte_pool, &peripherals_thread), U_SUCCESS);       // Create Peripherals thread.
-    CATCH_ERROR(create_thread(byte_pool, &ethernet_incoming_thread), U_SUCCESS); // Create Incoming Ethernet thread.
-    CATCH_ERROR(create_thread(byte_pool, &ethernet_outgoing_thread), U_SUCCESS); // Create Outgoing Ethernet thread.
+    //CATCH_ERROR(create_thread(byte_pool, &ethernet_incoming_thread), U_SUCCESS); // Create Incoming Ethernet thread.
+    //CATCH_ERROR(create_thread(byte_pool, &ethernet_outgoing_thread), U_SUCCESS); // Create Outgoing Ethernet thread.
 
     // add more threads here if need
 

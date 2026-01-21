@@ -68,7 +68,7 @@ UINT MX_NetXDuo_Init(VOID *memory_ptr)
   /* USER CODE END 0 */
 
   /* USER CODE BEGIN MX_NetXDuo_Init */
-  ret = ethernet1_init();
+  //ret = ethernet1_init();
   /* USER CODE END MX_NetXDuo_Init */
 
   return ret;
