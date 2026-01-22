@@ -31,7 +31,43 @@
 #define PRIO_vShutdown         1
 #define PRIO_vEFuses           2
 #define PRIO_vMux              2
+#define PRIO_vTest             2
 #define PRIO_vPeripherals      2
+
+/* Test Thread */
+static thread_t test_thread = {
+        .name       = "Test Thread",    /* Name */
+        .size       = 2048,              /* Stack Size (in bytes) */
+        .priority   = PRIO_vTest,        /* Priority */
+        .threshold  = 0,                 /* Preemption Threshold */
+        .time_slice = TX_NO_TIME_SLICE,  /* Time Slice */
+        .auto_start = TX_AUTO_START,     /* Auto Start */
+        .sleep      = 1000,             /* Sleep (in ticks) */
+        .function   = vTest             /* Thread Function */
+    };
+void vTest(ULONG thread_input) {
+
+    /* Initialize ethernet (you have to do this in a thread for some reason). */
+    int status = ethernet1_init();
+    if(status != NX_SUCCESS) {
+        PRINTLN_ERROR("Failed to call ethernet1_init() (Status: %d/%s).", status, nx_status_toString(status));
+    }
+
+    //tx_thread_sleep(5000);
+
+    while(1) {
+
+        //char message[8] = "message";
+        uint8_t message = 210;
+        ethernet_message_t msg = ethernet_create_message(0x01, TPU, &message, sizeof(message));
+        int status = queue_send(&eth_outgoing, &msg, TX_WAIT_FOREVER);
+        if(status != U_SUCCESS) {
+            PRINTLN_ERROR("Failed to call queue_send when sending ethernet message (Status: %d).", status);
+        }
+
+        PRINTLN_INFO("Ran vTest");
+    }
+}
 
 /* Default Thread */
 static thread_t default_thread = {
@@ -47,17 +83,11 @@ static thread_t default_thread = {
 void vDefault(ULONG thread_input) {
 
     PRINTLN_INFO("Starting default thread...");
-
-    /* Initialize ethernet (you have to do this in a thread for some reason). */
-    int status = ethernet1_init();
-    if(status != NX_SUCCESS) {
-        PRINTLN_ERROR("Failed to call ethernet1_init() (Status: %d/%s).", status, nx_status_toString(status));
-    }
     
     while(1) {
 
         /* Kick the watchdogs (sad) )*/
-        HAL_IWDG_Refresh(&hiwdg); // Internal Watchdog
+        //HAL_IWDG_Refresh(&hiwdg); // Internal Watchdog
         HAL_GPIO_TogglePin(WATCHDOG_GPIO_Port, WATCHDOG_Pin); // External Watchdog
 
         static bool state_green = false;
@@ -139,7 +169,9 @@ void vEthernetOutgoing(ULONG thread_input) {
             if(status != U_SUCCESS) {
                 PRINTLN_WARNING("Failed to send Ethernet message after removing from outgoing queue (Message ID: %d).", message.message_id);
                 // u_TODO - maybe add the message back into the queue if it fails to send? not sure if this is a good idea tho
-                }
+            } else {
+                PRINTLN_INFO("Sent ethernet message!");
+            }
         }
 
         /* No sleep. Thread timing is controlled completely by the queue timeout. */
@@ -652,7 +684,7 @@ void vPeripherals(ULONG thread_input) {
 uint8_t threads_init(TX_BYTE_POOL *byte_pool) {
 
     /* Create Threads */
-    CATCH_ERROR(create_thread(byte_pool, &default_thread), U_SUCCESS);           // Create Default thread.
+    //CATCH_ERROR(create_thread(byte_pool, &default_thread), U_SUCCESS);           // Create Default thread.
     //CATCH_ERROR(create_thread(byte_pool, &can_incoming_thread), U_SUCCESS);      // Create Incoming CAN thread.
     CATCH_ERROR(create_thread(byte_pool, &can_outgoing_thread), U_SUCCESS);      // Create Outgoing CAN thread.
     //CATCH_ERROR(create_thread(byte_pool, &faults_queue_thread), U_SUCCESS);      // Create Faults Queue thread.
@@ -666,6 +698,7 @@ uint8_t threads_init(TX_BYTE_POOL *byte_pool) {
     //CATCH_ERROR(create_thread(byte_pool, &peripherals_thread), U_SUCCESS);       // Create Peripherals thread.
     CATCH_ERROR(create_thread(byte_pool, &ethernet_incoming_thread), U_SUCCESS); // Create Incoming Ethernet thread.
     CATCH_ERROR(create_thread(byte_pool, &ethernet_outgoing_thread), U_SUCCESS); // Create Outgoing Ethernet thread.
+    CATCH_ERROR(create_thread(byte_pool, &test_thread), U_SUCCESS);             // Create Test thread.
 
     // add more threads here if need
 
