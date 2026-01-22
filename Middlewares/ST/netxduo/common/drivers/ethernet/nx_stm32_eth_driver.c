@@ -2067,11 +2067,14 @@ void HAL_ETH_RxCpltCallback(ETH_HandleTypeDef *heth)
   }
 }
 
+volatile uint32_t tx_complete_count = 0;  /* Debug counter for TX completions */
+
 void HAL_ETH_TxCpltCallback(ETH_HandleTypeDef *heth)
 {
   ULONG deffered_events;
   deffered_events = nx_driver_information.nx_driver_information_deferred_events;
 
+  tx_complete_count++;  /* Increment TX complete counter */
 
   nx_driver_information.nx_driver_information_deferred_events |= NX_DRIVER_DEFERRED_PACKET_TRANSMITTED;
 

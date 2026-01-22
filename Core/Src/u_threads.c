@@ -21,10 +21,10 @@
 #define PRIO_vDefault          0
 #define PRIO_vFaults           0
 #define PRIO_vFaultsQueue      0
-#define PRIO_vEthernetIncoming 1
-#define PRIO_vEthernetOutgoing 1
-#define PRIO_vCANIncoming      1
-#define PRIO_vCANOutgoing      1
+#define PRIO_vEthernetIncoming 0
+#define PRIO_vEthernetOutgoing 0
+#define PRIO_vCANIncoming      0
+#define PRIO_vCANOutgoing      0
 #define PRIO_vPedals           1
 #define PRIO_vStatemachine     1
 #define PRIO_vTSMS             1
@@ -63,9 +63,13 @@ void vTest(ULONG thread_input) {
         int status = queue_send(&eth_outgoing, &msg, TX_WAIT_FOREVER);
         if(status != U_SUCCESS) {
             PRINTLN_ERROR("Failed to call queue_send when sending ethernet message (Status: %d).", status);
+        } else {
+            PRINTLN_INFO("Added message to ethernet outgoing queue.");
         }
 
         PRINTLN_INFO("Ran vTest");
+
+        tx_thread_sleep(test_thread.sleep);
     }
 }
 
@@ -686,7 +690,7 @@ uint8_t threads_init(TX_BYTE_POOL *byte_pool) {
     /* Create Threads */
     //CATCH_ERROR(create_thread(byte_pool, &default_thread), U_SUCCESS);           // Create Default thread.
     //CATCH_ERROR(create_thread(byte_pool, &can_incoming_thread), U_SUCCESS);      // Create Incoming CAN thread.
-    CATCH_ERROR(create_thread(byte_pool, &can_outgoing_thread), U_SUCCESS);      // Create Outgoing CAN thread.
+    //CATCH_ERROR(create_thread(byte_pool, &can_outgoing_thread), U_SUCCESS);      // Create Outgoing CAN thread.
     //CATCH_ERROR(create_thread(byte_pool, &faults_queue_thread), U_SUCCESS);      // Create Faults Queue thread.
     //CATCH_ERROR(create_thread(byte_pool, &faults_thread), U_SUCCESS);            // Create Faults thread.
     //CATCH_ERROR(create_thread(byte_pool, &tsms_thread), U_SUCCESS);              // Create TSMS thread.
@@ -696,7 +700,7 @@ uint8_t threads_init(TX_BYTE_POOL *byte_pool) {
     //CATCH_ERROR(create_thread(byte_pool, &efuses_thread), U_SUCCESS);            // Create eFuses thread.
     //CATCH_ERROR(create_thread(byte_pool, &mux_thread), U_SUCCESS);               // Create Mux thread.
     //CATCH_ERROR(create_thread(byte_pool, &peripherals_thread), U_SUCCESS);       // Create Peripherals thread.
-    CATCH_ERROR(create_thread(byte_pool, &ethernet_incoming_thread), U_SUCCESS); // Create Incoming Ethernet thread.
+    //CATCH_ERROR(create_thread(byte_pool, &ethernet_incoming_thread), U_SUCCESS); // Create Incoming Ethernet thread.
     CATCH_ERROR(create_thread(byte_pool, &ethernet_outgoing_thread), U_SUCCESS); // Create Outgoing Ethernet thread.
     CATCH_ERROR(create_thread(byte_pool, &test_thread), U_SUCCESS);             // Create Test thread.
 

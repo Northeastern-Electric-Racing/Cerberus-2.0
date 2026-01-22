@@ -64,7 +64,7 @@ extern DMA_HandleTypeDef handle_GPDMA1_Channel4;
 extern TIM_HandleTypeDef htim1;
 
 /* USER CODE BEGIN EV */
-
+extern ETH_HandleTypeDef heth;
 /* USER CODE END EV */
 
 /******************************************************************************/
@@ -264,5 +264,11 @@ void TIM1_UP_IRQHandler(void)
 }
 
 /* USER CODE BEGIN 1 */
-
+/**
+  * @brief This function handles Ethernet global interrupt.
+  */
+void ETH_IRQHandler(void)
+{
+  HAL_ETH_IRQHandler(&heth);
+}
 /* USER CODE END 1 */

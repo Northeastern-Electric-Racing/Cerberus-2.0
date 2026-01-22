@@ -34,6 +34,7 @@ extern   "C" {
 #include "nx_api.h"
 #endif
 
+#include <stdint.h>
 
 /* Include NetX Link Layer header file, if not already.  */
 
@@ -206,6 +207,9 @@ typedef struct NX_DRIVER_INFORMATION_STRUCT
 /* Define global driver entry function. */
 
 VOID  nx_stm32_eth_driver(NX_IP_DRIVER *driver_req_ptr);
+
+/* Debug counter for TX completions - check this to verify HAL is completing transmissions */
+extern volatile uint32_t tx_complete_count;
 
 /****** DRIVER SPECIFIC ****** End of part/vendor specific external function prototypes.  */
 
