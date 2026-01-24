@@ -22,10 +22,6 @@
 
 #define NX_DRIVER_ENABLE_DEFERRED                /* Define this to enable deferred ISR processing.  */
 
-
-/* custom cerberus2.0 edit - include the header for debug prints */
-#include "u_tx_debug.h"
-
 /* Include driver specific include file.  */
 #include "nx_stm32_eth_driver.h"
 
@@ -1725,7 +1721,7 @@ static UINT  _nx_driver_hardware_packet_send(NX_PACKET *packet_ptr)
   int status = HAL_ETH_Transmit_IT(&eth_handle, &TxPacketCfg);
   if(status)
   {
-    PRINTLN_ERROR("Failed to call HAL_ETH_Transmit_IT() (Status: %d/%s).", status, hal_status_toString(status));
+    printf("[nx_stm32_eth_driver.c/_nx_driver_hardware_packet_send()] ERROR: Failed to call HAL_ETH_Transmit_IT() (Status: %d/%s).", status, hal_status_toString(status));
     return(NX_DRIVER_ERROR);
   }
 
