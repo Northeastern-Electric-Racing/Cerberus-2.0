@@ -15,6 +15,7 @@
 #include "u_peripherals.h"
 #include "u_ethernet.h"
 #include "bitstream.h"
+#include "serial.h"
 
 /* Thread Priority Macros. */
 /* (please keep these organized in increasing order) */
@@ -434,7 +435,13 @@ void vEFuses(ULONG thread_input) {
             data.faulted[EFUSE_DASHBOARD], 
             data.enabled[EFUSE_DASHBOARD]
         );
-        PRINTLN_INFO("Dashboard eFuse volage: %d", data.voltage[EFUSE_DASHBOARD]);
+        // serial_monitor("dashboard_efuse", "raw", "%d", data.raw[EFUSE_DASHBOARD]);
+        // serial_monitor("dashboard_efuse", "voltage", "%f", data.voltage[EFUSE_DASHBOARD]);
+        // serial_monitor("dashboard_efuse", "current", "%f", data.current[EFUSE_DASHBOARD]);
+        // serial_monitor("dashboard_efuse", "faulted?", "%d", data.faulted[EFUSE_DASHBOARD]);
+        // serial_monitor("dashboard_efuse", "enabled?", "%d", data.enabled[EFUSE_DASHBOARD]);
+        efuse_enable(EFUSE_DASHBOARD);
+
 
         /* Send brake eFuse message. */
         send_brake_efuse(
@@ -444,6 +451,11 @@ void vEFuses(ULONG thread_input) {
             data.faulted[EFUSE_BRAKE],
             data.enabled[EFUSE_BRAKE]
         );
+        // serial_monitor("brake_efuse", "raw", "%d", data.raw[EFUSE_BRAKE]);
+        // serial_monitor("brake_efuse", "voltage", "%f", data.voltage[EFUSE_BRAKE]);
+        // serial_monitor("brake_efuse", "current", "%f", data.current[EFUSE_BRAKE]);
+        // serial_monitor("brake_efuse", "faulted?", "%d", data.faulted[EFUSE_BRAKE]);
+        // serial_monitor("brake_efuse", "enabled?", "%d", data.enabled[EFUSE_BRAKE]);
 
         /* Send shutdown eFuse message. */
         send_shutdown_efuse(
@@ -453,6 +465,11 @@ void vEFuses(ULONG thread_input) {
             data.faulted[EFUSE_SHUTDOWN],
             data.enabled[EFUSE_SHUTDOWN]
         );
+        // serial_monitor("shutdown_efuse", "raw", "%d", data.raw[EFUSE_SHUTDOWN]);
+        // serial_monitor("shutdown_efuse", "voltage", "%f", data.voltage[EFUSE_SHUTDOWN]);
+        // serial_monitor("shutdown_efuse", "current", "%f", data.current[EFUSE_SHUTDOWN]);
+        // serial_monitor("shutdown_efuse", "faulted?", "%d", data.faulted[EFUSE_SHUTDOWN]);
+        // serial_monitor("shutdown_efuse", "enabled?", "%d", data.enabled[EFUSE_SHUTDOWN]);
         
         /* Send LV eFuse message. */
         send_lv_efuse(
@@ -462,6 +479,13 @@ void vEFuses(ULONG thread_input) {
             data.faulted[EFUSE_LV],
             data.enabled[EFUSE_LV]
         );
+        efuse_enable(EFUSE_LV);
+        serial_monitor("lv_efuse", "raw", "%d", data.raw[EFUSE_LV]);
+        serial_monitor("lv_efuse", "voltage", "%f", data.voltage[EFUSE_LV]);
+        serial_monitor("lv_efuse", "current", "%f", data.current[EFUSE_LV]);
+        serial_monitor("lv_efuse", "faulted?", "%d", data.faulted[EFUSE_LV]);
+        serial_monitor("lv_efuse", "enabled?", "%d", data.enabled[EFUSE_LV]);
+        
 
         /* Send radfan eFuse message. */
         send_radfan_efuse(
@@ -471,6 +495,12 @@ void vEFuses(ULONG thread_input) {
             data.faulted[EFUSE_RADFAN],
             data.enabled[EFUSE_RADFAN]
         );
+        efuse_enable(EFUSE_RADFAN);
+        serial_monitor("radfan_efuse", "raw", "%d", data.raw[EFUSE_RADFAN]);
+        serial_monitor("radfan_efuse", "voltage", "%f", data.voltage[EFUSE_RADFAN]);
+        serial_monitor("radfan_efuse", "current", "%f", data.current[EFUSE_RADFAN]);
+        serial_monitor("radfan_efuse", "faulted?", "%d", data.faulted[EFUSE_RADFAN]);
+        serial_monitor("radfan_efuse", "enabled?", "%d", data.enabled[EFUSE_RADFAN]);
 
         /* Send fanbatt eFuse message. */
         send_fanbatt_efuse(
@@ -554,7 +584,7 @@ static thread_t mux_thread = {
         .threshold  = 0,                      /* Preemption Threshold */
         .time_slice = TX_NO_TIME_SLICE,       /* Time Slice */
         .auto_start = TX_AUTO_START,          /* Auto Start */
-        .sleep      = 100,                    /* Sleep (in ticks) */
+        .sleep      = 10,                     /* Sleep (in ticks) */
         .function   = vMux                    /* Thread Function */
     };
 void vMux(ULONG thread_input) {
@@ -700,7 +730,7 @@ uint8_t threads_init(TX_BYTE_POOL *byte_pool) {
     //CATCH_ERROR(create_thread(byte_pool, &statemachine_thread), U_SUCCESS);      // Create State Machine thread.
     //CATCH_ERROR(create_thread(byte_pool, &pedals_thread), U_SUCCESS);            // Create Pedals thread.
     CATCH_ERROR(create_thread(byte_pool, &efuses_thread), U_SUCCESS);              // Create eFuses thread.
-    //CATCH_ERROR(create_thread(byte_pool, &mux_thread), U_SUCCESS);               // Create Mux thread.
+    CATCH_ERROR(create_thread(byte_pool, &mux_thread), U_SUCCESS);               // Create Mux thread.
     //CATCH_ERROR(create_thread(byte_pool, &peripherals_thread), U_SUCCESS);       // Create Peripherals thread.
     //CATCH_ERROR(create_thread(byte_pool, &ethernet_incoming_thread), U_SUCCESS); // Create Incoming Ethernet thread.
     //CATCH_ERROR(create_thread(byte_pool, &ethernet_outgoing_thread), U_SUCCESS); // Create Outgoing Ethernet thread.

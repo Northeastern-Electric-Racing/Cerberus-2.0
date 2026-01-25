@@ -93,6 +93,7 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     "./Drivers/Embedded-Base/middleware/src/debounce.c"
     "./Drivers/Embedded-Base/middleware/src/timer.c"
     "./Drivers/Embedded-Base/middleware/src/c_utils.c"
+    "./Drivers/Embedded-Base/middleware/src/serial.c"
 
     # Cerberus-2.0 Source Files
     "./Core/Src/u_threads.c"
