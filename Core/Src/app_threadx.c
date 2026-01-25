@@ -75,14 +75,14 @@ UINT App_ThreadX_Init(VOID *memory_ptr)
   /* Init user-written code that uses ThreadX stuff here. */
   CATCH_ERROR(queues_init(byte_pool), U_SUCCESS);
   CATCH_ERROR(threads_init(byte_pool), U_SUCCESS);
-  //CATCH_ERROR(faults_init(), U_SUCCESS);
+  CATCH_ERROR(faults_init(), U_SUCCESS);
   CATCH_ERROR(mutexes_init(), U_SUCCESS);
-  //CATCH_ERROR(rtds_init(), U_SUCCESS);
-  //CATCH_ERROR(pedals_init(), U_SUCCESS);
-  //CATCH_ERROR(bms_init(), U_SUCCESS);
-  //CATCH_ERROR(adc_init(), U_SUCCESS);
-  //CATCH_ERROR(peripherals_init(), U_SUCCESS);
-  //CATCH_ERROR(tsms_init(), U_SUCCESS);
+  CATCH_ERROR(rtds_init(), U_SUCCESS);
+  CATCH_ERROR(pedals_init(), U_SUCCESS);
+  CATCH_ERROR(bms_init(), U_SUCCESS);
+  CATCH_ERROR(adc_init(), U_SUCCESS);
+  CATCH_ERROR(peripherals_init(), U_SUCCESS);
+  CATCH_ERROR(tsms_init(), U_SUCCESS);
 
   PRINTLN_INFO("Got past end of init");
   

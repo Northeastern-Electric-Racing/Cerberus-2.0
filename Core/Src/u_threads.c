@@ -19,14 +19,14 @@
 /* Thread Priority Macros. */
 /* (please keep these organized in increasing order) */
 #define PRIO_vDefault          0
-#define PRIO_vFaults           0
 #define PRIO_vFaultsQueue      0
 #define PRIO_vEthernetIncoming 0
 #define PRIO_vEthernetOutgoing 0
 #define PRIO_vCANIncoming      0
 #define PRIO_vCANOutgoing      0
+#define PRIO_vStatemachine     0
+#define PRIO_vFaults           1
 #define PRIO_vPedals           1
-#define PRIO_vStatemachine     1
 #define PRIO_vTSMS             1
 #define PRIO_vShutdown         1
 #define PRIO_vEFuses           2
@@ -270,6 +270,31 @@ void vFaultsQueue(ULONG thread_input) {
     }
 }
 
+/* State Machine Thread. */
+static thread_t statemachine_thread = {
+        .name       = "State Machine Thread", /* Name */
+        .size       = 2048,                   /* Stack Size (in bytes) */
+        .priority   = PRIO_vStatemachine,     /* Priority */
+        .threshold  = 0,                      /* Preemption Threshold */
+        .time_slice = TX_NO_TIME_SLICE,       /* Time Slice */
+        .auto_start = TX_AUTO_START,          /* Auto Start */
+        .sleep      = 0,                      /* Sleep (in ticks) */
+        .function   = vStatemachine           /* Thread Function */
+    };
+void vStatemachine(ULONG thread_input) {
+    
+    while(1) {
+
+        PRINTLN_INFO("thread ran");
+
+        state_req_t new_state_req;
+        while(queue_receive(&state_transition_queue, &new_state_req, TX_WAIT_FOREVER) == U_SUCCESS) {
+            statemachine_process(new_state_req);
+	    }
+
+        /* No sleep. Thread timing is controlled completely by the queue timeout. */    }
+}
+
 /* Faults Thread. */
 static thread_t faults_thread = {
         .name       = "Faults Thread",        /* Name */
@@ -347,30 +372,6 @@ void vShutdown(ULONG thread_input) {
     }
 }
 
-/* State Machine Thread. */
-static thread_t statemachine_thread = {
-        .name       = "State Machine Thread", /* Name */
-        .size       = 2048,                   /* Stack Size (in bytes) */
-        .priority   = PRIO_vStatemachine,     /* Priority */
-        .threshold  = 0,                      /* Preemption Threshold */
-        .time_slice = TX_NO_TIME_SLICE,       /* Time Slice */
-        .auto_start = TX_AUTO_START,          /* Auto Start */
-        .sleep      = 1,                      /* Sleep (in ticks) */
-        .function   = vStatemachine           /* Thread Function */
-    };
-void vStatemachine(ULONG thread_input) {
-    
-    while(1) {
-
-        PRINTLN_INFO("thread ran");
-
-        statemachine_process();
-
-        /* Sleep Thread for specified number of ticks. */
-        tx_thread_sleep(statemachine_thread.sleep);
-    }
-}
-
 /* Pedals Thread. */
 static thread_t pedals_thread = {
         .name       = "Pedals Thread",        /* Name */
@@ -433,6 +434,7 @@ void vEFuses(ULONG thread_input) {
             data.faulted[EFUSE_DASHBOARD], 
             data.enabled[EFUSE_DASHBOARD]
         );
+        PRINTLN_INFO("Dashboard eFuse volage: %d", data.voltage[EFUSE_DASHBOARD]);
 
         /* Send brake eFuse message. */
         send_brake_efuse(
@@ -690,19 +692,19 @@ uint8_t threads_init(TX_BYTE_POOL *byte_pool) {
     /* Create Threads */
     //CATCH_ERROR(create_thread(byte_pool, &default_thread), U_SUCCESS);           // Create Default thread.
     //CATCH_ERROR(create_thread(byte_pool, &can_incoming_thread), U_SUCCESS);      // Create Incoming CAN thread.
-    //CATCH_ERROR(create_thread(byte_pool, &can_outgoing_thread), U_SUCCESS);      // Create Outgoing CAN thread.
-    //CATCH_ERROR(create_thread(byte_pool, &faults_queue_thread), U_SUCCESS);      // Create Faults Queue thread.
-    //CATCH_ERROR(create_thread(byte_pool, &faults_thread), U_SUCCESS);            // Create Faults thread.
+    CATCH_ERROR(create_thread(byte_pool, &can_outgoing_thread), U_SUCCESS);      // Create Outgoing CAN thread.
+    CATCH_ERROR(create_thread(byte_pool, &faults_queue_thread), U_SUCCESS);      // Create Faults Queue thread.
+    CATCH_ERROR(create_thread(byte_pool, &faults_thread), U_SUCCESS);            // Create Faults thread.
     //CATCH_ERROR(create_thread(byte_pool, &tsms_thread), U_SUCCESS);              // Create TSMS thread.
     //CATCH_ERROR(create_thread(byte_pool, &shutdown_thread), U_SUCCESS);          // Create Shutdown thread.
     //CATCH_ERROR(create_thread(byte_pool, &statemachine_thread), U_SUCCESS);      // Create State Machine thread.
     //CATCH_ERROR(create_thread(byte_pool, &pedals_thread), U_SUCCESS);            // Create Pedals thread.
-    //CATCH_ERROR(create_thread(byte_pool, &efuses_thread), U_SUCCESS);            // Create eFuses thread.
+    CATCH_ERROR(create_thread(byte_pool, &efuses_thread), U_SUCCESS);              // Create eFuses thread.
     //CATCH_ERROR(create_thread(byte_pool, &mux_thread), U_SUCCESS);               // Create Mux thread.
     //CATCH_ERROR(create_thread(byte_pool, &peripherals_thread), U_SUCCESS);       // Create Peripherals thread.
     //CATCH_ERROR(create_thread(byte_pool, &ethernet_incoming_thread), U_SUCCESS); // Create Incoming Ethernet thread.
-    CATCH_ERROR(create_thread(byte_pool, &ethernet_outgoing_thread), U_SUCCESS); // Create Outgoing Ethernet thread.
-    CATCH_ERROR(create_thread(byte_pool, &test_thread), U_SUCCESS);             // Create Test thread.
+    //CATCH_ERROR(create_thread(byte_pool, &ethernet_outgoing_thread), U_SUCCESS); // Create Outgoing Ethernet thread.
+    CATCH_ERROR(create_thread(byte_pool, &test_thread), U_SUCCESS);                // Create Test thread.
 
     // add more threads here if need
 

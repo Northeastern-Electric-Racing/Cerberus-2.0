@@ -230,7 +230,15 @@ static int check_state_change(state_req_t new_state)
 
 static int queue_state_transition(state_req_t new_state)
 {
-	return queue_send(&state_transition_queue, &new_state, TX_NO_WAIT);
+	PRINTLN_INFO("Inside queue_state_transition()");
+	int status = queue_send(&state_transition_queue, &new_state, TX_NO_WAIT);
+	if(status != U_SUCCESS) {
+		PRINTLN_ERROR("Failed to call queue_send() to add new_state to state_transition_queue()");
+		return status;
+	} else {
+		PRINTLN_INFO("Successfully called queue_send() for the state_transition_queue.");
+		return status;
+	}
 }
 
 /* HANDLE USER INPUT */
@@ -288,6 +296,7 @@ int set_ready_mode()
 
 int fault()
 {
+	PRINTLN_INFO("Triggered fault()!");
 #ifdef IGNORE_FAULT
 	return 1;
 #endif
@@ -295,17 +304,11 @@ int fault()
 		(state_req_t){ .id = FUNCTIONAL, .state.functional = FAULTED });
 }
 
-void statemachine_process(void) {
-	state_req_t new_state_req;
-	while(queue_receive(&state_transition_queue, &new_state_req, SEND_NERO_TIMEOUT) == U_SUCCESS) {
-		if (check_state_change(new_state_req)) {
-				if (new_state_req.id == NERO) {
-					transition_nero_state(new_state_req.state.nero);
-				}
-				else if (new_state_req.id == FUNCTIONAL) {
-					transition_functional_state(new_state_req.state.functional);
-				}
-			}
+void statemachine_process(state_req_t new_state_req) {
+	
+	if(check_state_change(new_state_req)) {
+		if(new_state_req.id == NERO) { transition_nero_state(new_state_req.state.nero); }
+		else if(new_state_req.id == FUNCTIONAL) { transition_functional_state(new_state_req.state.functional); }
 	}
 
 	if (!is_ts_rising && tsms_get()) {
