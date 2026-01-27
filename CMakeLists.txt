@@ -81,6 +81,7 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     # Embedded-Base NetX Utils
     "../Drivers/Embedded-Base/NetX/src/u_nx_debug.c"
     "../Drivers/Embedded-Base/NetX/src/u_nx_ethernet.c"
+    "../Drivers/Embedded-Base/NetX/src/nxd_ptp_client.c"
 
     # Misc Embedded-Base Stuff (drivers, middleware, utils, etc.)
     "../Drivers/Embedded-Base/general/src/lan8670.c"

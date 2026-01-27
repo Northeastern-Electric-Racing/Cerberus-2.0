@@ -1718,10 +1718,8 @@ static UINT  _nx_driver_hardware_packet_send(NX_PACKET *packet_ptr)
   TxPacketCfg.TxBuffer = Txbuffer;
   TxPacketCfg.pData = (uint32_t *)packet_ptr;
 
-  int status = HAL_ETH_Transmit_IT(&eth_handle, &TxPacketCfg);
-  if(status)
+  if(HAL_ETH_Transmit_IT(&eth_handle, &TxPacketCfg))
   {
-    printf("[nx_stm32_eth_driver.c/_nx_driver_hardware_packet_send()] ERROR: Failed to call HAL_ETH_Transmit_IT() (Status: %d/%s).", status, hal_status_toString(status));
     return(NX_DRIVER_ERROR);
   }
 
@@ -2069,14 +2067,11 @@ void HAL_ETH_RxCpltCallback(ETH_HandleTypeDef *heth)
   }
 }
 
-volatile uint32_t tx_complete_count = 0;  /* Debug counter for TX completions */
-
 void HAL_ETH_TxCpltCallback(ETH_HandleTypeDef *heth)
 {
   ULONG deffered_events;
   deffered_events = nx_driver_information.nx_driver_information_deferred_events;
 
-  tx_complete_count++;  /* Increment TX complete counter */
 
   nx_driver_information.nx_driver_information_deferred_events |= NX_DRIVER_DEFERRED_PACKET_TRANSMITTED;
 
