@@ -588,7 +588,7 @@ static thread_t mux_thread = {
         .threshold  = 0,                      /* Preemption Threshold */
         .time_slice = TX_NO_TIME_SLICE,       /* Time Slice */
         .auto_start = TX_AUTO_START,          /* Auto Start */
-        .sleep      = 10,                     /* Sleep (in ticks) */
+        .sleep      = 100,                    /* Sleep (in ticks) */
         .function   = vMux                    /* Thread Function */
     };
 void vMux(ULONG thread_input) {
@@ -656,6 +656,8 @@ void vPeripherals(ULONG thread_input) {
 
             PRINTLN_INFO("SHT30 Temp: %f", temperature);
 
+            serial_monitor("peripherals", "sht30 temp", "%f", temperature);
+
             /* Send the temp sensor message. */
             send_temperature_sensor(
                 temperature,
@@ -673,6 +675,10 @@ void vPeripherals(ULONG thread_input) {
                 queue_send(&faults, &(fault_t){IMU_ACCEL_FAULT}, TX_NO_WAIT);
                 break; // Break from SECTION 2. We don't want to send the CAN message if reading the data failed.
             }
+
+            serial_monitor("peripherals", "imu_acceleration_x", "%f", acceleration.x);
+            serial_monitor("peripherals", "imu_acceleration_y", "%f", acceleration.y);
+            serial_monitor("peripherals", "imu_acceleration_z", "%f", acceleration.z);
 
             /* Send the IMU acceleration message. */
             send_imu_accelerometer(
@@ -692,6 +698,10 @@ void vPeripherals(ULONG thread_input) {
                 queue_send(&faults, &(fault_t){IMU_GYRO_FAULT}, TX_NO_WAIT);
                 break; // Break from SECTION 3. We don't want to send the CAN message if reading the data failed.
             }
+
+            serial_monitor("peripherals", "imu_gyro_x", "%f", gyro.x);
+            serial_monitor("peripherals", "imu_gyro_y", "%f", gyro.y);
+            serial_monitor("peripherals", "imu_gyro_z", "%f", gyro.z);
 
             /* Send the IMU Gyro message. */
             send_imu_gyro(
@@ -735,7 +745,7 @@ uint8_t threads_init(TX_BYTE_POOL *byte_pool) {
     //CATCH_ERROR(create_thread(byte_pool, &pedals_thread), U_SUCCESS);            // Create Pedals thread.
     //CATCH_ERROR(create_thread(byte_pool, &efuses_thread), U_SUCCESS);              // Create eFuses thread.
     //CATCH_ERROR(create_thread(byte_pool, &mux_thread), U_SUCCESS);               // Create Mux thread.
-    //CATCH_ERROR(create_thread(byte_pool, &peripherals_thread), U_SUCCESS);       // Create Peripherals thread.
+    CATCH_ERROR(create_thread(byte_pool, &peripherals_thread), U_SUCCESS);       // Create Peripherals thread.
     //CATCH_ERROR(create_thread(byte_pool, &ethernet_incoming_thread), U_SUCCESS); // Create Incoming Ethernet thread.
     CATCH_ERROR(create_thread(byte_pool, &ethernet_outgoing_thread), U_SUCCESS); // Create Outgoing Ethernet thread.
     CATCH_ERROR(create_thread(byte_pool, &test_thread), U_SUCCESS);                // Create Test thread.
