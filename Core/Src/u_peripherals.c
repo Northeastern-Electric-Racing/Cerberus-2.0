@@ -100,14 +100,17 @@ static const stmdev_ctx_t imu = {
 int peripherals_init(void) {
 
     /* Initialize temperature sensor. */
+    printf("before sht30_init()\n");
     int status = sht30_init(&temperature_sensor, _sht30_write, _sht30_read, _sht30_read, temperature_sensor.dev_address);
     if(status != 0) {
         PRINTLN_ERROR("Failed to run sht30_init() (Status: %d).", status);
         return U_ERROR;
     }
+    printf("after sht30_init()\n");
 
     /* Make sure IMU is set up correctly. */
     uint8_t id;
+    printf("before lsm6dsv_device_id_get()\n");
     status = lsm6dsv_device_id_get(&imu, &id);
     if(status != 0) {
         PRINTLN_ERROR("Failed to call lsm6dsv_device_id_get() (Status: %d).", status);
@@ -117,14 +120,21 @@ int peripherals_init(void) {
         PRINTLN_ERROR("lsm6dsv_device_id_get() returned an unexpected ID (id=%d, expected=%d). This means that the IMU is not configured correctly.", id, LSM6DSV_ID);
         return U_ERROR;
     }
+    printf("after lsm6dsv_device_id_get()\n");
 
     /* Reset IMU. */
+    printf("before lsm6dsv_reset_set()\n");
     status = lsm6dsv_reset_set(&imu, LSM6DSV_GLOBAL_RST);
     if(status != 0) {
         PRINTLN_ERROR("Failed to reset the IMU via lsm6dsv_reset_set() (Status: %d).", status);
         return U_ERROR;
     }
-    HAL_Delay(30); // This is probably overkill, but the datasheet lists the gyroscope's "Turn-on time" as 30ms, and I can't find anything else that specifies how long resets take.
+    printf("after lsm6dsv_reset_set()\n");
+
+    printf("before HAL_DELAY()\n");
+    //HAL_Delay(30); // This is probably overkill, but the datasheet lists the gyroscope's "Turn-on time" as 30ms, and I can't find anything else that specifies how long resets take.
+    tx_thread_sleep(30);
+    printf("after HAL_DELAY()\n");
 
     /* Enable Block Data Update. */
     status = lsm6dsv_block_data_update_set(&imu, PROPERTY_ENABLE); // Makes it so "output registers are not updated until LSB and MSB have been read". Datasheet says this is enabled by default but figured it was better to be explicit.

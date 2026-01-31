@@ -8,6 +8,7 @@
 #include "u_faults.h"
 #include "u_pedals.h"
 #include "u_adc.h"
+#include "u_debug.h"
 #include "u_efuses.h"
 #include "u_statemachine.h"
 #include "u_tsms.h"
@@ -26,17 +27,17 @@
 #define PRIO_vCANOutgoing      1
 #define PRIO_vPedals           1
 #define PRIO_vStatemachine     1
-#define PRIO_vShutdown         2
+#define PRIO_vTSMS             1
+#define PRIO_vShutdown         1
 #define PRIO_vEFuses           2
-#define PRIO_vTSMS             2
 #define PRIO_vMux              2
 #define PRIO_vPeripherals      2
 
 /* Default Thread */
 static thread_t default_thread = {
         .name       = "Default Thread",  /* Name */
-        .size       = 512,               /* Stack Size (in bytes) */
-        .priority   = PRIO_vDefault, /* Priority */
+        .size       = 2048,              /* Stack Size (in bytes) */
+        .priority   = PRIO_vDefault,     /* Priority */
         .threshold  = 0,                 /* Preemption Threshold */
         .time_slice = TX_NO_TIME_SLICE,  /* Time Slice */
         .auto_start = TX_AUTO_START,     /* Auto Start */
@@ -51,6 +52,27 @@ void vDefault(ULONG thread_input) {
         HAL_IWDG_Refresh(&hiwdg); // Internal Watchdog
         HAL_GPIO_TogglePin(WATCHDOG_GPIO_Port, WATCHDOG_Pin); // External Watchdog
 
+        static bool state_green = false;
+        if(state_green) {
+            debug_enableGreenLED();
+            state_green = !state_green;
+        } else {
+            debug_disableGreenLED();
+            state_green = !state_green;
+        }
+
+        static bool state_red = true;
+        if(state_red) {
+            debug_enableRedLED();
+            state_red = !state_red;
+        } else {
+            debug_disableRedLED();
+            state_red = !state_red;
+        }
+
+        
+        PRINTLN_INFO("Ran default thread");
+
         /* Sleep Thread for specified number of ticks. */
         tx_thread_sleep(default_thread.sleep);
     }
@@ -59,7 +81,7 @@ void vDefault(ULONG thread_input) {
 /* Incoming Ethernet Thread. Processes incoming messages. */
 static thread_t ethernet_incoming_thread = {
         .name       = "Incoming Ethernet Thread",  /* Name */
-        .size       = 512,                         /* Stack Size (in bytes) */
+        .size       = 2048,                        /* Stack Size (in bytes) */
         .priority   = PRIO_vEthernetIncoming,      /* Priority */
         .threshold  = 0,                           /* Preemption Threshold */
         .time_slice = TX_NO_TIME_SLICE,            /* Time Slice */
@@ -70,6 +92,8 @@ static thread_t ethernet_incoming_thread = {
 void vEthernetIncoming(ULONG thread_input) {
 
     while(1) {
+
+        PRINTLN_INFO("thread ran");
 
         ethernet_message_t message;
 
@@ -85,7 +109,7 @@ void vEthernetIncoming(ULONG thread_input) {
 /* Outgoing Ethernet Thread. Sends outgoing messages. */
 static thread_t ethernet_outgoing_thread = {
         .name       = "Outgoing Ethernet Thread",  /* Name */
-        .size       = 512,                         /* Stack Size (in bytes) */
+        .size       = 2048,                        /* Stack Size (in bytes) */
         .priority   = PRIO_vEthernetOutgoing,      /* Priority */
         .threshold  = 0,                           /* Preemption Threshold */
         .time_slice = TX_NO_TIME_SLICE,            /* Time Slice */
@@ -96,6 +120,8 @@ static thread_t ethernet_outgoing_thread = {
 void vEthernetOutgoing(ULONG thread_input) {
 
     while(1) {
+
+        PRINTLN_INFO("thread ran");
 
         ethernet_message_t message;
         uint8_t status;
@@ -116,7 +142,7 @@ void vEthernetOutgoing(ULONG thread_input) {
 /* Incoming CAN Thread. Processes incoming messages. */
 static thread_t can_incoming_thread = {
         .name       = "Incoming CAN Thread",     /* Name */
-        .size       = 512,                       /* Stack Size (in bytes) */
+        .size       = 2048,                      /* Stack Size (in bytes) */
         .priority   = PRIO_vCANIncoming,         /* Priority */
         .threshold  = 0,                         /* Preemption Threshold */
         .time_slice = TX_NO_TIME_SLICE,          /* Time Slice */
@@ -130,6 +156,8 @@ void vCANIncoming(ULONG thread_input) {
 
         can_msg_t message;
 
+        PRINTLN_INFO("thread ran");
+
         /* Process incoming messages */
         while(queue_receive(&can_incoming, &message, TX_WAIT_FOREVER) == U_SUCCESS) {
             can_inbox(&message);
@@ -142,7 +170,7 @@ void vCANIncoming(ULONG thread_input) {
 /* Outgoing CAN Thread. Sends outgoing messages. */
 static thread_t can_outgoing_thread = {
         .name       = "Outgoing CAN Thread",     /* Name */
-        .size       = 512,                       /* Stack Size (in bytes) */
+        .size       = 2048,                      /* Stack Size (in bytes) */
         .priority   = PRIO_vCANOutgoing,         /* Priority */
         .threshold  = 0,                         /* Preemption Threshold */
         .time_slice = TX_NO_TIME_SLICE,          /* Time Slice */
@@ -156,6 +184,8 @@ void vCANOutgoing(ULONG thread_input) {
 
         can_msg_t message;
         HAL_StatusTypeDef status;
+
+        PRINTLN_INFO("thread ran");
 
         /* Send outgoing messages */
         while(queue_receive(&can_outgoing, &message, TX_WAIT_FOREVER) == U_SUCCESS) {
@@ -173,7 +203,7 @@ void vCANOutgoing(ULONG thread_input) {
 /* Faults Queue Thread. */
 static thread_t faults_queue_thread = {
         .name       = "Faults Queue Thread",  /* Name */
-        .size       = 512,                    /* Stack Size (in bytes) */
+        .size       = 2048,                   /* Stack Size (in bytes) */
         .priority   = PRIO_vFaultsQueue,      /* Priority */
         .threshold  = 0,                      /* Preemption Threshold */
         .time_slice = TX_NO_TIME_SLICE,       /* Time Slice */
@@ -184,6 +214,8 @@ static thread_t faults_queue_thread = {
 void vFaultsQueue(ULONG thread_input) {
     
     while(1) {
+
+        PRINTLN_INFO("thread ran");
 
         /* Process queued faults */
         fault_t fault_id;
@@ -197,8 +229,8 @@ void vFaultsQueue(ULONG thread_input) {
 
 /* Faults Thread. */
 static thread_t faults_thread = {
-        .name       = "Faults Thread",  /* Name */
-        .size       = 512,                    /* Stack Size (in bytes) */
+        .name       = "Faults Thread",        /* Name */
+        .size       = 2048,                   /* Stack Size (in bytes) */
         .priority   = PRIO_vFaults,           /* Priority */
         .threshold  = 0,                      /* Preemption Threshold */
         .time_slice = TX_NO_TIME_SLICE,       /* Time Slice */
@@ -209,6 +241,8 @@ static thread_t faults_thread = {
 void vFaults(ULONG thread_input) {
     
     while(1) {
+
+        PRINTLN_INFO("thread ran");
 
         /* Send a CAN message containing the current fault statuses. */
         send_faults(
@@ -236,8 +270,8 @@ void vFaults(ULONG thread_input) {
 /* Shutdown Thread. Reads the shutdown (aka. "External Faults") pins and sends them in a CAN message. */
 static thread_t shutdown_thread = {
         .name       = "Shutdown Thread",  /* Name */
-        .size       = 512,                /* Stack Size (in bytes) */
-        .priority   = PRIO_vShutdown, /* Priority */
+        .size       = 2048,               /* Stack Size (in bytes) */
+        .priority   = PRIO_vShutdown,     /* Priority */
         .threshold  = 0,                  /* Preemption Threshold */
         .time_slice = TX_NO_TIME_SLICE,   /* Time Slice */
         .auto_start = TX_AUTO_START,      /* Auto Start */
@@ -290,7 +324,7 @@ void vShutdown(ULONG thread_input) {
 /* State Machine Thread. */
 static thread_t statemachine_thread = {
         .name       = "State Machine Thread", /* Name */
-        .size       = 512,                    /* Stack Size (in bytes) */
+        .size       = 2048,                   /* Stack Size (in bytes) */
         .priority   = PRIO_vStatemachine,     /* Priority */
         .threshold  = 0,                      /* Preemption Threshold */
         .time_slice = TX_NO_TIME_SLICE,       /* Time Slice */
@@ -302,6 +336,8 @@ void vStatemachine(ULONG thread_input) {
     
     while(1) {
 
+        PRINTLN_INFO("thread ran");
+
         statemachine_process();
 
         /* Sleep Thread for specified number of ticks. */
@@ -312,7 +348,7 @@ void vStatemachine(ULONG thread_input) {
 /* Pedals Thread. */
 static thread_t pedals_thread = {
         .name       = "Pedals Thread",        /* Name */
-        .size       = 512,                    /* Stack Size (in bytes) */
+        .size       = 2048,                   /* Stack Size (in bytes) */
         .priority   = PRIO_vPedals,           /* Priority */
         .threshold  = 0,                      /* Preemption Threshold */
         .time_slice = TX_NO_TIME_SLICE,       /* Time Slice */
@@ -324,6 +360,8 @@ void vPedals(ULONG thread_input) {
     
     while(1) {
 
+        PRINTLN_INFO("thread ran");
+
         pedals_process();
 
         /* Sleep Thread for specified number of ticks. */
@@ -334,8 +372,8 @@ void vPedals(ULONG thread_input) {
 /* eFuses Thread. */
 static thread_t efuses_thread = {
         .name       = "eFuses Thread",        /* Name */
-        .size       = 512,                    /* Stack Size (in bytes) */
-        .priority   = PRIO_vEFuses,       /* Priority */
+        .size       = 2048,                   /* Stack Size (in bytes) */
+        .priority   = PRIO_vEFuses,           /* Priority */
         .threshold  = 0,                      /* Preemption Threshold */
         .time_slice = TX_NO_TIME_SLICE,       /* Time Slice */
         .auto_start = TX_AUTO_START,          /* Auto Start */
@@ -355,6 +393,8 @@ void vEFuses(ULONG thread_input) {
 	} efuse_message_t;
     
     while(1) {
+
+        PRINTLN_INFO("thread ran");
 
         /* Get data. */
         efuse_data_t data = efuse_getData();
@@ -457,8 +497,8 @@ void vEFuses(ULONG thread_input) {
 /* TSMS Thread. */
 static thread_t tsms_thread = {
         .name       = "TSMS Thread",          /* Name */
-        .size       = 512,                    /* Stack Size (in bytes) */
-        .priority   = PRIO_vTSMS,         /* Priority */
+        .size       = 2048,                   /* Stack Size (in bytes) */
+        .priority   = PRIO_vTSMS,             /* Priority */
         .threshold  = 0,                      /* Preemption Threshold */
         .time_slice = TX_NO_TIME_SLICE,       /* Time Slice */
         .auto_start = TX_AUTO_START,          /* Auto Start */
@@ -468,6 +508,8 @@ static thread_t tsms_thread = {
 void vTSMS(ULONG thread_input) {
     
     while(1) {
+
+        PRINTLN_INFO("thread ran");
 
         tsms_update();
 
@@ -479,8 +521,8 @@ void vTSMS(ULONG thread_input) {
 /* Mux Thread (for the ADC multiplexer). */
 static thread_t mux_thread = {
         .name       = "Mux Thread",           /* Name */
-        .size       = 512,                    /* Stack Size (in bytes) */
-        .priority   = PRIO_vMux,          /* Priority */
+        .size       = 2048,                   /* Stack Size (in bytes) */
+        .priority   = PRIO_vMux,              /* Priority */
         .threshold  = 0,                      /* Preemption Threshold */
         .time_slice = TX_NO_TIME_SLICE,       /* Time Slice */
         .auto_start = TX_AUTO_START,          /* Auto Start */
@@ -490,6 +532,8 @@ static thread_t mux_thread = {
 void vMux(ULONG thread_input) {
     
     while(1) {
+
+        PRINTLN_INFO("thread ran");
 
         /* Switches the multiplexer state and updates the buffer. */
         adc_switchMuxState();
@@ -502,7 +546,7 @@ void vMux(ULONG thread_input) {
 /* Peripherals Thread. */
 static thread_t peripherals_thread = {
         .name       = "Peripherals Thread",   /* Name */
-        .size       = 512,                    /* Stack Size (in bytes) */
+        .size       = 2048,                   /* Stack Size (in bytes) */
         .priority   = PRIO_vPeripherals,      /* Priority */
         .threshold  = 0,                      /* Preemption Threshold */
         .time_slice = TX_NO_TIME_SLICE,       /* Time Slice */
@@ -534,6 +578,8 @@ void vPeripherals(ULONG thread_input) {
     
     while(1) {
 
+        PRINTLN_INFO("thread ran");
+
         /* SECTION 1: Read the temperature sensor data and send it over CAN. */
         do {
             /* Get the temp sensor data. */
@@ -545,6 +591,8 @@ void vPeripherals(ULONG thread_input) {
                 queue_send(&faults, &(fault_t){ONBOARD_TEMP_FAULT}, TX_NO_WAIT);
                 break; // Break from SECTION 1. We don't want to send the CAN message if reading the data failed.
             }
+
+            PRINTLN_INFO("SHT30 Temp: %f", temperature);
 
             /* Send the temp sensor message. */
             send_temperature_sensor(
@@ -591,6 +639,18 @@ void vPeripherals(ULONG thread_input) {
             );
         } while (0);
 
+        /* SECTION 4: Send LV ADC Message. */
+        do {
+            lvread_adc_t lv_data = adc_getLVData();
+
+            /* Send the LV Voltage message. */
+            send_lv_voltage(
+                lv_data.raw, 
+                lv_data.voltage
+            );
+
+        } while (0);
+
         /* Sleep Thread for specified number of ticks. */
         tx_thread_sleep(peripherals_thread.sleep);
     }
@@ -603,19 +663,19 @@ uint8_t threads_init(TX_BYTE_POOL *byte_pool) {
 
     /* Create Threads */
     CATCH_ERROR(create_thread(byte_pool, &default_thread), U_SUCCESS);           // Create Default thread.
-    CATCH_ERROR(create_thread(byte_pool, &ethernet_incoming_thread), U_SUCCESS); // Create Incoming Ethernet thread.
-    CATCH_ERROR(create_thread(byte_pool, &ethernet_outgoing_thread), U_SUCCESS); // Create Outgoing Ethernet thread.
-    CATCH_ERROR(create_thread(byte_pool, &can_incoming_thread), U_SUCCESS);      // Create Incoming CAN thread.
+    //CATCH_ERROR(create_thread(byte_pool, &can_incoming_thread), U_SUCCESS);      // Create Incoming CAN thread.
     CATCH_ERROR(create_thread(byte_pool, &can_outgoing_thread), U_SUCCESS);      // Create Outgoing CAN thread.
-    CATCH_ERROR(create_thread(byte_pool, &faults_queue_thread), U_SUCCESS);      // Create Faults Queue thread.
-    CATCH_ERROR(create_thread(byte_pool, &faults_thread), U_SUCCESS);            // Create Faults thread.
-    CATCH_ERROR(create_thread(byte_pool, &shutdown_thread), U_SUCCESS);          // Create Shutdown thread.
-    CATCH_ERROR(create_thread(byte_pool, &statemachine_thread), U_SUCCESS);      // Create State Machine thread.
-    CATCH_ERROR(create_thread(byte_pool, &pedals_thread), U_SUCCESS);            // Create Pedals thread.
-    CATCH_ERROR(create_thread(byte_pool, &efuses_thread), U_SUCCESS);            // Create eFuses thread.
-    CATCH_ERROR(create_thread(byte_pool, &tsms_thread), U_SUCCESS);              // Create TSMS thread.
-    CATCH_ERROR(create_thread(byte_pool, &mux_thread), U_SUCCESS);               // Create Mux thread.
+    //CATCH_ERROR(create_thread(byte_pool, &faults_queue_thread), U_SUCCESS);      // Create Faults Queue thread.
+    //CATCH_ERROR(create_thread(byte_pool, &faults_thread), U_SUCCESS);            // Create Faults thread.
+    //CATCH_ERROR(create_thread(byte_pool, &tsms_thread), U_SUCCESS);              // Create TSMS thread.
+    //CATCH_ERROR(create_thread(byte_pool, &shutdown_thread), U_SUCCESS);          // Create Shutdown thread.
+    //CATCH_ERROR(create_thread(byte_pool, &statemachine_thread), U_SUCCESS);      // Create State Machine thread.
+    //CATCH_ERROR(create_thread(byte_pool, &pedals_thread), U_SUCCESS);            // Create Pedals thread.
+    //CATCH_ERROR(create_thread(byte_pool, &efuses_thread), U_SUCCESS);            // Create eFuses thread.
+    //CATCH_ERROR(create_thread(byte_pool, &mux_thread), U_SUCCESS);               // Create Mux thread.
     CATCH_ERROR(create_thread(byte_pool, &peripherals_thread), U_SUCCESS);       // Create Peripherals thread.
+    //CATCH_ERROR(create_thread(byte_pool, &ethernet_incoming_thread), U_SUCCESS); // Create Incoming Ethernet thread.
+    //CATCH_ERROR(create_thread(byte_pool, &ethernet_outgoing_thread), U_SUCCESS); // Create Outgoing Ethernet thread.
 
     // add more threads here if need
 

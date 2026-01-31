@@ -83,6 +83,9 @@ UINT App_ThreadX_Init(VOID *memory_ptr)
   CATCH_ERROR(peripherals_init(), U_SUCCESS);
   CATCH_ERROR(tsms_init(), U_SUCCESS);
 
+  PRINTLN_INFO("Got past end of init");
+  
+
   /* USER CODE END App_ThreadX_MEM_POOL */
   /* USER CODE BEGIN App_ThreadX_Init */
   /* USER CODE END App_ThreadX_Init */
@@ -98,7 +101,6 @@ UINT App_ThreadX_Init(VOID *memory_ptr)
 void MX_ThreadX_Init(void)
 {
   /* USER CODE BEGIN Before_Kernel_Start */
-
   /* USER CODE END Before_Kernel_Start */
 
   tx_kernel_enter();
