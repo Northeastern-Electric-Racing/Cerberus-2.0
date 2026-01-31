@@ -29,6 +29,7 @@
 #include "u_mutexes.h"
 #include "u_rtds.h"
 #include "u_pedals.h"
+#include "u_ethernet.h"
 #include "u_bms.h"
 #include "u_adc.h"
 #include "u_peripherals.h"

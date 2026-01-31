@@ -125,7 +125,7 @@ int32_t nx_eth_phy_get_link_state(void)
 {
 
   /* USER CODE BEGIN LINK_STATE_0 */
-
+    return ETH_PHY_STATUS_10MBITS_FULLDUPLEX;
   /* USER CODE END LINK_STATE_0 */
 
   int32_t  linkstate = ETH_PHY_STATUS_LINK_ERROR;
