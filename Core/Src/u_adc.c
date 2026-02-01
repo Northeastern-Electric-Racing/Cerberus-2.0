@@ -3,6 +3,7 @@
 #include "main.h"
 #include "u_mutexes.h"
 #include "u_adc.h"
+#include "serial.h"
 
 /* ADC1 Config. */
 /* For mux'd inputs: SELx=HIGH corresponds to the A input. SELx=LOW corresponds to the B input. */
@@ -81,6 +82,8 @@ int adc_switchMuxState(void) {
         _mux_buffer[SEL2_HIGH] = _adc1_buffer[ADC1_CHANNEL15];
         _mux_buffer[SEL3_HIGH] = _adc1_buffer[ADC1_CHANNEL5];
         _mux_buffer[SEL4_HIGH] = _adc1_buffer[ADC1_CHANNEL9];
+
+        PRINTLN_INFO("Switched mux_state to HIGH.");
     }
     else if(mux_state == HIGH) {
         /* Mux is currently HIGH, so switch to LOW. */
@@ -97,7 +100,12 @@ int adc_switchMuxState(void) {
         _mux_buffer[SEL2_LOW] = _adc1_buffer[ADC1_CHANNEL15];
         _mux_buffer[SEL3_LOW] = _adc1_buffer[ADC1_CHANNEL5];
         _mux_buffer[SEL4_LOW] = _adc1_buffer[ADC1_CHANNEL9];
+
+        PRINTLN_INFO("Switched mux_state to LOW.");
     }
+    serial_monitor("lv_efuse", "mux_state (0=HIGH, 1=LOW)", "%d", mux_state);
+
+    PRINTLN_INFO("Ran adc_switchMuxState()");
 
     return U_SUCCESS;
 }

@@ -111,6 +111,7 @@ int trigger_fault(fault_t fault_id) {
         case CRITICAL:
             PRINTLN_INFO("Triggered CRITICAL FAULT (Fault: %s).", faults[fault_id].name);
             fault();
+            PRINTLN_INFO("got past fault()");
             break;
         case NON_CRITICAL:
             PRINTLN_INFO("Triggered non-critical fault (Fault: %s).", faults[fault_id].name);
@@ -124,6 +125,8 @@ int trigger_fault(fault_t fault_id) {
         PRINTLN_ERROR("Failed to restart fault timer (Status: %d, Fault: %s).", status, faults[fault_id].name);
         return U_ERROR;
     }
+
+    PRINTLN_INFO("got past timer restart part");
 
     return U_SUCCESS;
 }

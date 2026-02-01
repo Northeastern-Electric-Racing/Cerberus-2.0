@@ -127,7 +127,7 @@ int set_ready_mode();
 int fault();
 
 /* Process the state machine */
-void statemachine_process(void);
+void statemachine_process(state_req_t new_state_req);
 int init_statemachine(void);
 
 #endif
