@@ -313,7 +313,7 @@ void vShutdown(ULONG thread_input) {
                                 || inertia_sw_gpio || tsms_gpio;
 
         if (shutdown_active && tsms_get() == true) { // if tsms is still on when shutdown is active, trigger fault
-            trigger_fault(SHUTDOWN_FAULT);
+            queue_send(&faults, &(fault_t){SHUTDOWN_FAULT}, TX_NO_WAIT);
         }
 
         /* Sleep Thread for specified number of ticks. */
