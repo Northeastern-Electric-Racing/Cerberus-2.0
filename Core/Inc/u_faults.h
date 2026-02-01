@@ -9,6 +9,7 @@ typedef enum {
 	CAN_OUTGOING_FAULT,
 	CAN_INCOMING_FAULT,
 	BMS_CAN_MONITOR_FAULT,
+	SHUTDOWN_FAULT,
 
     /* Non-critical Faults */
 	ONBOARD_TEMP_FAULT,
