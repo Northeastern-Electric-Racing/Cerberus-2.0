@@ -4,6 +4,8 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include "main.h"
+#include "can_messages_tx.h"
+#include "serial.h"
 
 typedef enum {
     EFUSE_DASHBOARD,
