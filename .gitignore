@@ -4,6 +4,8 @@
 .vs/
 .vscode/
 
+.idea/
+
 # Build files
 build/
 
