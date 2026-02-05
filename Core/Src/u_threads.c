@@ -440,133 +440,17 @@ void vEFuses(ULONG thread_input) {
 		bool faulted;
 		bool enabled;
 	} efuse_message_t;
+    
+    efuse_init();
 
     while(1) {
 
         PRINTLN_INFO("thread ran");
 
-        /* Get data. */
-        efuse_data_t data = efuse_getData();
+        efuse_update();
 
-        /* Send dashboard eFuse message. */
-        send_dashboard_efuse(
-            data.raw[EFUSE_DASHBOARD],
-            data.voltage[EFUSE_DASHBOARD],
-            data.current[EFUSE_DASHBOARD],
-            data.faulted[EFUSE_DASHBOARD],
-            data.enabled[EFUSE_DASHBOARD]
-        );
-        // serial_monitor("dashboard_efuse", "raw", "%d", data.raw[EFUSE_DASHBOARD]);
-        // serial_monitor("dashboard_efuse", "voltage", "%f", data.voltage[EFUSE_DASHBOARD]);
-        // serial_monitor("dashboard_efuse", "current", "%f", data.current[EFUSE_DASHBOARD]);
-        // serial_monitor("dashboard_efuse", "faulted?", "%d", data.faulted[EFUSE_DASHBOARD]);
-        // serial_monitor("dashboard_efuse", "enabled?", "%d", data.enabled[EFUSE_DASHBOARD]);
-        efuse_enable(EFUSE_DASHBOARD);
-
-
-        /* Send brake eFuse message. */
-        send_brake_efuse(
-            data.raw[EFUSE_BRAKE],
-            data.voltage[EFUSE_BRAKE],
-            data.current[EFUSE_BRAKE],
-            data.faulted[EFUSE_BRAKE],
-            data.enabled[EFUSE_BRAKE]
-        );
-        // serial_monitor("brake_efuse", "raw", "%d", data.raw[EFUSE_BRAKE]);
-        // serial_monitor("brake_efuse", "voltage", "%f", data.voltage[EFUSE_BRAKE]);
-        // serial_monitor("brake_efuse", "current", "%f", data.current[EFUSE_BRAKE]);
-        // serial_monitor("brake_efuse", "faulted?", "%d", data.faulted[EFUSE_BRAKE]);
-        // serial_monitor("brake_efuse", "enabled?", "%d", data.enabled[EFUSE_BRAKE]);
-
-        /* Send shutdown eFuse message. */
-        send_shutdown_efuse(
-            data.raw[EFUSE_SHUTDOWN],
-            data.voltage[EFUSE_SHUTDOWN],
-            data.current[EFUSE_SHUTDOWN],
-            data.faulted[EFUSE_SHUTDOWN],
-            data.enabled[EFUSE_SHUTDOWN]
-        );
-        // serial_monitor("shutdown_efuse", "raw", "%d", data.raw[EFUSE_SHUTDOWN]);
-        // serial_monitor("shutdown_efuse", "voltage", "%f", data.voltage[EFUSE_SHUTDOWN]);
-        // serial_monitor("shutdown_efuse", "current", "%f", data.current[EFUSE_SHUTDOWN]);
-        // serial_monitor("shutdown_efuse", "faulted?", "%d", data.faulted[EFUSE_SHUTDOWN]);
-        // serial_monitor("shutdown_efuse", "enabled?", "%d", data.enabled[EFUSE_SHUTDOWN]);
-
-        /* Send LV eFuse message. */
-        send_lv_efuse(
-            data.raw[EFUSE_LV],
-            data.voltage[EFUSE_LV],
-            data.current[EFUSE_LV],
-            data.faulted[EFUSE_LV],
-            data.enabled[EFUSE_LV]
-        );
-        efuse_enable(EFUSE_LV);
-        serial_monitor("lv_efuse", "raw", "%d", data.raw[EFUSE_LV]);
-        serial_monitor("lv_efuse", "voltage", "%f", data.voltage[EFUSE_LV]);
-        serial_monitor("lv_efuse", "current", "%f", data.current[EFUSE_LV]);
-        serial_monitor("lv_efuse", "faulted?", "%d", data.faulted[EFUSE_LV]);
-        serial_monitor("lv_efuse", "enabled?", "%d", data.enabled[EFUSE_LV]);
-
-
-        /* Send radfan eFuse message. */
-        send_radfan_efuse(
-            data.raw[EFUSE_RADFAN],
-            data.voltage[EFUSE_RADFAN],
-            data.current[EFUSE_RADFAN],
-            data.faulted[EFUSE_RADFAN],
-            data.enabled[EFUSE_RADFAN]
-        );
-        efuse_enable(EFUSE_RADFAN);
-        serial_monitor("radfan_efuse", "raw", "%d", data.raw[EFUSE_RADFAN]);
-        serial_monitor("radfan_efuse", "voltage", "%f", data.voltage[EFUSE_RADFAN]);
-        serial_monitor("radfan_efuse", "current", "%f", data.current[EFUSE_RADFAN]);
-        serial_monitor("radfan_efuse", "faulted?", "%d", data.faulted[EFUSE_RADFAN]);
-        serial_monitor("radfan_efuse", "enabled?", "%d", data.enabled[EFUSE_RADFAN]);
-
-        /* Send fanbatt eFuse message. */
-        send_fanbatt_efuse(
-            data.raw[EFUSE_FANBATT],
-            data.voltage[EFUSE_FANBATT],
-            data.current[EFUSE_FANBATT],
-            data.faulted[EFUSE_FANBATT],
-            data.enabled[EFUSE_FANBATT]
-        );
-
-        /* Send pump1 eFuse message. */
-        send_pumpone_efuse(
-            data.raw[EFUSE_PUMP1],
-            data.voltage[EFUSE_PUMP1],
-            data.current[EFUSE_PUMP1],
-            data.faulted[EFUSE_PUMP1],
-            data.enabled[EFUSE_PUMP1]
-        );
-
-        /* Send pump2 eFuse message. */
-        send_pumptwo_efuse(
-            data.raw[EFUSE_PUMP2],
-            data.voltage[EFUSE_PUMP2],
-            data.current[EFUSE_PUMP2],
-            data.faulted[EFUSE_PUMP2],
-            data.enabled[EFUSE_PUMP2]
-        );
-
-        /* Send battbox eFuse message. */
-        send_battbox_efuse(
-            data.raw[EFUSE_BATTBOX],
-            data.voltage[EFUSE_BATTBOX],
-            data.current[EFUSE_BATTBOX],
-            data.faulted[EFUSE_BATTBOX],
-            data.enabled[EFUSE_BATTBOX]
-        );
-
-        /* Send MC eFuse message. */
-        send_mc_efuse(
-            data.raw[EFUSE_MC],
-            data.voltage[EFUSE_MC],
-            data.current[EFUSE_MC],
-            data.faulted[EFUSE_MC],
-            data.enabled[EFUSE_MC]
-        );
+        efuse_send_to_dashboard();
+        efuse_send_to_serial();
 
         /* Sleep Thread for specified number of ticks. */
         tx_thread_sleep(efuses_thread.sleep);

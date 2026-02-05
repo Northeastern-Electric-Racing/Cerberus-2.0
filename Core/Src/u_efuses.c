@@ -37,7 +37,7 @@ static const _metadata efuses[] = {
 
 /* Returns an instance of efuse_data_t with all current eFuse data. */
 #define V_REF 3.3f // V_(REF) = 3V3
-efuse_data_t efuse_getData(void) {
+static efuse_data_t efuse_getData(void) {
     raw_efuse_adc_t adc = adc_getEFuseData();
 
     /* Loop through each eFuse and calculate the necessary values. */
@@ -62,12 +62,158 @@ efuse_data_t efuse_getData(void) {
     return data;
 }
 
-/* Enables an eFuse. */
 void efuse_enable(efuse_t efuse) {
     HAL_GPIO_WritePin(efuses[efuse].en_port, efuses[efuse].en_pin, GPIO_PIN_SET);
 }
 
-/* Disables an eFuse. */
 void efuse_disable(efuse_t efuse) {
     HAL_GPIO_WritePin(efuses[efuse].en_port, efuses[efuse].en_pin, GPIO_PIN_RESET);
+}
+
+void efuse_init(void) {
+    efuse_enable(EFUSE_DASHBOARD);
+    efuse_enable(EFUSE_LV);
+    efuse_enable(EFUSE_BATTBOX);
+    efuse_enable(EFUSE_MC);
+    efuse_enable(EFUSE_FANBATT);
+}
+
+void efuse_update(void) {
+    efuse_data_t eFuse_data = efuse_getData();
+
+    uint16_t motor_temp = dti_get_motor_temp();
+    uint16_t controller_temp = dti_get_controller_temp();
+
+    if (motor_temp > PUMP1_UPPER_MOTOR_TEMP) {
+        if (eFuse_data.enabled[EFUSE_PUMP1] == false) {
+            efuse_enable(EFUSE_PUMP1);
+        }
+    }
+    if (motor_temp < PUMP1_LOWER_MOTOR_TEMP) {
+        if (eFuse_data.enabled[EFUSE_PUMP1] == true) {
+            efuse_disable(EFUSE_PUMP1);
+        }
+    }
+
+    if (controller_temp > PUMP2_UPPER_CONTROLLER_TEMP) {
+        if (eFuse_data.enabled[EFUSE_PUMP2] == false) {
+            efuse_enable(EFUSE_PUMP2);
+        }
+    }
+    if (controller_temp < PUMP2_LOWER_CONTROLLER_TEMP) {
+        if (eFuse_data.enabled[EFUSE_PUMP2] == true) {
+            efuse_disable(EFUSE_PUMP2);
+        }
+    }
+
+    if (motor_temp > RADFAN_UPPER_MOTOR_TEMP) {
+        if (eFuse_data.enabled[EFUSE_RADFAN] == false) {
+            efuse_enable(EFUSE_RADFAN);
+        }
+    }
+    if (motor_temp < RADFAN_LOWER_MOTOR_TEMP) {
+        if (eFuse_data.enabled[EFUSE_RADFAN] == true) {
+            efuse_disable(EFUSE_RADFAN);
+        }
+    }
+}
+
+void efuse_send_to_dashboard(void) {
+    efuse_data_t data = efuse_getData();
+
+    send_dashboard_efuse(
+        data.raw[EFUSE_DASHBOARD],
+        data.voltage[EFUSE_DASHBOARD],
+        data.current[EFUSE_DASHBOARD],
+        data.faulted[EFUSE_DASHBOARD],
+        data.enabled[EFUSE_DASHBOARD]
+    );
+
+    send_brake_efuse(
+        data.raw[EFUSE_BRAKE],
+        data.voltage[EFUSE_BRAKE],
+        data.current[EFUSE_BRAKE],
+        data.faulted[EFUSE_BRAKE],
+        data.enabled[EFUSE_BRAKE]
+    );
+
+    send_shutdown_efuse(
+        data.raw[EFUSE_SHUTDOWN],
+        data.voltage[EFUSE_SHUTDOWN],
+        data.current[EFUSE_SHUTDOWN],
+        data.faulted[EFUSE_SHUTDOWN],
+        data.enabled[EFUSE_SHUTDOWN]
+    );
+
+    send_lv_efuse(
+        data.raw[EFUSE_LV],
+        data.voltage[EFUSE_LV],
+        data.current[EFUSE_LV],
+        data.faulted[EFUSE_LV],
+        data.enabled[EFUSE_LV]
+    );
+
+    send_radfan_efuse(
+        data.raw[EFUSE_RADFAN],
+        data.voltage[EFUSE_RADFAN],
+        data.current[EFUSE_RADFAN],
+        data.faulted[EFUSE_RADFAN],
+        data.enabled[EFUSE_RADFAN]
+    );
+
+    send_fanbatt_efuse(
+        data.raw[EFUSE_FANBATT],
+        data.voltage[EFUSE_FANBATT],
+        data.current[EFUSE_FANBATT],
+        data.faulted[EFUSE_FANBATT],
+        data.enabled[EFUSE_FANBATT]
+    );
+
+    send_pumpone_efuse(
+        data.raw[EFUSE_PUMP1],
+        data.voltage[EFUSE_PUMP1],
+        data.current[EFUSE_PUMP1],
+        data.faulted[EFUSE_PUMP1],
+        data.enabled[EFUSE_PUMP1]
+    );
+
+    send_pumptwo_efuse(
+        data.raw[EFUSE_PUMP2],
+        data.voltage[EFUSE_PUMP2],
+        data.current[EFUSE_PUMP2],
+        data.faulted[EFUSE_PUMP2],
+        data.enabled[EFUSE_PUMP2]
+    );
+
+    send_battbox_efuse(
+        data.raw[EFUSE_BATTBOX],
+        data.voltage[EFUSE_BATTBOX],
+        data.current[EFUSE_BATTBOX],
+        data.faulted[EFUSE_BATTBOX],
+        data.enabled[EFUSE_BATTBOX]
+    );
+
+    send_mc_efuse(
+        data.raw[EFUSE_MC],
+        data.voltage[EFUSE_MC],
+        data.current[EFUSE_MC],
+        data.faulted[EFUSE_MC],
+        data.enabled[EFUSE_MC]
+    );
+}
+
+void efuse_send_to_serial(void) {
+    efuse_data_t data = efuse_getData();
+
+    serial_monitor("lv_efuse", "raw", "%d", data.raw[EFUSE_LV]);
+    serial_monitor("lv_efuse", "voltage", "%f", data.voltage[EFUSE_LV]);
+    serial_monitor("lv_efuse", "current", "%f", data.current[EFUSE_LV]);
+    serial_monitor("lv_efuse", "faulted?", "%d", data.faulted[EFUSE_LV]);
+    serial_monitor("lv_efuse", "enabled?", "%d", data.enabled[EFUSE_LV]);
+
+    serial_monitor("radfan_efuse", "raw", "%d", data.raw[EFUSE_RADFAN]);
+    serial_monitor("radfan_efuse", "voltage", "%f", data.voltage[EFUSE_RADFAN]);
+    serial_monitor("radfan_efuse", "current", "%f", data.current[EFUSE_RADFAN]);
+    serial_monitor("radfan_efuse", "faulted?", "%d", data.faulted[EFUSE_RADFAN]);
+    serial_monitor("radfan_efuse", "enabled?", "%d", data.enabled[EFUSE_RADFAN]);
 }
