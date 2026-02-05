@@ -332,6 +332,7 @@ void vFaults(ULONG thread_input) {
             get_fault(ONBOARD_ACCEL_SHORT_CIRCUIT_FAULT),
             get_fault(ONBOARD_PEDAL_DIFFERENCE_FAULT),
             get_fault(RTDS_FAULT),
+            get_fault(LV_LOW_VOLTAGE_FAULT),
             0
         );
 
@@ -737,6 +738,11 @@ void vPeripherals(ULONG thread_input) {
                 lv_data.raw,
                 lv_data.voltage
             );
+
+            static const float LV_LOW_VOLTAGE_THRESHOLD = 23.5f;
+            if (lv_data.voltage < LV_LOW_VOLTAGE_THRESHOLD) {
+                queue_send(&faults, &(fault_t){LV_LOW_VOLTAGE_FAULT}, TX_NO_WAIT);
+            }
 
         } while (0);
 

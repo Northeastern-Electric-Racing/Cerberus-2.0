@@ -16,6 +16,73 @@
 static void handle_bitstream_overflow(bitstream_t *bitstream_res,
 					    uint32_t can_id);
 
+uint8_t send_ac_current_command
+(float current_target_ac)
+{
+    can_msg_t msg;
+    msg.id = 0x036;
+    
+    msg.id_is_extended = false;
+
+    bitstream_t ac_current_command_msg;
+	uint8_t bitstream_data[2];
+	bitstream_init(&ac_current_command_msg, bitstream_data, 2);
+	
+    bitstream_add_signed(&ac_current_command_msg, current_target_ac*10, 16);
+
+    handle_bitstream_overflow(&ac_current_command_msg, msg.id);
+    
+    msg.len = sizeof(bitstream_data);
+    memcpy(msg.data, &bitstream_data, sizeof(bitstream_data));
+
+    return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
+}
+
+uint8_t send_brake_current_command
+(float brake_ac_current)
+{
+    can_msg_t msg;
+    msg.id = 0x056;
+    
+    msg.id_is_extended = false;
+
+    bitstream_t brake_current_command_msg;
+	uint8_t bitstream_data[8];
+	bitstream_init(&brake_current_command_msg, bitstream_data, 8);
+	
+    bitstream_add_signed(&brake_current_command_msg, brake_ac_current*10, 16);
+    
+
+    handle_bitstream_overflow(&brake_current_command_msg, msg.id);
+    
+    msg.len = sizeof(bitstream_data);
+    memcpy(msg.data, &bitstream_data, sizeof(bitstream_data));
+
+    return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
+}
+
+uint8_t send_drive_enable_command
+(uint8_t drive_enable)
+{
+    can_msg_t msg;
+    msg.id = 0x196;
+    
+    msg.id_is_extended = false;
+
+    bitstream_t drive_enable_command_msg;
+	uint8_t bitstream_data[1];
+	bitstream_init(&drive_enable_command_msg, bitstream_data, 1);
+	
+    bitstream_add(&drive_enable_command_msg, drive_enable, 8);
+
+    handle_bitstream_overflow(&drive_enable_command_msg, msg.id);
+    
+    msg.len = sizeof(bitstream_data);
+    memcpy(msg.data, &bitstream_data, sizeof(bitstream_data));
+
+    return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
+}
+
 uint8_t send_dashboard_efuse
 (uint16_t ADC,float voltage,float current,bool is_faulted,bool is_enabled)
 {
@@ -471,7 +538,7 @@ uint8_t send_imu_gyro
 }
 
 uint8_t send_faults
-(bool CAN_OUTGOING_FAULT,bool CAN_INCOMING_FAULT,bool BMS_CAN_MONITOR_FAULT,bool ONBOARD_TEMP_FAULT,bool IMU_ACCEL_FAULT,bool IMU_GYRO_FAULT,bool BSPD_PREFAULT,bool ONBOARD_BRAKE_OPEN_CIRCUIT_FAULT,bool ONBOARD_ACCEL_OPEN_CIRCUIT_FAULT,bool ONBOARD_BRAKE_SHORT_CIRCUIT_FAULT,bool ONBOARD_ACCEL_SHORT_CIRCUIT_FAULT,bool ONBOARD_PEDAL_DIFFERENCE_FAULT,bool RTDS_FAULT,int EXTRA)
+(bool CAN_OUTGOING_FAULT,bool CAN_INCOMING_FAULT,bool BMS_CAN_MONITOR_FAULT,bool ONBOARD_TEMP_FAULT,bool IMU_ACCEL_FAULT,bool IMU_GYRO_FAULT,bool BSPD_PREFAULT,bool ONBOARD_BRAKE_OPEN_CIRCUIT_FAULT,bool ONBOARD_ACCEL_OPEN_CIRCUIT_FAULT,bool ONBOARD_BRAKE_SHORT_CIRCUIT_FAULT,bool ONBOARD_ACCEL_SHORT_CIRCUIT_FAULT,bool ONBOARD_PEDAL_DIFFERENCE_FAULT,bool RTDS_FAULT,bool LV_LOW_VOLTAGE_FAULT,int EXTRA)
 {
     can_msg_t msg;
     msg.id = 0x502;
@@ -495,7 +562,8 @@ uint8_t send_faults
     bitstream_add(&faults_msg, ONBOARD_ACCEL_SHORT_CIRCUIT_FAULT, 1);
     bitstream_add(&faults_msg, ONBOARD_PEDAL_DIFFERENCE_FAULT, 1);
     bitstream_add(&faults_msg, RTDS_FAULT, 1);
-    bitstream_add(&faults_msg, EXTRA, 3);
+    bitstream_add(&faults_msg, LV_LOW_VOLTAGE_FAULT, 1);
+    bitstream_add(&faults_msg, EXTRA, 2);
 
     handle_bitstream_overflow(&faults_msg, msg.id);
     

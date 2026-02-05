@@ -22,6 +22,7 @@ typedef enum {
 	ONBOARD_ACCEL_SHORT_CIRCUIT_FAULT,
 	ONBOARD_PEDAL_DIFFERENCE_FAULT,
 	RTDS_FAULT,
+	LV_LOW_VOLTAGE_FAULT,
 
     /* Total number of faults (cannot exceed 32.) */
 	/* (always keep this at the end) */
