@@ -60,18 +60,18 @@ void efuse_disable(efuse_t efuse); // Disables an eFuse.
 void efuse_init(void);
 
 /**
- * @brief Updates eFuses' states.
+ * @brief Updates the states of eFuses.
  * 
- * The following eFuses should be turned on:
+ * The following eFuses are controlled based on temperature:
  * - `EFUSE_PUMP1`
- *      - Should be turned on if the motor temp is higher than `PUMP1_UPPER_MOTOR_TEMP`.
- *      - Turned off if the motor temp gets lower than `PUMP1_LOWER_MOTOR_TEMP`.
+ *      - Turned on if the motor temperature exceeds `PUMP1_UPPER_MOTOR_TEMP`.
+ *      - Turned off if the motor temperature falls below `PUMP1_LOWER_MOTOR_TEMP`.
  * - `EFUSE_PUMP2`
- *      - Should be turned on if MC is higher than Y temp.
- *      - Otherwise, turned off.
+ *      - Turned on if the motor controller (MC) temperature exceeds `PUMP2_UPPER_CONTROLLER_TEMP`.
+ *      - Turned off if the MC temperature falls below `PUMP2_LOWER_CONTROLLER_TEMP`.
  * - `EFUSE_RADFAN`
- *      - Should be turned on if motor is higher than Z temp.
- *      - Otherwise, turned off.
+ *      - Turned on if the motor temperature exceeds `RADFAN_UPPER_MOTOR_TEMP`.
+ *      - Turned off if the motor temperature falls below `RADFAN_LOWER_MOTOR_TEMP`.
  * 
  * Also, some eFuses should be updated according to the CAN message.
  */
