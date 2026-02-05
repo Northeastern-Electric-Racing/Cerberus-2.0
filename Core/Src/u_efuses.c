@@ -62,12 +62,10 @@ static efuse_data_t efuse_getData(void) {
     return data;
 }
 
-/* Enables an eFuse. */
 void efuse_enable(efuse_t efuse) {
     HAL_GPIO_WritePin(efuses[efuse].en_port, efuses[efuse].en_pin, GPIO_PIN_SET);
 }
 
-/* Disables an eFuse. */
 void efuse_disable(efuse_t efuse) {
     HAL_GPIO_WritePin(efuses[efuse].en_port, efuses[efuse].en_pin, GPIO_PIN_RESET);
 }
@@ -81,7 +79,43 @@ void efuse_init(void) {
 }
 
 void efuse_update(void) {
-    
+    efuse_data_t eFuse_data = efuse_getData();
+
+    uint16_t motor_temp = dti_get_motor_temp();
+    uint16_t controller_temp = dti_get_controller_temp();
+
+    if (motor_temp > PUMP1_UPPER_MOTOR_TEMP) {
+        if (eFuse_data.enabled[EFUSE_PUMP1] == false) {
+            efuse_enable(EFUSE_PUMP1);
+        }
+    }
+    if (motor_temp < PUMP1_LOWER_MOTOR_TEMP) {
+        if (eFuse_data.enabled[EFUSE_PUMP1] == true) {
+            efuse_disable(EFUSE_PUMP1);
+        }
+    }
+
+    if (controller_temp > PUMP2_UPPER_CONTROLLER_TEMP) {
+        if (eFuse_data.enabled[EFUSE_PUMP2] == false) {
+            efuse_enable(EFUSE_PUMP2);
+        }
+    }
+    if (controller_temp < PUMP2_LOWER_CONTROLLER_TEMP) {
+        if (eFuse_data.enabled[EFUSE_PUMP2] == true) {
+            efuse_disable(EFUSE_PUMP2);
+        }
+    }
+
+    if (motor_temp > RADFAN_UPPER_MOTOR_TEMP) {
+        if (eFuse_data.enabled[EFUSE_RADFAN] == false) {
+            efuse_enable(EFUSE_RADFAN);
+        }
+    }
+    if (motor_temp < RADFAN_LOWER_MOTOR_TEMP) {
+        if (eFuse_data.enabled[EFUSE_RADFAN] == true) {
+            efuse_disable(EFUSE_RADFAN);
+        }
+    }
 }
 
 void efuse_send_to_dashboard(void) {

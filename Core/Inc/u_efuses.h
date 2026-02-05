@@ -6,6 +6,16 @@
 #include "main.h"
 #include "can_messages_tx.h"
 #include "serial.h"
+#include "u_dti.h"
+
+/* Tempeature constants to control */
+
+#define PUMP1_UPPER_MOTOR_TEMP	45
+#define PUMP1_LOWER_MOTOR_TEMP	35
+#define PUMP2_UPPER_CONTROLLER_TEMP	45
+#define PUMP2_LOWER_CONTROLLER_TEMP	35
+#define RADFAN_UPPER_MOTOR_TEMP 65
+#define RADFAN_LOWER_MOTOR_TEMP 35
 
 typedef enum {
     EFUSE_DASHBOARD,
@@ -54,8 +64,8 @@ void efuse_init(void);
  * 
  * The following eFuses should be turned on:
  * - `EFUSE_PUMP1`
- *      - Should be turned on if motor is higher than X temp.
- *      - Otherwise, turned off.
+ *      - Should be turned on if the motor temp is higher than `PUMP1_UPPER_MOTOR_TEMP`.
+ *      - Turned off if the motor temp gets lower than `PUMP1_LOWER_MOTOR_TEMP`.
  * - `EFUSE_PUMP2`
  *      - Should be turned on if MC is higher than Y temp.
  *      - Otherwise, turned off.
