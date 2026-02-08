@@ -110,6 +110,7 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     "./Core/Src/u_bms.c"
     "./Core/Src/u_dti.c"
     "./Core/Src/u_adc.c"
+    "./Core/Src/u_buttons.c"
     "./Core/Src/u_peripherals.c"
     "./Core/Src/u_tsms.c"
     "./Core/Src/u_lightning.c"
