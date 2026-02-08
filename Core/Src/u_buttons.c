@@ -1,4 +1,6 @@
 #include "u_buttons.h"
+#include "u_pedals.h"
+#include "u_statemachine.h"
 #include "u_tx_debug.h"
 
 void button1_onPressed(void) {
