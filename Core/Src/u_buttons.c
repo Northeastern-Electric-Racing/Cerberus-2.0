@@ -1,3 +1,5 @@
+#include <stdint.h>
+#include <stdbool.h>
 #include "u_buttons.h"
 #include "u_pedals.h"
 #include "u_statemachine.h"
