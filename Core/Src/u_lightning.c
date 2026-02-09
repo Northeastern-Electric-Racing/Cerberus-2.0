@@ -12,47 +12,47 @@
 /* Fault callback(s). */
 static void _bms_fault_callback(ULONG args)
 {
-	queue_send(&faults, &(fault_t){ LIGHTNING_CAN_MONITOR_FAULT },
-		   TX_NO_WAIT);
+    queue_send(&faults, &(fault_t){LIGHTNING_CAN_MONITOR_FAULT},
+               TX_NO_WAIT);
 }; // Queues the BMS CAN Monitor Fault.
-static timer_t lightning_fault_timer = { .name = "Lightning Fault Timer",
-					 .callback = _bms_fault_callback,
-					 .callback_input = 0,
-					 .duration =
-						 LIGHTNING_CAN_MONITOR_DELAY,
-					 .type = ONESHOT,
-					 .auto_activate = true };
+static timer_t lightning_fault_timer = {.name = "Lightning Fault Timer",
+                                        .callback = _bms_fault_callback,
+                                        .callback_input = 0,
+                                        .duration =
+                                            LIGHTNING_CAN_MONITOR_DELAY,
+                                        .type = ONESHOT,
+                                        .auto_activate = true};
 
 /* Initializes the lightning fault timer. */
 int lightning_init(void)
 {
-	/* Create BMS Timer. */
-	int status = timer_init(&lightning_fault_timer);
-	if (status != U_SUCCESS) {
-		PRINTLN_ERROR("Failed to create BMS Fault Timer (Status: %d).",
-			      status);
-		return U_ERROR;
-	}
+    /* Create BMS Timer. */
+    int status = timer_init(&lightning_fault_timer);
+    if (status != U_SUCCESS) {
+        PRINTLN_ERROR("Failed to create BMS Fault Timer (Status: %d).",
+                      status);
+        return U_ERROR;
+    }
 
-	PRINTLN_INFO("Ran bms_init().");
+    PRINTLN_INFO("Ran bms_init().");
 
-	return U_SUCCESS;
+    return U_SUCCESS;
 }
 
 /* Restarts the lightning fault timer. */
 int lightning_handleIMUMessage(void)
 {
-	int status = timer_restart(&lightning_fault_timer);
-	if (status != U_SUCCESS) {
-		PRINTLN_ERROR("Failed to restart BMS Fault timer (Status: %d).",
-			      status);
-		return U_ERROR;
-	}
+    int status = timer_restart(&lightning_fault_timer);
+    if (status != U_SUCCESS) {
+        PRINTLN_ERROR("Failed to restart BMS Fault timer (Status: %d).",
+                      status);
+        return U_ERROR;
+    }
 
-	return U_SUCCESS;
+    return U_SUCCESS;
 }
 
 void send_lightning_board_status(Lightning_Board_Light_Status status)
 {
-	send_lightning_board_light_status(status);
+    send_lightning_board_light_status(status);
 }

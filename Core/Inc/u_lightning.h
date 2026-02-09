@@ -2,9 +2,9 @@
 #define __U_LIGHTNING_H
 
 typedef enum {
-	LIGHT_OFF = 0,
-	LIGHT_GREEN = 1,
-	LIGHT_RED = 2
+    LIGHT_OFF = 0,
+    LIGHT_GREEN = 1,
+    LIGHT_RED = 2
 } Lightning_Board_Light_Status;
 
 /* Initializes the lightning fault timer. */
