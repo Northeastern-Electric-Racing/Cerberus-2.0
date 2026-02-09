@@ -10,8 +10,7 @@
 #define LIGHTNING_CAN_MONITOR_DELAY 4000
 
 /* Fault callback(s). */
-static void _bms_fault_callback(ULONG args)
-{
+static void _bms_fault_callback(ULONG args) {
     queue_send(&faults, &(fault_t){LIGHTNING_CAN_MONITOR_FAULT},
                TX_NO_WAIT);
 }; // Queues the BMS CAN Monitor Fault.
@@ -24,8 +23,7 @@ static timer_t lightning_fault_timer = {.name = "Lightning Fault Timer",
                                         .auto_activate = true};
 
 /* Initializes the lightning fault timer. */
-int lightning_init(void)
-{
+int lightning_init(void) {
     /* Create BMS Timer. */
     int status = timer_init(&lightning_fault_timer);
     if (status != U_SUCCESS) {
@@ -40,8 +38,7 @@ int lightning_init(void)
 }
 
 /* Restarts the lightning fault timer. */
-int lightning_handleIMUMessage(void)
-{
+int lightning_handleIMUMessage(void) {
     int status = timer_restart(&lightning_fault_timer);
     if (status != U_SUCCESS) {
         PRINTLN_ERROR("Failed to restart BMS Fault timer (Status: %d).",
@@ -52,7 +49,6 @@ int lightning_handleIMUMessage(void)
     return U_SUCCESS;
 }
 
-void send_lightning_board_status(Lightning_Board_Light_Status status)
-{
+void send_lightning_board_status(Lightning_Board_Light_Status status) {
     send_lightning_board_light_status(status);
 }

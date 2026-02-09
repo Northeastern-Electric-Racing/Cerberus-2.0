@@ -67,8 +67,7 @@
  * @param memory_ptr: memory pointer
  * @retval int
  */
-UINT App_ThreadX_Init(VOID *memory_ptr)
-{
+UINT App_ThreadX_Init(VOID *memory_ptr) {
     UINT ret = TX_SUCCESS;
     /* USER CODE BEGIN App_ThreadX_MEM_POOL */
     TX_BYTE_POOL *byte_pool = (TX_BYTE_POOL *)memory_ptr;
@@ -100,8 +99,7 @@ UINT App_ThreadX_Init(VOID *memory_ptr)
  * @param  None
  * @retval None
  */
-void MX_ThreadX_Init(void)
-{
+void MX_ThreadX_Init(void) {
     /* USER CODE BEGIN Before_Kernel_Start */
     /* USER CODE END Before_Kernel_Start */
 

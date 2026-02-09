@@ -9,8 +9,7 @@
 can_t can1;
 // add more as necessary...
 
-uint8_t can1_init(FDCAN_HandleTypeDef *hcan)
-{
+uint8_t can1_init(FDCAN_HandleTypeDef *hcan) {
     /* Init CAN interface */
     HAL_StatusTypeDef status = can_init(&can1, hcan);
     if (status != HAL_OK) {
@@ -48,8 +47,7 @@ uint8_t can1_init(FDCAN_HandleTypeDef *hcan)
 }
 
 /* Processes received CAN messages. */
-void can_inbox(can_msg_t *message)
-{
+void can_inbox(can_msg_t *message) {
     switch (message->id) {
     case CANID_BMS_DCL_MSG:
         bms_handleDclMessage();

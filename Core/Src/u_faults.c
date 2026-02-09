@@ -50,20 +50,17 @@ static _Atomic uint32_t severity_mask = 0;
 static _Atomic uint32_t fault_flags = 0;
 
 /* Getter function. Returns ALL faults. */
-uint32_t get_faults(void)
-{
+uint32_t get_faults(void) {
     return fault_flags;
 }
 
 /* Returns whether or not a specific fault is active. */
-bool get_fault(fault_t fault)
-{
+bool get_fault(fault_t fault) {
     return (fault_flags & (1 << fault)) != 0;
 }
 
 /* Callback function. Clears fault after timer expires. */
-static void _timer_callback(ULONG args)
-{
+static void _timer_callback(ULONG args) {
     fault_t fault_id = (fault_t)args;
 
     /* Clear the fault. */
@@ -80,8 +77,7 @@ static void _timer_callback(ULONG args)
 }
 
 /* Initializes the fault seveity mask, and creates all timers. */
-int faults_init(void)
-{
+int faults_init(void) {
     for (int fault_id = 0; fault_id < NUM_FAULTS; fault_id++) {
         /* Initialize severity_mask. */
         if (faults[fault_id].severity == CRITICAL) {
@@ -112,8 +108,7 @@ int faults_init(void)
 
 /* Triggers a fault. */
 /* If the fault is already triggered, this just resets the fault's timer. */
-int trigger_fault(fault_t fault_id)
-{
+int trigger_fault(fault_t fault_id) {
     /* Set the relevant fault bit in the fault flags list. */
     // This is the _Atomic version of: fault_flags |= (uint32_t)(1 << fault_id);
     atomic_fetch_or(&fault_flags, (uint32_t)(1 << fault_id));
@@ -147,8 +142,7 @@ int trigger_fault(fault_t fault_id)
 }
 
 /* Write the VCU FAULT line (from the microcontroller to the car). */
-void write_mcu_fault(bool status)
-{
+void write_mcu_fault(bool status) {
     // The MCU Fault pin is kind of "swapped".
     // Setting the pin to HIGH indicates that there is no fault.
     // Setting the pin to LOW indicates that there is a fault.
