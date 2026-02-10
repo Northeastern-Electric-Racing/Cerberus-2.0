@@ -564,7 +564,7 @@ uint8_t send_faults
     bitstream_add(&faults_msg, ONBOARD_PEDAL_DIFFERENCE_FAULT, 1);
     bitstream_add(&faults_msg, RTDS_FAULT, 1);
     bitstream_add(&faults_msg, LV_LOW_VOLTAGE_FAULT, 1);
-    bitstream_add(&faults_msg, EXTRA, 2);
+    bitstream_add(&faults_msg, EXTRA, 1);
 
     handle_bitstream_overflow(&faults_msg, msg.id);
     
