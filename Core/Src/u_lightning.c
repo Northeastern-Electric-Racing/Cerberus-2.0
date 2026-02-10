@@ -13,7 +13,7 @@
 static void _lightning_fault_callback(ULONG args) {
     queue_send(&faults, &(fault_t){LIGHTNING_CAN_MONITOR_FAULT}, TX_NO_WAIT);
 }
-// Queues the BMS CAN Monitor Fault.
+// Queues the Lightning CAN Monitor Fault.
 static timer_t lightning_fault_timer = {
     .name = "Lightning Fault Timer",
     .callback = _lightning_fault_callback,
@@ -32,7 +32,7 @@ int lightning_init(void) {
         return U_ERROR;
     }
 
-    PRINTLN_INFO("Ran bms_init().");
+    PRINTLN_INFO("Ran lightning_init().");
 
     return U_SUCCESS;
 }
@@ -41,7 +41,7 @@ int lightning_init(void) {
 int lightning_handleIMUMessage(void) {
     int status = timer_restart(&lightning_fault_timer);
     if (status != U_SUCCESS) {
-        PRINTLN_ERROR("Failed to restart BMS Fault timer (Status: %d).", status);
+        PRINTLN_ERROR("Failed to restart lightning Fault timer (Status: %d).", status);
         return U_ERROR;
     }
 
