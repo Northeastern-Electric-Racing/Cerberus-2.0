@@ -69,7 +69,7 @@ static void _timer_callback(ULONG args) {
     PRINTLN_INFO("Cleared fault (Fault: %s).", faults[fault_id].name);
 
     /* Check if there are any active critical faults. If not, unfault the car. */
-    if ((fault_flags & severity_mask) == 0) {
+    if (are_critical_faults_active()) {
         if (get_func_state() == FAULTED) {
             set_ready_mode();
         }
