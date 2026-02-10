@@ -10,12 +10,13 @@
 #define LIGHTNING_CAN_MONITOR_DELAY 4000
 
 /* Fault callback(s). */
-static void _bms_fault_callback(ULONG args) {
+static void _lightning_fault_callback(ULONG args) {
     queue_send(&faults, &(fault_t){LIGHTNING_CAN_MONITOR_FAULT},
                TX_NO_WAIT);
-}; // Queues the BMS CAN Monitor Fault.
+}
+// Queues the lightning CAN Monitor Fault.
 static timer_t lightning_fault_timer = {.name = "Lightning Fault Timer",
-                                        .callback = _bms_fault_callback,
+                                        .callback = _lightning_fault_callback,
                                         .callback_input = 0,
                                         .duration =
                                             LIGHTNING_CAN_MONITOR_DELAY,
