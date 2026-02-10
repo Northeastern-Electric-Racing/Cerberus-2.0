@@ -18,8 +18,7 @@ extern can_t can1;
 #define DTI_CANID_CURRENTS    0x436 /* AC Current, DC Current */
 #define DTI_CANID_TEMPS_FAULT 0x456 /* Controller Temp, Motor Temp, Faults */
 #define DTI_CANID_ID_IQ	      0x476 /* Id, Iq values */
-#define DTI_CANID_SIGNALS \
-	0x496 /* Throttle signal, Brake signal, IO, Drive enable */
+#define DTI_CANID_SIGNALS 	  0x496 /* Throttle signal, Brake signal, IO, Drive enable */
 
 /* eFuse CAN IDs */
 #define CANID_EFUSE_DASHBOARD 0xEF0

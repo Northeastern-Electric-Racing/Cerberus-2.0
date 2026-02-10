@@ -33,10 +33,8 @@ typedef enum {
 
 int faults_init(void);
 int trigger_fault(fault_t fault_id);
-uint32_t get_faults(void);
-/* Returns whether or not a specific fault is active. */
-bool get_fault(fault_t fault);
-/* Write the VCU FAULT line (from the microcontroller to the car). true = faulted, false = unfaulted. */
+uint32_t get_faults(void);     /* Returns whether or not a specific fault is active. */
+bool get_fault(fault_t fault); /* Write the VCU FAULT line (from the microcontroller to the car). true = faulted, false = unfaulted. */
 void write_mcu_fault(bool status);
 
 #endif /* u_faults.h */
