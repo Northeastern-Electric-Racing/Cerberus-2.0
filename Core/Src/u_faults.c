@@ -57,7 +57,7 @@ bool get_fault(fault_t fault) {
 
 /* Returns whether or not any critical faults are active. */
 bool are_critical_faults_active(void) {
-    return (fault_flags & severity_mask) == 0;
+    return (fault_flags & severity_mask) != 0;
 }
 
 /* Callback function. Clears fault after timer expires. */
@@ -69,7 +69,7 @@ static void _timer_callback(ULONG args) {
     PRINTLN_INFO("Cleared fault (Fault: %s).", faults[fault_id].name);
 
     /* Check if there are any active critical faults. If not, unfault the car. */
-    if (are_critical_faults_active()) {
+    if (!are_critical_faults_active()) {
         if (get_func_state() == FAULTED) {
             set_ready_mode();
         }
