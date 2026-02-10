@@ -322,6 +322,7 @@ void vFaults(ULONG thread_input) {
             get_fault(CAN_OUTGOING_FAULT),
             get_fault(CAN_INCOMING_FAULT),
             get_fault(BMS_CAN_MONITOR_FAULT),
+            get_fault(LIGHTNING_CAN_MONITOR_FAULT),
             get_fault(ONBOARD_TEMP_FAULT),
             get_fault(IMU_ACCEL_FAULT),
             get_fault(IMU_GYRO_FAULT),

@@ -7,6 +7,12 @@ typedef enum {
     LIGHT_RED = 2
 } Lightning_Board_Light_Status;
 
+/* Initializes the lightning fault timer. */
+int lightning_init(void);
+
+/* Restarts the lightning fault timer on status recv */
+int lightning_handleIMUMessage(void);
+
 /**
  * @brief sends the given light status to the LightningBoard
  *
