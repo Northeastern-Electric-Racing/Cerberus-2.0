@@ -41,7 +41,6 @@ extern "C" {
 
 /* Exported constants --------------------------------------------------------*/
 /* USER CODE BEGIN EC */
-extern IWDG_HandleTypeDef hiwdg;
 extern ADC_HandleTypeDef  hadc1;
 extern ADC_HandleTypeDef  hadc2;
 extern I2C_HandleTypeDef hi2c2;

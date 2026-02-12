@@ -96,7 +96,7 @@ void vDefault(ULONG thread_input) {
     while(1) {
 
         /* Kick the watchdogs (sad) )*/
-        HAL_IWDG_Refresh(&hiwdg); // Internal Watchdog
+        //HAL_IWDG_Refresh(&hiwdg); // Internal Watchdog
         HAL_GPIO_TogglePin(WATCHDOG_GPIO_Port, WATCHDOG_Pin); // External Watchdog
 
         static bool state_green = false;

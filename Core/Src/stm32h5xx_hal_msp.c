@@ -600,7 +600,7 @@ void HAL_FDCAN_MspInit(FDCAN_HandleTypeDef* hfdcan)
   /** Initializes the peripherals clock
   */
     PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_FDCAN;
-    PeriphClkInitStruct.FdcanClockSelection = RCC_FDCANCLKSOURCE_PLL1Q;
+    PeriphClkInitStruct.FdcanClockSelection = RCC_FDCANCLKSOURCE_HSE;
     if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK)
     {
       Error_Handler();
@@ -883,8 +883,8 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* hspi)
   /** Initializes the peripherals clock
   */
     PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_SPI2;
-    PeriphClkInitStruct.PLL2.PLL2Source = RCC_PLL2_SOURCE_CSI;
-    PeriphClkInitStruct.PLL2.PLL2M = 1;
+    PeriphClkInitStruct.PLL2.PLL2Source = RCC_PLL2_SOURCE_HSE;
+    PeriphClkInitStruct.PLL2.PLL2M = 5;
     PeriphClkInitStruct.PLL2.PLL2N = 64;
     PeriphClkInitStruct.PLL2.PLL2P = 4;
     PeriphClkInitStruct.PLL2.PLL2Q = 4;
