@@ -22,10 +22,12 @@ int lightning_handleIMUMessage(void);
 void send_lightning_board_status(Lightning_Board_Light_Status msg);
 
 /**
- * @brief initialises the lightning board (LIGHT_OFF at startup)
-
+ * @brief updates the lightning board status based on the given GPIO values
+ * 
+ * @param bms_gpio the value of the BMS GPIO pin (true if faulted, false if not)
+ * @param imd_gpio the value of the IMD GPIO pin (true if faulted, false if not)
  */
-void lightning_init(void);
+void update_lightning_board_status(bool bms_gpio, bool imd_gpio);
 
 
 #endif /* u_lightning.h */
