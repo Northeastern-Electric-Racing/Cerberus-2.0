@@ -17,6 +17,7 @@
 #include "u_ethernet.h"
 #include "bitstream.h"
 #include "serial.h"
+#include "u_lightning.h"
 
 /* Thread Priority Macros. */
 /* (please keep these organized in increasing order) */
@@ -35,6 +36,10 @@
 #define PRIO_vMux              2
 #define PRIO_vTest             2
 #define PRIO_vPeripherals      2
+
+
+// adding a forward declaration since this isn't defined in .h file
+void update_lightning_board_status(bool bms_gpio, bool imd_gpio);
 
 /* Test Thread */
 static thread_t test_thread = {
@@ -366,6 +371,10 @@ void vShutdown(ULONG thread_input) {
         bool ckpt_gpio = (HAL_GPIO_ReadPin(CKPT_GPIO_GPIO_Port, CKPT_GPIO_Pin) == GPIO_PIN_SET);
         bool inertia_sw_gpio = (HAL_GPIO_ReadPin(INERTIA_SW_GPIO_GPIO_Port, INERTIA_SW_GPIO_Pin) == GPIO_PIN_SET);
         bool tsms_gpio = (HAL_GPIO_ReadPin(TSMS_GPIO_GPIO_Port, TSMS_GPIO_Pin) == GPIO_PIN_SET);
+
+        update_lightning_board_status(bms_gpio, imd_gpio);
+        osDelay(100); //100ms debounce
+
 
         /* Send Shutdown Pins CAN message. */
         send_shutdown_pins(
@@ -763,7 +772,7 @@ uint8_t threads_init(TX_BYTE_POOL *byte_pool) {
     //CATCH_ERROR(create_thread(byte_pool, &faults_queue_thread), U_SUCCESS);      // Create Faults Queue thread.
     //CATCH_ERROR(create_thread(byte_pool, &faults_thread), U_SUCCESS);            // Create Faults thread.
     //CATCH_ERROR(create_thread(byte_pool, &tsms_thread), U_SUCCESS);              // Create TSMS thread.
-    //CATCH_ERROR(create_thread(byte_pool, &shutdown_thread), U_SUCCESS);          // Create Shutdown thread.
+    CATCH_ERROR(create_thread(byte_pool, &shutdown_thread), U_SUCCESS);          // Create Shutdown thread.
     //CATCH_ERROR(create_thread(byte_pool, &statemachine_thread), U_SUCCESS);      // Create State Machine thread.
     //CATCH_ERROR(create_thread(byte_pool, &pedals_thread), U_SUCCESS);            // Create Pedals thread.
     //CATCH_ERROR(create_thread(byte_pool, &efuses_thread), U_SUCCESS);              // Create eFuses thread.

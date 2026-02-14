@@ -31,7 +31,13 @@
 #include "u_faults.h"
 #include "u_queues.h"
 #include "u_debug.h"
+#include "u_lightning.h"
 /* USER CODE END Includes */
+
+
+// adding a forward declaration since this isn't defined in .h file
+void update_lightning_board_status(bool bms_gpio, bool imd_gpio);
+
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
@@ -197,10 +203,13 @@ int main(void)
   printf("thing\n");
 
   /* USER CODE END 2 */
+  lightning_init();
 
   MX_ThreadX_Init();
 
   /* We should never get here as control is now taken by the scheduler */
+
+  
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */

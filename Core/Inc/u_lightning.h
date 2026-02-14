@@ -1,5 +1,6 @@
 #ifndef __U_LIGHTNING_H
 #define __U_LIGHTNING_H
+#include <stdbool.h>
 
 typedef enum {
     LIGHT_OFF = 0,
@@ -13,5 +14,12 @@ typedef enum {
  * @param status the desired light status (ex: LIGHT_OFF, LIGHT_RED, LIGHT_GREEN)
  */
 void send_lightning_board_status(Lightning_Board_Light_Status msg);
+
+/**
+ * @brief initialises the lightning board (LIGHT_OFF at startup)
+
+ */
+void lightning_init(void);
+
 
 #endif /* u_lightning.h */
