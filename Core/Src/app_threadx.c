@@ -1,21 +1,21 @@
 /* USER CODE BEGIN Header */
 /**
-  ******************************************************************************
-  * @file    app_threadx.c
-  * @author  MCD Application Team
-  * @brief   ThreadX applicative file
-  ******************************************************************************
-    * @attention
-  *
-  * Copyright (c) 2025 STMicroelectronics.
-  * All rights reserved.
-  *
-  * This software is licensed under terms that can be found in the LICENSE file
-  * in the root directory of this software component.
-  * If no LICENSE file comes with this software, it is provided AS-IS.
-  *
-  ******************************************************************************
-  */
+ ******************************************************************************
+ * @file    app_threadx.c
+ * @author  MCD Application Team
+ * @brief   ThreadX applicative file
+ ******************************************************************************
+ * @attention
+ *
+ * Copyright (c) 2025 STMicroelectronics.
+ * All rights reserved.
+ *
+ * This software is licensed under terms that can be found in the LICENSE file
+ * in the root directory of this software component.
+ * If no LICENSE file comes with this software, it is provided AS-IS.
+ *
+ ******************************************************************************
+ */
 /* USER CODE END Header */
 
 /* Includes ------------------------------------------------------------------*/
@@ -31,6 +31,7 @@
 #include "u_pedals.h"
 #include "u_ethernet.h"
 #include "u_bms.h"
+#include "u_lightning.h"
 #include "u_adc.h"
 #include "u_peripherals.h"
 #include "u_tsms.h"
@@ -70,22 +71,22 @@ UINT App_ThreadX_Init(VOID *memory_ptr)
 {
   UINT ret = TX_SUCCESS;
   /* USER CODE BEGIN App_ThreadX_MEM_POOL */
-  TX_BYTE_POOL *byte_pool = (TX_BYTE_POOL*)memory_ptr;
+    TX_BYTE_POOL *byte_pool = (TX_BYTE_POOL *)memory_ptr;
 
-  /* Init user-written code that uses ThreadX stuff here. */
-  CATCH_ERROR(queues_init(byte_pool), U_SUCCESS);
-  CATCH_ERROR(threads_init(byte_pool), U_SUCCESS);
-  CATCH_ERROR(faults_init(), U_SUCCESS);
-  CATCH_ERROR(mutexes_init(), U_SUCCESS);
-  CATCH_ERROR(rtds_init(), U_SUCCESS);
-  CATCH_ERROR(pedals_init(), U_SUCCESS);
-  CATCH_ERROR(bms_init(), U_SUCCESS);
-  CATCH_ERROR(adc_init(), U_SUCCESS);
-  CATCH_ERROR(peripherals_init(), U_SUCCESS);
-  CATCH_ERROR(tsms_init(), U_SUCCESS);
+    /* Init user-written code that uses ThreadX stuff here. */
+    CATCH_ERROR(queues_init(byte_pool), U_SUCCESS);
+    CATCH_ERROR(threads_init(byte_pool), U_SUCCESS);
+    CATCH_ERROR(faults_init(), U_SUCCESS);
+    CATCH_ERROR(mutexes_init(), U_SUCCESS);
+    CATCH_ERROR(rtds_init(), U_SUCCESS);
+    CATCH_ERROR(pedals_init(), U_SUCCESS);
+    CATCH_ERROR(bms_init(), U_SUCCESS);
+    CATCH_ERROR(lightning_init(), U_SUCCESS);
+    CATCH_ERROR(adc_init(), U_SUCCESS);
+    CATCH_ERROR(peripherals_init(), U_SUCCESS);
+    CATCH_ERROR(tsms_init(), U_SUCCESS);
 
-  PRINTLN_INFO("Got past end of init");
-  
+    PRINTLN_INFO("Got past end of init");
 
   /* USER CODE END App_ThreadX_MEM_POOL */
   /* USER CODE BEGIN App_ThreadX_Init */

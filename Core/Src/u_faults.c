@@ -8,15 +8,12 @@
 #include "u_tx_debug.h"
 #include "u_mutexes.h"
 
-typedef enum {
-    CRITICAL,
-    NON_CRITICAL
-} _severity;
+typedef enum { CRITICAL, NON_CRITICAL } _severity;
 
 typedef struct {
-    const char* name;   /* Fault name. */
+    const char *name; /* Fault name. */
     _severity severity; /* Fault severity. */
-    int timeout;        /* Fault timeout (in ticks). */
+    int timeout; /* Fault timeout (in ticks). */
 } _metadata;
 
 /* Fault Table */
@@ -26,6 +23,7 @@ static const _metadata faults[] = {
     [CAN_OUTGOING_FAULT] = {"CAN_OUTGOING_FAULT", CRITICAL, .timeout = 5000},
     [CAN_INCOMING_FAULT] = {"CAN_INCOMING_FAULT", CRITICAL, .timeout = 5000},
     [BMS_CAN_MONITOR_FAULT] = {"BMS_CAN_MONITOR_FAULT", CRITICAL, .timeout = 5000},
+    [LIGHTNING_CAN_MONITOR_FAULT] = {"LIGHTNING_CAN_MONITOR_FAULT", CRITICAL, .timeout = 5000},
     [SHUTDOWN_FAULT] = {"SHUTDOWN_FAULT", CRITICAL, .timeout = 5000},
 
     /* Non-critical Faults */
@@ -43,9 +41,9 @@ static const _metadata faults[] = {
 };
 
 /* Fault Globals*/
-static timer_t timers[NUM_FAULTS]; // Array of fault timers. One timer per fault.
+static timer_t timers[NUM_FAULTS];         // Array of fault timers. One timer per fault.
 static _Atomic uint32_t severity_mask = 0; // Mask that stores the severity configuration for each fault (0=NON_CRITICAL, 1=CRITICAL).
-static _Atomic uint32_t fault_flags = 0; // Each bit is a separate fault (0=Not Faulted, 1=Faulted).
+static _Atomic uint32_t fault_flags = 0;   // Each bit is a separate fault (0=Not Faulted, 1=Faulted).
 
 /* Getter function. Returns ALL faults. */
 uint32_t get_faults(void) {
@@ -57,6 +55,11 @@ bool get_fault(fault_t fault) {
     return (fault_flags & (1 << fault)) != 0;
 }
 
+/* Returns whether or not any critical faults are active. */
+bool are_critical_faults_active(void) {
+    return (fault_flags & severity_mask) != 0;
+}
+
 /* Callback function. Clears fault after timer expires. */
 static void _timer_callback(ULONG args) {
     fault_t fault_id = (fault_t)args;
@@ -66,19 +69,18 @@ static void _timer_callback(ULONG args) {
     PRINTLN_INFO("Cleared fault (Fault: %s).", faults[fault_id].name);
 
     /* Check if there are any active critical faults. If not, unfault the car. */
-    if((fault_flags & severity_mask) == 0) {
-        if(get_func_state() == FAULTED) {
-             set_ready_mode();
+    if (!are_critical_faults_active()) {
+        if (get_func_state() == FAULTED) {
+            set_ready_mode();
         }
     }
 }
 
 /* Initializes the fault seveity mask, and creates all timers. */
 int faults_init(void) {
-    for(int fault_id = 0; fault_id < NUM_FAULTS; fault_id++) {
-
+    for (int fault_id = 0; fault_id < NUM_FAULTS; fault_id++) {
         /* Initialize severity_mask. */
-        if(faults[fault_id].severity == CRITICAL) {
+        if (faults[fault_id].severity == CRITICAL) {
             atomic_fetch_or(&severity_mask, ((uint32_t)1 << fault_id)); // This is the _Atomic version of: severity_mask |= ((uint32_t)1 << fault_id);
         }
 
@@ -90,7 +92,7 @@ int faults_init(void) {
         timers[fault_id].type = ONESHOT;
         timers[fault_id].auto_activate = false;
         int status = timer_init(&timers[fault_id]);
-        if(status != U_SUCCESS) {
+        if (status != U_SUCCESS) {
             PRINTLN_ERROR("Failed to create fault timer (Status: %d, Fault: %s).", status, faults[fault_id].name);
             return U_ERROR;
         }
@@ -104,25 +106,23 @@ int faults_init(void) {
 /* Triggers a fault. */
 /* If the fault is already triggered, this just resets the fault's timer. */
 int trigger_fault(fault_t fault_id) {
-
     /* Set the relevant fault bit in the fault flags list. */
     atomic_fetch_or(&fault_flags, (uint32_t)(1 << fault_id)); // This is the _Atomic version of: fault_flags |= (uint32_t)(1 << fault_id);
 
-    switch(faults[fault_id].severity) {
+    switch (faults[fault_id].severity) {
         case CRITICAL:
             PRINTLN_INFO("Triggered CRITICAL FAULT (Fault: %s).", faults[fault_id].name);
             fault();
             PRINTLN_INFO("got past fault()");
             break;
         case NON_CRITICAL:
-            PRINTLN_INFO("Triggered non-critical fault (Fault: %s).", faults[fault_id].name);
-            // If the fault is non-critical, the car doesn't need to be put in its faulted state.
-            break;
+            PRINTLN_INFO("Triggered non-critical fault (Fault: %s).", faults[fault_id].name); // If the fault is non-critical, the car doesn't need to be put in its faulted state.
+        break;
     }
 
     /* Restart fault timer. */
     int status = timer_restart(&timers[fault_id]);
-    if(status != U_SUCCESS) {
+    if (status != U_SUCCESS) {
         PRINTLN_ERROR("Failed to restart fault timer (Status: %d, Fault: %s).", status, faults[fault_id].name);
         return U_ERROR;
     }
@@ -133,18 +133,16 @@ int trigger_fault(fault_t fault_id) {
 }
 
 /* Write the VCU FAULT line (from the microcontroller to the car). */
-void write_mcu_fault(bool status)
-{
+void write_mcu_fault(bool status) {
     // The MCU Fault pin is kind of "swapped".
     // Setting the pin to HIGH indicates that there is no fault.
     // Setting the pin to LOW indicates that there is a fault.
     // The pin has a default state of HIGH (i.e. no fault).
-    if(status) {
+    if (status) {
         // If there is a fault, set the fault pin to LOW.
         PRINTLN_INFO("Turned on MCU fault.");
         HAL_GPIO_WritePin(FAULT_MCU_GPIO_Port, FAULT_MCU_Pin, GPIO_PIN_RESET);
-    }
-    else {
+    } else {
         // If there is not a fault, set the pin to HIGH.
         PRINTLN_INFO("Turned off MCU fault.");
         HAL_GPIO_WritePin(FAULT_MCU_GPIO_Port, FAULT_MCU_Pin, GPIO_PIN_SET);

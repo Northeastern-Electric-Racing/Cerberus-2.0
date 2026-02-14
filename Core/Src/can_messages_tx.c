@@ -538,7 +538,7 @@ uint8_t send_imu_gyro
 }
 
 uint8_t send_faults
-(bool CAN_OUTGOING_FAULT,bool CAN_INCOMING_FAULT,bool BMS_CAN_MONITOR_FAULT,bool ONBOARD_TEMP_FAULT,bool IMU_ACCEL_FAULT,bool IMU_GYRO_FAULT,bool BSPD_PREFAULT,bool ONBOARD_BRAKE_OPEN_CIRCUIT_FAULT,bool ONBOARD_ACCEL_OPEN_CIRCUIT_FAULT,bool ONBOARD_BRAKE_SHORT_CIRCUIT_FAULT,bool ONBOARD_ACCEL_SHORT_CIRCUIT_FAULT,bool ONBOARD_PEDAL_DIFFERENCE_FAULT,bool RTDS_FAULT,bool LV_LOW_VOLTAGE_FAULT,int EXTRA)
+(bool CAN_OUTGOING_FAULT,bool CAN_INCOMING_FAULT,bool BMS_CAN_MONITOR_FAULT,bool LIGHTNING_CAN_MONITOR_FAULT,bool ONBOARD_TEMP_FAULT,bool IMU_ACCEL_FAULT,bool IMU_GYRO_FAULT,bool BSPD_PREFAULT,bool ONBOARD_BRAKE_OPEN_CIRCUIT_FAULT,bool ONBOARD_ACCEL_OPEN_CIRCUIT_FAULT,bool ONBOARD_BRAKE_SHORT_CIRCUIT_FAULT,bool ONBOARD_ACCEL_SHORT_CIRCUIT_FAULT,bool ONBOARD_PEDAL_DIFFERENCE_FAULT,bool RTDS_FAULT,bool LV_LOW_VOLTAGE_FAULT,int EXTRA)
 {
     can_msg_t msg;
     msg.id = 0x502;
@@ -552,6 +552,7 @@ uint8_t send_faults
     bitstream_add(&faults_msg, CAN_OUTGOING_FAULT, 1);
     bitstream_add(&faults_msg, CAN_INCOMING_FAULT, 1);
     bitstream_add(&faults_msg, BMS_CAN_MONITOR_FAULT, 1);
+    bitstream_add(&faults_msg, LIGHTNING_CAN_MONITOR_FAULT, 1);
     bitstream_add(&faults_msg, ONBOARD_TEMP_FAULT, 1);
     bitstream_add(&faults_msg, IMU_ACCEL_FAULT, 1);
     bitstream_add(&faults_msg, IMU_GYRO_FAULT, 1);
@@ -563,7 +564,7 @@ uint8_t send_faults
     bitstream_add(&faults_msg, ONBOARD_PEDAL_DIFFERENCE_FAULT, 1);
     bitstream_add(&faults_msg, RTDS_FAULT, 1);
     bitstream_add(&faults_msg, LV_LOW_VOLTAGE_FAULT, 1);
-    bitstream_add(&faults_msg, EXTRA, 2);
+    bitstream_add(&faults_msg, EXTRA, 1);
 
     handle_bitstream_overflow(&faults_msg, msg.id);
     

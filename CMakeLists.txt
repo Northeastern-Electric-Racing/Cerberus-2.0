@@ -21,6 +21,7 @@ endif()
 # Set the project name
 set(CMAKE_PROJECT_NAME Cerberus-2.0)
 
+# NER Include toolchain file
 
 # Enable compile command to ease indexing with e.g. clangd
 set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
