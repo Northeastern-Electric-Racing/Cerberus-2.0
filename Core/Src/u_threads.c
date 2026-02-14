@@ -374,7 +374,7 @@ void vShutdown(ULONG thread_input) {
         bool tsms_gpio = (HAL_GPIO_ReadPin(TSMS_GPIO_GPIO_Port, TSMS_GPIO_Pin) == GPIO_PIN_SET);
 
         update_lightning_board_status(bms_gpio, imd_gpio);
-        osDelay(100); //100ms debounce
+        tx_thread_sleep(10); //100ms debounce 10ms/ticks
 
 
         /* Send Shutdown Pins CAN message. */
