@@ -41,6 +41,11 @@
 // adding a forward declaration since this isn't defined in .h file
 void update_lightning_board_status(bool bms_gpio, bool imd_gpio);
 
+// callback for when either bms or imd indicates a fault
+static void _lightning_board_status_callback(void *arg) {
+    // the light status update (red or green) happens in the main loop after debounce
+}
+
 /* Test Thread */
 static thread_t test_thread = {
         .name       = "Test Thread",    /* Name */
@@ -359,6 +364,8 @@ static thread_t shutdown_thread = {
         .function   = vShutdown           /* Thread Function */
     };
 void vShutdown(ULONG thread_input) {
+    /* Debounce Timer */
+    static nertimer_t lightning_status_timer; 
 
     while(1) {
 
@@ -374,8 +381,19 @@ void vShutdown(ULONG thread_input) {
         bool tsms_gpio = (HAL_GPIO_ReadPin(TSMS_GPIO_GPIO_Port, TSMS_GPIO_Pin) == GPIO_PIN_SET);
 
         update_lightning_board_status(bms_gpio, imd_gpio);
-        tx_thread_sleep(10); //100ms debounce 10ms/ticks
+        // tx_thread_sleep(10); //100ms debounce 10ms/ticks, doesnt really do debouncing
+        
+        //lightning status with debounce
+        bool lightning_fault = bms_gpio || imd_gpio;
+        debounce(lightning_fault, &lightning_status_timer, BRAKE_FAULT_DEBOUNCE, &_lightning_board_status_callback, NULL); //used same constant (BRAKE_FAULT_DEBOUNCE) which was used in u_pedals.c
 
+        //lightning status after debounce
+        if (lightning_fault) {
+            update_lightning_board_status(bms_gpio, imd_gpio); //fault, set to red
+        }
+        else {
+            update_lightning_board_status(false, false); //no fault, set to green
+        }
 
         /* Send Shutdown Pins CAN message. */
         send_shutdown_pins(

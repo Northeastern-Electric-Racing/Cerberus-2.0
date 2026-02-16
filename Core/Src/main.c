@@ -35,8 +35,7 @@
 /* USER CODE END Includes */
 
 
-// adding a forward declaration since this isn't defined in .h file
-void update_lightning_board_status(bool bms_gpio, bool imd_gpio);
+
 
 
 /* Private typedef -----------------------------------------------------------*/
@@ -203,7 +202,7 @@ int main(void)
   printf("thing\n");
 
   /* USER CODE END 2 */
-  lightning_init();
+
 
   MX_ThreadX_Init();
 
