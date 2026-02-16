@@ -38,13 +38,14 @@
 #define PRIO_vMux              2
 #define PRIO_vTest             2
 #define PRIO_vPeripherals      2
-
+#define LIGHTNING_BOARD_DEBOUNCE 500 
 
 // adding a forward declaration since this isn't defined in .h file
 void update_lightning_board_status(bool bms_gpio, bool imd_gpio);
 
 // callback for when either bms or imd indicates a fault
 static void _lightning_board_status_callback(void *arg) {
+    send_lightning_board_light_status(LIGHT_RED);
     // the light status update (red or green) happens in the main loop after debounce
 }
 
@@ -387,14 +388,14 @@ void vShutdown(ULONG thread_input) {
         
         //lightning status with debounce
         bool lightning_fault = bms_gpio || imd_gpio;
-        debounce(lightning_fault, &lightning_status_timer, BRAKE_FAULT_DEBOUNCE, &_lightning_board_status_callback, NULL); //used same constant (BRAKE_FAULT_DEBOUNCE) which was used in u_pedals.c
+        
 
         //lightning status after debounce
         if (lightning_fault) {
-            update_lightning_board_status(bms_gpio, imd_gpio); //fault, set to red
+            debounce(lightning_fault, &lightning_status_timer, LIGHTNING_BOARD_DEBOUNCE, &_lightning_board_status_callback, NULL); //used same constant (BRAKE_FAULT_DEBOUNCE) which was used in u_pedals.c//not anymore
         }
         else {
-            update_lightning_board_status(false, false); //no fault, set to green
+            send_lightning_board_status(LIGHT_GREEN); //no fault, set to green
         }
 
         /* Send Shutdown Pins CAN message. */
