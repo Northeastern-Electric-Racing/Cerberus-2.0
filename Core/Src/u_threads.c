@@ -18,6 +18,8 @@
 #include "bitstream.h"
 #include "serial.h"
 #include "u_lightning.h"
+#include "timer.h"
+#include "debounce.h"
 
 /* Thread Priority Macros. */
 /* (please keep these organized in increasing order) */
