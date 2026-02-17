@@ -252,6 +252,8 @@ void vCANOutgoing(ULONG thread_input) {
             if(status != HAL_OK) {
                 PRINTLN_WARNING("Failed to send message (on can1) after removing from outgoing queue (Message ID: %ld, Status: %d/%s).", message.id, status, hal_status_toString(status));
                 queue_send(&faults, &(fault_t){CAN_OUTGOING_FAULT}, TX_NO_WAIT);
+            } else {
+                PRINTLN_INFO("Successfully sent CAN message!");
             }
         }
 
@@ -787,10 +789,10 @@ void vPeripherals(ULONG thread_input) {
 uint8_t threads_init(TX_BYTE_POOL *byte_pool) {
 
     /* Create Threads */
-    //CATCH_ERROR(create_thread(byte_pool, &default_thread), U_SUCCESS);           // Create Default thread.
-    //CATCH_ERROR(create_thread(byte_pool, &can_incoming_thread), U_SUCCESS);      // Create Incoming CAN thread.
+    CATCH_ERROR(create_thread(byte_pool, &default_thread), U_SUCCESS);           // Create Default thread.
+    CATCH_ERROR(create_thread(byte_pool, &can_incoming_thread), U_SUCCESS);      // Create Incoming CAN thread.
     CATCH_ERROR(create_thread(byte_pool, &can_outgoing_thread), U_SUCCESS);      // Create Outgoing CAN thread.
-    //CATCH_ERROR(create_thread(byte_pool, &faults_queue_thread), U_SUCCESS);      // Create Faults Queue thread.
+    CATCH_ERROR(create_thread(byte_pool, &faults_queue_thread), U_SUCCESS);      // Create Faults Queue thread.
     //CATCH_ERROR(create_thread(byte_pool, &faults_thread), U_SUCCESS);            // Create Faults thread.
     //CATCH_ERROR(create_thread(byte_pool, &tsms_thread), U_SUCCESS);              // Create TSMS thread.
     CATCH_ERROR(create_thread(byte_pool, &shutdown_thread), U_SUCCESS);          // Create Shutdown thread.
