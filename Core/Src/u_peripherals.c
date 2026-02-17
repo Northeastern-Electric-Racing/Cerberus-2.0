@@ -202,6 +202,12 @@ int tempsensor_getTemperatureAndHumidity(float *temperature, float *humidity) {
     return U_SUCCESS;
 }
 
+/* Helper to convert mg to m/s^2. Useful for debugging? */
+float _mg_to_mpss(float data) {
+    float g = data/1000; // Convert to g
+    return g*9.80665; // Convert to m/s^2
+}
+
 /* Gets the IMU's acceleration reading. */
 int imu_getAcceleration(vector3_t* data) {
     int16_t raw_data[3];

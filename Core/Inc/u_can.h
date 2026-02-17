@@ -41,6 +41,7 @@ extern can_t can1;
 #define CANID_BMS_DCL_MSG      0x156
 #define LIGHT_BOARD_CAN_MSG_ID 0xCA
 #define IMU_CAN_MSG_ID	       0xAAB
+#define CANID_VCU_TEST_MESSAGE 0xBAD
 
 /* Peripheral CAN IDs. */
 #define CANID_IMU_ACCEL	  0x506
