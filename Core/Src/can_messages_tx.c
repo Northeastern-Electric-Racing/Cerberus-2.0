@@ -501,9 +501,9 @@ uint8_t send_imu_accelerometer
 	uint8_t bitstream_data[6];
 	bitstream_init(&imu_accelerometer_msg, bitstream_data, 6);
 	
-    bitstream_add_signed(&imu_accelerometer_msg, imu_accelerometer_x*100, 16);
-    bitstream_add_signed(&imu_accelerometer_msg, imu_accelerometer_y*100, 16);
-    bitstream_add_signed(&imu_accelerometer_msg, imu_accelerometer_z*100, 16);
+    bitstream_add_signed(&imu_accelerometer_msg, imu_accelerometer_x*4, 16);
+    bitstream_add_signed(&imu_accelerometer_msg, imu_accelerometer_y*4, 16);
+    bitstream_add_signed(&imu_accelerometer_msg, imu_accelerometer_z*4, 16);
 
     handle_bitstream_overflow(&imu_accelerometer_msg, msg.id);
     

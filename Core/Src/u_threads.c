@@ -216,7 +216,7 @@ static thread_t can_outgoing_thread = {
         .threshold  = 0,                         /* Preemption Threshold */
         .time_slice = TX_NO_TIME_SLICE,          /* Time Slice */
         .auto_start = TX_AUTO_START,             /* Auto Start */
-        .sleep      = 0,                         /* Sleep (in ticks) */
+        .sleep      = 1,                         /* Sleep (in ticks) */
         .function   = vCANOutgoing               /* Thread Function */
     };
 void vCANOutgoing(ULONG thread_input) {
@@ -234,12 +234,9 @@ void vCANOutgoing(ULONG thread_input) {
             if(status != HAL_OK) {
                 PRINTLN_WARNING("Failed to send message (on can1) after removing from outgoing queue (Message ID: %ld, Status: %d/%s).", message.id, status, hal_status_toString(status));
                 queue_send(&faults, &(fault_t){CAN_OUTGOING_FAULT}, TX_NO_WAIT);
-            } else {
-                PRINTLN_INFO("Successfully sent CAN message!");
             }
+            tx_thread_sleep(1); // This is needed, or else the queue will try to send messages too fast and outpace the HAL.
         }
-
-        /* No sleep. Thread timing is controlled completely by the queue timeout. */
     }
 }
 
@@ -775,7 +772,7 @@ uint8_t threads_init(TX_BYTE_POOL *byte_pool) {
     CATCH_ERROR(create_thread(byte_pool, &can_incoming_thread), U_SUCCESS);      // Create Incoming CAN thread.
     CATCH_ERROR(create_thread(byte_pool, &can_outgoing_thread), U_SUCCESS);      // Create Outgoing CAN thread.
     CATCH_ERROR(create_thread(byte_pool, &faults_queue_thread), U_SUCCESS);      // Create Faults Queue thread.
-    //CATCH_ERROR(create_thread(byte_pool, &faults_thread), U_SUCCESS);            // Create Faults thread.
+    CATCH_ERROR(create_thread(byte_pool, &faults_thread), U_SUCCESS);            // Create Faults thread.
     //CATCH_ERROR(create_thread(byte_pool, &tsms_thread), U_SUCCESS);              // Create TSMS thread.
     CATCH_ERROR(create_thread(byte_pool, &shutdown_thread), U_SUCCESS);          // Create Shutdown thread.
     //CATCH_ERROR(create_thread(byte_pool, &statemachine_thread), U_SUCCESS);      // Create State Machine thread.
