@@ -17,6 +17,9 @@
 #include "u_ethernet.h"
 #include "bitstream.h"
 #include "serial.h"
+#include "u_lightning.h"
+#include "timer.h"
+#include "debounce.h"
 
 /* Thread Priority Macros. */
 /* (please keep these organized in increasing order) */
@@ -35,6 +38,14 @@
 #define PRIO_vMux              2
 #define PRIO_vTest             2
 #define PRIO_vPeripherals      2
+
+
+
+// callback for when either bms or imd indicates a fault
+static void _lightning_board_status_callback(void *arg) {
+    send_lightning_board_light_status(LIGHT_RED);
+    // the light status update (red or green) happens in the main loop after debounce
+}
 
 /* Test Thread */
 static thread_t test_thread = {
@@ -353,7 +364,12 @@ static thread_t shutdown_thread = {
         .sleep      = 500,                /* Sleep (in ticks) */
         .function   = vShutdown           /* Thread Function */
     };
+
+#define LIGHTNING_BOARD_DEBOUNCE 500 
+
 void vShutdown(ULONG thread_input) {
+    /* Debounce Timer */
+    static nertimer_t lightning_status_timer; 
 
     while(1) {
 
@@ -367,6 +383,19 @@ void vShutdown(ULONG thread_input) {
         bool ckpt_gpio = (HAL_GPIO_ReadPin(CKPT_GPIO_GPIO_Port, CKPT_GPIO_Pin) == GPIO_PIN_SET);
         bool inertia_sw_gpio = (HAL_GPIO_ReadPin(INERTIA_SW_GPIO_GPIO_Port, INERTIA_SW_GPIO_Pin) == GPIO_PIN_SET);
         bool tsms_gpio = (HAL_GPIO_ReadPin(TSMS_GPIO_GPIO_Port, TSMS_GPIO_Pin) == GPIO_PIN_SET);
+
+            
+        //lightning status with debounce
+        bool lightning_fault = bms_gpio || imd_gpio;
+        
+
+        //lightning status after debounce
+        if (lightning_fault) {
+            debounce(lightning_fault, &lightning_status_timer, LIGHTNING_BOARD_DEBOUNCE, &_lightning_board_status_callback, NULL); //used same constant (BRAKE_FAULT_DEBOUNCE) which was used in u_pedals.c//not anymore
+        }
+        else {
+            send_lightning_board_status(LIGHT_GREEN); //no fault, set to green
+        }
 
         /* Send Shutdown Pins CAN message. */
         send_shutdown_pins(
@@ -764,7 +793,7 @@ uint8_t threads_init(TX_BYTE_POOL *byte_pool) {
     //CATCH_ERROR(create_thread(byte_pool, &faults_queue_thread), U_SUCCESS);      // Create Faults Queue thread.
     //CATCH_ERROR(create_thread(byte_pool, &faults_thread), U_SUCCESS);            // Create Faults thread.
     //CATCH_ERROR(create_thread(byte_pool, &tsms_thread), U_SUCCESS);              // Create TSMS thread.
-    //CATCH_ERROR(create_thread(byte_pool, &shutdown_thread), U_SUCCESS);          // Create Shutdown thread.
+    CATCH_ERROR(create_thread(byte_pool, &shutdown_thread), U_SUCCESS);          // Create Shutdown thread.
     //CATCH_ERROR(create_thread(byte_pool, &statemachine_thread), U_SUCCESS);      // Create State Machine thread.
     //CATCH_ERROR(create_thread(byte_pool, &pedals_thread), U_SUCCESS);            // Create Pedals thread.
     //CATCH_ERROR(create_thread(byte_pool, &efuses_thread), U_SUCCESS);              // Create eFuses thread.

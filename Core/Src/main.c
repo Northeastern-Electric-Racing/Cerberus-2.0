@@ -31,7 +31,12 @@
 #include "u_faults.h"
 #include "u_queues.h"
 #include "u_debug.h"
+#include "u_lightning.h"
 /* USER CODE END Includes */
+
+
+
+
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
@@ -198,9 +203,12 @@ int main(void)
 
   /* USER CODE END 2 */
 
+
   MX_ThreadX_Init();
 
   /* We should never get here as control is now taken by the scheduler */
+
+  
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
