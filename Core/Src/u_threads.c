@@ -38,10 +38,8 @@
 #define PRIO_vMux              2
 #define PRIO_vTest             2
 #define PRIO_vPeripherals      2
-#define LIGHTNING_BOARD_DEBOUNCE 500 
 
-// adding a forward declaration since this isn't defined in .h file
-void update_lightning_board_status(bool bms_gpio, bool imd_gpio);
+
 
 // callback for when either bms or imd indicates a fault
 static void _lightning_board_status_callback(void *arg) {
@@ -366,6 +364,9 @@ static thread_t shutdown_thread = {
         .sleep      = 500,                /* Sleep (in ticks) */
         .function   = vShutdown           /* Thread Function */
     };
+
+#define LIGHTNING_BOARD_DEBOUNCE 500 
+
 void vShutdown(ULONG thread_input) {
     /* Debounce Timer */
     static nertimer_t lightning_status_timer; 
@@ -383,9 +384,7 @@ void vShutdown(ULONG thread_input) {
         bool inertia_sw_gpio = (HAL_GPIO_ReadPin(INERTIA_SW_GPIO_GPIO_Port, INERTIA_SW_GPIO_Pin) == GPIO_PIN_SET);
         bool tsms_gpio = (HAL_GPIO_ReadPin(TSMS_GPIO_GPIO_Port, TSMS_GPIO_Pin) == GPIO_PIN_SET);
 
-        update_lightning_board_status(bms_gpio, imd_gpio);
-        // tx_thread_sleep(10); //100ms debounce 10ms/ticks, doesnt really do debouncing
-        
+            
         //lightning status with debounce
         bool lightning_fault = bms_gpio || imd_gpio;
         
