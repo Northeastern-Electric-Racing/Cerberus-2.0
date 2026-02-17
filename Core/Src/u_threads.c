@@ -110,24 +110,6 @@ void vDefault(ULONG thread_input) {
         HAL_IWDG_Refresh(&hiwdg); // Internal Watchdog
         HAL_GPIO_TogglePin(WATCHDOG_GPIO_Port, WATCHDOG_Pin); // External Watchdog
 
-        static bool state_green = false;
-        if(state_green) {
-            debug_enableGreenLED();
-            state_green = !state_green;
-        } else {
-            debug_disableGreenLED();
-            state_green = !state_green;
-        }
-
-        static bool state_red = true;
-        if(state_red) {
-            debug_enableRedLED();
-            state_red = !state_red;
-        } else {
-            debug_disableRedLED();
-            state_red = !state_red;
-        }
-
         PRINTLN_INFO("Ran default thread");
 
         /* Sleep Thread for specified number of ticks. */
@@ -234,7 +216,7 @@ static thread_t can_outgoing_thread = {
         .threshold  = 0,                         /* Preemption Threshold */
         .time_slice = TX_NO_TIME_SLICE,          /* Time Slice */
         .auto_start = TX_AUTO_START,             /* Auto Start */
-        .sleep      = 0,                         /* Sleep (in ticks) */
+        .sleep      = 1,                         /* Sleep (in ticks) */
         .function   = vCANOutgoing               /* Thread Function */
     };
 void vCANOutgoing(ULONG thread_input) {
@@ -252,12 +234,9 @@ void vCANOutgoing(ULONG thread_input) {
             if(status != HAL_OK) {
                 PRINTLN_WARNING("Failed to send message (on can1) after removing from outgoing queue (Message ID: %ld, Status: %d/%s).", message.id, status, hal_status_toString(status));
                 queue_send(&faults, &(fault_t){CAN_OUTGOING_FAULT}, TX_NO_WAIT);
-            } else {
-                PRINTLN_INFO("Successfully sent CAN message!");
             }
+            tx_thread_sleep(1); // This is needed, or else the queue will try to send messages too fast and outpace the HAL.
         }
-
-        /* No sleep. Thread timing is controlled completely by the queue timeout. */
     }
 }
 
@@ -459,7 +438,7 @@ static thread_t efuses_thread = {
         .threshold  = 0,                      /* Preemption Threshold */
         .time_slice = TX_NO_TIME_SLICE,       /* Time Slice */
         .auto_start = TX_AUTO_START,          /* Auto Start */
-        .sleep      = 10,                     /* Sleep (in ticks) */
+        .sleep      = 500,                    /* Sleep (in ticks) */
         .function   = vEFuses                 /* Thread Function */
     };
 void vEFuses(ULONG thread_input) {
@@ -534,11 +513,11 @@ void vEFuses(ULONG thread_input) {
             data.enabled[EFUSE_LV]
         );
         efuse_enable(EFUSE_LV);
-        serial_monitor("lv_efuse", "raw", "%d", data.raw[EFUSE_LV]);
-        serial_monitor("lv_efuse", "voltage", "%f", data.voltage[EFUSE_LV]);
-        serial_monitor("lv_efuse", "current", "%f", data.current[EFUSE_LV]);
-        serial_monitor("lv_efuse", "faulted?", "%d", data.faulted[EFUSE_LV]);
-        serial_monitor("lv_efuse", "enabled?", "%d", data.enabled[EFUSE_LV]);
+        // serial_monitor("lv_efuse", "raw", "%d", data.raw[EFUSE_LV]);
+        // serial_monitor("lv_efuse", "voltage", "%f", data.voltage[EFUSE_LV]);
+        // serial_monitor("lv_efuse", "current", "%f", data.current[EFUSE_LV]);
+        // serial_monitor("lv_efuse", "faulted?", "%d", data.faulted[EFUSE_LV]);
+        // serial_monitor("lv_efuse", "enabled?", "%d", data.enabled[EFUSE_LV]);
 
 
         /* Send radfan eFuse message. */
@@ -550,11 +529,11 @@ void vEFuses(ULONG thread_input) {
             data.enabled[EFUSE_RADFAN]
         );
         efuse_enable(EFUSE_RADFAN);
-        serial_monitor("radfan_efuse", "raw", "%d", data.raw[EFUSE_RADFAN]);
-        serial_monitor("radfan_efuse", "voltage", "%f", data.voltage[EFUSE_RADFAN]);
-        serial_monitor("radfan_efuse", "current", "%f", data.current[EFUSE_RADFAN]);
-        serial_monitor("radfan_efuse", "faulted?", "%d", data.faulted[EFUSE_RADFAN]);
-        serial_monitor("radfan_efuse", "enabled?", "%d", data.enabled[EFUSE_RADFAN]);
+        // serial_monitor("radfan_efuse", "raw", "%d", data.raw[EFUSE_RADFAN]);
+        // serial_monitor("radfan_efuse", "voltage", "%f", data.voltage[EFUSE_RADFAN]);
+        // serial_monitor("radfan_efuse", "current", "%f", data.current[EFUSE_RADFAN]);
+        // serial_monitor("radfan_efuse", "faulted?", "%d", data.faulted[EFUSE_RADFAN]);
+        // serial_monitor("radfan_efuse", "enabled?", "%d", data.enabled[EFUSE_RADFAN]);
 
         /* Send fanbatt eFuse message. */
         send_fanbatt_efuse(
@@ -706,7 +685,7 @@ void vPeripherals(ULONG thread_input) {
 
             PRINTLN_INFO("SHT30 Temp: %f", temperature);
 
-            serial_monitor("peripherals", "sht30 temp", "%f", temperature);
+            // serial_monitor("peripherals", "sht30 temp", "%f", temperature);
 
             /* Send the temp sensor message. */
             send_temperature_sensor(
@@ -726,9 +705,9 @@ void vPeripherals(ULONG thread_input) {
                 break; // Break from SECTION 2. We don't want to send the CAN message if reading the data failed.
             }
 
-            serial_monitor("peripherals", "imu_acceleration_x", "%f", acceleration.x);
-            serial_monitor("peripherals", "imu_acceleration_y", "%f", acceleration.y);
-            serial_monitor("peripherals", "imu_acceleration_z", "%f", acceleration.z);
+            // serial_monitor("peripherals", "imu_acceleration_x", "%f", acceleration.x);
+            // serial_monitor("peripherals", "imu_acceleration_y", "%f", acceleration.y);
+            // serial_monitor("peripherals", "imu_acceleration_z", "%f", acceleration.z);
 
             /* Send the IMU acceleration message. */
             send_imu_accelerometer(
@@ -749,9 +728,9 @@ void vPeripherals(ULONG thread_input) {
                 break; // Break from SECTION 3. We don't want to send the CAN message if reading the data failed.
             }
 
-            serial_monitor("peripherals", "imu_gyro_x", "%f", gyro.x);
-            serial_monitor("peripherals", "imu_gyro_y", "%f", gyro.y);
-            serial_monitor("peripherals", "imu_gyro_z", "%f", gyro.z);
+            // serial_monitor("peripherals", "imu_gyro_x", "%f", gyro.x);
+            // serial_monitor("peripherals", "imu_gyro_y", "%f", gyro.y);
+            // serial_monitor("peripherals", "imu_gyro_z", "%f", gyro.z);
 
             /* Send the IMU Gyro message. */
             send_imu_gyro(
@@ -793,7 +772,7 @@ uint8_t threads_init(TX_BYTE_POOL *byte_pool) {
     CATCH_ERROR(create_thread(byte_pool, &can_incoming_thread), U_SUCCESS);      // Create Incoming CAN thread.
     CATCH_ERROR(create_thread(byte_pool, &can_outgoing_thread), U_SUCCESS);      // Create Outgoing CAN thread.
     CATCH_ERROR(create_thread(byte_pool, &faults_queue_thread), U_SUCCESS);      // Create Faults Queue thread.
-    //CATCH_ERROR(create_thread(byte_pool, &faults_thread), U_SUCCESS);            // Create Faults thread.
+    CATCH_ERROR(create_thread(byte_pool, &faults_thread), U_SUCCESS);            // Create Faults thread.
     //CATCH_ERROR(create_thread(byte_pool, &tsms_thread), U_SUCCESS);              // Create TSMS thread.
     CATCH_ERROR(create_thread(byte_pool, &shutdown_thread), U_SUCCESS);          // Create Shutdown thread.
     //CATCH_ERROR(create_thread(byte_pool, &statemachine_thread), U_SUCCESS);      // Create State Machine thread.
