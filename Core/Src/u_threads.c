@@ -104,6 +104,17 @@ void vDefault(ULONG thread_input) {
 
     PRINTLN_INFO("Starting default thread...");
 
+    efuse_enable(EFUSE_DASHBOARD);
+    efuse_disable(EFUSE_BRAKE);
+    efuse_disable(EFUSE_SHUTDOWN);
+    efuse_disable(EFUSE_LV);
+    efuse_disable(EFUSE_RADFAN);
+    efuse_disable(EFUSE_FANBATT);
+    efuse_disable(EFUSE_PUMP1);
+    efuse_disable(EFUSE_PUMP2);
+    efuse_disable(EFUSE_BATTBOX);
+    efuse_disable(EFUSE_MC);
+
     while(1) {
 
         /* Kick the watchdogs (sad) )*/
