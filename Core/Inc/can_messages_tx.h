@@ -244,4 +244,15 @@ uint8_t send_faults
 */
 uint8_t send_lv_voltage
 (uint16_t ADC,float Voltage);
+
+/**
+* Contents of this message:
+* VCU/Test/three_bits - 
+* VCU/Test/float_value - 
+* VCU/Test/five_bits - 
+* VCU/Test/sixteen_bits - 
+* VCU/Test/signed_8_bits - 
+*/
+uint8_t send_vcu_test_message
+(uint8_t three_bits,float float_value,uint8_t five_bits,uint16_t sixteen_bits,int8_t signed_8_bits);
 #endif

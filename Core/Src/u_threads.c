@@ -70,21 +70,22 @@ void vTest(ULONG thread_input) {
 
     while(1) {
 
-        //char message[8] = "message";
-        uint8_t message = 210;
-        ethernet_message_t msg = ethernet_create_message(0x01, TPU, &message, sizeof(message));
-        int status = queue_send(&eth_outgoing, &msg, TX_WAIT_FOREVER);
-        if(status != U_SUCCESS) {
-            PRINTLN_ERROR("Failed to call queue_send when sending ethernet message (Status: %d).", status);
-        } else {
-            PRINTLN_INFO("Added message to ethernet outgoing queue.");
-        }
+        // //char message[8] = "message";
+        // uint8_t message = 210;
+        // ethernet_message_t msg = ethernet_create_message(0x01, TPU, &message, sizeof(message));
+        // int status = queue_send(&eth_outgoing, &msg, TX_WAIT_FOREVER);
+        // if(status != U_SUCCESS) {
+        //     PRINTLN_ERROR("Failed to call queue_send when sending ethernet message (Status: %d).", status);
+        // } else {
+        //     PRINTLN_INFO("Added message to ethernet outgoing queue.");
+        // }
 
-        PRINTLN_INFO("Ran vTest");
+        // PRINTLN_INFO("Ran vTest");
 
-        NX_PTP_DATE_TIME date = ethernet_get_time();
-        PRINTLN_INFO("TIME: %2u/%02u/%u %02u:%02u:%02u.%09lu\r\n", date.day, date.month, date.year, date.hour, date.minute, date.second, date.nanosecond);
+        // NX_PTP_DATE_TIME date = ethernet_get_time();
+        // PRINTLN_INFO("TIME: %2u/%02u/%u %02u:%02u:%02u.%09lu\r\n", date.day, date.month, date.year, date.hour, date.minute, date.second, date.nanosecond);
 
+        send_vcu_test_message(7, 19.342, 30, 13942, -122);
         tx_thread_sleep(test_thread.sleep);
     }
 }
