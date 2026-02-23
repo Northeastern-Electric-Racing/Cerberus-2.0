@@ -66,6 +66,18 @@ void vTest(ULONG thread_input) {
         PRINTLN_ERROR("Failed to call ethernet1_init() (Status: %d/%s).", status, nx_status_toString(status));
     }
 
+    efuse_enable(EFUSE_DASHBOARD);
+    efuse_disable(EFUSE_BRAKE);
+    efuse_disable(EFUSE_SHUTDOWN);
+    efuse_disable(EFUSE_LV);
+    efuse_disable(EFUSE_RADFAN);
+    efuse_disable(EFUSE_FANBATT);
+    efuse_disable(EFUSE_PUMP1);
+    efuse_disable(EFUSE_PUMP2);
+    efuse_disable(EFUSE_BATTBOX);
+    efuse_disable(EFUSE_MC);
+    HAL_GPIO_WritePin(EF_SPARE_EN_GPIO_Port, EF_SPARE_EN_Pin, GPIO_PIN_RESET);
+
     //tx_thread_sleep(5000);
 
     while(1) {
@@ -469,12 +481,11 @@ void vEFuses(ULONG thread_input) {
             data.faulted[EFUSE_DASHBOARD],
             data.enabled[EFUSE_DASHBOARD]
         );
-        // serial_monitor("dashboard_efuse", "raw", "%d", data.raw[EFUSE_DASHBOARD]);
-        // serial_monitor("dashboard_efuse", "voltage", "%f", data.voltage[EFUSE_DASHBOARD]);
-        // serial_monitor("dashboard_efuse", "current", "%f", data.current[EFUSE_DASHBOARD]);
-        // serial_monitor("dashboard_efuse", "faulted?", "%d", data.faulted[EFUSE_DASHBOARD]);
-        // serial_monitor("dashboard_efuse", "enabled?", "%d", data.enabled[EFUSE_DASHBOARD]);
-        efuse_enable(EFUSE_DASHBOARD);
+        serial_monitor("dashboard_efuse", "raw", "%d", data.raw[EFUSE_DASHBOARD]);
+        serial_monitor("dashboard_efuse", "voltage", "%f", data.voltage[EFUSE_DASHBOARD]);
+        serial_monitor("dashboard_efuse", "current", "%f", data.current[EFUSE_DASHBOARD]);
+        serial_monitor("dashboard_efuse", "faulted?", "%d", data.faulted[EFUSE_DASHBOARD]);
+        serial_monitor("dashboard_efuse", "enabled?", "%d", data.enabled[EFUSE_DASHBOARD]);
 
 
         /* Send brake eFuse message. */
@@ -513,7 +524,6 @@ void vEFuses(ULONG thread_input) {
             data.faulted[EFUSE_LV],
             data.enabled[EFUSE_LV]
         );
-        efuse_enable(EFUSE_LV);
         // serial_monitor("lv_efuse", "raw", "%d", data.raw[EFUSE_LV]);
         // serial_monitor("lv_efuse", "voltage", "%f", data.voltage[EFUSE_LV]);
         // serial_monitor("lv_efuse", "current", "%f", data.current[EFUSE_LV]);
@@ -529,7 +539,6 @@ void vEFuses(ULONG thread_input) {
             data.faulted[EFUSE_RADFAN],
             data.enabled[EFUSE_RADFAN]
         );
-        efuse_enable(EFUSE_RADFAN);
         // serial_monitor("radfan_efuse", "raw", "%d", data.raw[EFUSE_RADFAN]);
         // serial_monitor("radfan_efuse", "voltage", "%f", data.voltage[EFUSE_RADFAN]);
         // serial_monitor("radfan_efuse", "current", "%f", data.current[EFUSE_RADFAN]);
