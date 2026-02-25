@@ -64,46 +64,48 @@ static volatile uint16_t _mux_buffer[MUX_SIZE] = { 0 };
 
 /* Manage muxs and updates the mux buffer. */
 typedef enum { HIGH, LOW } _mux_state_t;
+static _mux_state_t mux_state_debug = LOW;
 int adc_switchMuxState(void) {
     static _mux_state_t mux_state = LOW;
 
     if(mux_state == LOW) {
+        /* Mux is currently LOW, so update LOW values. */
+        _mux_buffer[SEL1_LOW] = _adc1_buffer[ADC1_CHANNEL0];
+        _mux_buffer[SEL2_LOW] = _adc1_buffer[ADC1_CHANNEL15];
+        _mux_buffer[SEL3_LOW] = _adc1_buffer[ADC1_CHANNEL5];
+        _mux_buffer[SEL4_LOW] = _adc1_buffer[ADC1_CHANNEL9];
+
         /* Mux is currently LOW, so switch to HIGH. */
         HAL_GPIO_WritePin(MUX_SEL1_GPIO_Port, MUX_SEL1_Pin, GPIO_PIN_SET);
         HAL_GPIO_WritePin(MUX_SEL2_GPIO_Port, MUX_SEL2_Pin, GPIO_PIN_SET);
         HAL_GPIO_WritePin(MUX_SEL3_GPIO_Port, MUX_SEL3_Pin, GPIO_PIN_SET);
         HAL_GPIO_WritePin(MUX_SEL4_GPIO_Port, MUX_SEL4_Pin, GPIO_PIN_SET);
 
-        tx_thread_sleep(1); // Sleep for 1 tick so the mux settles.
+        tx_thread_sleep(10); // Sleep for 10 ticks so the mux settles.
         mux_state = HIGH;   // Update the mux state
 
-        /* We are now in the HIGH state, so set the associated indexes in the buffer. */
+        PRINTLN_INFO("Switched mux_state to HIGH.");
+    }
+    else if(mux_state == HIGH) {
+
+        /* Mux is currently HIGH, so update HIGH values. */
         _mux_buffer[SEL1_HIGH] = _adc1_buffer[ADC1_CHANNEL0];
         _mux_buffer[SEL2_HIGH] = _adc1_buffer[ADC1_CHANNEL15];
         _mux_buffer[SEL3_HIGH] = _adc1_buffer[ADC1_CHANNEL5];
         _mux_buffer[SEL4_HIGH] = _adc1_buffer[ADC1_CHANNEL9];
 
-        PRINTLN_INFO("Switched mux_state to HIGH.");
-    }
-    else if(mux_state == HIGH) {
         /* Mux is currently HIGH, so switch to LOW. */
         HAL_GPIO_WritePin(MUX_SEL1_GPIO_Port, MUX_SEL1_Pin, GPIO_PIN_RESET);
         HAL_GPIO_WritePin(MUX_SEL2_GPIO_Port, MUX_SEL2_Pin, GPIO_PIN_RESET);
         HAL_GPIO_WritePin(MUX_SEL3_GPIO_Port, MUX_SEL3_Pin, GPIO_PIN_RESET);
         HAL_GPIO_WritePin(MUX_SEL4_GPIO_Port, MUX_SEL4_Pin, GPIO_PIN_RESET);
 
-        tx_thread_sleep(1); // Sleep for 1 tick so the mux settles.
+        tx_thread_sleep(10); // Sleep for 10 ticks so the mux settles.
         mux_state = LOW;   // Update the mux state
-
-        /* We are now in the LOW state, so set the associated indexes in the buffer. */
-        _mux_buffer[SEL1_LOW] = _adc1_buffer[ADC1_CHANNEL0];
-        _mux_buffer[SEL2_LOW] = _adc1_buffer[ADC1_CHANNEL15];
-        _mux_buffer[SEL3_LOW] = _adc1_buffer[ADC1_CHANNEL5];
-        _mux_buffer[SEL4_LOW] = _adc1_buffer[ADC1_CHANNEL9];
 
         PRINTLN_INFO("Switched mux_state to LOW.");
     }
-    serial_monitor("lv_efuse", "mux_state (0=HIGH, 1=LOW)", "%d", mux_state);
+    mux_state_debug = mux_state;
 
     PRINTLN_INFO("Ran adc_switchMuxState()");
 
@@ -144,6 +146,10 @@ raw_efuse_adc_t adc_getEFuseData(void) {
     efuses.data[EFUSE_PUMP2] = _adc1_buffer[ADC1_CHANNEL13];
     efuses.data[EFUSE_BATTBOX] = _mux_buffer[SEL1_LOW];
     efuses.data[EFUSE_MC] = _adc1_buffer[ADC1_CHANNEL18];
+
+    serial_monitor("brake_efuse", "mux_state_debug (0=HIGH, 1=LOW)", "%d", mux_state_debug);
+    serial_monitor("brake_efuse", "_adc1_buffer[ADC1_CHANNEL0]=", "%d", _adc1_buffer[ADC1_CHANNEL0]);
+    serial_monitor("brake_efuse", "_mux_buffer[SEL1_HIGH]", "%d", _mux_buffer[SEL1_HIGH]);
 
     return efuses;
 }
