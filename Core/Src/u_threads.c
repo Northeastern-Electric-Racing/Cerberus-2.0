@@ -66,8 +66,8 @@ void vTest(ULONG thread_input) {
         PRINTLN_ERROR("Failed to call ethernet1_init() (Status: %d/%s).", status, nx_status_toString(status));
     }
 
-    efuse_enable(EFUSE_DASHBOARD);
-    efuse_disable(EFUSE_BRAKE);
+    efuse_disable(EFUSE_DASHBOARD);
+    efuse_enable(EFUSE_BRAKE);
     efuse_disable(EFUSE_SHUTDOWN);
     efuse_disable(EFUSE_LV);
     efuse_disable(EFUSE_RADFAN);
@@ -451,7 +451,7 @@ static thread_t efuses_thread = {
         .threshold  = 0,                      /* Preemption Threshold */
         .time_slice = TX_NO_TIME_SLICE,       /* Time Slice */
         .auto_start = TX_AUTO_START,          /* Auto Start */
-        .sleep      = 500,                    /* Sleep (in ticks) */
+        .sleep      = 100,                    /* Sleep (in ticks) */
         .function   = vEFuses                 /* Thread Function */
     };
 void vEFuses(ULONG thread_input) {
@@ -481,11 +481,11 @@ void vEFuses(ULONG thread_input) {
             data.faulted[EFUSE_DASHBOARD],
             data.enabled[EFUSE_DASHBOARD]
         );
-        serial_monitor("dashboard_efuse", "raw", "%d", data.raw[EFUSE_DASHBOARD]);
-        serial_monitor("dashboard_efuse", "voltage", "%f", data.voltage[EFUSE_DASHBOARD]);
-        serial_monitor("dashboard_efuse", "current", "%f", data.current[EFUSE_DASHBOARD]);
-        serial_monitor("dashboard_efuse", "faulted?", "%d", data.faulted[EFUSE_DASHBOARD]);
-        serial_monitor("dashboard_efuse", "enabled?", "%d", data.enabled[EFUSE_DASHBOARD]);
+        // serial_monitor("dashboard_efuse", "raw", "%d", data.raw[EFUSE_DASHBOARD]);
+        // serial_monitor("dashboard_efuse", "voltage", "%f", data.voltage[EFUSE_DASHBOARD]);
+        // serial_monitor("dashboard_efuse", "current", "%f", data.current[EFUSE_DASHBOARD]);
+        // serial_monitor("dashboard_efuse", "faulted?", "%d", data.faulted[EFUSE_DASHBOARD]);
+        // serial_monitor("dashboard_efuse", "enabled?", "%d", data.enabled[EFUSE_DASHBOARD]);
 
 
         /* Send brake eFuse message. */
@@ -496,11 +496,11 @@ void vEFuses(ULONG thread_input) {
             data.faulted[EFUSE_BRAKE],
             data.enabled[EFUSE_BRAKE]
         );
-        // serial_monitor("brake_efuse", "raw", "%d", data.raw[EFUSE_BRAKE]);
-        // serial_monitor("brake_efuse", "voltage", "%f", data.voltage[EFUSE_BRAKE]);
-        // serial_monitor("brake_efuse", "current", "%f", data.current[EFUSE_BRAKE]);
-        // serial_monitor("brake_efuse", "faulted?", "%d", data.faulted[EFUSE_BRAKE]);
-        // serial_monitor("brake_efuse", "enabled?", "%d", data.enabled[EFUSE_BRAKE]);
+        serial_monitor("brake_efuse", "raw", "%d", data.raw[EFUSE_BRAKE]);
+        serial_monitor("brake_efuse", "voltage", "%f", data.voltage[EFUSE_BRAKE]);
+        serial_monitor("brake_efuse", "current", "%f", data.current[EFUSE_BRAKE]);
+        serial_monitor("brake_efuse", "faulted?", "%d", data.faulted[EFUSE_BRAKE]);
+        serial_monitor("brake_efuse", "enabled?", "%d", data.enabled[EFUSE_BRAKE]);
 
         /* Send shutdown eFuse message. */
         send_shutdown_efuse(
@@ -562,6 +562,11 @@ void vEFuses(ULONG thread_input) {
             data.faulted[EFUSE_PUMP1],
             data.enabled[EFUSE_PUMP1]
         );
+        // serial_monitor("pumpone_efuse", "raw", "%d", data.raw[EFUSE_PUMP1]);
+        // serial_monitor("pumpone_efuse", "voltage", "%f", data.voltage[EFUSE_PUMP1]);
+        // serial_monitor("pumpone_efuse", "current", "%f", data.current[EFUSE_PUMP1]);
+        // serial_monitor("pumpone_efuse", "faulted?", "%d", data.faulted[EFUSE_PUMP1]);
+        // serial_monitor("pumpone_efuse", "enabled?", "%d", data.enabled[EFUSE_PUMP1]);
 
         /* Send pump2 eFuse message. */
         send_pumptwo_efuse(
