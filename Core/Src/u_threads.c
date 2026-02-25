@@ -562,6 +562,11 @@ void vEFuses(ULONG thread_input) {
             data.faulted[EFUSE_PUMP1],
             data.enabled[EFUSE_PUMP1]
         );
+        // serial_monitor("pumpone_efuse", "raw", "%d", data.raw[EFUSE_PUMP1]);
+        // serial_monitor("pumpone_efuse", "voltage", "%f", data.voltage[EFUSE_PUMP1]);
+        // serial_monitor("pumpone_efuse", "current", "%f", data.current[EFUSE_PUMP1]);
+        // serial_monitor("pumpone_efuse", "faulted?", "%d", data.faulted[EFUSE_PUMP1]);
+        // serial_monitor("pumpone_efuse", "enabled?", "%d", data.enabled[EFUSE_PUMP1]);
 
         /* Send pump2 eFuse message. */
         send_pumptwo_efuse(
