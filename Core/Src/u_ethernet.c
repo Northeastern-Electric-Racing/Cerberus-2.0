@@ -22,8 +22,8 @@ int ethernet1_init(void) {
 /* Processes received ethernet messages. */
 void ethernet_inbox(ethernet_message_t *message) {
     switch(message->message_id) {
-        case 0x01:
-            // do thing
+        case 5:
+            PRINTLN_INFO("Incoming Ethernet message: %s", message->data);
             break;
         case 0x02:
             // do thing
@@ -32,7 +32,12 @@ void ethernet_inbox(ethernet_message_t *message) {
             // etc
             break;
         default:
+            uint8_t buff = 0;
+            buff = message->data[0];
             PRINTLN_ERROR("Unknown Ethernet Message Recieved (Message ID: %d).", message->message_id);
+            
+            PRINTLN_INFO("sender_id=%d, recipient_id=%d, message_id=%d, data_length=%d, data=%d", message->sender_id, message->recipient_id, message->message_id, message->data_length, message->data[0]);
+
             break;
     }
 }

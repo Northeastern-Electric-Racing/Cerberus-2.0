@@ -147,9 +147,18 @@ raw_efuse_adc_t adc_getEFuseData(void) {
     efuses.data[EFUSE_BATTBOX] = _mux_buffer[SEL1_LOW];
     efuses.data[EFUSE_MC] = _adc1_buffer[ADC1_CHANNEL18];
 
-    serial_monitor("brake_efuse", "mux_state_debug (0=HIGH, 1=LOW)", "%d", mux_state_debug);
-    serial_monitor("brake_efuse", "_adc1_buffer[ADC1_CHANNEL0]=", "%d", _adc1_buffer[ADC1_CHANNEL0]);
-    serial_monitor("brake_efuse", "_mux_buffer[SEL1_HIGH]", "%d", _mux_buffer[SEL1_HIGH]);
+    serial_monitor("adc1", "mux_state_debug (0=HIGH, 1=LOW)", "%d", mux_state_debug);
+    serial_monitor("efuse_fanbatt", "_adc1_buffer[ADC1_CHANNEL6]=", "%d", _adc1_buffer[ADC1_CHANNEL6]);
+
+    serial_monitor("adc1", "ADC1_CHANNEL3", "%d", _adc1_buffer[ADC1_CHANNEL3]);
+    serial_monitor("adc1", "ADC1_CHANNEL0", "%d", _adc1_buffer[ADC1_CHANNEL0]);
+    serial_monitor("adc1", "ADC1_CHANNEL5", "%d", _adc1_buffer[ADC1_CHANNEL5]);
+    serial_monitor("adc1", "ADC1_CHANNEL9", "%d", _adc1_buffer[ADC1_CHANNEL9]);
+    serial_monitor("adc1", "ADC1_CHANNEL6", "%d", _adc1_buffer[ADC1_CHANNEL6]);
+    serial_monitor("adc1", "ADC1_CHANNEL2", "%d", _adc1_buffer[ADC1_CHANNEL2]);
+    serial_monitor("adc1", "ADC1_CHANNEL13", "%d", _adc1_buffer[ADC1_CHANNEL13]);
+    serial_monitor("adc1", "ADC1_CHANNEL18", "%d", _adc1_buffer[ADC1_CHANNEL18]);
+    serial_monitor("adc1", "ADC1_CHANNEL15", "%d", _adc1_buffer[ADC1_CHANNEL15]);
 
     return efuses;
 }
