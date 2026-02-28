@@ -67,11 +67,11 @@ void vTest(ULONG thread_input) {
     }
 
     efuse_disable(EFUSE_DASHBOARD);
-    efuse_enable(EFUSE_BRAKE);
+    efuse_disable(EFUSE_BRAKE);
     efuse_disable(EFUSE_SHUTDOWN);
     efuse_disable(EFUSE_LV);
     efuse_disable(EFUSE_RADFAN);
-    efuse_disable(EFUSE_FANBATT);
+    efuse_enable(EFUSE_FANBATT);
     efuse_disable(EFUSE_PUMP1);
     efuse_disable(EFUSE_PUMP2);
     efuse_disable(EFUSE_BATTBOX);
@@ -496,11 +496,11 @@ void vEFuses(ULONG thread_input) {
             data.faulted[EFUSE_BRAKE],
             data.enabled[EFUSE_BRAKE]
         );
-        serial_monitor("brake_efuse", "raw", "%d", data.raw[EFUSE_BRAKE]);
-        serial_monitor("brake_efuse", "voltage", "%f", data.voltage[EFUSE_BRAKE]);
-        serial_monitor("brake_efuse", "current", "%f", data.current[EFUSE_BRAKE]);
-        serial_monitor("brake_efuse", "faulted?", "%d", data.faulted[EFUSE_BRAKE]);
-        serial_monitor("brake_efuse", "enabled?", "%d", data.enabled[EFUSE_BRAKE]);
+        // serial_monitor("brake_efuse", "raw", "%d", data.raw[EFUSE_BRAKE]);
+        // serial_monitor("brake_efuse", "voltage", "%f", data.voltage[EFUSE_BRAKE]);
+        // serial_monitor("brake_efuse", "current", "%f", data.current[EFUSE_BRAKE]);
+        // serial_monitor("brake_efuse", "faulted?", "%d", data.faulted[EFUSE_BRAKE]);
+        // serial_monitor("brake_efuse", "enabled?", "%d", data.enabled[EFUSE_BRAKE]);
 
         /* Send shutdown eFuse message. */
         send_shutdown_efuse(
@@ -553,6 +553,11 @@ void vEFuses(ULONG thread_input) {
             data.faulted[EFUSE_FANBATT],
             data.enabled[EFUSE_FANBATT]
         );
+        serial_monitor("efuse_fanbatt", "raw", "%d", data.raw[EFUSE_FANBATT]);
+        serial_monitor("efuse_fanbatt", "voltage", "%f", data.voltage[EFUSE_FANBATT]);
+        serial_monitor("efuse_fanbatt", "current", "%f", data.current[EFUSE_FANBATT]);
+        serial_monitor("efuse_fanbatt", "faulted?", "%d", data.faulted[EFUSE_FANBATT]);
+        serial_monitor("efuse_fanbatt", "enabled?", "%d", data.enabled[EFUSE_FANBATT]);
 
         /* Send pump1 eFuse message. */
         send_pumpone_efuse(
@@ -632,7 +637,7 @@ static thread_t mux_thread = {
         .threshold  = 0,                      /* Preemption Threshold */
         .time_slice = TX_NO_TIME_SLICE,       /* Time Slice */
         .auto_start = TX_AUTO_START,          /* Auto Start */
-        .sleep      = 100,                    /* Sleep (in ticks) */
+        .sleep      = 5000,                   /* Sleep (in ticks) */
         .function   = vMux                    /* Thread Function */
     };
 void vMux(ULONG thread_input) {
