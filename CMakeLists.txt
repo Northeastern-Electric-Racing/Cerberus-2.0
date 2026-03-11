@@ -70,7 +70,7 @@ target_link_directories(${CMAKE_PROJECT_NAME} PRIVATE
 target_link_options(${CMAKE_PROJECT_NAME} PRIVATE -u _printf_float)
 
 function(add_tire_curve target curve_name output_name)
-    set(INPUT  ${CMAKE_SOURCE_DIR}/TireModelGen/${curve_name})
+    set(INPUT  ${CMAKE_SOURCE_DIR}/tmg/${curve_name})
     set(OUTPUT ${CMAKE_BINARY_DIR}/${output_name})
 
     add_custom_command(
@@ -78,9 +78,9 @@ function(add_tire_curve target curve_name output_name)
         COMMAND arm-none-eabi-objcopy
             -I binary -O elf32-littlearm
             --binary-architecture arm
-            --redefine-sym _binary__home_app_TireModelGen_${curve_name}_bin_start=_tire_curve_start
-            --redefine-sym _binary__home_app_TireModelGen_${curve_name}_bin_end=_tire_curve_end
-            --redefine-sym _binary__home_app_TireModelGen_${curve_name}_bin_size=_tire_curve_size
+            --redefine-sym _binary__home_app_tmg_${curve_name}_bin_start=_tire_curve_start
+            --redefine-sym _binary__home_app_tmg_${curve_name}_bin_end=_tire_curve_end
+            --redefine-sym _binary__home_app_tmg_${curve_name}_bin_size=_tire_curve_size
             ${INPUT}.bin
             ${OUTPUT}
         DEPENDS ${INPUT}.bin
