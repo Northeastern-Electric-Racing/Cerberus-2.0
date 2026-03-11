@@ -69,6 +69,26 @@ target_link_directories(${CMAKE_PROJECT_NAME} PRIVATE
 # Make it so floats can be printed
 target_link_options(${CMAKE_PROJECT_NAME} PRIVATE -u _printf_float)
 
+function(add_tire_curve target curve_name output_name)
+    set(INPUT  ${CMAKE_SOURCE_DIR}/TireModelGen/${curve_name})
+    set(OUTPUT ${CMAKE_BINARY_DIR}/${output_name})
+
+    add_custom_command(
+        OUTPUT  ${OUTPUT}
+        COMMAND arm-none-eabi-objcopy
+            -I binary -O elf32-littlearm
+            --binary-architecture arm
+            --redefine-sym _binary__home_app_TireModelGen_${curve_name}_bin_start=_tire_curve_start
+            --redefine-sym _binary__home_app_TireModelGen_${curve_name}_bin_end=_tire_curve_end
+            --redefine-sym _binary__home_app_TireModelGen_${curve_name}_bin_size=_tire_curve_size
+            ${INPUT}.bin
+            ${OUTPUT}
+        DEPENDS ${INPUT}.bin
+    )
+
+    target_sources(${target} PRIVATE ${OUTPUT})
+endfunction()
+
 # Add sources to executable
 target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     # Embedded-Base ThreadX Utils
@@ -116,7 +136,10 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     "./Core/Src/u_lightning.c"
     "./Core/Src/u_debug.c"
     "./Core/Src/u_ethernet.c"
+    "./Core/Src/u_tc.c"
 )
+
+add_tire_curve(${CMAKE_PROJECT_NAME} "daytona_600" "tm_600.o")
 
 # Disable Logging in certain files
 set_source_files_properties(

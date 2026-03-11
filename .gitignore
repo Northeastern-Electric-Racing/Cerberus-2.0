@@ -81,4 +81,7 @@ ctrlp.root
 # macOS files
 .DS_Store
 
+# JSON Payload
+payload.json
+
 .cache
