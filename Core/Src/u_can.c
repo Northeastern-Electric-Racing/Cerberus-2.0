@@ -4,6 +4,7 @@
 #include "u_nx_ethernet.h"
 #include "u_bms.h"
 #include "u_lightning.h"
+#include "u_dti.h"
 
 /* CAN interfaces */
 can_t can1;
@@ -18,26 +19,26 @@ uint8_t can1_init(FDCAN_HandleTypeDef *hcan) {
     }
 
     /* Add filters for standard IDs */
-    uint16_t standard[] = {CANID_BMS_DCL_MSG, CANID_BMS_CELL_TEMPS};
-    status = can_add_filter_standard(&can1, standard);
+    uint16_t standard1[] = {CANID_BMS_DCL_MSG, CANID_BMS_CELL_TEMPS};
+    status = can_add_filter_standard(&can1, standard1);
     if (status != HAL_OK) {
-        PRINTLN_ERROR("Failed to add standard filter to can1 (Status: %d/%s, ID1: 0x%X, ID2: 0x%X).", status, hal_status_toString(status), standard[0], standard[1]);
+        PRINTLN_ERROR("Failed to add standard filter to can1 (Status: %d/%s, ID1: 0x%X, ID2: 0x%X).", status, hal_status_toString(status), standard1[0], standard1[1]);
         return U_ERROR;
     }
 
     /* Add filters for standard IDs */
-    standard[] = {IMU_CAN_MSG_ID, DTI_CANID_TEMPS_FAULT};
-    status = can_add_filter_standard(&can1, standard);
+    uint16_t standard2[] = {IMU_CAN_MSG_ID, DTI_CANID_TEMPS_FAULT};
+    status = can_add_filter_standard(&can1, standard2);
     if (status != HAL_OK) {
-        PRINTLN_ERROR("Failed to add standard filter to can1 (Status: %d/%s, ID1: 0x%X, ID2: 0x%X).", status, hal_status_toString(status), standard[0], standard[1]);
+        PRINTLN_ERROR("Failed to add standard filter to can1 (Status: %d/%s, ID1: 0x%X, ID2: 0x%X).", status, hal_status_toString(status), standard2[0], standard2[1]);
         return U_ERROR;
     }
 
     /* Add filters for standard IDs */
-    standard[] = {DTI_CANID_ERPM, DTI_CANID_CURRENTS};
-    status = can_add_filter_standard(&can1, standard);
+    uint16_t standard3[] = {DTI_CANID_ERPM, DTI_CANID_CURRENTS};
+    status = can_add_filter_standard(&can1, standard3);
     if (status != HAL_OK) {
-        PRINTLN_ERROR("Failed to add standard filter to can1 (Status: %d/%s, ID1: 0x%X, ID2: 0x%X).", status, hal_status_toString(status), standard[0], standard[1]);
+        PRINTLN_ERROR("Failed to add standard filter to can1 (Status: %d/%s, ID1: 0x%X, ID2: 0x%X).", status, hal_status_toString(status), standard3[0], standard3[1]);
         return U_ERROR;
     }
 
