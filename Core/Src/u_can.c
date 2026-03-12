@@ -5,6 +5,8 @@
 #include "u_bms.h"
 #include "u_lightning.h"
 #include "u_dti.h"
+#include "can_messages_tx.h"
+#include "can_messages_rx.h"
 
 /* CAN interfaces */
 can_t can1;
@@ -94,8 +96,9 @@ void can_inbox(can_msg_t *message) {
         bms_handleDclMessage();
         break;
     case CANID_BMS_CELL_TEMPS:
-        uint16_t battbox_temp = ((message->data[6] << 8) | message->data[7]) / 100; //  Get "BMS/Cells/Temp_Avg_Value"
-        bms_setBattboxTemp(battbox_temp);
+        cell_temperatures_t temps = { 0 };
+        receive_cell_temperatures(message, &temps);
+        bms_setBattboxTemp(temps.avg_val); // "BMS/Cells/Temp_Avg_Value"
         break;
     case IMU_CAN_MSG_ID:
         lightning_handleIMUMessage();

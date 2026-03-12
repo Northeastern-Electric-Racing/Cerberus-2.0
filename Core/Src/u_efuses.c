@@ -89,3 +89,8 @@ void efuse_enable(efuse_t efuse) {
 void efuse_disable(efuse_t efuse) {
     HAL_GPIO_WritePin(efuses[efuse].en_port, efuses[efuse].en_pin, GPIO_PIN_RESET);
 }
+
+/* Updates an eFuse's control state. Intended to be called when the relevant commands from Calypso are received. */
+void efuse_update_state(efuse_t efuse, efuse_control_state_t state) {
+    _efuse_control_state[efuse] = state;
+}
