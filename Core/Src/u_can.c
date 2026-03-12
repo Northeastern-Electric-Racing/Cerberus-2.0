@@ -109,6 +109,9 @@ void can_inbox(can_msg_t *message) {
     case DTI_CANID_CURRENTS:
         dti_record_currents(message);
         break;
+    case CANID_CALYPSO_EFCTRL_DASHBOARD:
+        
+        break;
     default:
         PRINTLN_ERROR("Unknown CAN Message Recieved (Message ID: %ld).", message->id);
         break;

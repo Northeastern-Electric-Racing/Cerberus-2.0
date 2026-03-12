@@ -21,6 +21,13 @@ typedef enum {
     NUM_EFUSES
 } efuse_t;
 
+/* Enum for the eFuse control states. */
+typedef enum {
+    EF_ON = 0,     // eFuse is enabled (on)
+    EF_AUTO = 1,   // eFuse will turn on/off automatically based on sensor readings. For eFuses with no AUTO mode, AUTO will do the same thing as ON.
+    EF_OFF = 2     // eFuse is disabled (off)
+} efuse_control_state_t;
+
 /* Struct for holding eFuse data. */
 typedef struct {
     uint16_t raw[NUM_EFUSES];   // eFuse's raw ADC reading.
@@ -28,6 +35,7 @@ typedef struct {
     float current[NUM_EFUSES];  // eFuse's current reading.
     bool faulted[NUM_EFUSES];   // eFuse's faulted state (true = faulted, false = not faulted).
     bool enabled[NUM_EFUSES];   // eFuse's enabled state (true = eFuse is enabled, false = eFuse is disabled).
+    efuse_control_state_t control_state[NUM_EFUSES]; // The eFuse's control state as tracked by VCU. Calypso is the source of truth for these values; VCU is simply responding to Calypso's commanded state values.
 } efuse_data_t;
 
 /* API */

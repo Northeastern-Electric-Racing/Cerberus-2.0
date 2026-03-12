@@ -479,7 +479,8 @@ void vEFuses(ULONG thread_input) {
             data.voltage[EFUSE_DASHBOARD],
             data.current[EFUSE_DASHBOARD],
             data.faulted[EFUSE_DASHBOARD],
-            data.enabled[EFUSE_DASHBOARD]
+            data.enabled[EFUSE_DASHBOARD],
+            data.control_state[EFUSE_DASHBOARD]
         );
         // serial_monitor("dashboard_efuse", "raw", "%d", data.raw[EFUSE_DASHBOARD]);
         // serial_monitor("dashboard_efuse", "voltage", "%f", data.voltage[EFUSE_DASHBOARD]);
@@ -494,7 +495,8 @@ void vEFuses(ULONG thread_input) {
             data.voltage[EFUSE_BRAKE],
             data.current[EFUSE_BRAKE],
             data.faulted[EFUSE_BRAKE],
-            data.enabled[EFUSE_BRAKE]
+            data.enabled[EFUSE_BRAKE],
+            data.control_state[EFUSE_BRAKE]
         );
         // serial_monitor("brake_efuse", "raw", "%d", data.raw[EFUSE_BRAKE]);
         // serial_monitor("brake_efuse", "voltage", "%f", data.voltage[EFUSE_BRAKE]);
@@ -508,7 +510,8 @@ void vEFuses(ULONG thread_input) {
             data.voltage[EFUSE_SHUTDOWN],
             data.current[EFUSE_SHUTDOWN],
             data.faulted[EFUSE_SHUTDOWN],
-            data.enabled[EFUSE_SHUTDOWN]
+            data.enabled[EFUSE_SHUTDOWN],
+            data.control_state[EFUSE_SHUTDOWN]
         );
         // serial_monitor("shutdown_efuse", "raw", "%d", data.raw[EFUSE_SHUTDOWN]);
         // serial_monitor("shutdown_efuse", "voltage", "%f", data.voltage[EFUSE_SHUTDOWN]);
@@ -522,7 +525,8 @@ void vEFuses(ULONG thread_input) {
             data.voltage[EFUSE_LV],
             data.current[EFUSE_LV],
             data.faulted[EFUSE_LV],
-            data.enabled[EFUSE_LV]
+            data.enabled[EFUSE_LV],
+            data.control_state[EFUSE_LV]
         );
         // serial_monitor("lv_efuse", "raw", "%d", data.raw[EFUSE_LV]);
         // serial_monitor("lv_efuse", "voltage", "%f", data.voltage[EFUSE_LV]);
@@ -537,7 +541,8 @@ void vEFuses(ULONG thread_input) {
             data.voltage[EFUSE_RADFAN],
             data.current[EFUSE_RADFAN],
             data.faulted[EFUSE_RADFAN],
-            data.enabled[EFUSE_RADFAN]
+            data.enabled[EFUSE_RADFAN],
+            data.control_state[EFUSE_RADFAN]
         );
         // serial_monitor("radfan_efuse", "raw", "%d", data.raw[EFUSE_RADFAN]);
         // serial_monitor("radfan_efuse", "voltage", "%f", data.voltage[EFUSE_RADFAN]);
@@ -551,7 +556,8 @@ void vEFuses(ULONG thread_input) {
             data.voltage[EFUSE_FANBATT],
             data.current[EFUSE_FANBATT],
             data.faulted[EFUSE_FANBATT],
-            data.enabled[EFUSE_FANBATT]
+            data.enabled[EFUSE_FANBATT],
+            data.control_state[EFUSE_FANBATT]
         );
         serial_monitor("efuse_fanbatt", "raw", "%d", data.raw[EFUSE_FANBATT]);
         serial_monitor("efuse_fanbatt", "voltage", "%f", data.voltage[EFUSE_FANBATT]);
@@ -565,7 +571,8 @@ void vEFuses(ULONG thread_input) {
             data.voltage[EFUSE_PUMP1],
             data.current[EFUSE_PUMP1],
             data.faulted[EFUSE_PUMP1],
-            data.enabled[EFUSE_PUMP1]
+            data.enabled[EFUSE_PUMP1],
+            data.control_state[EFUSE_PUMP1]
         );
         // serial_monitor("pumpone_efuse", "raw", "%d", data.raw[EFUSE_PUMP1]);
         // serial_monitor("pumpone_efuse", "voltage", "%f", data.voltage[EFUSE_PUMP1]);
@@ -579,7 +586,8 @@ void vEFuses(ULONG thread_input) {
             data.voltage[EFUSE_PUMP2],
             data.current[EFUSE_PUMP2],
             data.faulted[EFUSE_PUMP2],
-            data.enabled[EFUSE_PUMP2]
+            data.enabled[EFUSE_PUMP2],
+            data.control_state[EFUSE_PUMP2]
         );
 
         /* Send battbox eFuse message. */
@@ -588,7 +596,8 @@ void vEFuses(ULONG thread_input) {
             data.voltage[EFUSE_BATTBOX],
             data.current[EFUSE_BATTBOX],
             data.faulted[EFUSE_BATTBOX],
-            data.enabled[EFUSE_BATTBOX]
+            data.enabled[EFUSE_BATTBOX],
+            data.control_state[EFUSE_BATTBOX]
         );
 
         /* Send MC eFuse message. */
@@ -597,7 +606,8 @@ void vEFuses(ULONG thread_input) {
             data.voltage[EFUSE_MC],
             data.current[EFUSE_MC],
             data.faulted[EFUSE_MC],
-            data.enabled[EFUSE_MC]
+            data.enabled[EFUSE_MC],
+            data.control_state[EFUSE_MC]
         );
 
         /* Sleep Thread for specified number of ticks. */
