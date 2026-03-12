@@ -1068,22 +1068,23 @@ uint8_t send_dti_controller_temp_as_reported_by_vcu
 }
 
 uint8_t send_bms_battbox_temp_as_reported_by_vcu
-(uint16_t temp)
+(float temp)
 {
     can_msg_t msg;
     msg.id = 0xD2;
     msg.id_is_extended = false;
-    msg.len = 2;
+    msg.len = 4;
 
     
-            uint16_t data = 0;
-                        uint32_t temp_i = (uint32_t)(temp);
-                        if(temp_i > 65535ULL) {temp_i = 65535;
+            uint32_t data = 0;
+                        int32_t temp_i = (int32_t)(temp);
+                        if(temp_i > 2147483647) {temp_i = 2147483647;
+                        } else if(temp_i < -2147483648) {temp_i = -2147483648;
                         }
-                        data |= ((temp_i) & 0xFFFFULL) << 0;
+                        data |= ((uint32_t)(temp_i) & 0xFFFFFFFFULL) << 0;
             
-            uint16_t data_bigendian = __builtin_bswap16(data);
-            memcpy(msg.data, &data_bigendian, 2);
+            uint32_t data_bigendian = __builtin_bswap32(data);
+            memcpy(msg.data, &data_bigendian, 4);
         
 
     return queue_send(&can_outgoing, &msg, TX_NO_WAIT);

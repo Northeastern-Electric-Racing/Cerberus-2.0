@@ -285,5 +285,5 @@ uint8_t send_dti_controller_temp_as_reported_by_vcu
 * VCU/Echo/Battbox_Temp - BMS Battbox Temp
 */
 uint8_t send_bms_battbox_temp_as_reported_by_vcu
-(uint16_t temp);
+(float temp);
 #endif

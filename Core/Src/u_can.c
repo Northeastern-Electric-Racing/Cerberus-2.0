@@ -5,6 +5,7 @@
 #include "u_bms.h"
 #include "u_lightning.h"
 #include "u_dti.h"
+#include "u_efuses.h"
 #include "can_messages_tx.h"
 #include "can_messages_rx.h"
 
@@ -113,7 +114,54 @@ void can_inbox(can_msg_t *message) {
         dti_record_currents(message);
         break;
     case CANID_CALYPSO_EFCTRL_DASHBOARD:
-        
+        dashboard_efuse_state_t data = { 0 };
+        receive_dashboard_efuse_state(message, &data);
+        efuse_update_state(EFUSE_DASHBOARD, (efuse_control_state_t)data.state);
+        break;
+    case CANID_CALYPSO_EFCTRL_BRAKE:
+        brake_efuse_state_t data = { 0 };
+        receive_brake_efuse_state(message, &data);
+        efuse_update_state(EFUSE_BRAKE, (efuse_control_state_t)data.state);
+        break;
+    case CANID_CALYPSO_EFCTRL_SHUTDOWN:
+        shutdown_efuse_state_t data = { 0 };
+        receive_shutdown_efuse_state(message, &data);
+        efuse_update_state(EFUSE_SHUTDOWN, (efuse_control_state_t)data.state);
+        break;
+    case CANID_CALYPSO_EFCTRL_LV:
+        lv_efuse_state_t data = { 0 };
+        receive_lv_efuse_state(message, &data);
+        efuse_update_state(EFUSE_LV, (efuse_control_state_t)data.state);
+        break;
+    case CANID_CALYPSO_EFCTRL_RADFAN:
+        radfan_efuse_state_t data = { 0 };
+        receive_radfan_efuse_state(message, &data);
+        efuse_update_state(EFUSE_RADFAN, (efuse_control_state_t)data.state);
+        break;
+    case CANID_CALYPSO_EFCTRL_FANBATT:
+        fanbatt_efuse_state_t data = { 0 };
+        receive_fanbatt_efuse_state(message, &data);
+        efuse_update_state(EFUSE_FANBATT, (efuse_control_state_t)data.state);
+        break;
+    case CANID_CALYPSO_EFCTRL_PUMPONE:
+        pumpone_efuse_state_t data = { 0 };
+        receive_pumpone_efuse_state(message, &data);
+        efuse_update_state(EFUSE_PUMP1, (efuse_control_state_t)data.state);
+        break;
+    case CANID_CALYPSO_EFCTRL_PUMPTWO:
+        pumptwo_efuse_state_t data = { 0 };
+        receive_pumptwo_efuse_state(message, &data);
+        efuse_update_state(EFUSE_PUMP2, (efuse_control_state_t)data.state);
+        break;
+    case CANID_CALYPSO_EFCTRL_BATTBOX:
+        battbox_efuse_state_t data = { 0 };
+        receive_battbox_efuse_state(message, &data);
+        efuse_update_state(EFUSE_BATTBOX, (efuse_control_state_t)data.state);
+        break;
+    case CANID_CALYPSO_EFCTRL_MC:
+        mc_efuse_state_t data = { 0 };
+        receive_mc_efuse_state(message, &data);
+        efuse_update_state(EFUSE_MC, (efuse_control_state_t)data.state);
         break;
     default:
         PRINTLN_ERROR("Unknown CAN Message Recieved (Message ID: %ld).", message->id);
