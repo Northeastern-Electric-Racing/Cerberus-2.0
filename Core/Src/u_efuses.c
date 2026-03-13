@@ -38,7 +38,7 @@ static const _metadata efuses[] = {
 };
 
 /* eFuse State Array (updated by Calypso command messages). */
-_Atomic efuse_control_state_t _efuse_control_state[NUM_EFUSES] = { EF_OFF }; // The initial/default values for each index is set in efuse_init().
+static _Atomic efuse_control_state_t _efuse_control_state[NUM_EFUSES] = { EF_OFF }; // The initial/default values for each index is set in efuse_init().
 
 /* Inititialize the _efuse_control_state array to the values configured in the efuses[] table. */
 int efuse_init(void) {
