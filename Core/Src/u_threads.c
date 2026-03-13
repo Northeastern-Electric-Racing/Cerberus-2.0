@@ -598,6 +598,22 @@ void vEFuses(ULONG thread_input) {
             default: efuse_enable(EFUSE_MC); break;
         }
 
+        /* Determine Spare (other radfan) eFuse state. */
+        static const uint16_t SPARE_UPPERBOUND = 65;
+        static const uint16_t SPARE_LOWERBOUND = 35;
+        switch(data.control_state[EFUSE_SPARE]) {
+            case EF_ON: efuse_enable(EFUSE_SPARE); break;
+            case EF_OFF: efuse_disable(EFUSE_SPARE); break;
+            case EF_AUTO:
+                if(controller_temp >= SPARE_UPPERBOUND) {
+                    efuse_enable(EFUSE_SPARE);
+                } else if (controller_temp <= SPARE_LOWERBOUND) {
+                    efuse_disable(EFUSE_SPARE);
+                }
+                break;
+            default: efuse_enable(EFUSE_SPARE); break;
+        }
+
         /* Send dashboard eFuse message. */
         send_dashboard_efuse(
             data.raw[EFUSE_DASHBOARD],
