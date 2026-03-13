@@ -114,54 +114,54 @@ void can_inbox(can_msg_t *message) {
         dti_record_currents(message);
         break;
     case CANID_CALYPSO_EFCTRL_DASHBOARD:
-        dashboard_efuse_state_t data = { 0 };
-        receive_dashboard_efuse_state(message, &data);
-        efuse_update_state(EFUSE_DASHBOARD, (efuse_control_state_t)data.state);
+        dashboard_efuse_state_t dashboard = { 0 };
+        receive_dashboard_efuse_state(message, &dashboard);
+        efuse_update_state(EFUSE_DASHBOARD, (efuse_control_state_t)dashboard.state);
         break;
     case CANID_CALYPSO_EFCTRL_BRAKE:
-        brake_efuse_state_t data = { 0 };
-        receive_brake_efuse_state(message, &data);
-        efuse_update_state(EFUSE_BRAKE, (efuse_control_state_t)data.state);
+        brake_efuse_state_t brake = { 0 };
+        receive_brake_efuse_state(message, &brake);
+        efuse_update_state(EFUSE_BRAKE, (efuse_control_state_t)brake.state);
         break;
     case CANID_CALYPSO_EFCTRL_SHUTDOWN:
-        shutdown_efuse_state_t data = { 0 };
-        receive_shutdown_efuse_state(message, &data);
-        efuse_update_state(EFUSE_SHUTDOWN, (efuse_control_state_t)data.state);
+        shutdown_efuse_state_t shutdown = { 0 };
+        receive_shutdown_efuse_state(message, &shutdown);
+        efuse_update_state(EFUSE_SHUTDOWN, (efuse_control_state_t)shutdown.state);
         break;
     case CANID_CALYPSO_EFCTRL_LV:
-        lv_efuse_state_t data = { 0 };
-        receive_lv_efuse_state(message, &data);
-        efuse_update_state(EFUSE_LV, (efuse_control_state_t)data.state);
+        lv_efuse_state_t lv = { 0 };
+        receive_lv_efuse_state(message, &lv);
+        efuse_update_state(EFUSE_LV, (efuse_control_state_t)lv.state);
         break;
     case CANID_CALYPSO_EFCTRL_RADFAN:
-        radfan_efuse_state_t data = { 0 };
-        receive_radfan_efuse_state(message, &data);
-        efuse_update_state(EFUSE_RADFAN, (efuse_control_state_t)data.state);
+        radfan_efuse_state_t radfan = { 0 };
+        receive_radfan_efuse_state(message, &radfan);
+        efuse_update_state(EFUSE_RADFAN, (efuse_control_state_t)radfan.state);
         break;
     case CANID_CALYPSO_EFCTRL_FANBATT:
-        fanbatt_efuse_state_t data = { 0 };
-        receive_fanbatt_efuse_state(message, &data);
-        efuse_update_state(EFUSE_FANBATT, (efuse_control_state_t)data.state);
+        fanbatt_efuse_state_t fanbatt = { 0 };
+        receive_fanbatt_efuse_state(message, &fanbatt);
+        efuse_update_state(EFUSE_FANBATT, (efuse_control_state_t)fanbatt.state);
         break;
     case CANID_CALYPSO_EFCTRL_PUMPONE:
-        pumpone_efuse_state_t data = { 0 };
-        receive_pumpone_efuse_state(message, &data);
-        efuse_update_state(EFUSE_PUMP1, (efuse_control_state_t)data.state);
+        pumpone_efuse_state_t pumpone = { 0 };
+        receive_pumpone_efuse_state(message, &pumpone);
+        efuse_update_state(EFUSE_PUMP1, (efuse_control_state_t)pumpone.state);
         break;
     case CANID_CALYPSO_EFCTRL_PUMPTWO:
-        pumptwo_efuse_state_t data = { 0 };
-        receive_pumptwo_efuse_state(message, &data);
-        efuse_update_state(EFUSE_PUMP2, (efuse_control_state_t)data.state);
+        pumptwo_efuse_state_t pumptwo = { 0 };
+        receive_pumptwo_efuse_state(message, &pumptwo);
+        efuse_update_state(EFUSE_PUMP2, (efuse_control_state_t)pumptwo.state);
         break;
     case CANID_CALYPSO_EFCTRL_BATTBOX:
-        battbox_efuse_state_t data = { 0 };
-        receive_battbox_efuse_state(message, &data);
-        efuse_update_state(EFUSE_BATTBOX, (efuse_control_state_t)data.state);
+        battbox_efuse_state_t battbox = { 0 };
+        receive_battbox_efuse_state(message, &battbox);
+        efuse_update_state(EFUSE_BATTBOX, (efuse_control_state_t)battbox.state);
         break;
     case CANID_CALYPSO_EFCTRL_MC:
-        mc_efuse_state_t data = { 0 };
-        receive_mc_efuse_state(message, &data);
-        efuse_update_state(EFUSE_MC, (efuse_control_state_t)data.state);
+        mc_efuse_state_t mc = { 0 };
+        receive_mc_efuse_state(message, &mc);
+        efuse_update_state(EFUSE_MC, (efuse_control_state_t)mc.state);
         break;
     default:
         PRINTLN_ERROR("Unknown CAN Message Recieved (Message ID: %ld).", message->id);
