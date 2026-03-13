@@ -1077,7 +1077,7 @@ uint8_t send_bms_battbox_temp_as_reported_by_vcu
 
     
             uint32_t data = 0;
-                        int32_t temp_i = (int32_t)(temp);
+                        int32_t temp_i = (int32_t)(temp*100);
                         if(temp_i > 2147483647) {temp_i = 2147483647;
                         } else if(temp_i < -2147483648) {temp_i = -2147483648;
                         }
