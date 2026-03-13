@@ -674,11 +674,11 @@ void vEFuses(ULONG thread_input) {
             data.enabled[EFUSE_FANBATT],
             data.control_state[EFUSE_FANBATT]
         );
-        serial_monitor("efuse_fanbatt", "raw", "%d", data.raw[EFUSE_FANBATT]);
-        serial_monitor("efuse_fanbatt", "voltage", "%f", data.voltage[EFUSE_FANBATT]);
-        serial_monitor("efuse_fanbatt", "current", "%f", data.current[EFUSE_FANBATT]);
-        serial_monitor("efuse_fanbatt", "faulted?", "%d", data.faulted[EFUSE_FANBATT]);
-        serial_monitor("efuse_fanbatt", "enabled?", "%d", data.enabled[EFUSE_FANBATT]);
+        // serial_monitor("efuse_fanbatt", "raw", "%d", data.raw[EFUSE_FANBATT]);
+        // serial_monitor("efuse_fanbatt", "voltage", "%f", data.voltage[EFUSE_FANBATT]);
+        // serial_monitor("efuse_fanbatt", "current", "%f", data.current[EFUSE_FANBATT]);
+        // serial_monitor("efuse_fanbatt", "faulted?", "%d", data.faulted[EFUSE_FANBATT]);
+        // serial_monitor("efuse_fanbatt", "enabled?", "%d", data.enabled[EFUSE_FANBATT]);
 
         /* Send pump1 eFuse message. */
         send_pumpone_efuse(

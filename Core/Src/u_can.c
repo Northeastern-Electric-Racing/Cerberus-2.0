@@ -115,6 +115,7 @@ void can_inbox(can_msg_t *message) {
         break;
     case CANID_CALYPSO_EFCTRL_DASHBOARD:
         dashboard_efuse_state_t dashboard = { 0 };
+        PRINTLN_INFO("New dashboard state");
         receive_dashboard_efuse_state(message, &dashboard);
         efuse_update_state(EFUSE_DASHBOARD, (efuse_control_state_t)dashboard.state);
         break;
