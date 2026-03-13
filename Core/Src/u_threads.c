@@ -476,9 +476,9 @@ void vEFuses(ULONG thread_input) {
 
         /* Determine dashboard eFuse state. */
         switch(data.control_state[EFUSE_DASHBOARD]) {
-            case EF_ON: efuse_enable(EFUSE_DASHBOARD);
-            case EF_OFF: efuse_disable(EFUSE_DASHBOARD);
-            default: efuse_enable(EFUSE_DASHBOARD);
+            case EF_ON: efuse_enable(EFUSE_DASHBOARD); break;
+            case EF_OFF: efuse_disable(EFUSE_DASHBOARD); break;
+            default: efuse_enable(EFUSE_DASHBOARD); break;
         }
 
         /* Send dashboard eFuse message. */
@@ -498,9 +498,9 @@ void vEFuses(ULONG thread_input) {
 
         /* Determine brake eFuse state. */
         switch(data.control_state[EFUSE_BRAKE]) {
-            case EF_ON: efuse_enable(EFUSE_BRAKE);
-            case EF_OFF: efuse_disable(EFUSE_BRAKE);
-            default: efuse_enable(EFUSE_BRAKE);
+            case EF_ON: efuse_enable(EFUSE_BRAKE); break;
+            case EF_OFF: efuse_disable(EFUSE_BRAKE); break;
+            default: efuse_enable(EFUSE_BRAKE); break;
         }
 
         /* Send brake eFuse message. */
@@ -520,9 +520,9 @@ void vEFuses(ULONG thread_input) {
 
         /* Determine shutdown eFuse state. */
         switch(data.control_state[EFUSE_SHUTDOWN]) {
-            case EF_ON: efuse_enable(EFUSE_SHUTDOWN);
-            case EF_OFF: efuse_disable(EFUSE_SHUTDOWN);
-            default: efuse_enable(EFUSE_SHUTDOWN);
+            case EF_ON: efuse_enable(EFUSE_SHUTDOWN); break;
+            case EF_OFF: efuse_disable(EFUSE_SHUTDOWN); break;
+            default: efuse_enable(EFUSE_SHUTDOWN); break;
         }
 
         /* Send shutdown eFuse message. */
@@ -542,9 +542,9 @@ void vEFuses(ULONG thread_input) {
 
         /* Determine LV eFuse state. */
         switch(data.control_state[EFUSE_LV]) {
-            case EF_ON: efuse_enable(EFUSE_LV);
-            case EF_OFF: efuse_disable(EFUSE_LV);
-            default: efuse_enable(EFUSE_LV);
+            case EF_ON: efuse_enable(EFUSE_LV); break;
+            case EF_OFF: efuse_disable(EFUSE_LV); break;
+            default: efuse_enable(EFUSE_LV); break;
         }
 
         /* Send LV eFuse message. */
@@ -564,11 +564,11 @@ void vEFuses(ULONG thread_input) {
 
         /* Determine radfan eFuse state. */
         switch(data.control_state[EFUSE_RADFAN]) {
-            case EF_ON: efuse_enable(EFUSE_RADFAN);
-            case EF_OFF: efuse_disable(EFUSE_RADFAN);
+            case EF_ON: efuse_enable(EFUSE_RADFAN); break;
+            case EF_OFF: efuse_disable(EFUSE_RADFAN); break;
             case EF_AUTO:
-                const uint16_t RADFAN_UPPERBOUND = 65;
-                const uint16_t RADFAN_LOWERBOUND = 35;
+                static const uint16_t RADFAN_UPPERBOUND = 65;
+                static const uint16_t RADFAN_LOWERBOUND = 35;
                 uint16_t temp = dti_get_motor_temp();
                 if(temp >= RADFAN_UPPERBOUND) {
                     efuse_enable(EFUSE_RADFAN);
@@ -577,7 +577,7 @@ void vEFuses(ULONG thread_input) {
                 }
                 send_dti_motor_temp_as_reported_by_vcu(temp);
                 break;
-            default: efuse_enable(EFUSE_RADFAN);
+            default: efuse_enable(EFUSE_RADFAN); break;
         }
 
         /* Send radfan eFuse message. */
@@ -597,11 +597,11 @@ void vEFuses(ULONG thread_input) {
 
         /* Determine fanbatt eFuse state. */
         switch(data.control_state[EFUSE_FANBATT]) {
-            case EF_ON: efuse_enable(EFUSE_FANBATT);
-            case EF_OFF: efuse_disable(EFUSE_FANBATT);
+            case EF_ON: efuse_enable(EFUSE_FANBATT); break;
+            case EF_OFF: efuse_disable(EFUSE_FANBATT); break;
             case EF_AUTO:
-                const float FANBATT_UPPERBOUND = 50;
-                const float FANBATT_LOWERBOUND = 30;
+                static const float FANBATT_UPPERBOUND = 50;
+                static const float FANBATT_LOWERBOUND = 30;
                 float temp = bms_getBattboxTemp();
                 if(temp >= FANBATT_UPPERBOUND) {
                     efuse_enable(EFUSE_FANBATT);
@@ -610,7 +610,7 @@ void vEFuses(ULONG thread_input) {
                 }
                 send_bms_battbox_temp_as_reported_by_vcu(temp);
                 break;
-            default: efuse_enable(EFUSE_FANBATT);
+            default: efuse_enable(EFUSE_FANBATT); break;
         }
 
         /* Send fanbatt eFuse message. */
@@ -630,11 +630,11 @@ void vEFuses(ULONG thread_input) {
 
         /* Determine pump1 eFuse state. */
         switch(data.control_state[EFUSE_PUMP1]) {
-            case EF_ON: efuse_enable(EFUSE_PUMP1);
-            case EF_OFF: efuse_disable(EFUSE_PUMP1);
+            case EF_ON: efuse_enable(EFUSE_PUMP1); break;
+            case EF_OFF: efuse_disable(EFUSE_PUMP1); break;
             case EF_AUTO:
-                const uint16_t PUMP1_UPPERBOUND = 45;
-                const uint16_t PUMP1_LOWERBOUND = 35;
+                static const uint16_t PUMP1_UPPERBOUND = 45;
+                static const uint16_t PUMP1_LOWERBOUND = 35;
                 uint16_t temp = dti_get_motor_temp();
                 if(temp >= PUMP1_UPPERBOUND) {
                     efuse_enable(EFUSE_PUMP1);
@@ -643,7 +643,7 @@ void vEFuses(ULONG thread_input) {
                 }
                 /* Don't need to call send_dti_motor_temp_as_reported_by_vcu() since we already do it for the RADFAN efuse. */
                 break;
-            default: efuse_enable(EFUSE_PUMP1);
+            default: efuse_enable(EFUSE_PUMP1); break;
         }
 
         /* Send pump1 eFuse message. */
@@ -663,11 +663,11 @@ void vEFuses(ULONG thread_input) {
 
         /* Determine pump2 eFuse state. */
         switch(data.control_state[EFUSE_PUMP2]) {
-            case EF_ON: efuse_enable(EFUSE_PUMP2);
-            case EF_OFF: efuse_disable(EFUSE_PUMP2);
+            case EF_ON: efuse_enable(EFUSE_PUMP2); break;
+            case EF_OFF: efuse_disable(EFUSE_PUMP2); break;
             case EF_AUTO:
-                const uint16_t PUMP2_UPPERBOUND = 45;
-                const uint16_t PUMP2_LOWERBOUND = 35;
+                static const uint16_t PUMP2_UPPERBOUND = 45;
+                static const uint16_t PUMP2_LOWERBOUND = 35;
                 uint16_t temp = dti_get_controller_temp();
                 if(temp >= PUMP2_UPPERBOUND) {
                     efuse_enable(EFUSE_PUMP2);
@@ -676,7 +676,7 @@ void vEFuses(ULONG thread_input) {
                 }
                 send_dti_controller_temp_as_reported_by_vcu(temp);
                 break;
-            default: efuse_enable(EFUSE_PUMP2);
+            default: efuse_enable(EFUSE_PUMP2); break;
         }
 
         /* Send pump2 eFuse message. */
@@ -691,9 +691,9 @@ void vEFuses(ULONG thread_input) {
 
         /* Determine battbox eFuse state. */
         switch(data.control_state[EFUSE_BATTBOX]) {
-            case EF_ON: efuse_enable(EFUSE_BATTBOX);
-            case EF_OFF: efuse_disable(EFUSE_BATTBOX);
-            default: efuse_enable(EFUSE_BATTBOX);
+            case EF_ON: efuse_enable(EFUSE_BATTBOX); break;
+            case EF_OFF: efuse_disable(EFUSE_BATTBOX); break;
+            default: efuse_enable(EFUSE_BATTBOX); break;
         }
 
         /* Send battbox eFuse message. */
@@ -708,9 +708,9 @@ void vEFuses(ULONG thread_input) {
 
         /* Determine MC eFuse state. */
         switch(data.control_state[EFUSE_MC]) {
-            case EF_ON: efuse_enable(EFUSE_MC);
-            case EF_OFF: efuse_disable(EFUSE_MC);
-            default: efuse_enable(EFUSE_MC);
+            case EF_ON: efuse_enable(EFUSE_MC); break;
+            case EF_OFF: efuse_disable(EFUSE_MC); break;
+            default: efuse_enable(EFUSE_MC); break;
         }
 
         /* Send MC eFuse message. */

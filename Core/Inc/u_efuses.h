@@ -43,5 +43,6 @@ efuse_data_t efuse_getData(void);  // Returns an instance of efuse_data_t with a
 void efuse_enable(efuse_t efuse);  // Enables an eFuse.
 void efuse_disable(efuse_t efuse); // Disables an eFuse.
 void efuse_update_state(efuse_t efuse, efuse_control_state_t state); // Updates an eFuse's control state. Intended to be called when the relevant commands from Calypso are received.
+int efuse_init(void); // Inititialize the _efuse_control_state array to the values configured in the efuses[] table.
 
 #endif /* u_efuses.h */
