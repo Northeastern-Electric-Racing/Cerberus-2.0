@@ -10,7 +10,7 @@
 #define BMS_CAN_MONITOR_DELAY 4000
 
 /* Globals. */
-static _Atomic uint16_t battbox_temp;
+static _Atomic float battbox_temp;
 
 /* Fault callback(s). */
 static void _bms_fault_callback(ULONG args) {queue_send(&faults, &(fault_t){BMS_CAN_MONITOR_FAULT}, TX_NO_WAIT);}; // Queues the BMS CAN Monitor Fault.
@@ -51,11 +51,11 @@ int bms_handleDclMessage(void)
 }
 
 /* Returns the battbox temperature. */
-uint16_t bms_getBattboxTemp(void) {
+float bms_getBattboxTemp(void) {
     return battbox_temp;
 }
 
 /* Sets the battbox temperature. The "temp" parameter should be taken from the 'BMS/Cells/Temp_Avg_Value' CAN message. */
-void bms_setBattboxTemp(uint16_t temp) {
+void bms_setBattboxTemp(float temp) {
     battbox_temp = temp;
 }

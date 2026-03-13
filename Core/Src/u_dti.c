@@ -292,21 +292,21 @@ float dti_get_mph(void)
 	       (TIRE_DIAMETER / 63360.0) * M_PI;
 }
 
-void dti_record_rpm(can_msg_t msg)
+void dti_record_rpm(can_msg_t* msg)
 {
 	/* ERPM is first four bytes of can message in big endian format */
-	int32_t erpm = (msg.data[0] << 24) + (msg.data[1] << 16) +
-		       (msg.data[2] << 8) + (msg.data[3]);
+	int32_t erpm = (msg->data[0] << 24) + (msg->data[1] << 16) +
+		       (msg->data[2] << 8) + (msg->data[3]);
 
 	int32_t rpm = erpm / POLE_PAIRS;
 
 	mc.rpm = rpm;
 }
 
-void dti_record_temp(can_msg_t msg)
+void dti_record_temp(can_msg_t* msg)
 {
-	uint16_t controllerTemp = (msg.data[0] << 8) + (msg.data[1]);
-	uint16_t motorTemp = (msg.data[2] << 8) + (msg.data[3]);
+	uint16_t controllerTemp = (msg->data[0] << 8) + (msg->data[1]);
+	uint16_t motorTemp = (msg->data[2] << 8) + (msg->data[3]);
 
 	controllerTemp /= 10;
 	motorTemp /= 10;
@@ -325,11 +325,11 @@ uint16_t dti_get_controller_temp(void)
 	return mc.contr_temp;
 }
 
-void dti_record_currents(can_msg_t msg)
+void dti_record_currents(can_msg_t* msg)
 {
 
-	int16_t ac_current = (msg.data[0] << 8) + (msg.data[1]) / 10;
-	int16_t dc_current = (msg.data[2] << 8) + (msg.data[3]) / 10;
+	int16_t ac_current = (msg->data[0] << 8) + (msg->data[1]) / 10;
+	int16_t dc_current = (msg->data[2] << 8) + (msg->data[3]) / 10;
 
 	mc.ac_current = ac_current;
 	mc.dc_current = dc_current;
