@@ -422,6 +422,22 @@ void receive_mc_efuse_state(const can_msg_t *message, mc_efuse_state_t *mc_efuse
     mc_efuse_state->state = (uint8_t)state_raw;
 }
 
+void receive_battbox_efuse_state(const can_msg_t *message, battbox_efuse_state_t *battbox_efuse_state) {
+    
+    uint8_t data = message->data[0];
+    uint64_t state_mask = (1ULL << 8) - 1ULL;
+    uint64_t state_raw = (data >> 0) & state_mask;
+    battbox_efuse_state->state = (uint8_t)state_raw;
+}
+
+void receive_spare_efuse_state(const can_msg_t *message, spare_efuse_state_t *spare_efuse_state) {
+    
+    uint8_t data = message->data[0];
+    uint64_t state_mask = (1ULL << 8) - 1ULL;
+    uint64_t state_raw = (data >> 0) & state_mask;
+    spare_efuse_state->state = (uint8_t)state_raw;
+}
+
 void receive_bms_charge_message_send(const can_msg_t *message, bms_charge_message_send_t *bms_charge_message_send) {
     
     uint64_t data_bigendian;

@@ -16,6 +16,7 @@ typedef enum {
     EFUSE_PUMP2,
     EFUSE_BATTBOX,
     EFUSE_MC,
+    EFUSE_SPARE,
 
     /* Total number of efuses. */
     NUM_EFUSES

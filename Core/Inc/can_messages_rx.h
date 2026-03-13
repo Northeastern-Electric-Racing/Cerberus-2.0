@@ -213,6 +213,18 @@ typedef struct {
 void receive_mc_efuse_state(const can_msg_t *message, mc_efuse_state_t *mc_efuse_state);
 
 typedef struct {
+ uint8_t state;
+} battbox_efuse_state_t;
+
+void receive_battbox_efuse_state(const can_msg_t *message, battbox_efuse_state_t *battbox_efuse_state);
+
+typedef struct {
+ uint8_t state;
+} spare_efuse_state_t;
+
+void receive_spare_efuse_state(const can_msg_t *message, spare_efuse_state_t *spare_efuse_state);
+
+typedef struct {
  float charge_volts;
  float charge_current;
  uint8_t enable_charging;

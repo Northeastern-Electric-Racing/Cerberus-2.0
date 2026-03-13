@@ -478,11 +478,13 @@ void vEFuses(ULONG thread_input) {
         uint16_t motor_temp = dti_get_motor_temp();
         float battbox_temp = bms_getBattboxTemp();
         uint16_t controller_temp = dti_get_controller_temp();
+        bool brake_state = pedals_getBrakeState();
 
         /* Report the temp readings. */
         send_dti_motor_temp_as_reported_by_vcu(motor_temp);
         send_bms_battbox_temp_as_reported_by_vcu(battbox_temp);
         send_dti_controller_temp_as_reported_by_vcu(controller_temp);
+        send_brake_state_as_reported_by_vcu(brake_state);
 
         /* Determine radfan eFuse state. */
         static const uint16_t RADFAN_UPPERBOUND = 65;
@@ -559,6 +561,12 @@ void vEFuses(ULONG thread_input) {
         switch(data.control_state[EFUSE_BRAKE]) {
             case EF_ON: efuse_enable(EFUSE_BRAKE); break;
             case EF_OFF: efuse_disable(EFUSE_BRAKE); break;
+            case EF_AUTO:
+                if(brake_state == true) {
+                    efuse_enable(EFUSE_BRAKE);
+                } else {
+                    efuse_disable(EFUSE_BRAKE);
+                }
             default: efuse_enable(EFUSE_BRAKE); break;
         }
 
@@ -723,6 +731,16 @@ void vEFuses(ULONG thread_input) {
             data.faulted[EFUSE_MC],
             data.enabled[EFUSE_MC],
             data.control_state[EFUSE_MC]
+        );
+
+        /* Send Spare eFuse message. */
+        send_spare_efuse(
+            data.raw[EFUSE_SPARE],
+            data.voltage[EFUSE_SPARE],
+            data.current[EFUSE_SPARE],
+            data.faulted[EFUSE_SPARE],
+            data.enabled[EFUSE_SPARE],
+            data.control_state[EFUSE_SPARE]
         );
 
         /* Sleep Thread for specified number of ticks. */
