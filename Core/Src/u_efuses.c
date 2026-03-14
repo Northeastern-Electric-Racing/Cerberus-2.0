@@ -95,3 +95,8 @@ void efuse_disable(efuse_t efuse) {
 void efuse_update_state(efuse_t efuse, efuse_control_state_t state) {
     _efuse_control_state[efuse] = state;
 }
+
+/* Gets the control state of the eFuse. */
+efuse_control_state_t efuse_get_state(efuse_t efuse) {
+    return _efuse_control_state[efuse];
+}
