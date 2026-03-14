@@ -614,11 +614,15 @@ void pedals_process(void) {
     /* Set brake state, and turn brakelight on/off. */
     if(pedal_data.percentage_brake > PEDAL_BRAKE_THRESH) {
         brake_pressed = true;
-        efuse_enable(EFUSE_BRAKE);
+		if(efuse_get_state(EFUSE_BRAKE) == EF_AUTO) {
+			efuse_enable(EFUSE_BRAKE);
+		}
     }
     else {
         brake_pressed = false;
-        efuse_disable(EFUSE_BRAKE);
+		if(efuse_get_state(EFUSE_BRAKE) == EF_AUTO) {
+			efuse_disable(EFUSE_BRAKE);
+		}
     }
 
 	uint16_t dc_current = dti_get_dc_current();

@@ -151,6 +151,18 @@ uint8_t send_mc_efuse
 
 /**
 * Contents of this message:
+* VCU/eFuses/Spare/ADC - Raw ADC Value.
+* VCU/eFuses/Spare/Voltage - Spare eFuse Voltage
+* VCU/eFuses/Spare/Current - Spare eFuse Current.
+* VCU/eFuses/Spare/Faulted? - The state of the Spare eFuse's fault pin.
+* VCU/eFuses/Spare/Enabled? - The state of the Spare eFuse's Enable pin.
+* VCU/eFuses/Spare/Control_State - The eFuse's control state.
+*/
+uint8_t send_spare_efuse
+(uint16_t ADC,float voltage,float current,bool is_faulted,bool is_enabled,uint8_t control_state);
+
+/**
+* Contents of this message:
 * VCU/Shutdown/BMS_GPIO - 
 * VCU/Shutdown/BOTS_GPIO - 
 * VCU/Shutdown/SPARE_GPIO - 
@@ -286,4 +298,11 @@ uint8_t send_dti_controller_temp_as_reported_by_vcu
 */
 uint8_t send_bms_battbox_temp_as_reported_by_vcu
 (float temp);
+
+/**
+* Contents of this message:
+* VCU/Echo/Brake_State - Brake State
+*/
+uint8_t send_brake_state_as_reported_by_vcu
+(bool brake_state);
 #endif

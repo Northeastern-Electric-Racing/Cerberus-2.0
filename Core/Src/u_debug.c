@@ -34,5 +34,5 @@ void debug_onUserButtonPressed(void) {
     static int times_pressed = 0;
     times_pressed++;
     PRINTLN_INFO("User button pressed.");
-    serial_monitor("user_button", "times_pressed", "%d", times_pressed);
+    // serial_monitor("user_button", "times_pressed", "%d", times_pressed);
 }

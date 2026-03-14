@@ -478,11 +478,13 @@ void vEFuses(ULONG thread_input) {
         uint16_t motor_temp = dti_get_motor_temp();
         float battbox_temp = bms_getBattboxTemp();
         uint16_t controller_temp = dti_get_controller_temp();
+        bool brake_state = pedals_getBrakeState();
 
         /* Report the temp readings. */
         send_dti_motor_temp_as_reported_by_vcu(motor_temp);
         send_bms_battbox_temp_as_reported_by_vcu(battbox_temp);
         send_dti_controller_temp_as_reported_by_vcu(controller_temp);
+        send_brake_state_as_reported_by_vcu(brake_state);
 
         /* Determine radfan eFuse state. */
         static const uint16_t RADFAN_UPPERBOUND = 65;
@@ -559,6 +561,12 @@ void vEFuses(ULONG thread_input) {
         switch(data.control_state[EFUSE_BRAKE]) {
             case EF_ON: efuse_enable(EFUSE_BRAKE); break;
             case EF_OFF: efuse_disable(EFUSE_BRAKE); break;
+            case EF_AUTO:
+                if(brake_state == true) {
+                    efuse_enable(EFUSE_BRAKE);
+                } else {
+                    efuse_disable(EFUSE_BRAKE);
+                }
             default: efuse_enable(EFUSE_BRAKE); break;
         }
 
@@ -588,6 +596,22 @@ void vEFuses(ULONG thread_input) {
             case EF_ON: efuse_enable(EFUSE_MC); break;
             case EF_OFF: efuse_disable(EFUSE_MC); break;
             default: efuse_enable(EFUSE_MC); break;
+        }
+
+        /* Determine Spare (other radfan) eFuse state. */
+        static const uint16_t SPARE_UPPERBOUND = 65;
+        static const uint16_t SPARE_LOWERBOUND = 35;
+        switch(data.control_state[EFUSE_SPARE]) {
+            case EF_ON: efuse_enable(EFUSE_SPARE); break;
+            case EF_OFF: efuse_disable(EFUSE_SPARE); break;
+            case EF_AUTO:
+                if(controller_temp >= SPARE_UPPERBOUND) {
+                    efuse_enable(EFUSE_SPARE);
+                } else if (controller_temp <= SPARE_LOWERBOUND) {
+                    efuse_disable(EFUSE_SPARE);
+                }
+                break;
+            default: efuse_enable(EFUSE_SPARE); break;
         }
 
         /* Send dashboard eFuse message. */
@@ -674,11 +698,11 @@ void vEFuses(ULONG thread_input) {
             data.enabled[EFUSE_FANBATT],
             data.control_state[EFUSE_FANBATT]
         );
-        serial_monitor("efuse_fanbatt", "raw", "%d", data.raw[EFUSE_FANBATT]);
-        serial_monitor("efuse_fanbatt", "voltage", "%f", data.voltage[EFUSE_FANBATT]);
-        serial_monitor("efuse_fanbatt", "current", "%f", data.current[EFUSE_FANBATT]);
-        serial_monitor("efuse_fanbatt", "faulted?", "%d", data.faulted[EFUSE_FANBATT]);
-        serial_monitor("efuse_fanbatt", "enabled?", "%d", data.enabled[EFUSE_FANBATT]);
+        // serial_monitor("efuse_fanbatt", "raw", "%d", data.raw[EFUSE_FANBATT]);
+        // serial_monitor("efuse_fanbatt", "voltage", "%f", data.voltage[EFUSE_FANBATT]);
+        // serial_monitor("efuse_fanbatt", "current", "%f", data.current[EFUSE_FANBATT]);
+        // serial_monitor("efuse_fanbatt", "faulted?", "%d", data.faulted[EFUSE_FANBATT]);
+        // serial_monitor("efuse_fanbatt", "enabled?", "%d", data.enabled[EFUSE_FANBATT]);
 
         /* Send pump1 eFuse message. */
         send_pumpone_efuse(
@@ -723,6 +747,16 @@ void vEFuses(ULONG thread_input) {
             data.faulted[EFUSE_MC],
             data.enabled[EFUSE_MC],
             data.control_state[EFUSE_MC]
+        );
+
+        /* Send Spare eFuse message. */
+        send_spare_efuse(
+            data.raw[EFUSE_SPARE],
+            data.voltage[EFUSE_SPARE],
+            data.current[EFUSE_SPARE],
+            data.faulted[EFUSE_SPARE],
+            data.enabled[EFUSE_SPARE],
+            data.control_state[EFUSE_SPARE]
         );
 
         /* Sleep Thread for specified number of ticks. */
