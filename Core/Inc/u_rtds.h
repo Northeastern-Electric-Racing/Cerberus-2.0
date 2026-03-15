@@ -6,13 +6,6 @@
 /* Config: */
 #define RTDS_DURATION 5000 /* RTDS duration (in ticks). */
 
-/* RTDS States (commanded by Calypso) */
-typedef enum {
-    OFF,        /* RTDS is off. */
-    SOUNDING,   /* RTDS is sounding. */
-    REVERSE     /* RTDS is making reverse sound (periodic beeping). */
-} rtds_state_t;
-
 /* API */
 int rtds_init(void);                // Initializes the RTDS timer.
 int rtds_soundRTDS(void);           // Sounds the RTDS (Ready-to-drive sound).
