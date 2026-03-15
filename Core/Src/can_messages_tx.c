@@ -6,8 +6,8 @@
 #include "can_messages_tx.h"
 #include <stdbool.h>
 
+#include "u_tx_debug.h"
 #include "u_queues.h"
-
 #include "c_utils.h"
 #include "fdcan.h"
 #include "bitstream.h"
@@ -21,19 +21,20 @@ uint8_t send_ac_current_command
 {
     can_msg_t msg;
     msg.id = 0x036;
-    
     msg.id_is_extended = false;
+    msg.len = 2;
 
-    bitstream_t ac_current_command_msg;
-	uint8_t bitstream_data[2];
-	bitstream_init(&ac_current_command_msg, bitstream_data, 2);
-	
-    bitstream_add_signed(&ac_current_command_msg, current_target_ac*10, 16);
-
-    handle_bitstream_overflow(&ac_current_command_msg, msg.id);
     
-    msg.len = sizeof(bitstream_data);
-    memcpy(msg.data, &bitstream_data, sizeof(bitstream_data));
+            uint16_t data = 0;
+                        int32_t current_target_ac_i = (int32_t)(current_target_ac*10);
+                        if(current_target_ac_i > 32767) {current_target_ac_i = 32767;
+                        } else if(current_target_ac_i < -32768) {current_target_ac_i = -32768;
+                        }
+                        data |= ((uint32_t)(current_target_ac_i) & 0xFFFFULL) << 0;
+            
+            uint16_t data_bigendian = __builtin_bswap16(data);
+            memcpy(msg.data, &data_bigendian, 2);
+        
 
     return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
 }
@@ -43,20 +44,20 @@ uint8_t send_brake_current_command
 {
     can_msg_t msg;
     msg.id = 0x056;
-    
     msg.id_is_extended = false;
+    msg.len = 8;
 
-    bitstream_t brake_current_command_msg;
-	uint8_t bitstream_data[8];
-	bitstream_init(&brake_current_command_msg, bitstream_data, 8);
-	
-    bitstream_add_signed(&brake_current_command_msg, brake_ac_current*10, 16);
     
-
-    handle_bitstream_overflow(&brake_current_command_msg, msg.id);
-    
-    msg.len = sizeof(bitstream_data);
-    memcpy(msg.data, &bitstream_data, sizeof(bitstream_data));
+            uint64_t data = 0;
+                        int32_t brake_ac_current_i = (int32_t)(brake_ac_current*10);
+                        if(brake_ac_current_i > 32767) {brake_ac_current_i = 32767;
+                        } else if(brake_ac_current_i < -32768) {brake_ac_current_i = -32768;
+                        }
+                        data |= ((uint32_t)(brake_ac_current_i) & 0xFFFFULL) << 48;
+            
+            uint64_t data_bigendian = __builtin_bswap64(data);
+            memcpy(msg.data, &data_bigendian, 8);
+        
 
     return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
 }
@@ -66,269 +67,524 @@ uint8_t send_drive_enable_command
 {
     can_msg_t msg;
     msg.id = 0x196;
-    
     msg.id_is_extended = false;
+    msg.len = 1;
 
-    bitstream_t drive_enable_command_msg;
-	uint8_t bitstream_data[1];
-	bitstream_init(&drive_enable_command_msg, bitstream_data, 1);
-	
-    bitstream_add(&drive_enable_command_msg, drive_enable, 8);
-
-    handle_bitstream_overflow(&drive_enable_command_msg, msg.id);
     
-    msg.len = sizeof(bitstream_data);
-    memcpy(msg.data, &bitstream_data, sizeof(bitstream_data));
+            uint8_t data = 0;
+                        uint32_t drive_enable_i = (uint32_t)(drive_enable);
+                        if(drive_enable_i > 255ULL) {drive_enable_i = 255;
+                        }
+                        data |= ((drive_enable_i) & 0xFFULL) << 0;
+            
+            msg.data[0] = data;
+        
 
     return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
 }
 
 uint8_t send_dashboard_efuse
-(uint16_t ADC,float voltage,float current,bool is_faulted,bool is_enabled)
+(uint16_t ADC,float voltage,float current,bool is_faulted,bool is_enabled,uint8_t control_state)
 {
     can_msg_t msg;
     msg.id = 0xEF0;
-    msg.id_is_extended = true;
+    msg.id_is_extended = true;msg.len = 8;
 
-    bitstream_t dashboard_efuse_msg;
-	uint8_t bitstream_data[8];
-	bitstream_init(&dashboard_efuse_msg, bitstream_data, 8);
-	
-    bitstream_add(&dashboard_efuse_msg, ADC, 16);
-    bitstream_add(&dashboard_efuse_msg, voltage*1000, 16);
-    bitstream_add(&dashboard_efuse_msg, current*1000, 16);
-    bitstream_add(&dashboard_efuse_msg, is_faulted, 8);
-    bitstream_add(&dashboard_efuse_msg, is_enabled, 8);
-
-    handle_bitstream_overflow(&dashboard_efuse_msg, msg.id);
     
-    msg.len = sizeof(bitstream_data);
-    memcpy(msg.data, &bitstream_data, sizeof(bitstream_data));
+            uint64_t data = 0;
+                        uint32_t ADC_i = (uint32_t)(ADC);
+                        if(ADC_i > 65535ULL) {ADC_i = 65535;
+                        }
+                        data |= ((ADC_i) & 0xFFFFULL) << 48;
+            
+                        uint32_t voltage_i = (uint32_t)(voltage*1000);
+                        if(voltage_i > 65535ULL) {voltage_i = 65535;
+                        }
+                        data |= ((voltage_i) & 0xFFFFULL) << 32;
+            
+                        uint32_t current_i = (uint32_t)(current*1000);
+                        if(current_i > 65535ULL) {current_i = 65535;
+                        }
+                        data |= ((current_i) & 0xFFFFULL) << 16;
+            
+                        uint32_t is_faulted_i = (uint32_t)(is_faulted);
+                        if(is_faulted_i > 15ULL) {is_faulted_i = 15;
+                        }
+                        data |= ((is_faulted_i) & 0xFULL) << 12;
+            
+                        uint32_t is_enabled_i = (uint32_t)(is_enabled);
+                        if(is_enabled_i > 15ULL) {is_enabled_i = 15;
+                        }
+                        data |= ((is_enabled_i) & 0xFULL) << 8;
+            
+                        uint32_t control_state_i = (uint32_t)(control_state);
+                        if(control_state_i > 255ULL) {control_state_i = 255;
+                        }
+                        data |= ((control_state_i) & 0xFFULL) << 0;
+            
+            uint64_t data_bigendian = __builtin_bswap64(data);
+            memcpy(msg.data, &data_bigendian, 8);
+        
 
     return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
 }
 
 uint8_t send_brake_efuse
-(uint16_t ADC,float voltage,float current,bool is_faulted,bool is_enabled)
+(uint16_t ADC,float voltage,float current,bool is_faulted,bool is_enabled,uint8_t control_state)
 {
     can_msg_t msg;
     msg.id = 0xEF1;
-    msg.id_is_extended = true;
+    msg.id_is_extended = true;msg.len = 8;
 
-    bitstream_t brake_efuse_msg;
-	uint8_t bitstream_data[8];
-	bitstream_init(&brake_efuse_msg, bitstream_data, 8);
-	
-    bitstream_add(&brake_efuse_msg, ADC, 16);
-    bitstream_add(&brake_efuse_msg, voltage*1000, 16);
-    bitstream_add(&brake_efuse_msg, current*1000, 16);
-    bitstream_add(&brake_efuse_msg, is_faulted, 8);
-    bitstream_add(&brake_efuse_msg, is_enabled, 8);
-
-    handle_bitstream_overflow(&brake_efuse_msg, msg.id);
     
-    msg.len = sizeof(bitstream_data);
-    memcpy(msg.data, &bitstream_data, sizeof(bitstream_data));
+            uint64_t data = 0;
+                        uint32_t ADC_i = (uint32_t)(ADC);
+                        if(ADC_i > 65535ULL) {ADC_i = 65535;
+                        }
+                        data |= ((ADC_i) & 0xFFFFULL) << 48;
+            
+                        uint32_t voltage_i = (uint32_t)(voltage*1000);
+                        if(voltage_i > 65535ULL) {voltage_i = 65535;
+                        }
+                        data |= ((voltage_i) & 0xFFFFULL) << 32;
+            
+                        uint32_t current_i = (uint32_t)(current*1000);
+                        if(current_i > 65535ULL) {current_i = 65535;
+                        }
+                        data |= ((current_i) & 0xFFFFULL) << 16;
+            
+                        uint32_t is_faulted_i = (uint32_t)(is_faulted);
+                        if(is_faulted_i > 15ULL) {is_faulted_i = 15;
+                        }
+                        data |= ((is_faulted_i) & 0xFULL) << 12;
+            
+                        uint32_t is_enabled_i = (uint32_t)(is_enabled);
+                        if(is_enabled_i > 15ULL) {is_enabled_i = 15;
+                        }
+                        data |= ((is_enabled_i) & 0xFULL) << 8;
+            
+                        uint32_t control_state_i = (uint32_t)(control_state);
+                        if(control_state_i > 255ULL) {control_state_i = 255;
+                        }
+                        data |= ((control_state_i) & 0xFFULL) << 0;
+            
+            uint64_t data_bigendian = __builtin_bswap64(data);
+            memcpy(msg.data, &data_bigendian, 8);
+        
 
     return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
 }
 
 uint8_t send_shutdown_efuse
-(uint16_t ADC,float voltage,float current,bool is_faulted,bool is_enabled)
+(uint16_t ADC,float voltage,float current,bool is_faulted,bool is_enabled,uint8_t control_state)
 {
     can_msg_t msg;
     msg.id = 0xEF2;
-    msg.id_is_extended = true;
+    msg.id_is_extended = true;msg.len = 8;
 
-    bitstream_t shutdown_efuse_msg;
-	uint8_t bitstream_data[8];
-	bitstream_init(&shutdown_efuse_msg, bitstream_data, 8);
-	
-    bitstream_add(&shutdown_efuse_msg, ADC, 16);
-    bitstream_add(&shutdown_efuse_msg, voltage*1000, 16);
-    bitstream_add(&shutdown_efuse_msg, current*1000, 16);
-    bitstream_add(&shutdown_efuse_msg, is_faulted, 8);
-    bitstream_add(&shutdown_efuse_msg, is_enabled, 8);
-
-    handle_bitstream_overflow(&shutdown_efuse_msg, msg.id);
     
-    msg.len = sizeof(bitstream_data);
-    memcpy(msg.data, &bitstream_data, sizeof(bitstream_data));
+            uint64_t data = 0;
+                        uint32_t ADC_i = (uint32_t)(ADC);
+                        if(ADC_i > 65535ULL) {ADC_i = 65535;
+                        }
+                        data |= ((ADC_i) & 0xFFFFULL) << 48;
+            
+                        uint32_t voltage_i = (uint32_t)(voltage*1000);
+                        if(voltage_i > 65535ULL) {voltage_i = 65535;
+                        }
+                        data |= ((voltage_i) & 0xFFFFULL) << 32;
+            
+                        uint32_t current_i = (uint32_t)(current*1000);
+                        if(current_i > 65535ULL) {current_i = 65535;
+                        }
+                        data |= ((current_i) & 0xFFFFULL) << 16;
+            
+                        uint32_t is_faulted_i = (uint32_t)(is_faulted);
+                        if(is_faulted_i > 15ULL) {is_faulted_i = 15;
+                        }
+                        data |= ((is_faulted_i) & 0xFULL) << 12;
+            
+                        uint32_t is_enabled_i = (uint32_t)(is_enabled);
+                        if(is_enabled_i > 15ULL) {is_enabled_i = 15;
+                        }
+                        data |= ((is_enabled_i) & 0xFULL) << 8;
+            
+                        uint32_t control_state_i = (uint32_t)(control_state);
+                        if(control_state_i > 255ULL) {control_state_i = 255;
+                        }
+                        data |= ((control_state_i) & 0xFFULL) << 0;
+            
+            uint64_t data_bigendian = __builtin_bswap64(data);
+            memcpy(msg.data, &data_bigendian, 8);
+        
 
     return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
 }
 
 uint8_t send_lv_efuse
-(uint16_t ADC,float voltage,float current,bool is_faulted,bool is_enabled)
+(uint16_t ADC,float voltage,float current,bool is_faulted,bool is_enabled,uint8_t control_state)
 {
     can_msg_t msg;
     msg.id = 0xEF3;
-    msg.id_is_extended = true;
+    msg.id_is_extended = true;msg.len = 8;
 
-    bitstream_t lv_efuse_msg;
-	uint8_t bitstream_data[8];
-	bitstream_init(&lv_efuse_msg, bitstream_data, 8);
-	
-    bitstream_add(&lv_efuse_msg, ADC, 16);
-    bitstream_add(&lv_efuse_msg, voltage*1000, 16);
-    bitstream_add(&lv_efuse_msg, current*1000, 16);
-    bitstream_add(&lv_efuse_msg, is_faulted, 8);
-    bitstream_add(&lv_efuse_msg, is_enabled, 8);
-
-    handle_bitstream_overflow(&lv_efuse_msg, msg.id);
     
-    msg.len = sizeof(bitstream_data);
-    memcpy(msg.data, &bitstream_data, sizeof(bitstream_data));
+            uint64_t data = 0;
+                        uint32_t ADC_i = (uint32_t)(ADC);
+                        if(ADC_i > 65535ULL) {ADC_i = 65535;
+                        }
+                        data |= ((ADC_i) & 0xFFFFULL) << 48;
+            
+                        uint32_t voltage_i = (uint32_t)(voltage*1000);
+                        if(voltage_i > 65535ULL) {voltage_i = 65535;
+                        }
+                        data |= ((voltage_i) & 0xFFFFULL) << 32;
+            
+                        uint32_t current_i = (uint32_t)(current*1000);
+                        if(current_i > 65535ULL) {current_i = 65535;
+                        }
+                        data |= ((current_i) & 0xFFFFULL) << 16;
+            
+                        uint32_t is_faulted_i = (uint32_t)(is_faulted);
+                        if(is_faulted_i > 15ULL) {is_faulted_i = 15;
+                        }
+                        data |= ((is_faulted_i) & 0xFULL) << 12;
+            
+                        uint32_t is_enabled_i = (uint32_t)(is_enabled);
+                        if(is_enabled_i > 15ULL) {is_enabled_i = 15;
+                        }
+                        data |= ((is_enabled_i) & 0xFULL) << 8;
+            
+                        uint32_t control_state_i = (uint32_t)(control_state);
+                        if(control_state_i > 255ULL) {control_state_i = 255;
+                        }
+                        data |= ((control_state_i) & 0xFFULL) << 0;
+            
+            uint64_t data_bigendian = __builtin_bswap64(data);
+            memcpy(msg.data, &data_bigendian, 8);
+        
 
     return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
 }
 
 uint8_t send_radfan_efuse
-(uint16_t ADC,float voltage,float current,bool is_faulted,bool is_enabled)
+(uint16_t ADC,float voltage,float current,bool is_faulted,bool is_enabled,uint8_t control_state)
 {
     can_msg_t msg;
     msg.id = 0xEF4;
-    msg.id_is_extended = true;
+    msg.id_is_extended = true;msg.len = 8;
 
-    bitstream_t radfan_efuse_msg;
-	uint8_t bitstream_data[8];
-	bitstream_init(&radfan_efuse_msg, bitstream_data, 8);
-	
-    bitstream_add(&radfan_efuse_msg, ADC, 16);
-    bitstream_add(&radfan_efuse_msg, voltage*1000, 16);
-    bitstream_add(&radfan_efuse_msg, current*1000, 16);
-    bitstream_add(&radfan_efuse_msg, is_faulted, 8);
-    bitstream_add(&radfan_efuse_msg, is_enabled, 8);
-
-    handle_bitstream_overflow(&radfan_efuse_msg, msg.id);
     
-    msg.len = sizeof(bitstream_data);
-    memcpy(msg.data, &bitstream_data, sizeof(bitstream_data));
+            uint64_t data = 0;
+                        uint32_t ADC_i = (uint32_t)(ADC);
+                        if(ADC_i > 65535ULL) {ADC_i = 65535;
+                        }
+                        data |= ((ADC_i) & 0xFFFFULL) << 48;
+            
+                        uint32_t voltage_i = (uint32_t)(voltage*1000);
+                        if(voltage_i > 65535ULL) {voltage_i = 65535;
+                        }
+                        data |= ((voltage_i) & 0xFFFFULL) << 32;
+            
+                        uint32_t current_i = (uint32_t)(current*1000);
+                        if(current_i > 65535ULL) {current_i = 65535;
+                        }
+                        data |= ((current_i) & 0xFFFFULL) << 16;
+            
+                        uint32_t is_faulted_i = (uint32_t)(is_faulted);
+                        if(is_faulted_i > 15ULL) {is_faulted_i = 15;
+                        }
+                        data |= ((is_faulted_i) & 0xFULL) << 12;
+            
+                        uint32_t is_enabled_i = (uint32_t)(is_enabled);
+                        if(is_enabled_i > 15ULL) {is_enabled_i = 15;
+                        }
+                        data |= ((is_enabled_i) & 0xFULL) << 8;
+            
+                        uint32_t control_state_i = (uint32_t)(control_state);
+                        if(control_state_i > 255ULL) {control_state_i = 255;
+                        }
+                        data |= ((control_state_i) & 0xFFULL) << 0;
+            
+            uint64_t data_bigendian = __builtin_bswap64(data);
+            memcpy(msg.data, &data_bigendian, 8);
+        
 
     return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
 }
 
 uint8_t send_fanbatt_efuse
-(uint16_t ADC,float voltage,float current,bool is_faulted,bool is_enabled)
+(uint16_t ADC,float voltage,float current,bool is_faulted,bool is_enabled,uint8_t control_state)
 {
     can_msg_t msg;
     msg.id = 0xEF5;
-    msg.id_is_extended = true;
+    msg.id_is_extended = true;msg.len = 8;
 
-    bitstream_t fanbatt_efuse_msg;
-	uint8_t bitstream_data[8];
-	bitstream_init(&fanbatt_efuse_msg, bitstream_data, 8);
-	
-    bitstream_add(&fanbatt_efuse_msg, ADC, 16);
-    bitstream_add(&fanbatt_efuse_msg, voltage*1000, 16);
-    bitstream_add(&fanbatt_efuse_msg, current*1000, 16);
-    bitstream_add(&fanbatt_efuse_msg, is_faulted, 8);
-    bitstream_add(&fanbatt_efuse_msg, is_enabled, 8);
-
-    handle_bitstream_overflow(&fanbatt_efuse_msg, msg.id);
     
-    msg.len = sizeof(bitstream_data);
-    memcpy(msg.data, &bitstream_data, sizeof(bitstream_data));
+            uint64_t data = 0;
+                        uint32_t ADC_i = (uint32_t)(ADC);
+                        if(ADC_i > 65535ULL) {ADC_i = 65535;
+                        }
+                        data |= ((ADC_i) & 0xFFFFULL) << 48;
+            
+                        uint32_t voltage_i = (uint32_t)(voltage*1000);
+                        if(voltage_i > 65535ULL) {voltage_i = 65535;
+                        }
+                        data |= ((voltage_i) & 0xFFFFULL) << 32;
+            
+                        uint32_t current_i = (uint32_t)(current*1000);
+                        if(current_i > 65535ULL) {current_i = 65535;
+                        }
+                        data |= ((current_i) & 0xFFFFULL) << 16;
+            
+                        uint32_t is_faulted_i = (uint32_t)(is_faulted);
+                        if(is_faulted_i > 15ULL) {is_faulted_i = 15;
+                        }
+                        data |= ((is_faulted_i) & 0xFULL) << 12;
+            
+                        uint32_t is_enabled_i = (uint32_t)(is_enabled);
+                        if(is_enabled_i > 15ULL) {is_enabled_i = 15;
+                        }
+                        data |= ((is_enabled_i) & 0xFULL) << 8;
+            
+                        uint32_t control_state_i = (uint32_t)(control_state);
+                        if(control_state_i > 255ULL) {control_state_i = 255;
+                        }
+                        data |= ((control_state_i) & 0xFFULL) << 0;
+            
+            uint64_t data_bigendian = __builtin_bswap64(data);
+            memcpy(msg.data, &data_bigendian, 8);
+        
 
     return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
 }
 
 uint8_t send_pumpone_efuse
-(uint16_t ADC,float voltage,float current,bool is_faulted,bool is_enabled)
+(uint16_t ADC,float voltage,float current,bool is_faulted,bool is_enabled,uint8_t control_state)
 {
     can_msg_t msg;
     msg.id = 0xEF6;
-    msg.id_is_extended = true;
+    msg.id_is_extended = true;msg.len = 8;
 
-    bitstream_t pumpone_efuse_msg;
-	uint8_t bitstream_data[8];
-	bitstream_init(&pumpone_efuse_msg, bitstream_data, 8);
-	
-    bitstream_add(&pumpone_efuse_msg, ADC, 16);
-    bitstream_add(&pumpone_efuse_msg, voltage*1000, 16);
-    bitstream_add(&pumpone_efuse_msg, current*1000, 16);
-    bitstream_add(&pumpone_efuse_msg, is_faulted, 8);
-    bitstream_add(&pumpone_efuse_msg, is_enabled, 8);
-
-    handle_bitstream_overflow(&pumpone_efuse_msg, msg.id);
     
-    msg.len = sizeof(bitstream_data);
-    memcpy(msg.data, &bitstream_data, sizeof(bitstream_data));
+            uint64_t data = 0;
+                        uint32_t ADC_i = (uint32_t)(ADC);
+                        if(ADC_i > 65535ULL) {ADC_i = 65535;
+                        }
+                        data |= ((ADC_i) & 0xFFFFULL) << 48;
+            
+                        uint32_t voltage_i = (uint32_t)(voltage*1000);
+                        if(voltage_i > 65535ULL) {voltage_i = 65535;
+                        }
+                        data |= ((voltage_i) & 0xFFFFULL) << 32;
+            
+                        uint32_t current_i = (uint32_t)(current*1000);
+                        if(current_i > 65535ULL) {current_i = 65535;
+                        }
+                        data |= ((current_i) & 0xFFFFULL) << 16;
+            
+                        uint32_t is_faulted_i = (uint32_t)(is_faulted);
+                        if(is_faulted_i > 15ULL) {is_faulted_i = 15;
+                        }
+                        data |= ((is_faulted_i) & 0xFULL) << 12;
+            
+                        uint32_t is_enabled_i = (uint32_t)(is_enabled);
+                        if(is_enabled_i > 15ULL) {is_enabled_i = 15;
+                        }
+                        data |= ((is_enabled_i) & 0xFULL) << 8;
+            
+                        uint32_t control_state_i = (uint32_t)(control_state);
+                        if(control_state_i > 255ULL) {control_state_i = 255;
+                        }
+                        data |= ((control_state_i) & 0xFFULL) << 0;
+            
+            uint64_t data_bigendian = __builtin_bswap64(data);
+            memcpy(msg.data, &data_bigendian, 8);
+        
 
     return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
 }
 
 uint8_t send_pumptwo_efuse
-(uint16_t ADC,float voltage,float current,bool is_faulted,bool is_enabled)
+(uint16_t ADC,float voltage,float current,bool is_faulted,bool is_enabled,uint8_t control_state)
 {
     can_msg_t msg;
     msg.id = 0xEF7;
-    msg.id_is_extended = true;
+    msg.id_is_extended = true;msg.len = 8;
 
-    bitstream_t pumptwo_efuse_msg;
-	uint8_t bitstream_data[8];
-	bitstream_init(&pumptwo_efuse_msg, bitstream_data, 8);
-	
-    bitstream_add(&pumptwo_efuse_msg, ADC, 16);
-    bitstream_add(&pumptwo_efuse_msg, voltage*1000, 16);
-    bitstream_add(&pumptwo_efuse_msg, current*1000, 16);
-    bitstream_add(&pumptwo_efuse_msg, is_faulted, 8);
-    bitstream_add(&pumptwo_efuse_msg, is_enabled, 8);
-
-    handle_bitstream_overflow(&pumptwo_efuse_msg, msg.id);
     
-    msg.len = sizeof(bitstream_data);
-    memcpy(msg.data, &bitstream_data, sizeof(bitstream_data));
+            uint64_t data = 0;
+                        uint32_t ADC_i = (uint32_t)(ADC);
+                        if(ADC_i > 65535ULL) {ADC_i = 65535;
+                        }
+                        data |= ((ADC_i) & 0xFFFFULL) << 48;
+            
+                        uint32_t voltage_i = (uint32_t)(voltage*1000);
+                        if(voltage_i > 65535ULL) {voltage_i = 65535;
+                        }
+                        data |= ((voltage_i) & 0xFFFFULL) << 32;
+            
+                        uint32_t current_i = (uint32_t)(current*1000);
+                        if(current_i > 65535ULL) {current_i = 65535;
+                        }
+                        data |= ((current_i) & 0xFFFFULL) << 16;
+            
+                        uint32_t is_faulted_i = (uint32_t)(is_faulted);
+                        if(is_faulted_i > 15ULL) {is_faulted_i = 15;
+                        }
+                        data |= ((is_faulted_i) & 0xFULL) << 12;
+            
+                        uint32_t is_enabled_i = (uint32_t)(is_enabled);
+                        if(is_enabled_i > 15ULL) {is_enabled_i = 15;
+                        }
+                        data |= ((is_enabled_i) & 0xFULL) << 8;
+            
+                        uint32_t control_state_i = (uint32_t)(control_state);
+                        if(control_state_i > 255ULL) {control_state_i = 255;
+                        }
+                        data |= ((control_state_i) & 0xFFULL) << 0;
+            
+            uint64_t data_bigendian = __builtin_bswap64(data);
+            memcpy(msg.data, &data_bigendian, 8);
+        
 
     return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
 }
 
 uint8_t send_battbox_efuse
-(uint16_t ADC,float voltage,float current,bool is_faulted,bool is_enabled)
+(uint16_t ADC,float voltage,float current,bool is_faulted,bool is_enabled,uint8_t control_state)
 {
     can_msg_t msg;
     msg.id = 0xEF8;
-    msg.id_is_extended = true;
+    msg.id_is_extended = true;msg.len = 8;
 
-    bitstream_t battbox_efuse_msg;
-	uint8_t bitstream_data[8];
-	bitstream_init(&battbox_efuse_msg, bitstream_data, 8);
-	
-    bitstream_add(&battbox_efuse_msg, ADC, 16);
-    bitstream_add(&battbox_efuse_msg, voltage*1000, 16);
-    bitstream_add(&battbox_efuse_msg, current*1000, 16);
-    bitstream_add(&battbox_efuse_msg, is_faulted, 8);
-    bitstream_add(&battbox_efuse_msg, is_enabled, 8);
-
-    handle_bitstream_overflow(&battbox_efuse_msg, msg.id);
     
-    msg.len = sizeof(bitstream_data);
-    memcpy(msg.data, &bitstream_data, sizeof(bitstream_data));
+            uint64_t data = 0;
+                        uint32_t ADC_i = (uint32_t)(ADC);
+                        if(ADC_i > 65535ULL) {ADC_i = 65535;
+                        }
+                        data |= ((ADC_i) & 0xFFFFULL) << 48;
+            
+                        uint32_t voltage_i = (uint32_t)(voltage*1000);
+                        if(voltage_i > 65535ULL) {voltage_i = 65535;
+                        }
+                        data |= ((voltage_i) & 0xFFFFULL) << 32;
+            
+                        uint32_t current_i = (uint32_t)(current*1000);
+                        if(current_i > 65535ULL) {current_i = 65535;
+                        }
+                        data |= ((current_i) & 0xFFFFULL) << 16;
+            
+                        uint32_t is_faulted_i = (uint32_t)(is_faulted);
+                        if(is_faulted_i > 15ULL) {is_faulted_i = 15;
+                        }
+                        data |= ((is_faulted_i) & 0xFULL) << 12;
+            
+                        uint32_t is_enabled_i = (uint32_t)(is_enabled);
+                        if(is_enabled_i > 15ULL) {is_enabled_i = 15;
+                        }
+                        data |= ((is_enabled_i) & 0xFULL) << 8;
+            
+                        uint32_t control_state_i = (uint32_t)(control_state);
+                        if(control_state_i > 255ULL) {control_state_i = 255;
+                        }
+                        data |= ((control_state_i) & 0xFFULL) << 0;
+            
+            uint64_t data_bigendian = __builtin_bswap64(data);
+            memcpy(msg.data, &data_bigendian, 8);
+        
 
     return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
 }
 
 uint8_t send_mc_efuse
-(uint16_t ADC,float voltage,float current,bool is_faulted,bool is_enabled)
+(uint16_t ADC,float voltage,float current,bool is_faulted,bool is_enabled,uint8_t control_state)
 {
     can_msg_t msg;
     msg.id = 0xEF9;
-    msg.id_is_extended = true;
+    msg.id_is_extended = true;msg.len = 8;
 
-    bitstream_t mc_efuse_msg;
-	uint8_t bitstream_data[8];
-	bitstream_init(&mc_efuse_msg, bitstream_data, 8);
-	
-    bitstream_add(&mc_efuse_msg, ADC, 16);
-    bitstream_add(&mc_efuse_msg, voltage*1000, 16);
-    bitstream_add(&mc_efuse_msg, current*1000, 16);
-    bitstream_add(&mc_efuse_msg, is_faulted, 8);
-    bitstream_add(&mc_efuse_msg, is_enabled, 8);
-
-    handle_bitstream_overflow(&mc_efuse_msg, msg.id);
     
-    msg.len = sizeof(bitstream_data);
-    memcpy(msg.data, &bitstream_data, sizeof(bitstream_data));
+            uint64_t data = 0;
+                        uint32_t ADC_i = (uint32_t)(ADC);
+                        if(ADC_i > 65535ULL) {ADC_i = 65535;
+                        }
+                        data |= ((ADC_i) & 0xFFFFULL) << 48;
+            
+                        uint32_t voltage_i = (uint32_t)(voltage*1000);
+                        if(voltage_i > 65535ULL) {voltage_i = 65535;
+                        }
+                        data |= ((voltage_i) & 0xFFFFULL) << 32;
+            
+                        uint32_t current_i = (uint32_t)(current*1000);
+                        if(current_i > 65535ULL) {current_i = 65535;
+                        }
+                        data |= ((current_i) & 0xFFFFULL) << 16;
+            
+                        uint32_t is_faulted_i = (uint32_t)(is_faulted);
+                        if(is_faulted_i > 15ULL) {is_faulted_i = 15;
+                        }
+                        data |= ((is_faulted_i) & 0xFULL) << 12;
+            
+                        uint32_t is_enabled_i = (uint32_t)(is_enabled);
+                        if(is_enabled_i > 15ULL) {is_enabled_i = 15;
+                        }
+                        data |= ((is_enabled_i) & 0xFULL) << 8;
+            
+                        uint32_t control_state_i = (uint32_t)(control_state);
+                        if(control_state_i > 255ULL) {control_state_i = 255;
+                        }
+                        data |= ((control_state_i) & 0xFFULL) << 0;
+            
+            uint64_t data_bigendian = __builtin_bswap64(data);
+            memcpy(msg.data, &data_bigendian, 8);
+        
+
+    return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
+}
+
+uint8_t send_spare_efuse
+(uint16_t ADC,float voltage,float current,bool is_faulted,bool is_enabled,uint8_t control_state)
+{
+    can_msg_t msg;
+    msg.id = 0xEFA;
+    msg.id_is_extended = true;msg.len = 8;
+
+    
+            uint64_t data = 0;
+                        uint32_t ADC_i = (uint32_t)(ADC);
+                        if(ADC_i > 65535ULL) {ADC_i = 65535;
+                        }
+                        data |= ((ADC_i) & 0xFFFFULL) << 48;
+            
+                        uint32_t voltage_i = (uint32_t)(voltage*1000);
+                        if(voltage_i > 65535ULL) {voltage_i = 65535;
+                        }
+                        data |= ((voltage_i) & 0xFFFFULL) << 32;
+            
+                        uint32_t current_i = (uint32_t)(current*1000);
+                        if(current_i > 65535ULL) {current_i = 65535;
+                        }
+                        data |= ((current_i) & 0xFFFFULL) << 16;
+            
+                        uint32_t is_faulted_i = (uint32_t)(is_faulted);
+                        if(is_faulted_i > 15ULL) {is_faulted_i = 15;
+                        }
+                        data |= ((is_faulted_i) & 0xFULL) << 12;
+            
+                        uint32_t is_enabled_i = (uint32_t)(is_enabled);
+                        if(is_enabled_i > 15ULL) {is_enabled_i = 15;
+                        }
+                        data |= ((is_enabled_i) & 0xFULL) << 8;
+            
+                        uint32_t control_state_i = (uint32_t)(control_state);
+                        if(control_state_i > 255ULL) {control_state_i = 255;
+                        }
+                        data |= ((control_state_i) & 0xFFULL) << 0;
+            
+            uint64_t data_bigendian = __builtin_bswap64(data);
+            memcpy(msg.data, &data_bigendian, 8);
+        
 
     return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
 }
@@ -338,29 +594,69 @@ uint8_t send_shutdown_pins
 {
     can_msg_t msg;
     msg.id = 0x123;
-    
     msg.id_is_extended = false;
+    msg.len = 2;
 
-    bitstream_t shutdown_pins_msg;
-	uint8_t bitstream_data[2];
-	bitstream_init(&shutdown_pins_msg, bitstream_data, 2);
-	
-    bitstream_add(&shutdown_pins_msg, bms_gpio, 1);
-    bitstream_add(&shutdown_pins_msg, bots_gpio, 1);
-    bitstream_add(&shutdown_pins_msg, spare_gpio, 1);
-    bitstream_add(&shutdown_pins_msg, bspd_gpio, 1);
-    bitstream_add(&shutdown_pins_msg, hv_c, 1);
-    bitstream_add(&shutdown_pins_msg, hvd_gpio, 1);
-    bitstream_add(&shutdown_pins_msg, imd_gpio, 1);
-    bitstream_add(&shutdown_pins_msg, ckpt_gpio, 1);
-    bitstream_add(&shutdown_pins_msg, inertia_sw_gpio, 1);
-    bitstream_add(&shutdown_pins_msg, tsms_gpio, 1);
-    bitstream_add(&shutdown_pins_msg, UNUSED, 6);
-
-    handle_bitstream_overflow(&shutdown_pins_msg, msg.id);
     
-    msg.len = sizeof(bitstream_data);
-    memcpy(msg.data, &bitstream_data, sizeof(bitstream_data));
+            uint16_t data = 0;
+                        uint32_t bms_gpio_i = (uint32_t)(bms_gpio);
+                        if(bms_gpio_i > 1ULL) {bms_gpio_i = 1;
+                        }
+                        data |= ((bms_gpio_i) & 0x1ULL) << 15;
+            
+                        uint32_t bots_gpio_i = (uint32_t)(bots_gpio);
+                        if(bots_gpio_i > 1ULL) {bots_gpio_i = 1;
+                        }
+                        data |= ((bots_gpio_i) & 0x1ULL) << 14;
+            
+                        uint32_t spare_gpio_i = (uint32_t)(spare_gpio);
+                        if(spare_gpio_i > 1ULL) {spare_gpio_i = 1;
+                        }
+                        data |= ((spare_gpio_i) & 0x1ULL) << 13;
+            
+                        uint32_t bspd_gpio_i = (uint32_t)(bspd_gpio);
+                        if(bspd_gpio_i > 1ULL) {bspd_gpio_i = 1;
+                        }
+                        data |= ((bspd_gpio_i) & 0x1ULL) << 12;
+            
+                        uint32_t hv_c_i = (uint32_t)(hv_c);
+                        if(hv_c_i > 1ULL) {hv_c_i = 1;
+                        }
+                        data |= ((hv_c_i) & 0x1ULL) << 11;
+            
+                        uint32_t hvd_gpio_i = (uint32_t)(hvd_gpio);
+                        if(hvd_gpio_i > 1ULL) {hvd_gpio_i = 1;
+                        }
+                        data |= ((hvd_gpio_i) & 0x1ULL) << 10;
+            
+                        uint32_t imd_gpio_i = (uint32_t)(imd_gpio);
+                        if(imd_gpio_i > 1ULL) {imd_gpio_i = 1;
+                        }
+                        data |= ((imd_gpio_i) & 0x1ULL) << 9;
+            
+                        uint32_t ckpt_gpio_i = (uint32_t)(ckpt_gpio);
+                        if(ckpt_gpio_i > 1ULL) {ckpt_gpio_i = 1;
+                        }
+                        data |= ((ckpt_gpio_i) & 0x1ULL) << 8;
+            
+                        uint32_t inertia_sw_gpio_i = (uint32_t)(inertia_sw_gpio);
+                        if(inertia_sw_gpio_i > 1ULL) {inertia_sw_gpio_i = 1;
+                        }
+                        data |= ((inertia_sw_gpio_i) & 0x1ULL) << 7;
+            
+                        uint32_t tsms_gpio_i = (uint32_t)(tsms_gpio);
+                        if(tsms_gpio_i > 1ULL) {tsms_gpio_i = 1;
+                        }
+                        data |= ((tsms_gpio_i) & 0x1ULL) << 6;
+            
+                        uint32_t UNUSED_i = (uint32_t)(UNUSED);
+                        if(UNUSED_i > 63ULL) {UNUSED_i = 63;
+                        }
+                        data |= ((UNUSED_i) & 0x3FULL) << 0;
+            
+            uint16_t data_bigendian = __builtin_bswap16(data);
+            memcpy(msg.data, &data_bigendian, 2);
+        
 
     return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
 }
@@ -370,27 +666,55 @@ uint8_t send_car_state
 {
     can_msg_t msg;
     msg.id = 0x501;
-    
     msg.id_is_extended = false;
+    msg.len = 6;
 
-    bitstream_t car_state_msg;
-	uint8_t bitstream_data[6];
-	bitstream_init(&car_state_msg, bitstream_data, 6);
-	
-    bitstream_add(&car_state_msg, home_mode, 4);
-    bitstream_add(&car_state_msg, nero_index, 4);
-    bitstream_add_signed(&car_state_msg, car_speed*10, 16);
-    bitstream_add(&car_state_msg, tsms, 1);
-    bitstream_add(&car_state_msg, torque_limit_percentage*100, 7);
-    bitstream_add(&car_state_msg, reverse, 1);
-    bitstream_add(&car_state_msg, regen_limit, 10);
-    bitstream_add(&car_state_msg, launch_control, 1);
     
-
-    handle_bitstream_overflow(&car_state_msg, msg.id);
-    
-    msg.len = sizeof(bitstream_data);
-    memcpy(msg.data, &bitstream_data, sizeof(bitstream_data));
+            uint64_t data = 0;
+                        uint32_t home_mode_i = (uint32_t)(home_mode);
+                        if(home_mode_i > 15ULL) {home_mode_i = 15;
+                        }
+                        data |= ((home_mode_i) & 0xFULL) << 60;
+            
+                        uint32_t nero_index_i = (uint32_t)(nero_index);
+                        if(nero_index_i > 15ULL) {nero_index_i = 15;
+                        }
+                        data |= ((nero_index_i) & 0xFULL) << 56;
+            
+                        int32_t car_speed_i = (int32_t)(car_speed*10);
+                        if(car_speed_i > 32767) {car_speed_i = 32767;
+                        } else if(car_speed_i < -32768) {car_speed_i = -32768;
+                        }
+                        data |= ((uint32_t)(car_speed_i) & 0xFFFFULL) << 40;
+            
+                        uint32_t tsms_i = (uint32_t)(tsms);
+                        if(tsms_i > 1ULL) {tsms_i = 1;
+                        }
+                        data |= ((tsms_i) & 0x1ULL) << 39;
+            
+                        uint32_t torque_limit_percentage_i = (uint32_t)(torque_limit_percentage*100);
+                        if(torque_limit_percentage_i > 127ULL) {torque_limit_percentage_i = 127;
+                        }
+                        data |= ((torque_limit_percentage_i) & 0x7FULL) << 32;
+            
+                        uint32_t reverse_i = (uint32_t)(reverse);
+                        if(reverse_i > 1ULL) {reverse_i = 1;
+                        }
+                        data |= ((reverse_i) & 0x1ULL) << 31;
+            
+                        uint32_t regen_limit_i = (uint32_t)(regen_limit);
+                        if(regen_limit_i > 1023ULL) {regen_limit_i = 1023;
+                        }
+                        data |= ((regen_limit_i) & 0x3FFULL) << 21;
+            
+                        uint32_t launch_control_i = (uint32_t)(launch_control);
+                        if(launch_control_i > 1ULL) {launch_control_i = 1;
+                        }
+                        data |= ((launch_control_i) & 0x1ULL) << 20;
+            
+            uint64_t data_bigendian = __builtin_bswap64(data);
+            memcpy(msg.data, &data_bigendian, 8);
+        
 
     return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
 }
@@ -400,20 +724,24 @@ uint8_t send_pedal_percent_pressed_values
 {
     can_msg_t msg;
     msg.id = 0x505;
-    
     msg.id_is_extended = false;
+    msg.len = 4;
 
-    bitstream_t pedal_percent_pressed_values_msg;
-	uint8_t bitstream_data[4];
-	bitstream_init(&pedal_percent_pressed_values_msg, bitstream_data, 4);
-	
-    bitstream_add(&pedal_percent_pressed_values_msg, accel_norm*100, 16);
-    bitstream_add(&pedal_percent_pressed_values_msg, brake_norm*100, 16);
-
-    handle_bitstream_overflow(&pedal_percent_pressed_values_msg, msg.id);
     
-    msg.len = sizeof(bitstream_data);
-    memcpy(msg.data, &bitstream_data, sizeof(bitstream_data));
+            uint32_t data = 0;
+                        uint32_t accel_norm_i = (uint32_t)(accel_norm*100);
+                        if(accel_norm_i > 65535ULL) {accel_norm_i = 65535;
+                        }
+                        data |= ((accel_norm_i) & 0xFFFFULL) << 16;
+            
+                        uint32_t brake_norm_i = (uint32_t)(brake_norm*100);
+                        if(brake_norm_i > 65535ULL) {brake_norm_i = 65535;
+                        }
+                        data |= ((brake_norm_i) & 0xFFFFULL) << 0;
+            
+            uint32_t data_bigendian = __builtin_bswap32(data);
+            memcpy(msg.data, &data_bigendian, 4);
+        
 
     return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
 }
@@ -423,22 +751,34 @@ uint8_t send_pedal_sensor_voltages
 {
     can_msg_t msg;
     msg.id = 0x504;
-    
     msg.id_is_extended = false;
+    msg.len = 8;
 
-    bitstream_t pedal_sensor_voltages_msg;
-	uint8_t bitstream_data[8];
-	bitstream_init(&pedal_sensor_voltages_msg, bitstream_data, 8);
-	
-    bitstream_add(&pedal_sensor_voltages_msg, accel1_volts*100, 16);
-    bitstream_add(&pedal_sensor_voltages_msg, accel2_volts*100, 16);
-    bitstream_add(&pedal_sensor_voltages_msg, brake1_volts*100, 16);
-    bitstream_add(&pedal_sensor_voltages_msg, brake2_volts*100, 16);
-
-    handle_bitstream_overflow(&pedal_sensor_voltages_msg, msg.id);
     
-    msg.len = sizeof(bitstream_data);
-    memcpy(msg.data, &bitstream_data, sizeof(bitstream_data));
+            uint64_t data = 0;
+                        uint32_t accel1_volts_i = (uint32_t)(accel1_volts*100);
+                        if(accel1_volts_i > 65535ULL) {accel1_volts_i = 65535;
+                        }
+                        data |= ((accel1_volts_i) & 0xFFFFULL) << 48;
+            
+                        uint32_t accel2_volts_i = (uint32_t)(accel2_volts*100);
+                        if(accel2_volts_i > 65535ULL) {accel2_volts_i = 65535;
+                        }
+                        data |= ((accel2_volts_i) & 0xFFFFULL) << 32;
+            
+                        uint32_t brake1_volts_i = (uint32_t)(brake1_volts*100);
+                        if(brake1_volts_i > 65535ULL) {brake1_volts_i = 65535;
+                        }
+                        data |= ((brake1_volts_i) & 0xFFFFULL) << 16;
+            
+                        uint32_t brake2_volts_i = (uint32_t)(brake2_volts*100);
+                        if(brake2_volts_i > 65535ULL) {brake2_volts_i = 65535;
+                        }
+                        data |= ((brake2_volts_i) & 0xFFFFULL) << 0;
+            
+            uint64_t data_bigendian = __builtin_bswap64(data);
+            memcpy(msg.data, &data_bigendian, 8);
+        
 
     return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
 }
@@ -448,20 +788,18 @@ uint8_t send_lightning_board_light_status
 {
     can_msg_t msg;
     msg.id = 0xCA;
-    
     msg.id_is_extended = false;
+    msg.len = 1;
 
-    bitstream_t lightning_board_light_status_msg;
-	uint8_t bitstream_data[1];
-	bitstream_init(&lightning_board_light_status_msg, bitstream_data, 1);
-	
-    bitstream_add(&lightning_board_light_status_msg, status, 2);
     
-
-    handle_bitstream_overflow(&lightning_board_light_status_msg, msg.id);
-    
-    msg.len = sizeof(bitstream_data);
-    memcpy(msg.data, &bitstream_data, sizeof(bitstream_data));
+            uint8_t data = 0;
+                        uint32_t status_i = (uint32_t)(status);
+                        if(status_i > 3ULL) {status_i = 3;
+                        }
+                        data |= ((status_i) & 0x3ULL) << 6;
+            
+            msg.data[0] = data;
+        
 
     return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
 }
@@ -471,20 +809,25 @@ uint8_t send_temperature_sensor
 {
     can_msg_t msg;
     msg.id = 0x508;
-    
     msg.id_is_extended = false;
+    msg.len = 4;
 
-    bitstream_t temperature_sensor_msg;
-	uint8_t bitstream_data[4];
-	bitstream_init(&temperature_sensor_msg, bitstream_data, 4);
-	
-    bitstream_add_signed(&temperature_sensor_msg, vcu_temperature*100, 16);
-    bitstream_add(&temperature_sensor_msg, vcu_humidity*100, 16);
-
-    handle_bitstream_overflow(&temperature_sensor_msg, msg.id);
     
-    msg.len = sizeof(bitstream_data);
-    memcpy(msg.data, &bitstream_data, sizeof(bitstream_data));
+            uint32_t data = 0;
+                        int32_t vcu_temperature_i = (int32_t)(vcu_temperature*100);
+                        if(vcu_temperature_i > 32767) {vcu_temperature_i = 32767;
+                        } else if(vcu_temperature_i < -32768) {vcu_temperature_i = -32768;
+                        }
+                        data |= ((uint32_t)(vcu_temperature_i) & 0xFFFFULL) << 16;
+            
+                        uint32_t vcu_humidity_i = (uint32_t)(vcu_humidity*100);
+                        if(vcu_humidity_i > 65535ULL) {vcu_humidity_i = 65535;
+                        }
+                        data |= ((vcu_humidity_i) & 0xFFFFULL) << 0;
+            
+            uint32_t data_bigendian = __builtin_bswap32(data);
+            memcpy(msg.data, &data_bigendian, 4);
+        
 
     return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
 }
@@ -494,21 +837,32 @@ uint8_t send_imu_accelerometer
 {
     can_msg_t msg;
     msg.id = 0x506;
-    
     msg.id_is_extended = false;
+    msg.len = 6;
 
-    bitstream_t imu_accelerometer_msg;
-	uint8_t bitstream_data[6];
-	bitstream_init(&imu_accelerometer_msg, bitstream_data, 6);
-	
-    bitstream_add_signed(&imu_accelerometer_msg, imu_accelerometer_x*100, 16);
-    bitstream_add_signed(&imu_accelerometer_msg, imu_accelerometer_y*100, 16);
-    bitstream_add_signed(&imu_accelerometer_msg, imu_accelerometer_z*100, 16);
-
-    handle_bitstream_overflow(&imu_accelerometer_msg, msg.id);
     
-    msg.len = sizeof(bitstream_data);
-    memcpy(msg.data, &bitstream_data, sizeof(bitstream_data));
+            uint64_t data = 0;
+                        int32_t imu_accelerometer_x_i = (int32_t)(imu_accelerometer_x*4);
+                        if(imu_accelerometer_x_i > 32767) {imu_accelerometer_x_i = 32767;
+                        } else if(imu_accelerometer_x_i < -32768) {imu_accelerometer_x_i = -32768;
+                        }
+                        data |= ((uint32_t)(imu_accelerometer_x_i) & 0xFFFFULL) << 48;
+            
+                        int32_t imu_accelerometer_y_i = (int32_t)(imu_accelerometer_y*4);
+                        if(imu_accelerometer_y_i > 32767) {imu_accelerometer_y_i = 32767;
+                        } else if(imu_accelerometer_y_i < -32768) {imu_accelerometer_y_i = -32768;
+                        }
+                        data |= ((uint32_t)(imu_accelerometer_y_i) & 0xFFFFULL) << 32;
+            
+                        int32_t imu_accelerometer_z_i = (int32_t)(imu_accelerometer_z*4);
+                        if(imu_accelerometer_z_i > 32767) {imu_accelerometer_z_i = 32767;
+                        } else if(imu_accelerometer_z_i < -32768) {imu_accelerometer_z_i = -32768;
+                        }
+                        data |= ((uint32_t)(imu_accelerometer_z_i) & 0xFFFFULL) << 16;
+            
+            uint64_t data_bigendian = __builtin_bswap64(data);
+            memcpy(msg.data, &data_bigendian, 8);
+        
 
     return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
 }
@@ -518,21 +872,32 @@ uint8_t send_imu_gyro
 {
     can_msg_t msg;
     msg.id = 0x507;
-    
     msg.id_is_extended = false;
+    msg.len = 6;
 
-    bitstream_t imu_gyro_msg;
-	uint8_t bitstream_data[6];
-	bitstream_init(&imu_gyro_msg, bitstream_data, 6);
-	
-    bitstream_add_signed(&imu_gyro_msg, imu_gyro_x*100, 16);
-    bitstream_add_signed(&imu_gyro_msg, imu_gyro_y*100, 16);
-    bitstream_add_signed(&imu_gyro_msg, imu_gyro_z*100, 16);
-
-    handle_bitstream_overflow(&imu_gyro_msg, msg.id);
     
-    msg.len = sizeof(bitstream_data);
-    memcpy(msg.data, &bitstream_data, sizeof(bitstream_data));
+            uint64_t data = 0;
+                        int32_t imu_gyro_x_i = (int32_t)(imu_gyro_x*100);
+                        if(imu_gyro_x_i > 32767) {imu_gyro_x_i = 32767;
+                        } else if(imu_gyro_x_i < -32768) {imu_gyro_x_i = -32768;
+                        }
+                        data |= ((uint32_t)(imu_gyro_x_i) & 0xFFFFULL) << 48;
+            
+                        int32_t imu_gyro_y_i = (int32_t)(imu_gyro_y*100);
+                        if(imu_gyro_y_i > 32767) {imu_gyro_y_i = 32767;
+                        } else if(imu_gyro_y_i < -32768) {imu_gyro_y_i = -32768;
+                        }
+                        data |= ((uint32_t)(imu_gyro_y_i) & 0xFFFFULL) << 32;
+            
+                        int32_t imu_gyro_z_i = (int32_t)(imu_gyro_z*100);
+                        if(imu_gyro_z_i > 32767) {imu_gyro_z_i = 32767;
+                        } else if(imu_gyro_z_i < -32768) {imu_gyro_z_i = -32768;
+                        }
+                        data |= ((uint32_t)(imu_gyro_z_i) & 0xFFFFULL) << 16;
+            
+            uint64_t data_bigendian = __builtin_bswap64(data);
+            memcpy(msg.data, &data_bigendian, 8);
+        
 
     return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
 }
@@ -542,34 +907,94 @@ uint8_t send_faults
 {
     can_msg_t msg;
     msg.id = 0x502;
-    
     msg.id_is_extended = false;
+    msg.len = 2;
 
-    bitstream_t faults_msg;
-	uint8_t bitstream_data[2];
-	bitstream_init(&faults_msg, bitstream_data, 2);
-	
-    bitstream_add(&faults_msg, CAN_OUTGOING_FAULT, 1);
-    bitstream_add(&faults_msg, CAN_INCOMING_FAULT, 1);
-    bitstream_add(&faults_msg, BMS_CAN_MONITOR_FAULT, 1);
-    bitstream_add(&faults_msg, LIGHTNING_CAN_MONITOR_FAULT, 1);
-    bitstream_add(&faults_msg, ONBOARD_TEMP_FAULT, 1);
-    bitstream_add(&faults_msg, IMU_ACCEL_FAULT, 1);
-    bitstream_add(&faults_msg, IMU_GYRO_FAULT, 1);
-    bitstream_add(&faults_msg, BSPD_PREFAULT, 1);
-    bitstream_add(&faults_msg, ONBOARD_BRAKE_OPEN_CIRCUIT_FAULT, 1);
-    bitstream_add(&faults_msg, ONBOARD_ACCEL_OPEN_CIRCUIT_FAULT, 1);
-    bitstream_add(&faults_msg, ONBOARD_BRAKE_SHORT_CIRCUIT_FAULT, 1);
-    bitstream_add(&faults_msg, ONBOARD_ACCEL_SHORT_CIRCUIT_FAULT, 1);
-    bitstream_add(&faults_msg, ONBOARD_PEDAL_DIFFERENCE_FAULT, 1);
-    bitstream_add(&faults_msg, RTDS_FAULT, 1);
-    bitstream_add(&faults_msg, LV_LOW_VOLTAGE_FAULT, 1);
-    bitstream_add(&faults_msg, EXTRA, 1);
-
-    handle_bitstream_overflow(&faults_msg, msg.id);
     
-    msg.len = sizeof(bitstream_data);
-    memcpy(msg.data, &bitstream_data, sizeof(bitstream_data));
+            uint16_t data = 0;
+                        uint32_t CAN_OUTGOING_FAULT_i = (uint32_t)(CAN_OUTGOING_FAULT);
+                        if(CAN_OUTGOING_FAULT_i > 1ULL) {CAN_OUTGOING_FAULT_i = 1;
+                        }
+                        data |= ((CAN_OUTGOING_FAULT_i) & 0x1ULL) << 15;
+            
+                        uint32_t CAN_INCOMING_FAULT_i = (uint32_t)(CAN_INCOMING_FAULT);
+                        if(CAN_INCOMING_FAULT_i > 1ULL) {CAN_INCOMING_FAULT_i = 1;
+                        }
+                        data |= ((CAN_INCOMING_FAULT_i) & 0x1ULL) << 14;
+            
+                        uint32_t BMS_CAN_MONITOR_FAULT_i = (uint32_t)(BMS_CAN_MONITOR_FAULT);
+                        if(BMS_CAN_MONITOR_FAULT_i > 1ULL) {BMS_CAN_MONITOR_FAULT_i = 1;
+                        }
+                        data |= ((BMS_CAN_MONITOR_FAULT_i) & 0x1ULL) << 13;
+            
+                        uint32_t LIGHTNING_CAN_MONITOR_FAULT_i = (uint32_t)(LIGHTNING_CAN_MONITOR_FAULT);
+                        if(LIGHTNING_CAN_MONITOR_FAULT_i > 1ULL) {LIGHTNING_CAN_MONITOR_FAULT_i = 1;
+                        }
+                        data |= ((LIGHTNING_CAN_MONITOR_FAULT_i) & 0x1ULL) << 12;
+            
+                        uint32_t ONBOARD_TEMP_FAULT_i = (uint32_t)(ONBOARD_TEMP_FAULT);
+                        if(ONBOARD_TEMP_FAULT_i > 1ULL) {ONBOARD_TEMP_FAULT_i = 1;
+                        }
+                        data |= ((ONBOARD_TEMP_FAULT_i) & 0x1ULL) << 11;
+            
+                        uint32_t IMU_ACCEL_FAULT_i = (uint32_t)(IMU_ACCEL_FAULT);
+                        if(IMU_ACCEL_FAULT_i > 1ULL) {IMU_ACCEL_FAULT_i = 1;
+                        }
+                        data |= ((IMU_ACCEL_FAULT_i) & 0x1ULL) << 10;
+            
+                        uint32_t IMU_GYRO_FAULT_i = (uint32_t)(IMU_GYRO_FAULT);
+                        if(IMU_GYRO_FAULT_i > 1ULL) {IMU_GYRO_FAULT_i = 1;
+                        }
+                        data |= ((IMU_GYRO_FAULT_i) & 0x1ULL) << 9;
+            
+                        uint32_t BSPD_PREFAULT_i = (uint32_t)(BSPD_PREFAULT);
+                        if(BSPD_PREFAULT_i > 1ULL) {BSPD_PREFAULT_i = 1;
+                        }
+                        data |= ((BSPD_PREFAULT_i) & 0x1ULL) << 8;
+            
+                        uint32_t ONBOARD_BRAKE_OPEN_CIRCUIT_FAULT_i = (uint32_t)(ONBOARD_BRAKE_OPEN_CIRCUIT_FAULT);
+                        if(ONBOARD_BRAKE_OPEN_CIRCUIT_FAULT_i > 1ULL) {ONBOARD_BRAKE_OPEN_CIRCUIT_FAULT_i = 1;
+                        }
+                        data |= ((ONBOARD_BRAKE_OPEN_CIRCUIT_FAULT_i) & 0x1ULL) << 7;
+            
+                        uint32_t ONBOARD_ACCEL_OPEN_CIRCUIT_FAULT_i = (uint32_t)(ONBOARD_ACCEL_OPEN_CIRCUIT_FAULT);
+                        if(ONBOARD_ACCEL_OPEN_CIRCUIT_FAULT_i > 1ULL) {ONBOARD_ACCEL_OPEN_CIRCUIT_FAULT_i = 1;
+                        }
+                        data |= ((ONBOARD_ACCEL_OPEN_CIRCUIT_FAULT_i) & 0x1ULL) << 6;
+            
+                        uint32_t ONBOARD_BRAKE_SHORT_CIRCUIT_FAULT_i = (uint32_t)(ONBOARD_BRAKE_SHORT_CIRCUIT_FAULT);
+                        if(ONBOARD_BRAKE_SHORT_CIRCUIT_FAULT_i > 1ULL) {ONBOARD_BRAKE_SHORT_CIRCUIT_FAULT_i = 1;
+                        }
+                        data |= ((ONBOARD_BRAKE_SHORT_CIRCUIT_FAULT_i) & 0x1ULL) << 5;
+            
+                        uint32_t ONBOARD_ACCEL_SHORT_CIRCUIT_FAULT_i = (uint32_t)(ONBOARD_ACCEL_SHORT_CIRCUIT_FAULT);
+                        if(ONBOARD_ACCEL_SHORT_CIRCUIT_FAULT_i > 1ULL) {ONBOARD_ACCEL_SHORT_CIRCUIT_FAULT_i = 1;
+                        }
+                        data |= ((ONBOARD_ACCEL_SHORT_CIRCUIT_FAULT_i) & 0x1ULL) << 4;
+            
+                        uint32_t ONBOARD_PEDAL_DIFFERENCE_FAULT_i = (uint32_t)(ONBOARD_PEDAL_DIFFERENCE_FAULT);
+                        if(ONBOARD_PEDAL_DIFFERENCE_FAULT_i > 1ULL) {ONBOARD_PEDAL_DIFFERENCE_FAULT_i = 1;
+                        }
+                        data |= ((ONBOARD_PEDAL_DIFFERENCE_FAULT_i) & 0x1ULL) << 3;
+            
+                        uint32_t RTDS_FAULT_i = (uint32_t)(RTDS_FAULT);
+                        if(RTDS_FAULT_i > 1ULL) {RTDS_FAULT_i = 1;
+                        }
+                        data |= ((RTDS_FAULT_i) & 0x1ULL) << 2;
+            
+                        uint32_t LV_LOW_VOLTAGE_FAULT_i = (uint32_t)(LV_LOW_VOLTAGE_FAULT);
+                        if(LV_LOW_VOLTAGE_FAULT_i > 1ULL) {LV_LOW_VOLTAGE_FAULT_i = 1;
+                        }
+                        data |= ((LV_LOW_VOLTAGE_FAULT_i) & 0x1ULL) << 1;
+            
+                        uint32_t EXTRA_i = (uint32_t)(EXTRA);
+                        if(EXTRA_i > 1ULL) {EXTRA_i = 1;
+                        }
+                        data |= ((EXTRA_i) & 0x1ULL) << 0;
+            
+            uint16_t data_bigendian = __builtin_bswap16(data);
+            memcpy(msg.data, &data_bigendian, 2);
+        
 
     return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
 }
@@ -579,20 +1004,156 @@ uint8_t send_lv_voltage
 {
     can_msg_t msg;
     msg.id = 0x509;
-    
     msg.id_is_extended = false;
+    msg.len = 6;
 
-    bitstream_t lv_voltage_msg;
-	uint8_t bitstream_data[6];
-	bitstream_init(&lv_voltage_msg, bitstream_data, 6);
-	
-    bitstream_add(&lv_voltage_msg, ADC, 16);
-    bitstream_add(&lv_voltage_msg, Voltage*1000, 32);
-
-    handle_bitstream_overflow(&lv_voltage_msg, msg.id);
     
-    msg.len = sizeof(bitstream_data);
-    memcpy(msg.data, &bitstream_data, sizeof(bitstream_data));
+            uint64_t data = 0;
+                        uint32_t ADC_i = (uint32_t)(ADC);
+                        if(ADC_i > 65535ULL) {ADC_i = 65535;
+                        }
+                        data |= ((ADC_i) & 0xFFFFULL) << 48;
+            
+                        uint32_t Voltage_i = (uint32_t)(Voltage*1000);
+                        if(Voltage_i > 4294967295ULL) {Voltage_i = 4294967295;
+                        }
+                        data |= ((Voltage_i) & 0xFFFFFFFFULL) << 16;
+            
+            uint64_t data_bigendian = __builtin_bswap64(data);
+            memcpy(msg.data, &data_bigendian, 8);
+        
+
+    return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
+}
+
+uint8_t send_vcu_test_message
+(uint8_t three_bits,float float_value,uint8_t five_bits,uint16_t sixteen_bits,int8_t signed_8_bits)
+{
+    can_msg_t msg;
+    msg.id = 0xBAD;
+    msg.id_is_extended = true;msg.len = 8;
+
+    
+            uint64_t data = 0;
+                        uint32_t three_bits_i = (uint32_t)(three_bits);
+                        if(three_bits_i > 7ULL) {three_bits_i = 7;
+                        }
+                        data |= ((three_bits_i) & 0x7ULL) << 61;
+            
+                        int32_t float_value_i = (int32_t)(float_value*100);
+                        if(float_value_i > 2147483647) {float_value_i = 2147483647;
+                        } else if(float_value_i < -2147483648) {float_value_i = -2147483648;
+                        }
+                        data |= ((uint32_t)(float_value_i) & 0xFFFFFFFFULL) << 29;
+            
+                        uint32_t five_bits_i = (uint32_t)(five_bits);
+                        if(five_bits_i > 31ULL) {five_bits_i = 31;
+                        }
+                        data |= ((five_bits_i) & 0x1FULL) << 24;
+            
+                        uint32_t sixteen_bits_i = (uint32_t)(sixteen_bits);
+                        if(sixteen_bits_i > 65535ULL) {sixteen_bits_i = 65535;
+                        }
+                        data |= ((sixteen_bits_i) & 0xFFFFULL) << 8;
+            
+                        int32_t signed_8_bits_i = (int32_t)(signed_8_bits);
+                        if(signed_8_bits_i > 127) {signed_8_bits_i = 127;
+                        } else if(signed_8_bits_i < -128) {signed_8_bits_i = -128;
+                        }
+                        data |= ((uint32_t)(signed_8_bits_i) & 0xFFULL) << 0;
+            
+            uint64_t data_bigendian = __builtin_bswap64(data);
+            memcpy(msg.data, &data_bigendian, 8);
+        
+
+    return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
+}
+
+uint8_t send_dti_motor_temp_as_reported_by_vcu
+(uint16_t temp)
+{
+    can_msg_t msg;
+    msg.id = 0xD0;
+    msg.id_is_extended = false;
+    msg.len = 2;
+
+    
+            uint16_t data = 0;
+                        uint32_t temp_i = (uint32_t)(temp);
+                        if(temp_i > 65535ULL) {temp_i = 65535;
+                        }
+                        data |= ((temp_i) & 0xFFFFULL) << 0;
+            
+            uint16_t data_bigendian = __builtin_bswap16(data);
+            memcpy(msg.data, &data_bigendian, 2);
+        
+
+    return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
+}
+
+uint8_t send_dti_controller_temp_as_reported_by_vcu
+(uint16_t temp)
+{
+    can_msg_t msg;
+    msg.id = 0xD1;
+    msg.id_is_extended = false;
+    msg.len = 2;
+
+    
+            uint16_t data = 0;
+                        uint32_t temp_i = (uint32_t)(temp);
+                        if(temp_i > 65535ULL) {temp_i = 65535;
+                        }
+                        data |= ((temp_i) & 0xFFFFULL) << 0;
+            
+            uint16_t data_bigendian = __builtin_bswap16(data);
+            memcpy(msg.data, &data_bigendian, 2);
+        
+
+    return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
+}
+
+uint8_t send_bms_battbox_temp_as_reported_by_vcu
+(float temp)
+{
+    can_msg_t msg;
+    msg.id = 0xD2;
+    msg.id_is_extended = false;
+    msg.len = 4;
+
+    
+            uint32_t data = 0;
+                        int32_t temp_i = (int32_t)(temp*100);
+                        if(temp_i > 2147483647) {temp_i = 2147483647;
+                        } else if(temp_i < -2147483648) {temp_i = -2147483648;
+                        }
+                        data |= ((uint32_t)(temp_i) & 0xFFFFFFFFULL) << 0;
+            
+            uint32_t data_bigendian = __builtin_bswap32(data);
+            memcpy(msg.data, &data_bigendian, 4);
+        
+
+    return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
+}
+
+uint8_t send_brake_state_as_reported_by_vcu
+(bool brake_state)
+{
+    can_msg_t msg;
+    msg.id = 0xD3;
+    msg.id_is_extended = false;
+    msg.len = 1;
+
+    
+            uint8_t data = 0;
+                        int32_t brake_state_i = (int32_t)(brake_state*100);
+                        if(brake_state_i > 127) {brake_state_i = 127;
+                        } else if(brake_state_i < -128) {brake_state_i = -128;
+                        }
+                        data |= ((uint32_t)(brake_state_i) & 0xFFULL) << 0;
+            
+            msg.data[0] = data;
+        
 
     return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
 }
