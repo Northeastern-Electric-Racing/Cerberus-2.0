@@ -4,6 +4,7 @@
 #include "u_nx_ethernet.h"
 #include "u_bms.h"
 #include "u_lightning.h"
+#include "u_rtds.h"
 #include "u_dti.h"
 #include "u_efuses.h"
 #include "can_messages_tx.h"
@@ -82,6 +83,14 @@ uint8_t can1_init(FDCAN_HandleTypeDef *hcan) {
     status = can_add_filter_extended(&can1, extended5);
     if (status != HAL_OK) {
         PRINTLN_ERROR("Failed to add extended filter to can1 (Status: %d/%s, ID1: %ld, ID2: %ld).", status, hal_status_toString(status), extended5[0], extended5[1]);
+        return U_ERROR;
+    }
+
+    /* Add fitlers for extended IDs */
+    uint32_t extended6[] = {CANID_CALYPSO_RTDS_STATE, 0x00};
+    status = can_add_filter_extended(&can1, extended6);
+    if (status != HAL_OK) {
+        PRINTLN_ERROR("Failed to add extended filter to can1 (Status: %d/%s, ID1: %ld, ID2: %ld).", status, hal_status_toString(status), extended6[0], extended6[1]);
         return U_ERROR;
     }
 
@@ -168,6 +177,24 @@ void can_inbox(can_msg_t *message) {
         spare_efuse_state_t spare = { 0 };
         receive_spare_efuse_state(message, &spare);
         efuse_update_state(EFUSE_SPARE, (efuse_control_state_t)spare.state);
+    case CANID_CALYPSO_RTDS_STATE:
+        /* 0 = Sound RTDS. 1 = Cancel RTDS. 2 = Start Reverse, 3 = Stop Reverse */
+        enum {
+            SOUND_RTDS = 0,
+            CANCEL_RTDS = 1,
+            START_REVERSE = 2,
+            STOP_REVERSE = 3
+        };
+
+        rtds_command_message_t commands = { 0 };
+        receive_rtds_command_message(message, &commands);
+        switch(commands.command) {
+            case SOUND_RTDS: rtds_soundRTDS(); break;
+            case CANCEL_RTDS: rtds_cancelRTDS(); break;
+            case START_REVERSE: rtds_startReverseSound(); break;
+            case STOP_REVERSE: rtds_stopReverseSound(); break;
+            default: break;
+        }
     default:
         PRINTLN_ERROR("Unknown CAN Message Recieved (Message ID: %ld).", message->id);
         break;

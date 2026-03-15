@@ -430,6 +430,14 @@ void receive_spare_efuse_state(const can_msg_t *message, spare_efuse_state_t *sp
     spare_efuse_state->state = (uint8_t)state_raw;
 }
 
+void receive_rtds_command_message(const can_msg_t *message, rtds_command_message_t *rtds_command_message) {
+    
+    uint8_t data = message->data[0];
+    uint64_t command_mask = (1ULL << 8) - 1ULL;
+    uint64_t command_raw = (data >> 0) & command_mask;
+    rtds_command_message->command = (uint8_t)command_raw;
+}
+
 void receive_bms_charge_message_send(const can_msg_t *message, bms_charge_message_send_t *bms_charge_message_send) {
     
     uint64_t data_bigendian;
