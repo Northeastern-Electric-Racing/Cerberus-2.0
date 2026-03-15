@@ -177,6 +177,7 @@ void can_inbox(can_msg_t *message) {
         spare_efuse_state_t spare = { 0 };
         receive_spare_efuse_state(message, &spare);
         efuse_update_state(EFUSE_SPARE, (efuse_control_state_t)spare.state);
+        break;
     case CANID_CALYPSO_RTDS_STATE:
         /* 0 = Sound RTDS. 1 = Cancel RTDS. 2 = Start Reverse, 3 = Stop Reverse */
         enum {

@@ -53,7 +53,7 @@ static void _reverse_sound_callback(ULONG args) {
     if(status != U_SUCCESS) {
         PRINTLN_ERROR("Failed to check state of reverse_sound_timer (Status: %d).", status);
         queue_send(&faults, &(fault_t){RTDS_FAULT}, TX_NO_WAIT);
-        return U_ERROR;
+        return;
     }
 
     /* If the RTDS timer is currently active (meaning that the main RTDS sound is being played), let it finish by returning early. */
@@ -202,4 +202,6 @@ int rtds_isInSounding(bool* state) {
     } else {
         *state = false;
     }
+
+    return U_SUCCESS;
 }

@@ -126,8 +126,6 @@ void vDefault(ULONG thread_input) {
         HAL_IWDG_Refresh(&hiwdg); // Internal Watchdog
         HAL_GPIO_TogglePin(WATCHDOG_GPIO_Port, WATCHDOG_Pin); // External Watchdog
 
-        PRINTLN_INFO("Ran default thread");
-
         /* Sleep Thread for specified number of ticks. */
         tx_thread_sleep(default_thread.sleep);
     }
@@ -147,8 +145,6 @@ static thread_t ethernet_incoming_thread = {
 void vEthernetIncoming(ULONG thread_input) {
 
     while(1) {
-
-        PRINTLN_INFO("thread ran");
 
         ethernet_message_t message;
 
@@ -175,8 +171,6 @@ static thread_t ethernet_outgoing_thread = {
 void vEthernetOutgoing(ULONG thread_input) {
 
     while(1) {
-
-        PRINTLN_INFO("thread ran");
 
         ethernet_message_t message;
         uint8_t status;
@@ -213,8 +207,6 @@ void vCANIncoming(ULONG thread_input) {
 
         can_msg_t message;
 
-        PRINTLN_INFO("thread ran");
-
         /* Process incoming messages */
         while(queue_receive(&can_incoming, &message, TX_WAIT_FOREVER) == U_SUCCESS) {
             can_inbox(&message);
@@ -241,8 +233,6 @@ void vCANOutgoing(ULONG thread_input) {
 
         can_msg_t message;
         HAL_StatusTypeDef status;
-
-        PRINTLN_INFO("thread ran");
 
         /* Send outgoing messages */
         while(queue_receive(&can_outgoing, &message, TX_WAIT_FOREVER) == U_SUCCESS) {
@@ -271,8 +261,6 @@ void vFaultsQueue(ULONG thread_input) {
 
     while(1) {
 
-        PRINTLN_INFO("thread ran");
-
         /* Process queued faults */
         fault_t fault_id;
         while(queue_receive(&faults, &fault_id, TX_WAIT_FOREVER) == U_SUCCESS) {
@@ -298,8 +286,6 @@ void vStatemachine(ULONG thread_input) {
 
     while(1) {
 
-        PRINTLN_INFO("thread ran");
-
         state_req_t new_state_req;
         while(queue_receive(&state_transition_queue, &new_state_req, TX_WAIT_FOREVER) == U_SUCCESS) {
             statemachine_process(new_state_req);
@@ -322,8 +308,6 @@ static thread_t faults_thread = {
 void vFaults(ULONG thread_input) {
 
     while(1) {
-
-        PRINTLN_INFO("thread ran");
 
         /* Send a CAN message containing the current fault statuses. */
         send_faults(
@@ -437,8 +421,6 @@ void vPedals(ULONG thread_input) {
 
     while(1) {
 
-        PRINTLN_INFO("thread ran");
-
         pedals_process();
 
         /* Sleep Thread for specified number of ticks. */
@@ -470,8 +452,6 @@ void vEFuses(ULONG thread_input) {
 	} efuse_message_t;
 
     while(1) {
-
-        PRINTLN_INFO("thread ran");
 
         /* Get data. */
         efuse_data_t data = efuse_getData();
@@ -781,8 +761,6 @@ void vTSMS(ULONG thread_input) {
 
     while(1) {
 
-        PRINTLN_INFO("thread ran");
-
         tsms_update();
 
         /* Sleep Thread for specified number of ticks. */
@@ -804,8 +782,6 @@ static thread_t mux_thread = {
 void vMux(ULONG thread_input) {
 
     while(1) {
-
-        PRINTLN_INFO("thread ran");
 
         /* Switches the multiplexer state and updates the buffer. */
         adc_switchMuxState();
@@ -849,8 +825,6 @@ void vPeripherals(ULONG thread_input) {
 	} gyro_CAN_t;
 
     while(1) {
-
-        PRINTLN_INFO("thread ran");
 
         /* SECTION 1: Read the temperature sensor data and send it over CAN. */
         do {
