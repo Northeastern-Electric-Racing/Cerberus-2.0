@@ -219,6 +219,12 @@ typedef struct {
 void receive_spare_efuse_state(const can_msg_t *message, spare_efuse_state_t *spare_efuse_state);
 
 typedef struct {
+ uint8_t command;
+} rtds_command_message_t;
+
+void receive_rtds_command_message(const can_msg_t *message, rtds_command_message_t *rtds_command_message);
+
+typedef struct {
  float charge_volts;
  float charge_current;
  uint8_t enable_charging;

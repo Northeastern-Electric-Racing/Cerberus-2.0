@@ -1158,6 +1158,43 @@ uint8_t send_brake_state_as_reported_by_vcu
     return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
 }
 
+uint8_t send_rtds_state_message
+(bool pin_state,bool sounding_state,bool reverse_state,bool error)
+{
+    can_msg_t msg;
+    msg.id = 0xD4;
+    msg.id_is_extended = false;
+    msg.len = 4;
+
+    
+            uint32_t data = 0;
+                        uint32_t pin_state_i = (uint32_t)(pin_state);
+                        if(pin_state_i > 255ULL) {pin_state_i = 255;
+                        }
+                        data |= ((pin_state_i) & 0xFFULL) << 24;
+            
+                        uint32_t sounding_state_i = (uint32_t)(sounding_state);
+                        if(sounding_state_i > 255ULL) {sounding_state_i = 255;
+                        }
+                        data |= ((sounding_state_i) & 0xFFULL) << 16;
+            
+                        uint32_t reverse_state_i = (uint32_t)(reverse_state);
+                        if(reverse_state_i > 255ULL) {reverse_state_i = 255;
+                        }
+                        data |= ((reverse_state_i) & 0xFFULL) << 8;
+            
+                        uint32_t error_i = (uint32_t)(error);
+                        if(error_i > 255ULL) {error_i = 255;
+                        }
+                        data |= ((error_i) & 0xFFULL) << 0;
+            
+            uint32_t data_bigendian = __builtin_bswap32(data);
+            memcpy(msg.data, &data_bigendian, 4);
+        
+
+    return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
+}
+
 
 
 /// @brief A helper which sends appropriate error to stdout and CAN if a bistream overflows

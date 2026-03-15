@@ -305,4 +305,14 @@ uint8_t send_bms_battbox_temp_as_reported_by_vcu
 */
 uint8_t send_brake_state_as_reported_by_vcu
 (bool brake_state);
+
+/**
+* Contents of this message:
+* VCU/RTDS/Pin_State - The state of the RTDS Pin.
+* VCU/RTDS/Sounding_State - Whether or not the RTDS system is attempting to sound the main continuous RTDS sound.
+* VCU/RTDS/Reverse_State - Whether or not the RTDS system is attempting to sound the reverse sound.
+* VCU/RTDS/Error_State - Indicates if an error occured during reading.
+*/
+uint8_t send_rtds_state_message
+(bool pin_state,bool sounding_state,bool reverse_state,bool error);
 #endif
