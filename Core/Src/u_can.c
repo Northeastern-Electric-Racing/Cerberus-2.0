@@ -164,6 +164,10 @@ void can_inbox(can_msg_t *message) {
         receive_mc_efuse_state(message, &mc);
         efuse_update_state(EFUSE_MC, (efuse_control_state_t)mc.state);
         break;
+    case CANID_CALYPSO_EFCTRL_SPARE:
+        spare_efuse_state_t spare = { 0 };
+        receive_spare_efuse_state(message, &spare);
+        efuse_update_state(EFUSE_SPARE, (efuse_control_state_t)spare.state);
     default:
         PRINTLN_ERROR("Unknown CAN Message Recieved (Message ID: %ld).", message->id);
         break;
