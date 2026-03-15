@@ -549,6 +549,7 @@ void vEFuses(ULONG thread_input) {
                 } else {
                     efuse_disable(EFUSE_BRAKE);
                 }
+                break;
             default: efuse_enable(EFUSE_BRAKE); break;
         }
 
