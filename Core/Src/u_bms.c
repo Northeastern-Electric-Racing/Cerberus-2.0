@@ -61,7 +61,7 @@ void bms_setBattboxTemp(float temp) {
     battbox_temp = temp;
 }
 
-void bms_setPrecharge(bool precharge) {
+void bms_setPrecharge(bool state) {
     precharge = state;
 }
 
