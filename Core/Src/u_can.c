@@ -85,6 +85,14 @@ uint8_t can1_init(FDCAN_HandleTypeDef *hcan) {
         return U_ERROR;
     }
 
+    /* Add fitlers for extended IDs */
+    uint32_t extended6[] = {CANID_SHEPHERD_PRECHARGE, 0x00}; //is it 16-bit or 32-bit?? 
+    status = can_add_filter_extended(&can1, extended6);
+    if (status != HAL_OK) {
+        PRINTLN_ERROR("Failed to add extended filter to can1 (Status: %d/%s, ID1: %ld, ID2: %ld).", status, hal_status_toString(status), extended5[0], extended5[1]);
+        return U_ERROR;
+    }
+
     PRINTLN_INFO("Ran can1_init().");
 
     return U_SUCCESS;
@@ -164,8 +172,12 @@ void can_inbox(can_msg_t *message) {
         receive_mc_efuse_state(message, &mc);
         efuse_update_state(EFUSE_MC, (efuse_control_state_t)mc.state);
         break;
+    case CANID_SHEPHERD_PRECHARGE: //cant see the can id in u_can.h??
+        bms_setPrecharge(message->data[0]); //first byte of the can mssg data
+        break;
     default:
         PRINTLN_ERROR("Unknown CAN Message Recieved (Message ID: %ld).", message->id);
         break;
+
     }
 }
