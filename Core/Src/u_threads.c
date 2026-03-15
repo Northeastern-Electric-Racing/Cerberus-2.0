@@ -549,6 +549,7 @@ void vEFuses(ULONG thread_input) {
                 } else {
                     efuse_disable(EFUSE_BRAKE);
                 }
+                break;
             default: efuse_enable(EFUSE_BRAKE); break;
         }
 
@@ -740,6 +741,13 @@ void vEFuses(ULONG thread_input) {
             data.enabled[EFUSE_SPARE],
             data.control_state[EFUSE_SPARE]
         );
+
+        serial_monitor("test1", "mc - faulted pinstate", "%d", (bool)(HAL_GPIO_ReadPin(EF_MC_ER_GPIO_Port, EF_MC_ER_Pin) == GPIO_PIN_SET));
+        serial_monitor("test1", "lv - faulted pinstate", "%d", (bool)(HAL_GPIO_ReadPin(EF_LV_ER_GPIO_Port, EF_LV_ER_Pin) == GPIO_PIN_SET));
+        serial_monitor("test1", "spare - faulted pinstate", "%d", (bool)(HAL_GPIO_ReadPin(EF_SPARE_ER_GPIO_Port, EF_SPARE_ER_Pin) == GPIO_PIN_SET));
+        serial_monitor("test1", "mc - enabled pinstate", "%d", (bool)(HAL_GPIO_ReadPin(EF_MC_EN_GPIO_Port, EF_MC_EN_Pin) == GPIO_PIN_SET));
+        serial_monitor("test1", "lv - enabled pinstate", "%d", (bool)(HAL_GPIO_ReadPin(EF_LV_EN_GPIO_Port, EF_LV_EN_Pin) == GPIO_PIN_SET));
+        serial_monitor("test1", "spare - enabled pinstate", "%d", (bool)(HAL_GPIO_ReadPin(EF_SPARE_EN_GPIO_Port, EF_SPARE_EN_Pin) == GPIO_PIN_SET));
 
         /* Sleep Thread for specified number of ticks. */
         tx_thread_sleep(efuses_thread.sleep);
