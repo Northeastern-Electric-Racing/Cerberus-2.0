@@ -196,8 +196,9 @@ void can_inbox(can_msg_t *message) {
             case STOP_REVERSE: rtds_stopReverseSound(); break;
             default: break;
         }
+        break;
     default:
-        PRINTLN_ERROR("Unknown CAN Message Recieved (Message ID: %ld).", message->id);
+        PRINTLN_WARNING("Unknown CAN Message Recieved (Message ID: 0x%X).", message->id);
         break;
     }
 }
