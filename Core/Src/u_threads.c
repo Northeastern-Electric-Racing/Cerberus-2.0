@@ -19,6 +19,7 @@
 #include "bitstream.h"
 #include "serial.h"
 #include "u_lightning.h"
+#include "u_rtds.h"
 #include "timer.h"
 #include "debounce.h"
 
@@ -37,6 +38,7 @@
 #define PRIO_vShutdown         1
 #define PRIO_vEFuses           2
 #define PRIO_vMux              2
+#define PRIO_vRTDS             2
 #define PRIO_vTest             2
 #define PRIO_vPeripherals      2
 
@@ -941,6 +943,46 @@ void vPeripherals(ULONG thread_input) {
     }
 }
 
+/* RTDS Telemetry Thread. 
+   This thread is for RTDS telemetry. The actual state of the RTDS is managed by the statemachine. */
+static thread_t rtds_telemetry_thread = {
+        .name       = "RTDS Telemetry Thread", /* Name */
+        .size       = 2048,                    /* Stack Size (in bytes) */
+        .priority   = PRIO_vRTDS,              /* Priority */
+        .threshold  = 0,                       /* Preemption Threshold */
+        .time_slice = TX_NO_TIME_SLICE,        /* Time Slice */
+        .auto_start = TX_AUTO_START,           /* Auto Start */
+        .sleep      = 100,                     /* Sleep (in ticks) */
+        .function   = vRTDS                    /* Thread Function */
+    };
+void vRTDS(ULONG thread_input) {
+
+    while(1) {
+
+        PRINTLN_INFO("thread ran");
+
+        bool rtds_pin_state = rtds_readRTDS();
+        bool rtds_sounding_state = false;
+        bool rtds_reverse_state = false;
+        bool error_state = false;
+
+        int status = rtds_isInSounding(&rtds_sounding_state);
+        if(status != U_SUCCESS) {
+            error_state = true;
+        }
+
+        status = rtds_isInReverse(&rtds_reverse_state);
+        if(status != U_SUCCESS) {
+            error_state = true;
+        }
+
+        send_rtds_state_message(rtds_pin_state, rtds_sounding_state, rtds_reverse_state, error_state);
+
+        /* Sleep Thread for specified number of ticks. */
+        tx_thread_sleep(rtds_telemetry_thread.sleep);
+    }
+}
+
 /* Initializes all ThreadX threads.
 *  Calls to _create_thread() should go in here
 */
@@ -962,6 +1004,7 @@ uint8_t threads_init(TX_BYTE_POOL *byte_pool) {
     CATCH_ERROR(create_thread(byte_pool, &ethernet_incoming_thread), U_SUCCESS); // Create Incoming Ethernet thread.
     CATCH_ERROR(create_thread(byte_pool, &ethernet_outgoing_thread), U_SUCCESS); // Create Outgoing Ethernet thread.
     CATCH_ERROR(create_thread(byte_pool, &test_thread), U_SUCCESS);                // Create Test thread.
+    CATCH_ERROR(create_thread(byte_pool, &rtds_telemetry_thread), U_SUCCESS);      // Create RTDS Telemetry thread.
 
     // add more threads here if need
 

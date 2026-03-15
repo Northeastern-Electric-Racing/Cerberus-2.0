@@ -23,7 +23,7 @@ static timer_t reverse_sound_timer = {
     .name = "Reverse Sound Timer",
     .callback = _reverse_sound_callback,
     .callback_input = 0,
-    .duration = 50,
+    .duration = 500,
     .type = PERIODIC,
     .auto_activate = false
 };
@@ -47,6 +47,18 @@ static void _timer_callback(ULONG args) {
 
 /* Callback function for reverse sound. Toggles the RTDS on/off to create beeping pattern. */
 static void _reverse_sound_callback(ULONG args) {
+    /* Read the state of the RTDS timer. */
+    bool active = false;
+    int status = timer_isActive(&rtds_timer, &active);
+    if(status != U_SUCCESS) {
+        PRINTLN_ERROR("Failed to check state of reverse_sound_timer (Status: %d).", status);
+        queue_send(&faults, &(fault_t){RTDS_FAULT}, TX_NO_WAIT);
+        return U_ERROR;
+    }
+
+    /* If the RTDS timer is currently active (meaning that the main RTDS sound is being played), let it finish by returning early. */
+    if(active) return;
+
     static bool sound_state = false;
     if(!sound_state) {
         _clear_rtds_pin();
@@ -79,6 +91,9 @@ int rtds_init(void) {
 /* Sounds the RTDS (Ready-to-drive sound). */
 int rtds_soundRTDS(void) {
 
+    /* Stop the reverse sound if active. */
+    rtds_stopReverseSound();
+
     /* Trigger the RTDS sound. */
     _set_rtds_pin();
 
@@ -86,6 +101,22 @@ int rtds_soundRTDS(void) {
     int status = timer_restart(&rtds_timer);
     if(status != U_SUCCESS) {
         PRINTLN_ERROR("Failed to restart RTDS timer (Status: %d).", status);
+        queue_send(&faults, &(fault_t){RTDS_FAULT}, TX_NO_WAIT);
+        return U_ERROR;
+    }
+
+    return U_SUCCESS;
+}
+
+/* Cancels the RTDS sound. The RTDS sound already stops automatically once it's over, but this function lets you cancel it prematurely. */
+int rtds_cancelRTDS(void) {
+    /* Stop the RTDS sound. */
+    _clear_rtds_pin();
+
+    /* Resets the RTDS timer (but doesn't restart it). */
+    int status = timer_reset(&rtds_timer);
+    if(status != U_SUCCESS) {
+        PRINTLN_ERROR("Failed to reset RTDS timer (Status: %d).", status);
         queue_send(&faults, &(fault_t){RTDS_FAULT}, TX_NO_WAIT);
         return U_ERROR;
     }
@@ -131,4 +162,44 @@ int rtds_stopReverseSound(void) {
 /* Useful for debugging. */
 bool rtds_readRTDS(void) {
     return (bool)(HAL_GPIO_ReadPin(RTDS_GPIO_GPIO_Port, RTDS_GPIO_Pin) == GPIO_PIN_SET);
+}
+
+/* Checks if the RTDS is currently in reverse mode. */
+int rtds_isInReverse(bool* state) {
+    /* Read the state of the reverse sound timer. */
+    bool active = false;
+    int status = timer_isActive(&reverse_sound_timer, &active);
+    if(status != U_SUCCESS) {
+        PRINTLN_ERROR("Failed to check state of reverse_sound_timer (Status: %d).", status);
+        queue_send(&faults, &(fault_t){RTDS_FAULT}, TX_NO_WAIT);
+        return U_ERROR;
+    }
+
+    /* If the timer is active, that means the RTDS system is actively attempting to make the reverse sound. */
+    if(active) {
+        *state = true;
+    } else {
+        *state = false;
+    }
+
+    return U_SUCCESS;
+}
+
+/* Checks if the RTDS is currently in sounding mode. */
+int rtds_isInSounding(bool* state) {
+    /* Read the state of the RTDS timer. */
+    bool active = false;
+    int status = timer_isActive(&rtds_timer, &active);
+    if(status != U_SUCCESS) {
+        PRINTLN_ERROR("Failed to check state of reverse_sound_timer (Status: %d).", status);
+        queue_send(&faults, &(fault_t){RTDS_FAULT}, TX_NO_WAIT);
+        return U_ERROR;
+    }
+
+    /* If the timer is active, that means the RTDS system is actively in the 'sounding' mode (i.e., it's actively trying to make the main continuous RTDS sound). */
+    if(active) {
+        *state = true;
+    } else {
+        *state = false;
+    }
 }
