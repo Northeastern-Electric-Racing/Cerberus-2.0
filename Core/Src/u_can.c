@@ -46,6 +46,16 @@ uint8_t can1_init(FDCAN_HandleTypeDef *hcan) {
         return U_ERROR;
     }
 
+    /* Add filters for standard IDs */
+    uint16_t standard4[] = {CANID_SHEPHERD_PRECHARGE, 0x00};
+    status = can_add_filter_standard(&can1, standard4);
+    if (status != HAL_OK) {
+        PRINTLN_ERROR("Failed to add standard filter to can1 (Status: %d/%s, ID1: 0x%X, ID2: 0x%X).", status, hal_status_toString(status), standard4[0], standard4[1]);
+        return U_ERROR;
+    }
+
+
+
     /* Add fitlers for extended IDs */
     uint32_t extended1[] = {CANID_CALYPSO_EFCTRL_DASHBOARD, CANID_CALYPSO_EFCTRL_BRAKE};
     status = can_add_filter_extended(&can1, extended1);
@@ -87,7 +97,6 @@ uint8_t can1_init(FDCAN_HandleTypeDef *hcan) {
     }
 
     /* Add fitlers for extended IDs */
-
     uint32_t extended6[] = {CANID_CALYPSO_RTDS_STATE, 0x00};
     status = can_add_filter_extended(&can1, extended6);
     if (status != HAL_OK) {
@@ -174,7 +183,7 @@ void can_inbox(can_msg_t *message) {
         receive_mc_efuse_state(message, &mc);
         efuse_update_state(EFUSE_MC, (efuse_control_state_t)mc.state);
         break;
-    case CANID_SHEPHERD_PRECHARGE: //cant see the can id in u_can.h??
+    case CANID_SHEPHERD_PRECHARGE: 
         bms_setPrecharge(message->data[0]); //first byte of the can mssg data
         break;
     case CANID_CALYPSO_EFCTRL_SPARE:
