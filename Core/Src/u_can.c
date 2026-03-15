@@ -175,6 +175,11 @@ void can_inbox(can_msg_t *message) {
     case CANID_SHEPHERD_PRECHARGE: //cant see the can id in u_can.h??
         bms_setPrecharge(message->data[0]); //first byte of the can mssg data
         break;
+    case CANID_CALYPSO_EFCTRL_SPARE:
+        spare_efuse_state_t spare = { 0 };
+        receive_spare_efuse_state(message, &spare);
+        efuse_update_state(EFUSE_SPARE, (efuse_control_state_t)spare.state);
+        break;
     default:
         PRINTLN_ERROR("Unknown CAN Message Recieved (Message ID: %ld).", message->id);
         break;
