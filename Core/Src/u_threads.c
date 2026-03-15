@@ -19,6 +19,7 @@
 #include "bitstream.h"
 #include "serial.h"
 #include "u_lightning.h"
+#include "u_rtds.h"
 #include "timer.h"
 #include "debounce.h"
 
@@ -37,6 +38,7 @@
 #define PRIO_vShutdown         1
 #define PRIO_vEFuses           2
 #define PRIO_vMux              2
+#define PRIO_vRTDS             2
 #define PRIO_vTest             2
 #define PRIO_vPeripherals      2
 
@@ -124,8 +126,6 @@ void vDefault(ULONG thread_input) {
         HAL_IWDG_Refresh(&hiwdg); // Internal Watchdog
         HAL_GPIO_TogglePin(WATCHDOG_GPIO_Port, WATCHDOG_Pin); // External Watchdog
 
-        PRINTLN_INFO("Ran default thread");
-
         /* Sleep Thread for specified number of ticks. */
         tx_thread_sleep(default_thread.sleep);
     }
@@ -145,8 +145,6 @@ static thread_t ethernet_incoming_thread = {
 void vEthernetIncoming(ULONG thread_input) {
 
     while(1) {
-
-        PRINTLN_INFO("thread ran");
 
         ethernet_message_t message;
 
@@ -173,8 +171,6 @@ static thread_t ethernet_outgoing_thread = {
 void vEthernetOutgoing(ULONG thread_input) {
 
     while(1) {
-
-        PRINTLN_INFO("thread ran");
 
         ethernet_message_t message;
         uint8_t status;
@@ -211,8 +207,6 @@ void vCANIncoming(ULONG thread_input) {
 
         can_msg_t message;
 
-        PRINTLN_INFO("thread ran");
-
         /* Process incoming messages */
         while(queue_receive(&can_incoming, &message, TX_WAIT_FOREVER) == U_SUCCESS) {
             can_inbox(&message);
@@ -239,8 +233,6 @@ void vCANOutgoing(ULONG thread_input) {
 
         can_msg_t message;
         HAL_StatusTypeDef status;
-
-        PRINTLN_INFO("thread ran");
 
         /* Send outgoing messages */
         while(queue_receive(&can_outgoing, &message, TX_WAIT_FOREVER) == U_SUCCESS) {
@@ -269,8 +261,6 @@ void vFaultsQueue(ULONG thread_input) {
 
     while(1) {
 
-        PRINTLN_INFO("thread ran");
-
         /* Process queued faults */
         fault_t fault_id;
         while(queue_receive(&faults, &fault_id, TX_WAIT_FOREVER) == U_SUCCESS) {
@@ -296,8 +286,6 @@ void vStatemachine(ULONG thread_input) {
 
     while(1) {
 
-        PRINTLN_INFO("thread ran");
-
         state_req_t new_state_req;
         while(queue_receive(&state_transition_queue, &new_state_req, TX_WAIT_FOREVER) == U_SUCCESS) {
             statemachine_process(new_state_req);
@@ -320,8 +308,6 @@ static thread_t faults_thread = {
 void vFaults(ULONG thread_input) {
 
     while(1) {
-
-        PRINTLN_INFO("thread ran");
 
         /* Send a CAN message containing the current fault statuses. */
         send_faults(
@@ -435,8 +421,6 @@ void vPedals(ULONG thread_input) {
 
     while(1) {
 
-        PRINTLN_INFO("thread ran");
-
         pedals_process();
 
         /* Sleep Thread for specified number of ticks. */
@@ -468,8 +452,6 @@ void vEFuses(ULONG thread_input) {
 	} efuse_message_t;
 
     while(1) {
-
-        PRINTLN_INFO("thread ran");
 
         /* Get data. */
         efuse_data_t data = efuse_getData();
@@ -779,8 +761,6 @@ void vTSMS(ULONG thread_input) {
 
     while(1) {
 
-        PRINTLN_INFO("thread ran");
-
         tsms_update();
 
         /* Sleep Thread for specified number of ticks. */
@@ -802,8 +782,6 @@ static thread_t mux_thread = {
 void vMux(ULONG thread_input) {
 
     while(1) {
-
-        PRINTLN_INFO("thread ran");
 
         /* Switches the multiplexer state and updates the buffer. */
         adc_switchMuxState();
@@ -847,8 +825,6 @@ void vPeripherals(ULONG thread_input) {
 	} gyro_CAN_t;
 
     while(1) {
-
-        PRINTLN_INFO("thread ran");
 
         /* SECTION 1: Read the temperature sensor data and send it over CAN. */
         do {
@@ -941,6 +917,46 @@ void vPeripherals(ULONG thread_input) {
     }
 }
 
+/* RTDS Telemetry Thread. 
+   This thread is for RTDS telemetry. The actual state of the RTDS is managed by the statemachine. */
+static thread_t rtds_telemetry_thread = {
+        .name       = "RTDS Telemetry Thread", /* Name */
+        .size       = 2048,                    /* Stack Size (in bytes) */
+        .priority   = PRIO_vRTDS,              /* Priority */
+        .threshold  = 0,                       /* Preemption Threshold */
+        .time_slice = TX_NO_TIME_SLICE,        /* Time Slice */
+        .auto_start = TX_AUTO_START,           /* Auto Start */
+        .sleep      = 100,                     /* Sleep (in ticks) */
+        .function   = vRTDS                    /* Thread Function */
+    };
+void vRTDS(ULONG thread_input) {
+
+    while(1) {
+
+        PRINTLN_INFO("thread ran");
+
+        bool rtds_pin_state = rtds_readRTDS();
+        bool rtds_sounding_state = false;
+        bool rtds_reverse_state = false;
+        bool error_state = false;
+
+        int status = rtds_isInSounding(&rtds_sounding_state);
+        if(status != U_SUCCESS) {
+            error_state = true;
+        }
+
+        status = rtds_isInReverse(&rtds_reverse_state);
+        if(status != U_SUCCESS) {
+            error_state = true;
+        }
+
+        send_rtds_state_message(rtds_pin_state, rtds_sounding_state, rtds_reverse_state, error_state);
+
+        /* Sleep Thread for specified number of ticks. */
+        tx_thread_sleep(rtds_telemetry_thread.sleep);
+    }
+}
+
 /* Initializes all ThreadX threads.
 *  Calls to _create_thread() should go in here
 */
@@ -962,6 +978,7 @@ uint8_t threads_init(TX_BYTE_POOL *byte_pool) {
     CATCH_ERROR(create_thread(byte_pool, &ethernet_incoming_thread), U_SUCCESS); // Create Incoming Ethernet thread.
     CATCH_ERROR(create_thread(byte_pool, &ethernet_outgoing_thread), U_SUCCESS); // Create Outgoing Ethernet thread.
     CATCH_ERROR(create_thread(byte_pool, &test_thread), U_SUCCESS);                // Create Test thread.
+    CATCH_ERROR(create_thread(byte_pool, &rtds_telemetry_thread), U_SUCCESS);      // Create RTDS Telemetry thread.
 
     // add more threads here if need
 

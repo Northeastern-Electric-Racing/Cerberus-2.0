@@ -45,6 +45,9 @@ extern can_t can1;
 #define CANID_CALYPSO_EFCTRL_MC        0xCAEF9
 #define CANID_CALYPSO_EFCTRL_SPARE     0xCAEFA
 
+/* Calypso RTDS State Command CAN IDs */
+#define CANID_CALYPSO_RTDS_STATE 0xDB1
+
 /* Misc CAN IDs */
 #define CANID_FAULT_MSG	       0x502
 #define CANID_SHUTDOWN_MSG     0x123
