@@ -307,8 +307,8 @@ static int16_t _derate_torque(float mph, float percentage_accel)
 		static const float max_torque_percent = 0.3;
 		/* Linearly derate torque from 30% to 0% as speed increases */
 		float torque_derating_factor =
-			max_torque_percent -
-			(max_torque_percent / PIT_MAX_SPEED);
+			max_torque_percent *
+			(1.0f - (mph / PIT_MAX_SPEED));
 		percentage_accel *= torque_derating_factor;
 		torque = MAX_TORQUE * percentage_accel;
 	}
@@ -332,11 +332,11 @@ static int16_t _derate_torque(float mph, float percentage_accel)
  */
 static void _accel_pedal_regen_torque(float percentage_accel)
 {
-	/* Coefficient to map accel pedal travel % to the max torque */
-	float coeff = (MAX_TORQUE * torque_limit_percentage);
+	/* Coefficient to map accel pedal travel % to the % of max torqye we should command */
+	float coeff =  (percentage_accel - ACCELERATION_THRESHOLD) / (1.0 - ACCELERATION_THRESHOLD);
 
 	/* Makes acceleration pedal more sensitive since domain is compressed but range is the same */
-	uint16_t torque = coeff * (percentage_accel - ACCELERATION_THRESHOLD);
+	uint16_t torque = coeff * torque_limit_percentage * MAX_TORQUE;
 
 	/* Limit torque percentage wise in endurance mode */
 	if (torque > MAX_TORQUE * torque_limit_percentage) {
@@ -479,7 +479,11 @@ static float _adc_to_voltage(uint16_t raw_adc) {
 /* Returns the percentage the pedal is pressed down. */
 static float _get_pedal_percent_pressed(float voltage, float offset, float max)
 {
-	return voltage - offset < 0 ? 0 : (voltage - offset) / (max - offset);
+	float ret = voltage - offset < 0 ? 0 : (voltage - offset) / (max - offset);
+	if (ret > 1.0) {
+	    return 1.0;
+	}
+	return ret;
 }
 
 /* Initializes Pedals ADC and creates pedal data timer. */
@@ -548,7 +552,8 @@ void pedals_decreaseRegenLimit(void)
 	if (func_state != F_PERFORMANCE && func_state != F_EFFICIENCY)
 		return;
 	uint16_t regen_limit = pedals_getRegenLimit();
-	if (regen_limit - REGEN_INCREMENT_STEP < 0) {
+	// protect against wraparound
+	if (regen_limit < REGEN_INCREMENT_STEP) {
 		pedals_setRegenLimit(0);
 	} else {
 		pedals_setRegenLimit(regen_limit -= REGEN_INCREMENT_STEP);
@@ -562,8 +567,6 @@ void pedals_setRegenLimit(uint16_t limit)
 		return;
 	if (limit > MAX_REGEN_CURRENT) {
 		regen_limits[func_state - F_PERFORMANCE] = MAX_REGEN_CURRENT;
-	} else if (limit < 0.0) {
-		regen_limits[func_state - F_PERFORMANCE] = 0.0;
 	} else {
 		regen_limits[func_state - F_PERFORMANCE] = limit;
 	}
