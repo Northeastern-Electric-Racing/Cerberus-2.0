@@ -1166,3 +1166,59 @@ void receive_hv_plate_diagnostics_second(const can_msg_t *message, hv_plate_diag
     hv_plate_diagnostics_second->vdiv = (float)((double)vdiv_raw / 100);
 }
 
+void receive_bms_test_message_one(const can_msg_t *message, bms_test_message_one_t *bms_test_message_one) {
+    
+    uint64_t data_bigendian;
+    memcpy(&data_bigendian, message->data, 8);
+    uint64_t data = __builtin_bswap64(data_bigendian);
+    uint64_t one_mask = (1ULL << 32) - 1ULL;
+    uint64_t one_raw = (data >> 32) & one_mask;
+    bms_test_message_one->one = (float)((double)one_raw / 1000);
+    uint64_t two_mask = (1ULL << 16) - 1ULL;
+    uint64_t two_bits = (data >> 16) & two_mask;
+    int64_t two_raw = (two_bits & (1ULL << (16 - 1)))
+        ? (int64_t)(two_bits | ~two_mask)
+        : (int64_t)two_bits;
+    bms_test_message_one->two = (int16_t)two_raw;
+    uint64_t three_mask = (1ULL << 8) - 1ULL;
+    uint64_t three_raw = (data >> 8) & three_mask;
+    bms_test_message_one->three = (uint8_t)three_raw;
+}
+
+void receive_bms_test_message_two(const can_msg_t *message, bms_test_message_two_t *bms_test_message_two) {
+    
+    uint64_t data_bigendian;
+    memcpy(&data_bigendian, message->data, 8);
+    uint64_t data = __builtin_bswap64(data_bigendian);
+    uint64_t one_mask = (1ULL << 2) - 1ULL;
+    uint64_t one_raw = (data >> 62) & one_mask;
+    bms_test_message_two->one = (uint8_t)one_raw;
+    uint64_t two_mask = (1ULL << 1) - 1ULL;
+    uint64_t two_raw = (data >> 61) & two_mask;
+    bms_test_message_two->two = (bool)two_raw;
+    uint64_t three_mask = (1ULL << 3) - 1ULL;
+    uint64_t three_raw = (data >> 58) & three_mask;
+    bms_test_message_two->three = (uint8_t)three_raw;
+    uint64_t four_mask = (1ULL << 6) - 1ULL;
+    uint64_t four_raw = (data >> 52) & four_mask;
+    bms_test_message_two->four = (uint8_t)four_raw;
+    uint64_t five_mask = (1ULL << 1) - 1ULL;
+    uint64_t five_raw = (data >> 51) & five_mask;
+    bms_test_message_two->five = (bool)five_raw;
+    uint64_t six_mask = (1ULL << 1) - 1ULL;
+    uint64_t six_raw = (data >> 50) & six_mask;
+    bms_test_message_two->six = (bool)six_raw;
+    uint64_t seven_mask = (1ULL << 1) - 1ULL;
+    uint64_t seven_raw = (data >> 49) & seven_mask;
+    bms_test_message_two->seven = (bool)seven_raw;
+    uint64_t eight_mask = (1ULL << 1) - 1ULL;
+    uint64_t eight_raw = (data >> 48) & eight_mask;
+    bms_test_message_two->eight = (bool)eight_raw;
+    uint64_t nine_mask = (1ULL << 23) - 1ULL;
+    uint64_t nine_raw = (data >> 25) & nine_mask;
+    bms_test_message_two->nine = (uint32_t)nine_raw;
+    uint64_t ten_mask = (1ULL << 9) - 1ULL;
+    uint64_t ten_raw = (data >> 16) & ten_mask;
+    bms_test_message_two->ten = (uint16_t)ten_raw;
+}
+

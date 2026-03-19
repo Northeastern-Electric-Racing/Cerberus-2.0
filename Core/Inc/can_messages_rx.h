@@ -535,6 +535,29 @@ typedef struct {
 
 void receive_hv_plate_diagnostics_second(const can_msg_t *message, hv_plate_diagnostics_second_t *hv_plate_diagnostics_second);
 
+typedef struct {
+ float one;
+ int16_t two;
+ uint8_t three;
+} bms_test_message_one_t;
+
+void receive_bms_test_message_one(const can_msg_t *message, bms_test_message_one_t *bms_test_message_one);
+
+typedef struct {
+ uint8_t one;
+ bool two;
+ uint8_t three;
+ uint8_t four;
+ bool five;
+ bool six;
+ bool seven;
+ bool eight;
+ uint32_t nine;
+ uint16_t ten;
+} bms_test_message_two_t;
+
+void receive_bms_test_message_two(const can_msg_t *message, bms_test_message_two_t *bms_test_message_two);
+
 
 void receive_can(const can_msg_t *msg);
 

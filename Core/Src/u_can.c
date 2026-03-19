@@ -7,6 +7,7 @@
 #include "u_rtds.h"
 #include "u_dti.h"
 #include "u_efuses.h"
+#include "serial.h"
 #include "can_messages_tx.h"
 #include "can_messages_rx.h"
 
@@ -91,6 +92,14 @@ uint8_t can1_init(FDCAN_HandleTypeDef *hcan) {
     status = can_add_filter_extended(&can1, extended6);
     if (status != HAL_OK) {
         PRINTLN_ERROR("Failed to add extended filter to can1 (Status: %d/%s, ID1: %ld, ID2: %ld).", status, hal_status_toString(status), extended6[0], extended6[1]);
+        return U_ERROR;
+    }
+
+    /* Add fitlers for extended IDs */
+    uint32_t extended7[] = {0xBAD3, 0xBAD4};
+    status = can_add_filter_extended(&can1, extended7);
+    if (status != HAL_OK) {
+        PRINTLN_ERROR("Failed to add extended filter to can1 (Status: %d/%s, ID1: %ld, ID2: %ld).", status, hal_status_toString(status), extended7[0], extended7[1]);
         return U_ERROR;
     }
 
@@ -196,6 +205,35 @@ void can_inbox(can_msg_t *message) {
             case STOP_REVERSE: rtds_stopReverseSound(); break;
             default: break;
         }
+        break;
+    case 0xBAD3:
+        static int times_received_one = 0;
+        bms_test_message_one_t test_message_one;
+        receive_bms_test_message_one(message, &test_message_one);
+        times_received_one++;
+
+        serial_monitor("bms_test_message_one", "one", "%f", test_message_one.one);
+        serial_monitor("bms_test_message_one", "two", "%d", test_message_one.two);
+        serial_monitor("bms_test_message_one", "three", "%d", test_message_one.three);
+        serial_monitor("bms_test_message_one", "times_received", "%d", times_received_one);
+        break;
+    case 0xBAD4:
+        static int times_received_two = 0;
+        bms_test_message_two_t test_message_two;
+        receive_bms_test_message_one(message, &test_message_two);
+        times_received_two++;
+
+        serial_monitor("bms_test_message_two", "one", "%d", test_message_two.one);
+        serial_monitor("bms_test_message_two", "two", "%d", test_message_two.two);
+        serial_monitor("bms_test_message_two", "three", "%d", test_message_two.three);
+        serial_monitor("bms_test_message_two", "four", "%d", test_message_two.four);
+        serial_monitor("bms_test_message_two", "five", "%d", test_message_two.five);
+        serial_monitor("bms_test_message_two", "six", "%d", test_message_two.six);
+        serial_monitor("bms_test_message_two", "seven", "%d", test_message_two.seven);
+        serial_monitor("bms_test_message_two", "eight", "%d", test_message_two.eight);
+        serial_monitor("bms_test_message_two", "nine", "%ld", test_message_two.nine);
+        serial_monitor("bms_test_message_two", "ten", "%d", test_message_two.ten);
+        serial_monitor("bms_test_message_two", "times_received", "%d", times_received_two);
         break;
     default:
         PRINTLN_WARNING("Unknown CAN Message Recieved (Message ID: 0x%X).", message->id);
