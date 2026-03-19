@@ -22,10 +22,9 @@ uint8_t send_ac_current_command
     can_msg_t msg;
     msg.id = 0x036;
     msg.id_is_extended = false;
-    msg.len = 2;
-
     
             uint16_t data = 0;
+            msg.len = 2;
                         int32_t current_target_ac_i = (int32_t)(current_target_ac*10);
                         if(current_target_ac_i > 32767) {current_target_ac_i = 32767;
                         } else if(current_target_ac_i < -32768) {current_target_ac_i = -32768;
@@ -34,7 +33,6 @@ uint8_t send_ac_current_command
             
             uint16_t data_bigendian = __builtin_bswap16(data);
             memcpy(msg.data, &data_bigendian, 2);
-        
 
     return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
 }
@@ -45,10 +43,9 @@ uint8_t send_brake_current_command
     can_msg_t msg;
     msg.id = 0x056;
     msg.id_is_extended = false;
-    msg.len = 8;
-
     
             uint64_t data = 0;
+            msg.len = 8;
                         int32_t brake_ac_current_i = (int32_t)(brake_ac_current*10);
                         if(brake_ac_current_i > 32767) {brake_ac_current_i = 32767;
                         } else if(brake_ac_current_i < -32768) {brake_ac_current_i = -32768;
@@ -57,7 +54,6 @@ uint8_t send_brake_current_command
             
             uint64_t data_bigendian = __builtin_bswap64(data);
             memcpy(msg.data, &data_bigendian, 8);
-        
 
     return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
 }
@@ -68,17 +64,15 @@ uint8_t send_drive_enable_command
     can_msg_t msg;
     msg.id = 0x196;
     msg.id_is_extended = false;
-    msg.len = 1;
-
     
             uint8_t data = 0;
+            msg.len = 1;
                         uint32_t drive_enable_i = (uint32_t)(drive_enable);
                         if(drive_enable_i > 255ULL) {drive_enable_i = 255;
                         }
                         data |= ((drive_enable_i) & 0xFFULL) << 0;
             
             msg.data[0] = data;
-        
 
     return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
 }
@@ -88,10 +82,9 @@ uint8_t send_dashboard_efuse
 {
     can_msg_t msg;
     msg.id = 0xEF0;
-    msg.id_is_extended = true;msg.len = 8;
-
-    
+    msg.id_is_extended = true;
             uint64_t data = 0;
+            msg.len = 8;
                         uint32_t ADC_i = (uint32_t)(ADC);
                         if(ADC_i > 65535ULL) {ADC_i = 65535;
                         }
@@ -124,7 +117,6 @@ uint8_t send_dashboard_efuse
             
             uint64_t data_bigendian = __builtin_bswap64(data);
             memcpy(msg.data, &data_bigendian, 8);
-        
 
     return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
 }
@@ -134,10 +126,9 @@ uint8_t send_brake_efuse
 {
     can_msg_t msg;
     msg.id = 0xEF1;
-    msg.id_is_extended = true;msg.len = 8;
-
-    
+    msg.id_is_extended = true;
             uint64_t data = 0;
+            msg.len = 8;
                         uint32_t ADC_i = (uint32_t)(ADC);
                         if(ADC_i > 65535ULL) {ADC_i = 65535;
                         }
@@ -170,7 +161,6 @@ uint8_t send_brake_efuse
             
             uint64_t data_bigendian = __builtin_bswap64(data);
             memcpy(msg.data, &data_bigendian, 8);
-        
 
     return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
 }
@@ -180,10 +170,9 @@ uint8_t send_shutdown_efuse
 {
     can_msg_t msg;
     msg.id = 0xEF2;
-    msg.id_is_extended = true;msg.len = 8;
-
-    
+    msg.id_is_extended = true;
             uint64_t data = 0;
+            msg.len = 8;
                         uint32_t ADC_i = (uint32_t)(ADC);
                         if(ADC_i > 65535ULL) {ADC_i = 65535;
                         }
@@ -216,7 +205,6 @@ uint8_t send_shutdown_efuse
             
             uint64_t data_bigendian = __builtin_bswap64(data);
             memcpy(msg.data, &data_bigendian, 8);
-        
 
     return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
 }
@@ -226,10 +214,9 @@ uint8_t send_lv_efuse
 {
     can_msg_t msg;
     msg.id = 0xEF3;
-    msg.id_is_extended = true;msg.len = 8;
-
-    
+    msg.id_is_extended = true;
             uint64_t data = 0;
+            msg.len = 8;
                         uint32_t ADC_i = (uint32_t)(ADC);
                         if(ADC_i > 65535ULL) {ADC_i = 65535;
                         }
@@ -262,7 +249,6 @@ uint8_t send_lv_efuse
             
             uint64_t data_bigendian = __builtin_bswap64(data);
             memcpy(msg.data, &data_bigendian, 8);
-        
 
     return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
 }
@@ -272,10 +258,9 @@ uint8_t send_radfan_efuse
 {
     can_msg_t msg;
     msg.id = 0xEF4;
-    msg.id_is_extended = true;msg.len = 8;
-
-    
+    msg.id_is_extended = true;
             uint64_t data = 0;
+            msg.len = 8;
                         uint32_t ADC_i = (uint32_t)(ADC);
                         if(ADC_i > 65535ULL) {ADC_i = 65535;
                         }
@@ -308,7 +293,6 @@ uint8_t send_radfan_efuse
             
             uint64_t data_bigendian = __builtin_bswap64(data);
             memcpy(msg.data, &data_bigendian, 8);
-        
 
     return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
 }
@@ -318,10 +302,9 @@ uint8_t send_fanbatt_efuse
 {
     can_msg_t msg;
     msg.id = 0xEF5;
-    msg.id_is_extended = true;msg.len = 8;
-
-    
+    msg.id_is_extended = true;
             uint64_t data = 0;
+            msg.len = 8;
                         uint32_t ADC_i = (uint32_t)(ADC);
                         if(ADC_i > 65535ULL) {ADC_i = 65535;
                         }
@@ -354,7 +337,6 @@ uint8_t send_fanbatt_efuse
             
             uint64_t data_bigendian = __builtin_bswap64(data);
             memcpy(msg.data, &data_bigendian, 8);
-        
 
     return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
 }
@@ -364,10 +346,9 @@ uint8_t send_pumpone_efuse
 {
     can_msg_t msg;
     msg.id = 0xEF6;
-    msg.id_is_extended = true;msg.len = 8;
-
-    
+    msg.id_is_extended = true;
             uint64_t data = 0;
+            msg.len = 8;
                         uint32_t ADC_i = (uint32_t)(ADC);
                         if(ADC_i > 65535ULL) {ADC_i = 65535;
                         }
@@ -400,7 +381,6 @@ uint8_t send_pumpone_efuse
             
             uint64_t data_bigendian = __builtin_bswap64(data);
             memcpy(msg.data, &data_bigendian, 8);
-        
 
     return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
 }
@@ -410,10 +390,9 @@ uint8_t send_pumptwo_efuse
 {
     can_msg_t msg;
     msg.id = 0xEF7;
-    msg.id_is_extended = true;msg.len = 8;
-
-    
+    msg.id_is_extended = true;
             uint64_t data = 0;
+            msg.len = 8;
                         uint32_t ADC_i = (uint32_t)(ADC);
                         if(ADC_i > 65535ULL) {ADC_i = 65535;
                         }
@@ -446,7 +425,6 @@ uint8_t send_pumptwo_efuse
             
             uint64_t data_bigendian = __builtin_bswap64(data);
             memcpy(msg.data, &data_bigendian, 8);
-        
 
     return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
 }
@@ -456,10 +434,9 @@ uint8_t send_battbox_efuse
 {
     can_msg_t msg;
     msg.id = 0xEF8;
-    msg.id_is_extended = true;msg.len = 8;
-
-    
+    msg.id_is_extended = true;
             uint64_t data = 0;
+            msg.len = 8;
                         uint32_t ADC_i = (uint32_t)(ADC);
                         if(ADC_i > 65535ULL) {ADC_i = 65535;
                         }
@@ -492,7 +469,6 @@ uint8_t send_battbox_efuse
             
             uint64_t data_bigendian = __builtin_bswap64(data);
             memcpy(msg.data, &data_bigendian, 8);
-        
 
     return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
 }
@@ -502,10 +478,9 @@ uint8_t send_mc_efuse
 {
     can_msg_t msg;
     msg.id = 0xEF9;
-    msg.id_is_extended = true;msg.len = 8;
-
-    
+    msg.id_is_extended = true;
             uint64_t data = 0;
+            msg.len = 8;
                         uint32_t ADC_i = (uint32_t)(ADC);
                         if(ADC_i > 65535ULL) {ADC_i = 65535;
                         }
@@ -538,7 +513,6 @@ uint8_t send_mc_efuse
             
             uint64_t data_bigendian = __builtin_bswap64(data);
             memcpy(msg.data, &data_bigendian, 8);
-        
 
     return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
 }
@@ -548,10 +522,9 @@ uint8_t send_spare_efuse
 {
     can_msg_t msg;
     msg.id = 0xEFA;
-    msg.id_is_extended = true;msg.len = 8;
-
-    
+    msg.id_is_extended = true;
             uint64_t data = 0;
+            msg.len = 8;
                         uint32_t ADC_i = (uint32_t)(ADC);
                         if(ADC_i > 65535ULL) {ADC_i = 65535;
                         }
@@ -584,7 +557,6 @@ uint8_t send_spare_efuse
             
             uint64_t data_bigendian = __builtin_bswap64(data);
             memcpy(msg.data, &data_bigendian, 8);
-        
 
     return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
 }
@@ -595,10 +567,9 @@ uint8_t send_shutdown_pins
     can_msg_t msg;
     msg.id = 0x123;
     msg.id_is_extended = false;
-    msg.len = 2;
-
     
             uint16_t data = 0;
+            msg.len = 2;
                         uint32_t bms_gpio_i = (uint32_t)(bms_gpio);
                         if(bms_gpio_i > 1ULL) {bms_gpio_i = 1;
                         }
@@ -656,7 +627,6 @@ uint8_t send_shutdown_pins
             
             uint16_t data_bigendian = __builtin_bswap16(data);
             memcpy(msg.data, &data_bigendian, 2);
-        
 
     return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
 }
@@ -667,10 +637,9 @@ uint8_t send_car_state
     can_msg_t msg;
     msg.id = 0x501;
     msg.id_is_extended = false;
-    msg.len = 6;
-
     
             uint64_t data = 0;
+            msg.len = 8;
                         uint32_t home_mode_i = (uint32_t)(home_mode);
                         if(home_mode_i > 15ULL) {home_mode_i = 15;
                         }
@@ -714,7 +683,6 @@ uint8_t send_car_state
             
             uint64_t data_bigendian = __builtin_bswap64(data);
             memcpy(msg.data, &data_bigendian, 8);
-        
 
     return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
 }
@@ -725,10 +693,9 @@ uint8_t send_pedal_percent_pressed_values
     can_msg_t msg;
     msg.id = 0x505;
     msg.id_is_extended = false;
-    msg.len = 4;
-
     
             uint32_t data = 0;
+            msg.len = 4;
                         uint32_t accel_norm_i = (uint32_t)(accel_norm*100);
                         if(accel_norm_i > 65535ULL) {accel_norm_i = 65535;
                         }
@@ -741,7 +708,6 @@ uint8_t send_pedal_percent_pressed_values
             
             uint32_t data_bigendian = __builtin_bswap32(data);
             memcpy(msg.data, &data_bigendian, 4);
-        
 
     return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
 }
@@ -752,10 +718,9 @@ uint8_t send_pedal_sensor_voltages
     can_msg_t msg;
     msg.id = 0x504;
     msg.id_is_extended = false;
-    msg.len = 8;
-
     
             uint64_t data = 0;
+            msg.len = 8;
                         uint32_t accel1_volts_i = (uint32_t)(accel1_volts*100);
                         if(accel1_volts_i > 65535ULL) {accel1_volts_i = 65535;
                         }
@@ -778,7 +743,6 @@ uint8_t send_pedal_sensor_voltages
             
             uint64_t data_bigendian = __builtin_bswap64(data);
             memcpy(msg.data, &data_bigendian, 8);
-        
 
     return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
 }
@@ -789,17 +753,15 @@ uint8_t send_lightning_board_light_status
     can_msg_t msg;
     msg.id = 0xCA;
     msg.id_is_extended = false;
-    msg.len = 1;
-
     
             uint8_t data = 0;
+            msg.len = 1;
                         uint32_t status_i = (uint32_t)(status);
                         if(status_i > 3ULL) {status_i = 3;
                         }
                         data |= ((status_i) & 0x3ULL) << 6;
             
             msg.data[0] = data;
-        
 
     return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
 }
@@ -810,10 +772,9 @@ uint8_t send_temperature_sensor
     can_msg_t msg;
     msg.id = 0x508;
     msg.id_is_extended = false;
-    msg.len = 4;
-
     
             uint32_t data = 0;
+            msg.len = 4;
                         int32_t vcu_temperature_i = (int32_t)(vcu_temperature*100);
                         if(vcu_temperature_i > 32767) {vcu_temperature_i = 32767;
                         } else if(vcu_temperature_i < -32768) {vcu_temperature_i = -32768;
@@ -827,7 +788,6 @@ uint8_t send_temperature_sensor
             
             uint32_t data_bigendian = __builtin_bswap32(data);
             memcpy(msg.data, &data_bigendian, 4);
-        
 
     return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
 }
@@ -838,10 +798,9 @@ uint8_t send_imu_accelerometer
     can_msg_t msg;
     msg.id = 0x506;
     msg.id_is_extended = false;
-    msg.len = 6;
-
     
             uint64_t data = 0;
+            msg.len = 8;
                         int32_t imu_accelerometer_x_i = (int32_t)(imu_accelerometer_x*4);
                         if(imu_accelerometer_x_i > 32767) {imu_accelerometer_x_i = 32767;
                         } else if(imu_accelerometer_x_i < -32768) {imu_accelerometer_x_i = -32768;
@@ -862,7 +821,6 @@ uint8_t send_imu_accelerometer
             
             uint64_t data_bigendian = __builtin_bswap64(data);
             memcpy(msg.data, &data_bigendian, 8);
-        
 
     return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
 }
@@ -873,10 +831,9 @@ uint8_t send_imu_gyro
     can_msg_t msg;
     msg.id = 0x507;
     msg.id_is_extended = false;
-    msg.len = 6;
-
     
             uint64_t data = 0;
+            msg.len = 8;
                         int32_t imu_gyro_x_i = (int32_t)(imu_gyro_x*100);
                         if(imu_gyro_x_i > 32767) {imu_gyro_x_i = 32767;
                         } else if(imu_gyro_x_i < -32768) {imu_gyro_x_i = -32768;
@@ -897,7 +854,6 @@ uint8_t send_imu_gyro
             
             uint64_t data_bigendian = __builtin_bswap64(data);
             memcpy(msg.data, &data_bigendian, 8);
-        
 
     return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
 }
@@ -908,10 +864,9 @@ uint8_t send_faults
     can_msg_t msg;
     msg.id = 0x502;
     msg.id_is_extended = false;
-    msg.len = 2;
-
     
             uint16_t data = 0;
+            msg.len = 2;
                         uint32_t CAN_OUTGOING_FAULT_i = (uint32_t)(CAN_OUTGOING_FAULT);
                         if(CAN_OUTGOING_FAULT_i > 1ULL) {CAN_OUTGOING_FAULT_i = 1;
                         }
@@ -994,7 +949,6 @@ uint8_t send_faults
             
             uint16_t data_bigendian = __builtin_bswap16(data);
             memcpy(msg.data, &data_bigendian, 2);
-        
 
     return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
 }
@@ -1005,10 +959,9 @@ uint8_t send_lv_voltage
     can_msg_t msg;
     msg.id = 0x509;
     msg.id_is_extended = false;
-    msg.len = 6;
-
     
             uint64_t data = 0;
+            msg.len = 8;
                         uint32_t ADC_i = (uint32_t)(ADC);
                         if(ADC_i > 65535ULL) {ADC_i = 65535;
                         }
@@ -1021,7 +974,6 @@ uint8_t send_lv_voltage
             
             uint64_t data_bigendian = __builtin_bswap64(data);
             memcpy(msg.data, &data_bigendian, 8);
-        
 
     return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
 }
@@ -1031,10 +983,9 @@ uint8_t send_vcu_test_message
 {
     can_msg_t msg;
     msg.id = 0xBAD;
-    msg.id_is_extended = true;msg.len = 8;
-
-    
+    msg.id_is_extended = true;
             uint64_t data = 0;
+            msg.len = 8;
                         uint32_t three_bits_i = (uint32_t)(three_bits);
                         if(three_bits_i > 7ULL) {three_bits_i = 7;
                         }
@@ -1064,7 +1015,6 @@ uint8_t send_vcu_test_message
             
             uint64_t data_bigendian = __builtin_bswap64(data);
             memcpy(msg.data, &data_bigendian, 8);
-        
 
     return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
 }
@@ -1075,10 +1025,9 @@ uint8_t send_dti_motor_temp_as_reported_by_vcu
     can_msg_t msg;
     msg.id = 0xD0;
     msg.id_is_extended = false;
-    msg.len = 2;
-
     
             uint16_t data = 0;
+            msg.len = 2;
                         uint32_t temp_i = (uint32_t)(temp);
                         if(temp_i > 65535ULL) {temp_i = 65535;
                         }
@@ -1086,7 +1035,6 @@ uint8_t send_dti_motor_temp_as_reported_by_vcu
             
             uint16_t data_bigendian = __builtin_bswap16(data);
             memcpy(msg.data, &data_bigendian, 2);
-        
 
     return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
 }
@@ -1097,10 +1045,9 @@ uint8_t send_dti_controller_temp_as_reported_by_vcu
     can_msg_t msg;
     msg.id = 0xD1;
     msg.id_is_extended = false;
-    msg.len = 2;
-
     
             uint16_t data = 0;
+            msg.len = 2;
                         uint32_t temp_i = (uint32_t)(temp);
                         if(temp_i > 65535ULL) {temp_i = 65535;
                         }
@@ -1108,7 +1055,6 @@ uint8_t send_dti_controller_temp_as_reported_by_vcu
             
             uint16_t data_bigendian = __builtin_bswap16(data);
             memcpy(msg.data, &data_bigendian, 2);
-        
 
     return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
 }
@@ -1119,10 +1065,9 @@ uint8_t send_bms_battbox_temp_as_reported_by_vcu
     can_msg_t msg;
     msg.id = 0xD2;
     msg.id_is_extended = false;
-    msg.len = 4;
-
     
             uint32_t data = 0;
+            msg.len = 4;
                         int32_t temp_i = (int32_t)(temp*100);
                         if(temp_i > 2147483647) {temp_i = 2147483647;
                         } else if(temp_i < -2147483648) {temp_i = -2147483648;
@@ -1131,7 +1076,6 @@ uint8_t send_bms_battbox_temp_as_reported_by_vcu
             
             uint32_t data_bigendian = __builtin_bswap32(data);
             memcpy(msg.data, &data_bigendian, 4);
-        
 
     return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
 }
@@ -1142,10 +1086,9 @@ uint8_t send_brake_state_as_reported_by_vcu
     can_msg_t msg;
     msg.id = 0xD3;
     msg.id_is_extended = false;
-    msg.len = 1;
-
     
             uint8_t data = 0;
+            msg.len = 1;
                         int32_t brake_state_i = (int32_t)(brake_state*100);
                         if(brake_state_i > 127) {brake_state_i = 127;
                         } else if(brake_state_i < -128) {brake_state_i = -128;
@@ -1153,7 +1096,6 @@ uint8_t send_brake_state_as_reported_by_vcu
                         data |= ((uint32_t)(brake_state_i) & 0xFFULL) << 0;
             
             msg.data[0] = data;
-        
 
     return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
 }
@@ -1164,10 +1106,9 @@ uint8_t send_rtds_state_message
     can_msg_t msg;
     msg.id = 0xD4;
     msg.id_is_extended = false;
-    msg.len = 4;
-
     
             uint32_t data = 0;
+            msg.len = 4;
                         uint32_t pin_state_i = (uint32_t)(pin_state);
                         if(pin_state_i > 255ULL) {pin_state_i = 255;
                         }
@@ -1190,7 +1131,6 @@ uint8_t send_rtds_state_message
             
             uint32_t data_bigendian = __builtin_bswap32(data);
             memcpy(msg.data, &data_bigendian, 4);
-        
 
     return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
 }
@@ -1200,10 +1140,9 @@ uint8_t send_lfiu_low_current_adc_readings
 {
     can_msg_t msg;
     msg.id = 0xADC1;
-    msg.id_is_extended = true;msg.len = 6;
-
-    
+    msg.id_is_extended = true;
             uint64_t data = 0;
+            msg.len = 8;
                         uint32_t raw_i = (uint32_t)(raw);
                         if(raw_i > 65535ULL) {raw_i = 65535;
                         }
@@ -1222,7 +1161,6 @@ uint8_t send_lfiu_low_current_adc_readings
             
             uint64_t data_bigendian = __builtin_bswap64(data);
             memcpy(msg.data, &data_bigendian, 8);
-        
 
     return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
 }
@@ -1232,10 +1170,9 @@ uint8_t send_lfiu_high_current_adc_readings
 {
     can_msg_t msg;
     msg.id = 0xADC2;
-    msg.id_is_extended = true;msg.len = 6;
-
-    
+    msg.id_is_extended = true;
             uint64_t data = 0;
+            msg.len = 8;
                         uint32_t raw_i = (uint32_t)(raw);
                         if(raw_i > 65535ULL) {raw_i = 65535;
                         }
@@ -1254,7 +1191,6 @@ uint8_t send_lfiu_high_current_adc_readings
             
             uint64_t data_bigendian = __builtin_bswap64(data);
             memcpy(msg.data, &data_bigendian, 8);
-        
 
     return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
 }
