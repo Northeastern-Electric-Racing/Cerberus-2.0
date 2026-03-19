@@ -333,4 +333,16 @@ uint8_t send_lfiu_low_current_adc_readings
 */
 uint8_t send_lfiu_high_current_adc_readings
 (uint16_t raw,float voltage,float current);
+
+/**
+* Contents of this message:
+* VCU/TestTwo/one - 
+* VCU/TestTwo/two - 
+* VCU/TestTwo/three - 
+* VCU/TestTwo/four - 
+* VCU/TestTwo/five - 
+* VCU/TestTwo/six - 
+*/
+uint8_t send_second_vcu_test_message
+(uint16_t one,uint8_t two,uint8_t three,bool four,uint8_t five,uint32_t six);
 #endif

@@ -1195,6 +1195,50 @@ uint8_t send_lfiu_high_current_adc_readings
     return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
 }
 
+uint8_t send_second_vcu_test_message
+(uint16_t one,uint8_t two,uint8_t three,bool four,uint8_t five,uint32_t six)
+{
+    can_msg_t msg;
+    msg.id = 0xBAD2;
+    msg.id_is_extended = true;
+            uint64_t data = 0;
+            msg.len = 8;
+                        uint32_t one_i = (uint32_t)(one);
+                        if(one_i > 16383ULL) {one_i = 16383;
+                        }
+                        data |= ((one_i) & 0x3FFFULL) << 50;
+            
+                        uint32_t two_i = (uint32_t)(two);
+                        if(two_i > 3ULL) {two_i = 3;
+                        }
+                        data |= ((two_i) & 0x3ULL) << 48;
+            
+                        uint32_t three_i = (uint32_t)(three);
+                        if(three_i > 3ULL) {three_i = 3;
+                        }
+                        data |= ((three_i) & 0x3ULL) << 46;
+            
+                        uint32_t four_i = (uint32_t)(four);
+                        if(four_i > 1ULL) {four_i = 1;
+                        }
+                        data |= ((four_i) & 0x1ULL) << 45;
+            
+                        uint32_t five_i = (uint32_t)(five);
+                        if(five_i > 63ULL) {five_i = 63;
+                        }
+                        data |= ((five_i) & 0x3FULL) << 39;
+            
+                        uint32_t six_i = (uint32_t)(six);
+                        if(six_i > 8388607ULL) {six_i = 8388607;
+                        }
+                        data |= ((six_i) & 0x7FFFFFULL) << 16;
+            
+            uint64_t data_bigendian = __builtin_bswap64(data);
+            memcpy(msg.data, &data_bigendian, 8);
+
+    return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
+}
+
 
 
 /// @brief A helper which sends appropriate error to stdout and CAN if a bistream overflows

@@ -101,6 +101,7 @@ void vTest(ULONG thread_input) {
         // PRINTLN_INFO("TIME: %2u/%02u/%u %02u:%02u:%02u.%09lu\r\n", date.day, date.month, date.year, date.hour, date.minute, date.second, date.nanosecond);
 
         send_vcu_test_message(7, 19.342, 30, 13942, -122);
+        send_second_vcu_test_message(12132, 3, 2, false, 35, 100000);
         tx_thread_sleep(test_thread.sleep);
     }
 }

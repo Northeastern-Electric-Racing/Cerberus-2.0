@@ -19,19 +19,19 @@ void receive_front_msb_accel(const can_msg_t *message, front_msb_accel_t *front_
     memcpy(&data_bigendian, message->data, 8);
     uint64_t data = __builtin_bswap64(data_bigendian);
     uint64_t x_force_mask = (1ULL << 16) - 1ULL;
-    uint64_t x_force_bits = (data >> 32) & x_force_mask;
+    uint64_t x_force_bits = (data >> 48) & x_force_mask;
     int64_t x_force_raw = (x_force_bits & (1ULL << (16 - 1)))
         ? (int64_t)(x_force_bits | ~x_force_mask)
         : (int64_t)x_force_bits;
     front_msb_accel->x_force = (float)x_force_raw;
     uint64_t y_force_mask = (1ULL << 16) - 1ULL;
-    uint64_t y_force_bits = (data >> 16) & y_force_mask;
+    uint64_t y_force_bits = (data >> 32) & y_force_mask;
     int64_t y_force_raw = (y_force_bits & (1ULL << (16 - 1)))
         ? (int64_t)(y_force_bits | ~y_force_mask)
         : (int64_t)y_force_bits;
     front_msb_accel->y_force = (float)y_force_raw;
     uint64_t z_force_mask = (1ULL << 16) - 1ULL;
-    uint64_t z_force_bits = (data >> 0) & z_force_mask;
+    uint64_t z_force_bits = (data >> 16) & z_force_mask;
     int64_t z_force_raw = (z_force_bits & (1ULL << (16 - 1)))
         ? (int64_t)(z_force_bits | ~z_force_mask)
         : (int64_t)z_force_bits;
@@ -44,19 +44,19 @@ void receive_front_msb_gyro(const can_msg_t *message, front_msb_gyro_t *front_ms
     memcpy(&data_bigendian, message->data, 8);
     uint64_t data = __builtin_bswap64(data_bigendian);
     uint64_t x_deg_mask = (1ULL << 16) - 1ULL;
-    uint64_t x_deg_bits = (data >> 32) & x_deg_mask;
+    uint64_t x_deg_bits = (data >> 48) & x_deg_mask;
     int64_t x_deg_raw = (x_deg_bits & (1ULL << (16 - 1)))
         ? (int64_t)(x_deg_bits | ~x_deg_mask)
         : (int64_t)x_deg_bits;
     front_msb_gyro->x_deg = (float)x_deg_raw;
     uint64_t y_deg_mask = (1ULL << 16) - 1ULL;
-    uint64_t y_deg_bits = (data >> 16) & y_deg_mask;
+    uint64_t y_deg_bits = (data >> 32) & y_deg_mask;
     int64_t y_deg_raw = (y_deg_bits & (1ULL << (16 - 1)))
         ? (int64_t)(y_deg_bits | ~y_deg_mask)
         : (int64_t)y_deg_bits;
     front_msb_gyro->y_deg = (float)y_deg_raw;
     uint64_t z_deg_mask = (1ULL << 16) - 1ULL;
-    uint64_t z_deg_bits = (data >> 0) & z_deg_mask;
+    uint64_t z_deg_bits = (data >> 16) & z_deg_mask;
     int64_t z_deg_raw = (z_deg_bits & (1ULL << (16 - 1)))
         ? (int64_t)(z_deg_bits | ~z_deg_mask)
         : (int64_t)z_deg_bits;
@@ -126,19 +126,19 @@ void receive_front_msb_orientation(const can_msg_t *message, front_msb_orientati
     memcpy(&data_bigendian, message->data, 8);
     uint64_t data = __builtin_bswap64(data_bigendian);
     uint64_t x_fdeg_mask = (1ULL << 16) - 1ULL;
-    uint64_t x_fdeg_bits = (data >> 32) & x_fdeg_mask;
+    uint64_t x_fdeg_bits = (data >> 48) & x_fdeg_mask;
     int64_t x_fdeg_raw = (x_fdeg_bits & (1ULL << (16 - 1)))
         ? (int64_t)(x_fdeg_bits | ~x_fdeg_mask)
         : (int64_t)x_fdeg_bits;
     front_msb_orientation->x_fdeg = (float)x_fdeg_raw;
     uint64_t y_fdeg_mask = (1ULL << 16) - 1ULL;
-    uint64_t y_fdeg_bits = (data >> 16) & y_fdeg_mask;
+    uint64_t y_fdeg_bits = (data >> 32) & y_fdeg_mask;
     int64_t y_fdeg_raw = (y_fdeg_bits & (1ULL << (16 - 1)))
         ? (int64_t)(y_fdeg_bits | ~y_fdeg_mask)
         : (int64_t)y_fdeg_bits;
     front_msb_orientation->y_fdeg = (float)y_fdeg_raw;
     uint64_t z_fdeg_mask = (1ULL << 16) - 1ULL;
-    uint64_t z_fdeg_bits = (data >> 0) & z_fdeg_mask;
+    uint64_t z_fdeg_bits = (data >> 16) & z_fdeg_mask;
     int64_t z_fdeg_raw = (z_fdeg_bits & (1ULL << (16 - 1)))
         ? (int64_t)(z_fdeg_bits | ~z_fdeg_mask)
         : (int64_t)z_fdeg_bits;
@@ -164,19 +164,19 @@ void receive_back_msb_accel(const can_msg_t *message, back_msb_accel_t *back_msb
     memcpy(&data_bigendian, message->data, 8);
     uint64_t data = __builtin_bswap64(data_bigendian);
     uint64_t x_force_mask = (1ULL << 16) - 1ULL;
-    uint64_t x_force_bits = (data >> 32) & x_force_mask;
+    uint64_t x_force_bits = (data >> 48) & x_force_mask;
     int64_t x_force_raw = (x_force_bits & (1ULL << (16 - 1)))
         ? (int64_t)(x_force_bits | ~x_force_mask)
         : (int64_t)x_force_bits;
     back_msb_accel->x_force = (float)x_force_raw;
     uint64_t y_force_mask = (1ULL << 16) - 1ULL;
-    uint64_t y_force_bits = (data >> 16) & y_force_mask;
+    uint64_t y_force_bits = (data >> 32) & y_force_mask;
     int64_t y_force_raw = (y_force_bits & (1ULL << (16 - 1)))
         ? (int64_t)(y_force_bits | ~y_force_mask)
         : (int64_t)y_force_bits;
     back_msb_accel->y_force = (float)y_force_raw;
     uint64_t z_force_mask = (1ULL << 16) - 1ULL;
-    uint64_t z_force_bits = (data >> 0) & z_force_mask;
+    uint64_t z_force_bits = (data >> 16) & z_force_mask;
     int64_t z_force_raw = (z_force_bits & (1ULL << (16 - 1)))
         ? (int64_t)(z_force_bits | ~z_force_mask)
         : (int64_t)z_force_bits;
@@ -189,19 +189,19 @@ void receive_back_msb_gyro(const can_msg_t *message, back_msb_gyro_t *back_msb_g
     memcpy(&data_bigendian, message->data, 8);
     uint64_t data = __builtin_bswap64(data_bigendian);
     uint64_t x_deg_mask = (1ULL << 16) - 1ULL;
-    uint64_t x_deg_bits = (data >> 32) & x_deg_mask;
+    uint64_t x_deg_bits = (data >> 48) & x_deg_mask;
     int64_t x_deg_raw = (x_deg_bits & (1ULL << (16 - 1)))
         ? (int64_t)(x_deg_bits | ~x_deg_mask)
         : (int64_t)x_deg_bits;
     back_msb_gyro->x_deg = (float)x_deg_raw;
     uint64_t y_deg_mask = (1ULL << 16) - 1ULL;
-    uint64_t y_deg_bits = (data >> 16) & y_deg_mask;
+    uint64_t y_deg_bits = (data >> 32) & y_deg_mask;
     int64_t y_deg_raw = (y_deg_bits & (1ULL << (16 - 1)))
         ? (int64_t)(y_deg_bits | ~y_deg_mask)
         : (int64_t)y_deg_bits;
     back_msb_gyro->y_deg = (float)y_deg_raw;
     uint64_t z_deg_mask = (1ULL << 16) - 1ULL;
-    uint64_t z_deg_bits = (data >> 0) & z_deg_mask;
+    uint64_t z_deg_bits = (data >> 16) & z_deg_mask;
     int64_t z_deg_raw = (z_deg_bits & (1ULL << (16 - 1)))
         ? (int64_t)(z_deg_bits | ~z_deg_mask)
         : (int64_t)z_deg_bits;
@@ -271,19 +271,19 @@ void receive_back_msb_orientation(const can_msg_t *message, back_msb_orientation
     memcpy(&data_bigendian, message->data, 8);
     uint64_t data = __builtin_bswap64(data_bigendian);
     uint64_t x_fdeg_mask = (1ULL << 16) - 1ULL;
-    uint64_t x_fdeg_bits = (data >> 32) & x_fdeg_mask;
+    uint64_t x_fdeg_bits = (data >> 48) & x_fdeg_mask;
     int64_t x_fdeg_raw = (x_fdeg_bits & (1ULL << (16 - 1)))
         ? (int64_t)(x_fdeg_bits | ~x_fdeg_mask)
         : (int64_t)x_fdeg_bits;
     back_msb_orientation->x_fdeg = (float)x_fdeg_raw;
     uint64_t y_fdeg_mask = (1ULL << 16) - 1ULL;
-    uint64_t y_fdeg_bits = (data >> 16) & y_fdeg_mask;
+    uint64_t y_fdeg_bits = (data >> 32) & y_fdeg_mask;
     int64_t y_fdeg_raw = (y_fdeg_bits & (1ULL << (16 - 1)))
         ? (int64_t)(y_fdeg_bits | ~y_fdeg_mask)
         : (int64_t)y_fdeg_bits;
     back_msb_orientation->y_fdeg = (float)y_fdeg_raw;
     uint64_t z_fdeg_mask = (1ULL << 16) - 1ULL;
-    uint64_t z_fdeg_bits = (data >> 0) & z_fdeg_mask;
+    uint64_t z_fdeg_bits = (data >> 16) & z_fdeg_mask;
     int64_t z_fdeg_raw = (z_fdeg_bits & (1ULL << (16 - 1)))
         ? (int64_t)(z_fdeg_bits | ~z_fdeg_mask)
         : (int64_t)z_fdeg_bits;
@@ -444,19 +444,19 @@ void receive_lightning_board_imu_acceleration_data(const can_msg_t *message, lig
     memcpy(&data_bigendian, message->data, 8);
     uint64_t data = __builtin_bswap64(data_bigendian);
     uint64_t accel_x_mask = (1ULL << 16) - 1ULL;
-    uint64_t accel_x_bits = (data >> 32) & accel_x_mask;
+    uint64_t accel_x_bits = (data >> 48) & accel_x_mask;
     int64_t accel_x_raw = (accel_x_bits & (1ULL << (16 - 1)))
         ? (int64_t)(accel_x_bits | ~accel_x_mask)
         : (int64_t)accel_x_bits;
     lightning_board_imu_acceleration_data->accel_x = (float)((double)accel_x_raw / 1000);
     uint64_t accel_y_mask = (1ULL << 16) - 1ULL;
-    uint64_t accel_y_bits = (data >> 16) & accel_y_mask;
+    uint64_t accel_y_bits = (data >> 32) & accel_y_mask;
     int64_t accel_y_raw = (accel_y_bits & (1ULL << (16 - 1)))
         ? (int64_t)(accel_y_bits | ~accel_y_mask)
         : (int64_t)accel_y_bits;
     lightning_board_imu_acceleration_data->accel_y = (float)((double)accel_y_raw / 1000);
     uint64_t accel_z_mask = (1ULL << 16) - 1ULL;
-    uint64_t accel_z_bits = (data >> 0) & accel_z_mask;
+    uint64_t accel_z_bits = (data >> 16) & accel_z_mask;
     int64_t accel_z_raw = (accel_z_bits & (1ULL << (16 - 1)))
         ? (int64_t)(accel_z_bits | ~accel_z_mask)
         : (int64_t)accel_z_bits;
@@ -469,19 +469,19 @@ void receive_lightning_board_imu_gyro_data(const can_msg_t *message, lightning_b
     memcpy(&data_bigendian, message->data, 8);
     uint64_t data = __builtin_bswap64(data_bigendian);
     uint64_t gyro_x_mask = (1ULL << 16) - 1ULL;
-    uint64_t gyro_x_bits = (data >> 32) & gyro_x_mask;
+    uint64_t gyro_x_bits = (data >> 48) & gyro_x_mask;
     int64_t gyro_x_raw = (gyro_x_bits & (1ULL << (16 - 1)))
         ? (int64_t)(gyro_x_bits | ~gyro_x_mask)
         : (int64_t)gyro_x_bits;
     lightning_board_imu_gyro_data->gyro_x = (float)((double)gyro_x_raw / 1000);
     uint64_t gyro_y_mask = (1ULL << 16) - 1ULL;
-    uint64_t gyro_y_bits = (data >> 16) & gyro_y_mask;
+    uint64_t gyro_y_bits = (data >> 32) & gyro_y_mask;
     int64_t gyro_y_raw = (gyro_y_bits & (1ULL << (16 - 1)))
         ? (int64_t)(gyro_y_bits | ~gyro_y_mask)
         : (int64_t)gyro_y_bits;
     lightning_board_imu_gyro_data->gyro_y = (float)((double)gyro_y_raw / 1000);
     uint64_t gyro_z_mask = (1ULL << 16) - 1ULL;
-    uint64_t gyro_z_bits = (data >> 0) & gyro_z_mask;
+    uint64_t gyro_z_bits = (data >> 16) & gyro_z_mask;
     int64_t gyro_z_raw = (gyro_z_bits & (1ULL << (16 - 1)))
         ? (int64_t)(gyro_z_bits | ~gyro_z_mask)
         : (int64_t)gyro_z_bits;
@@ -494,13 +494,13 @@ void receive_lightning_board_lightning_sensor_information(const can_msg_t *messa
     memcpy(&data_bigendian, message->data, 8);
     uint64_t data = __builtin_bswap64(data_bigendian);
     uint64_t interrupt_mask = (1ULL << 8) - 1ULL;
-    uint64_t interrupt_raw = (data >> 40) & interrupt_mask;
+    uint64_t interrupt_raw = (data >> 56) & interrupt_mask;
     lightning_board_lightning_sensor_information->interrupt = (uint8_t)interrupt_raw;
     uint64_t distance_mask = (1ULL << 8) - 1ULL;
-    uint64_t distance_raw = (data >> 32) & distance_mask;
+    uint64_t distance_raw = (data >> 48) & distance_mask;
     lightning_board_lightning_sensor_information->distance = (uint8_t)distance_raw;
     uint64_t energy_mask = (1ULL << 32) - 1ULL;
-    uint64_t energy_raw = (data >> 0) & energy_mask;
+    uint64_t energy_raw = (data >> 16) & energy_mask;
     lightning_board_lightning_sensor_information->energy = (uint32_t)energy_raw;
 }
 
@@ -510,19 +510,19 @@ void receive_lightning_board_magnometer_sensor_information(const can_msg_t *mess
     memcpy(&data_bigendian, message->data, 8);
     uint64_t data = __builtin_bswap64(data_bigendian);
     uint64_t mag_x_mask = (1ULL << 16) - 1ULL;
-    uint64_t mag_x_bits = (data >> 32) & mag_x_mask;
+    uint64_t mag_x_bits = (data >> 48) & mag_x_mask;
     int64_t mag_x_raw = (mag_x_bits & (1ULL << (16 - 1)))
         ? (int64_t)(mag_x_bits | ~mag_x_mask)
         : (int64_t)mag_x_bits;
     lightning_board_magnometer_sensor_information->mag_x = (float)((double)mag_x_raw / 1000);
     uint64_t mag_y_mask = (1ULL << 16) - 1ULL;
-    uint64_t mag_y_bits = (data >> 16) & mag_y_mask;
+    uint64_t mag_y_bits = (data >> 32) & mag_y_mask;
     int64_t mag_y_raw = (mag_y_bits & (1ULL << (16 - 1)))
         ? (int64_t)(mag_y_bits | ~mag_y_mask)
         : (int64_t)mag_y_bits;
     lightning_board_magnometer_sensor_information->mag_y = (float)((double)mag_y_raw / 1000);
     uint64_t mag_z_mask = (1ULL << 16) - 1ULL;
-    uint64_t mag_z_bits = (data >> 0) & mag_z_mask;
+    uint64_t mag_z_bits = (data >> 16) & mag_z_mask;
     int64_t mag_z_raw = (mag_z_bits & (1ULL << (16 - 1)))
         ? (int64_t)(mag_z_bits | ~mag_z_mask)
         : (int64_t)mag_z_bits;
@@ -576,13 +576,13 @@ void receive_bms_status(const can_msg_t *message, bms_status_t *bms_status) {
     memcpy(&data_bigendian, message->data, 4);
     uint32_t data = __builtin_bswap32(data_bigendian);
     uint64_t state_mask = (1ULL << 8) - 1ULL;
-    uint64_t state_raw = (data >> 16) & state_mask;
+    uint64_t state_raw = (data >> 24) & state_mask;
     bms_status->state = (uint8_t)state_raw;
     uint64_t temp_average_mask = (1ULL << 8) - 1ULL;
-    uint64_t temp_average_raw = (data >> 8) & temp_average_mask;
+    uint64_t temp_average_raw = (data >> 16) & temp_average_mask;
     bms_status->temp_average = (float)temp_average_raw;
     uint64_t temp_internal_mask = (1ULL << 8) - 1ULL;
-    uint64_t temp_internal_raw = (data >> 0) & temp_internal_mask;
+    uint64_t temp_internal_raw = (data >> 8) & temp_internal_mask;
     bms_status->temp_internal = (float)temp_internal_raw;
 }
 
@@ -648,31 +648,31 @@ void receive_segment_temperatures(const can_msg_t *message, segment_temperatures
     memcpy(&data_bigendian, message->data, 8);
     uint64_t data = __builtin_bswap64(data_bigendian);
     uint64_t seg1_mask = (1ULL << 8) - 1ULL;
-    uint64_t seg1_bits = (data >> 32) & seg1_mask;
+    uint64_t seg1_bits = (data >> 56) & seg1_mask;
     int64_t seg1_raw = (seg1_bits & (1ULL << (8 - 1)))
         ? (int64_t)(seg1_bits | ~seg1_mask)
         : (int64_t)seg1_bits;
     segment_temperatures->seg1 = (float)seg1_raw;
     uint64_t seg2_mask = (1ULL << 8) - 1ULL;
-    uint64_t seg2_bits = (data >> 24) & seg2_mask;
+    uint64_t seg2_bits = (data >> 48) & seg2_mask;
     int64_t seg2_raw = (seg2_bits & (1ULL << (8 - 1)))
         ? (int64_t)(seg2_bits | ~seg2_mask)
         : (int64_t)seg2_bits;
     segment_temperatures->seg2 = (float)seg2_raw;
     uint64_t seg3_mask = (1ULL << 8) - 1ULL;
-    uint64_t seg3_bits = (data >> 16) & seg3_mask;
+    uint64_t seg3_bits = (data >> 40) & seg3_mask;
     int64_t seg3_raw = (seg3_bits & (1ULL << (8 - 1)))
         ? (int64_t)(seg3_bits | ~seg3_mask)
         : (int64_t)seg3_bits;
     segment_temperatures->seg3 = (float)seg3_raw;
     uint64_t seg4_mask = (1ULL << 8) - 1ULL;
-    uint64_t seg4_bits = (data >> 8) & seg4_mask;
+    uint64_t seg4_bits = (data >> 32) & seg4_mask;
     int64_t seg4_raw = (seg4_bits & (1ULL << (8 - 1)))
         ? (int64_t)(seg4_bits | ~seg4_mask)
         : (int64_t)seg4_bits;
     segment_temperatures->seg4 = (float)seg4_raw;
     uint64_t seg5_mask = (1ULL << 8) - 1ULL;
-    uint64_t seg5_bits = (data >> 0) & seg5_mask;
+    uint64_t seg5_bits = (data >> 24) & seg5_mask;
     int64_t seg5_raw = (seg5_bits & (1ULL << (8 - 1)))
         ? (int64_t)(seg5_bits | ~seg5_mask)
         : (int64_t)seg5_bits;
@@ -823,13 +823,13 @@ void receive_bms_fault_timers(const can_msg_t *message, bms_fault_timers_t *bms_
     memcpy(&data_bigendian, message->data, 8);
     uint64_t data = __builtin_bswap64(data_bigendian);
     uint64_t start_stop_mask = (1ULL << 8) - 1ULL;
-    uint64_t start_stop_raw = (data >> 40) & start_stop_mask;
+    uint64_t start_stop_raw = (data >> 56) & start_stop_mask;
     bms_fault_timers->start_stop = (uint8_t)start_stop_raw;
     uint64_t code_mask = (1ULL << 8) - 1ULL;
-    uint64_t code_raw = (data >> 32) & code_mask;
+    uint64_t code_raw = (data >> 48) & code_mask;
     bms_fault_timers->code = (uint8_t)code_raw;
     uint64_t value_mask = (1ULL << 32) - 1ULL;
-    uint64_t value_raw = (data >> 0) & value_mask;
+    uint64_t value_raw = (data >> 16) & value_mask;
     bms_fault_timers->value = (float)value_raw;
 }
 
@@ -839,19 +839,19 @@ void receive_shepherd_version_tag(const can_msg_t *message, shepherd_version_tag
     memcpy(&data_bigendian, message->data, 8);
     uint64_t data = __builtin_bswap64(data_bigendian);
     uint64_t major_mask = (1ULL << 8) - 1ULL;
-    uint64_t major_raw = (data >> 32) & major_mask;
+    uint64_t major_raw = (data >> 56) & major_mask;
     shepherd_version_tag->major = (uint8_t)major_raw;
     uint64_t minor_mask = (1ULL << 8) - 1ULL;
-    uint64_t minor_raw = (data >> 24) & minor_mask;
+    uint64_t minor_raw = (data >> 48) & minor_mask;
     shepherd_version_tag->minor = (uint8_t)minor_raw;
     uint64_t patch_mask = (1ULL << 8) - 1ULL;
-    uint64_t patch_raw = (data >> 16) & patch_mask;
+    uint64_t patch_raw = (data >> 40) & patch_mask;
     shepherd_version_tag->patch = (uint8_t)patch_raw;
     uint64_t dirty_mask = (1ULL << 8) - 1ULL;
-    uint64_t dirty_raw = (data >> 8) & dirty_mask;
+    uint64_t dirty_raw = (data >> 32) & dirty_mask;
     shepherd_version_tag->dirty = (bool)dirty_raw;
     uint64_t local_commit_mask = (1ULL << 8) - 1ULL;
-    uint64_t local_commit_raw = (data >> 0) & local_commit_mask;
+    uint64_t local_commit_raw = (data >> 24) & local_commit_mask;
     shepherd_version_tag->local_commit = (bool)local_commit_raw;
 }
 
@@ -874,10 +874,10 @@ void receive_overflow_notification_for_percell(const can_msg_t *message, overflo
     memcpy(&data_bigendian, message->data, 8);
     uint64_t data = __builtin_bswap64(data_bigendian);
     uint64_t overflow_can_id_mask = (1ULL << 32) - 1ULL;
-    uint64_t overflow_can_id_raw = (data >> 16) & overflow_can_id_mask;
+    uint64_t overflow_can_id_raw = (data >> 32) & overflow_can_id_mask;
     overflow_notification_for_percell->overflow_can_id = (uint32_t)overflow_can_id_raw;
     uint64_t overflow_cnt_mask = (1ULL << 16) - 1ULL;
-    uint64_t overflow_cnt_raw = (data >> 0) & overflow_cnt_mask;
+    uint64_t overflow_cnt_raw = (data >> 16) & overflow_cnt_mask;
     overflow_notification_for_percell->overflow_cnt = (uint16_t)overflow_cnt_raw;
 }
 
@@ -887,34 +887,34 @@ void receive_alpha_cell_data_debug(const can_msg_t *message, alpha_cell_data_deb
     memcpy(&data_bigendian, message->data, 8);
     uint64_t data = __builtin_bswap64(data_bigendian);
     uint64_t therm_mask = (1ULL << 10) - 1ULL;
-    uint64_t therm_raw = (data >> 46) & therm_mask;
+    uint64_t therm_raw = (data >> 54) & therm_mask;
     alpha_cell_data_debug->therm = (float)((double)therm_raw / 10);
     uint64_t voltage_a_mask = (1ULL << 13) - 1ULL;
-    uint64_t voltage_a_raw = (data >> 33) & voltage_a_mask;
+    uint64_t voltage_a_raw = (data >> 41) & voltage_a_mask;
     alpha_cell_data_debug->voltage_a = (float)((double)voltage_a_raw / 1000);
     uint64_t voltage_b_mask = (1ULL << 13) - 1ULL;
-    uint64_t voltage_b_raw = (data >> 20) & voltage_b_mask;
+    uint64_t voltage_b_raw = (data >> 28) & voltage_b_mask;
     alpha_cell_data_debug->voltage_b = (float)((double)voltage_b_raw / 1000);
     uint64_t chip_id_mask = (1ULL << 4) - 1ULL;
-    uint64_t chip_id_raw = (data >> 16) & chip_id_mask;
+    uint64_t chip_id_raw = (data >> 24) & chip_id_mask;
     alpha_cell_data_debug->chip_id = (uint8_t)chip_id_raw;
     uint64_t cell_a_mask = (1ULL << 4) - 1ULL;
-    uint64_t cell_a_raw = (data >> 12) & cell_a_mask;
+    uint64_t cell_a_raw = (data >> 20) & cell_a_mask;
     alpha_cell_data_debug->cell_a = (uint8_t)cell_a_raw;
     uint64_t cell_b_mask = (1ULL << 4) - 1ULL;
-    uint64_t cell_b_raw = (data >> 8) & cell_b_mask;
+    uint64_t cell_b_raw = (data >> 16) & cell_b_mask;
     alpha_cell_data_debug->cell_b = (uint8_t)cell_b_raw;
     uint64_t discharging_a_mask = (1ULL << 1) - 1ULL;
-    uint64_t discharging_a_raw = (data >> 7) & discharging_a_mask;
+    uint64_t discharging_a_raw = (data >> 15) & discharging_a_mask;
     alpha_cell_data_debug->discharging_a = (bool)discharging_a_raw;
     uint64_t discharging_b_mask = (1ULL << 1) - 1ULL;
-    uint64_t discharging_b_raw = (data >> 6) & discharging_b_mask;
+    uint64_t discharging_b_raw = (data >> 14) & discharging_b_mask;
     alpha_cell_data_debug->discharging_b = (bool)discharging_b_raw;
     uint64_t cvs_a_mask = (1ULL << 1) - 1ULL;
-    uint64_t cvs_a_raw = (data >> 5) & cvs_a_mask;
+    uint64_t cvs_a_raw = (data >> 13) & cvs_a_mask;
     alpha_cell_data_debug->cvs_a = (bool)cvs_a_raw;
     uint64_t cvs_b_mask = (1ULL << 1) - 1ULL;
-    uint64_t cvs_b_raw = (data >> 4) & cvs_b_mask;
+    uint64_t cvs_b_raw = (data >> 12) & cvs_b_mask;
     alpha_cell_data_debug->cvs_b = (bool)cvs_b_raw;
 }
 
@@ -924,34 +924,34 @@ void receive_beta_cell_data_debug(const can_msg_t *message, beta_cell_data_debug
     memcpy(&data_bigendian, message->data, 8);
     uint64_t data = __builtin_bswap64(data_bigendian);
     uint64_t therm_mask = (1ULL << 10) - 1ULL;
-    uint64_t therm_raw = (data >> 46) & therm_mask;
+    uint64_t therm_raw = (data >> 54) & therm_mask;
     beta_cell_data_debug->therm = (float)((double)therm_raw / 10);
     uint64_t voltage_a_mask = (1ULL << 13) - 1ULL;
-    uint64_t voltage_a_raw = (data >> 33) & voltage_a_mask;
+    uint64_t voltage_a_raw = (data >> 41) & voltage_a_mask;
     beta_cell_data_debug->voltage_a = (float)((double)voltage_a_raw / 1000);
     uint64_t voltage_b_mask = (1ULL << 13) - 1ULL;
-    uint64_t voltage_b_raw = (data >> 20) & voltage_b_mask;
+    uint64_t voltage_b_raw = (data >> 28) & voltage_b_mask;
     beta_cell_data_debug->voltage_b = (float)((double)voltage_b_raw / 1000);
     uint64_t chip_id_mask = (1ULL << 4) - 1ULL;
-    uint64_t chip_id_raw = (data >> 16) & chip_id_mask;
+    uint64_t chip_id_raw = (data >> 24) & chip_id_mask;
     beta_cell_data_debug->chip_id = (uint8_t)chip_id_raw;
     uint64_t cell_a_mask = (1ULL << 4) - 1ULL;
-    uint64_t cell_a_raw = (data >> 12) & cell_a_mask;
+    uint64_t cell_a_raw = (data >> 20) & cell_a_mask;
     beta_cell_data_debug->cell_a = (uint8_t)cell_a_raw;
     uint64_t cell_b_mask = (1ULL << 4) - 1ULL;
-    uint64_t cell_b_raw = (data >> 8) & cell_b_mask;
+    uint64_t cell_b_raw = (data >> 16) & cell_b_mask;
     beta_cell_data_debug->cell_b = (uint8_t)cell_b_raw;
     uint64_t discharging_a_mask = (1ULL << 1) - 1ULL;
-    uint64_t discharging_a_raw = (data >> 7) & discharging_a_mask;
+    uint64_t discharging_a_raw = (data >> 15) & discharging_a_mask;
     beta_cell_data_debug->discharging_a = (bool)discharging_a_raw;
     uint64_t discharging_b_mask = (1ULL << 1) - 1ULL;
-    uint64_t discharging_b_raw = (data >> 6) & discharging_b_mask;
+    uint64_t discharging_b_raw = (data >> 14) & discharging_b_mask;
     beta_cell_data_debug->discharging_b = (bool)discharging_b_raw;
     uint64_t cvs_a_mask = (1ULL << 1) - 1ULL;
-    uint64_t cvs_a_raw = (data >> 5) & cvs_a_mask;
+    uint64_t cvs_a_raw = (data >> 13) & cvs_a_mask;
     beta_cell_data_debug->cvs_a = (bool)cvs_a_raw;
     uint64_t cvs_b_mask = (1ULL << 1) - 1ULL;
-    uint64_t cvs_b_raw = (data >> 4) & cvs_b_mask;
+    uint64_t cvs_b_raw = (data >> 12) & cvs_b_mask;
     beta_cell_data_debug->cvs_b = (bool)cvs_b_raw;
 }
 
@@ -1105,10 +1105,10 @@ void receive_segment_pec_errors(const can_msg_t *message, segment_pec_errors_t *
     memcpy(&data_bigendian, message->data, 4);
     uint32_t data = __builtin_bswap32(data_bigendian);
     uint64_t chip_id_mask = (1ULL << 8) - 1ULL;
-    uint64_t chip_id_raw = (data >> 16) & chip_id_mask;
+    uint64_t chip_id_raw = (data >> 24) & chip_id_mask;
     segment_pec_errors->chip_id = (uint8_t)chip_id_raw;
     uint64_t pec_errors_mask = (1ULL << 16) - 1ULL;
-    uint64_t pec_errors_raw = (data >> 0) & pec_errors_mask;
+    uint64_t pec_errors_raw = (data >> 8) & pec_errors_mask;
     segment_pec_errors->pec_errors = (uint16_t)pec_errors_raw;
 }
 
