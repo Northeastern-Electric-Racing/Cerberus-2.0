@@ -4,6 +4,7 @@
 #include "u_nx_ethernet.h"
 #include "u_bms.h"
 #include "u_lightning.h"
+#include "u_tc.h"
 
 /* CAN interfaces */
 can_t can1;
@@ -50,6 +51,12 @@ void can_inbox(can_msg_t *message) {
         break;
     case IMU_CAN_MSG_ID:
         lightning_handleIMUMessage();
+        break;
+    case CANID_F_RPM:
+        tc_record_front_rpm(*message);
+        break;
+    case CANID_R_RPM:
+        tc_record_rear_rpm(*message);
         break;
     default:
         PRINTLN_ERROR("Unknown CAN Message Recieved (Message ID: %ld).", message->id);

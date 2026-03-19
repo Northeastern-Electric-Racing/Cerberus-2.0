@@ -3,6 +3,10 @@
 #include "u_tx_debug.h"
 #include <stdint.h>
 
+#ifndef M_PI
+#define M_PI 3.14159265358979323846f
+#endif
+
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 
@@ -34,6 +38,17 @@ extern const uint8_t _tire_curve_size;
 
 static tire_curve_t _tire_curve;
 static bool _tire_curve_loaded = false;
+
+/* Wheel speeds in rad/s, updated from CAN messages. */
+static float _omega_fl = 0.0f;
+static float _omega_fr = 0.0f;
+static float _omega_rl = 0.0f;
+static float _omega_rr = 0.0f;
+
+/* Torque scale factor output by TC, range [0.0, 1.0]. */
+static float _torque_scale = 1.0f;
+
+static float _rpm_to_rads(int16_t rpm);
 
 static void _load_tire_curve(tire_curve_t *curve, const uint8_t *data,
                              uint32_t size);
@@ -173,4 +188,76 @@ static float _rads_to_mph(float omega, float r) {
   float wheel_speed_mph =
       wheel_speed_ips * SECONDS_TO_HOURS * INCHES_TO_MILES; // Miles per hour
   return wheel_speed_mph;
+}
+
+/**
+ * @brief Converts RPM to radians per second.
+ *
+ * @param rpm Wheel speed in RPM
+ * @return float Wheel speed in rad/s
+ */
+static float _rpm_to_rads(int16_t rpm) {
+  return (float)rpm * 2.0f * M_PI / 60.0f;
+}
+
+/**
+ * @brief Parses a front RPM CAN message and updates the stored front wheel
+ * speeds. Expected format: bytes 0-1 = int16 FL RPM, bytes 2-3 = int16 FR RPM.
+ *
+ * @param msg The CAN message to parse
+ */
+void tc_record_front_rpm(can_msg_t msg) {
+  int16_t fl_rpm = (int16_t)((msg.data[0] << 8) | msg.data[1]);
+  int16_t fr_rpm = (int16_t)((msg.data[2] << 8) | msg.data[3]);
+  _omega_fl = _rpm_to_rads(fl_rpm);
+  _omega_fr = _rpm_to_rads(fr_rpm);
+}
+
+/**
+ * @brief Parses a rear RPM CAN message and updates the stored rear wheel
+ * speeds. Expected format: bytes 0-1 = int16 RL RPM, bytes 2-3 = int16 RR RPM.
+ *
+ * @param msg The CAN message to parse
+ */
+void tc_record_rear_rpm(can_msg_t msg) {
+  int16_t rl_rpm = (int16_t)((msg.data[0] << 8) | msg.data[1]);
+  int16_t rr_rpm = (int16_t)((msg.data[2] << 8) | msg.data[3]);
+  _omega_rl = _rpm_to_rads(rl_rpm);
+  _omega_rr = _rpm_to_rads(rr_rpm);
+}
+
+/**
+ * @brief Returns the current TC torque scale factor.
+ * A value of 1.0 means no reduction; 0.0 means full cutoff.
+ *
+ * @return float Torque scale factor in [0.0, 1.0]
+ */
+float tc_get_torque_scale(void) {
+  return _torque_scale;
+}
+
+/**
+ * @brief Runs one iteration of the traction control algorithm.
+ * Computes the current slip ratio and adjusts _torque_scale accordingly.
+ * Should be called periodically from the TC thread.
+ */
+void tc_process(void) {
+  if (!_tire_curve_loaded) {
+    _torque_scale = 1.0f;
+    return;
+  }
+
+  float slip = _calc_slip(_omega_rl, _omega_rr, _omega_fl, _omega_fr);
+  float peak = _tire_curve.peak_lambda;
+
+  if (slip <= peak + MAX_SLIP_ERROR) {
+    /* Slip is within acceptable bounds — no reduction needed. */
+    _torque_scale = 1.0f;
+  } else {
+    /* Proportionally reduce torque based on how far past the slip limit we are. */
+    float excess = slip - peak;
+    _torque_scale = MAX(0.0f, 1.0f - (excess / MAX_SLIP_ERROR));
+  }
+
+  PRINTLN_INFO("TC: slip=%.3f peak=%.3f scale=%.3f", slip, peak, _torque_scale);
 }
