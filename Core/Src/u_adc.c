@@ -185,8 +185,8 @@ lfiu_adc_t adc_getLfiuData(void) {
 
     /* Calculate the ADC voltage. */
     const float V_REF = 3.3f;
-    sensors.voltage[LFIU_1] = (sensors.raw(LFIU_1) / 4095.0) * V_REF;
-    sensors.voltage[LFIU_2] = (sensors.raw(LFIU_2) / 4095.0) * V_REF;
+    sensors.voltage[LFIU_1] = (sensors.raw[LFIU_1] / 4095.0) * V_REF;
+    sensors.voltage[LFIU_2] = (sensors.raw[LFIU_2] / 4095.0) * V_REF;
 
     /* Calculate the LFIU_1 current. */
     sensors.current[LFIU_1] = ((13.333f * sensors.voltage[LFIU_1]) - 20.0f);

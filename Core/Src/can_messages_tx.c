@@ -543,52 +543,6 @@ uint8_t send_mc_efuse
     return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
 }
 
-uint8_t send_spare_efuse
-(uint16_t ADC,float voltage,float current,bool is_faulted,bool is_enabled,uint8_t control_state)
-{
-    can_msg_t msg;
-    msg.id = 0xEFA;
-    msg.id_is_extended = true;msg.len = 8;
-
-    
-            uint64_t data = 0;
-                        uint32_t ADC_i = (uint32_t)(ADC);
-                        if(ADC_i > 65535ULL) {ADC_i = 65535;
-                        }
-                        data |= ((ADC_i) & 0xFFFFULL) << 48;
-            
-                        uint32_t voltage_i = (uint32_t)(voltage*1000);
-                        if(voltage_i > 65535ULL) {voltage_i = 65535;
-                        }
-                        data |= ((voltage_i) & 0xFFFFULL) << 32;
-            
-                        uint32_t current_i = (uint32_t)(current*1000);
-                        if(current_i > 65535ULL) {current_i = 65535;
-                        }
-                        data |= ((current_i) & 0xFFFFULL) << 16;
-            
-                        uint32_t is_faulted_i = (uint32_t)(is_faulted);
-                        if(is_faulted_i > 15ULL) {is_faulted_i = 15;
-                        }
-                        data |= ((is_faulted_i) & 0xFULL) << 12;
-            
-                        uint32_t is_enabled_i = (uint32_t)(is_enabled);
-                        if(is_enabled_i > 15ULL) {is_enabled_i = 15;
-                        }
-                        data |= ((is_enabled_i) & 0xFULL) << 8;
-            
-                        uint32_t control_state_i = (uint32_t)(control_state);
-                        if(control_state_i > 255ULL) {control_state_i = 255;
-                        }
-                        data |= ((control_state_i) & 0xFFULL) << 0;
-            
-            uint64_t data_bigendian = __builtin_bswap64(data);
-            memcpy(msg.data, &data_bigendian, 8);
-        
-
-    return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
-}
-
 uint8_t send_shutdown_pins
 (bool bms_gpio,bool bots_gpio,bool spare_gpio,bool bspd_gpio,bool hv_c,bool hvd_gpio,bool imd_gpio,bool ckpt_gpio,bool inertia_sw_gpio,bool tsms_gpio,uint8_t UNUSED)
 {
@@ -1114,82 +1068,86 @@ uint8_t send_dti_controller_temp_as_reported_by_vcu
 }
 
 uint8_t send_bms_battbox_temp_as_reported_by_vcu
-(float temp)
+(uint16_t temp)
 {
     can_msg_t msg;
     msg.id = 0xD2;
     msg.id_is_extended = false;
-    msg.len = 4;
+    msg.len = 2;
 
     
-            uint32_t data = 0;
-                        int32_t temp_i = (int32_t)(temp*100);
-                        if(temp_i > 2147483647) {temp_i = 2147483647;
-                        } else if(temp_i < -2147483648) {temp_i = -2147483648;
+            uint16_t data = 0;
+                        uint32_t temp_i = (uint32_t)(temp);
+                        if(temp_i > 65535ULL) {temp_i = 65535;
                         }
-                        data |= ((uint32_t)(temp_i) & 0xFFFFFFFFULL) << 0;
+                        data |= ((temp_i) & 0xFFFFULL) << 0;
             
-            uint32_t data_bigendian = __builtin_bswap32(data);
-            memcpy(msg.data, &data_bigendian, 4);
+            uint16_t data_bigendian = __builtin_bswap16(data);
+            memcpy(msg.data, &data_bigendian, 2);
         
 
     return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
 }
 
-uint8_t send_brake_state_as_reported_by_vcu
-(bool brake_state)
+uint8_t send_lfiu_one_current_adc_readings
+(uint16_t raw,float voltage,float current)
 {
     can_msg_t msg;
-    msg.id = 0xD3;
-    msg.id_is_extended = false;
-    msg.len = 1;
+    msg.id = 0xADC1;
+    msg.id_is_extended = true;msg.len = 6;
 
     
-            uint8_t data = 0;
-                        int32_t brake_state_i = (int32_t)(brake_state*100);
-                        if(brake_state_i > 127) {brake_state_i = 127;
-                        } else if(brake_state_i < -128) {brake_state_i = -128;
+            uint64_t data = 0;
+                        uint32_t raw_i = (uint32_t)(raw);
+                        if(raw_i > 65535ULL) {raw_i = 65535;
                         }
-                        data |= ((uint32_t)(brake_state_i) & 0xFFULL) << 0;
+                        data |= ((raw_i) & 0xFFFFULL) << 48;
             
-            msg.data[0] = data;
+                        uint32_t voltage_i = (uint32_t)(voltage*1000);
+                        if(voltage_i > 65535ULL) {voltage_i = 65535;
+                        }
+                        data |= ((voltage_i) & 0xFFFFULL) << 32;
+            
+                        int32_t current_i = (int32_t)(current*1000);
+                        if(current_i > 32767) {current_i = 32767;
+                        } else if(current_i < -32768) {current_i = -32768;
+                        }
+                        data |= ((uint32_t)(current_i) & 0xFFFFULL) << 16;
+            
+            uint64_t data_bigendian = __builtin_bswap64(data);
+            memcpy(msg.data, &data_bigendian, 8);
         
 
     return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
 }
 
-uint8_t send_rtds_state_message
-(bool pin_state,bool sounding_state,bool reverse_state,bool error)
+uint8_t send_lfiu_two_current_adc_readings
+(uint16_t raw,float voltage,float current)
 {
     can_msg_t msg;
-    msg.id = 0xD4;
-    msg.id_is_extended = false;
-    msg.len = 4;
+    msg.id = 0xADC2;
+    msg.id_is_extended = true;msg.len = 6;
 
     
-            uint32_t data = 0;
-                        uint32_t pin_state_i = (uint32_t)(pin_state);
-                        if(pin_state_i > 255ULL) {pin_state_i = 255;
+            uint64_t data = 0;
+                        uint32_t raw_i = (uint32_t)(raw);
+                        if(raw_i > 65535ULL) {raw_i = 65535;
                         }
-                        data |= ((pin_state_i) & 0xFFULL) << 24;
+                        data |= ((raw_i) & 0xFFFFULL) << 48;
             
-                        uint32_t sounding_state_i = (uint32_t)(sounding_state);
-                        if(sounding_state_i > 255ULL) {sounding_state_i = 255;
+                        uint32_t voltage_i = (uint32_t)(voltage*1000);
+                        if(voltage_i > 65535ULL) {voltage_i = 65535;
                         }
-                        data |= ((sounding_state_i) & 0xFFULL) << 16;
+                        data |= ((voltage_i) & 0xFFFFULL) << 32;
             
-                        uint32_t reverse_state_i = (uint32_t)(reverse_state);
-                        if(reverse_state_i > 255ULL) {reverse_state_i = 255;
+                        int32_t current_i = (int32_t)(current*100);
+                        if(current_i > 32767) {current_i = 32767;
+                        } else if(current_i < -32768) {current_i = -32768;
                         }
-                        data |= ((reverse_state_i) & 0xFFULL) << 8;
+                        data |= ((uint32_t)(current_i) & 0xFFFFULL) << 16;
             
-                        uint32_t error_i = (uint32_t)(error);
-                        if(error_i > 255ULL) {error_i = 255;
-                        }
-                        data |= ((error_i) & 0xFFULL) << 0;
-            
-            uint32_t data_bigendian = __builtin_bswap32(data);
-            memcpy(msg.data, &data_bigendian, 4);
+            uint64_t data_bigendian = __builtin_bswap64(data);
+            memcpy(msg.data, &data_bigendian, 8);
         
 
     return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
