@@ -438,6 +438,97 @@ void receive_rtds_command_message(const can_msg_t *message, rtds_command_message
     rtds_command_message->command = (uint8_t)command_raw;
 }
 
+void receive_lightning_board_imu_acceleration_data(const can_msg_t *message, lightning_board_imu_acceleration_data_t *lightning_board_imu_acceleration_data) {
+    
+    uint64_t data_bigendian;
+    memcpy(&data_bigendian, message->data, 8);
+    uint64_t data = __builtin_bswap64(data_bigendian);
+    uint64_t accel_x_mask = (1ULL << 16) - 1ULL;
+    uint64_t accel_x_bits = (data >> 32) & accel_x_mask;
+    int64_t accel_x_raw = (accel_x_bits & (1ULL << (16 - 1)))
+        ? (int64_t)(accel_x_bits | ~accel_x_mask)
+        : (int64_t)accel_x_bits;
+    lightning_board_imu_acceleration_data->accel_x = (float)((double)accel_x_raw / 1000);
+    uint64_t accel_y_mask = (1ULL << 16) - 1ULL;
+    uint64_t accel_y_bits = (data >> 16) & accel_y_mask;
+    int64_t accel_y_raw = (accel_y_bits & (1ULL << (16 - 1)))
+        ? (int64_t)(accel_y_bits | ~accel_y_mask)
+        : (int64_t)accel_y_bits;
+    lightning_board_imu_acceleration_data->accel_y = (float)((double)accel_y_raw / 1000);
+    uint64_t accel_z_mask = (1ULL << 16) - 1ULL;
+    uint64_t accel_z_bits = (data >> 0) & accel_z_mask;
+    int64_t accel_z_raw = (accel_z_bits & (1ULL << (16 - 1)))
+        ? (int64_t)(accel_z_bits | ~accel_z_mask)
+        : (int64_t)accel_z_bits;
+    lightning_board_imu_acceleration_data->accel_z = (float)((double)accel_z_raw / 1000);
+}
+
+void receive_lightning_board_imu_gyro_data(const can_msg_t *message, lightning_board_imu_gyro_data_t *lightning_board_imu_gyro_data) {
+    
+    uint64_t data_bigendian;
+    memcpy(&data_bigendian, message->data, 8);
+    uint64_t data = __builtin_bswap64(data_bigendian);
+    uint64_t gyro_x_mask = (1ULL << 16) - 1ULL;
+    uint64_t gyro_x_bits = (data >> 32) & gyro_x_mask;
+    int64_t gyro_x_raw = (gyro_x_bits & (1ULL << (16 - 1)))
+        ? (int64_t)(gyro_x_bits | ~gyro_x_mask)
+        : (int64_t)gyro_x_bits;
+    lightning_board_imu_gyro_data->gyro_x = (float)((double)gyro_x_raw / 1000);
+    uint64_t gyro_y_mask = (1ULL << 16) - 1ULL;
+    uint64_t gyro_y_bits = (data >> 16) & gyro_y_mask;
+    int64_t gyro_y_raw = (gyro_y_bits & (1ULL << (16 - 1)))
+        ? (int64_t)(gyro_y_bits | ~gyro_y_mask)
+        : (int64_t)gyro_y_bits;
+    lightning_board_imu_gyro_data->gyro_y = (float)((double)gyro_y_raw / 1000);
+    uint64_t gyro_z_mask = (1ULL << 16) - 1ULL;
+    uint64_t gyro_z_bits = (data >> 0) & gyro_z_mask;
+    int64_t gyro_z_raw = (gyro_z_bits & (1ULL << (16 - 1)))
+        ? (int64_t)(gyro_z_bits | ~gyro_z_mask)
+        : (int64_t)gyro_z_bits;
+    lightning_board_imu_gyro_data->gyro_z = (float)((double)gyro_z_raw / 1000);
+}
+
+void receive_lightning_board_lightning_sensor_information(const can_msg_t *message, lightning_board_lightning_sensor_information_t *lightning_board_lightning_sensor_information) {
+    
+    uint64_t data_bigendian;
+    memcpy(&data_bigendian, message->data, 8);
+    uint64_t data = __builtin_bswap64(data_bigendian);
+    uint64_t interrupt_mask = (1ULL << 8) - 1ULL;
+    uint64_t interrupt_raw = (data >> 40) & interrupt_mask;
+    lightning_board_lightning_sensor_information->interrupt = (uint8_t)interrupt_raw;
+    uint64_t distance_mask = (1ULL << 8) - 1ULL;
+    uint64_t distance_raw = (data >> 32) & distance_mask;
+    lightning_board_lightning_sensor_information->distance = (uint8_t)distance_raw;
+    uint64_t energy_mask = (1ULL << 32) - 1ULL;
+    uint64_t energy_raw = (data >> 0) & energy_mask;
+    lightning_board_lightning_sensor_information->energy = (uint32_t)energy_raw;
+}
+
+void receive_lightning_board_magnometer_sensor_information(const can_msg_t *message, lightning_board_magnometer_sensor_information_t *lightning_board_magnometer_sensor_information) {
+    
+    uint64_t data_bigendian;
+    memcpy(&data_bigendian, message->data, 8);
+    uint64_t data = __builtin_bswap64(data_bigendian);
+    uint64_t mag_x_mask = (1ULL << 16) - 1ULL;
+    uint64_t mag_x_bits = (data >> 32) & mag_x_mask;
+    int64_t mag_x_raw = (mag_x_bits & (1ULL << (16 - 1)))
+        ? (int64_t)(mag_x_bits | ~mag_x_mask)
+        : (int64_t)mag_x_bits;
+    lightning_board_magnometer_sensor_information->mag_x = (float)((double)mag_x_raw / 1000);
+    uint64_t mag_y_mask = (1ULL << 16) - 1ULL;
+    uint64_t mag_y_bits = (data >> 16) & mag_y_mask;
+    int64_t mag_y_raw = (mag_y_bits & (1ULL << (16 - 1)))
+        ? (int64_t)(mag_y_bits | ~mag_y_mask)
+        : (int64_t)mag_y_bits;
+    lightning_board_magnometer_sensor_information->mag_y = (float)((double)mag_y_raw / 1000);
+    uint64_t mag_z_mask = (1ULL << 16) - 1ULL;
+    uint64_t mag_z_bits = (data >> 0) & mag_z_mask;
+    int64_t mag_z_raw = (mag_z_bits & (1ULL << (16 - 1)))
+        ? (int64_t)(mag_z_bits | ~mag_z_mask)
+        : (int64_t)mag_z_bits;
+    lightning_board_magnometer_sensor_information->mag_z = (float)((double)mag_z_raw / 1000);
+}
+
 void receive_bms_charge_message_send(const can_msg_t *message, bms_charge_message_send_t *bms_charge_message_send) {
     
     uint64_t data_bigendian;
@@ -485,17 +576,14 @@ void receive_bms_status(const can_msg_t *message, bms_status_t *bms_status) {
     memcpy(&data_bigendian, message->data, 4);
     uint32_t data = __builtin_bswap32(data_bigendian);
     uint64_t state_mask = (1ULL << 8) - 1ULL;
-    uint64_t state_raw = (data >> 24) & state_mask;
+    uint64_t state_raw = (data >> 16) & state_mask;
     bms_status->state = (uint8_t)state_raw;
     uint64_t temp_average_mask = (1ULL << 8) - 1ULL;
-    uint64_t temp_average_raw = (data >> 16) & temp_average_mask;
+    uint64_t temp_average_raw = (data >> 8) & temp_average_mask;
     bms_status->temp_average = (float)temp_average_raw;
     uint64_t temp_internal_mask = (1ULL << 8) - 1ULL;
-    uint64_t temp_internal_raw = (data >> 8) & temp_internal_mask;
+    uint64_t temp_internal_raw = (data >> 0) & temp_internal_mask;
     bms_status->temp_internal = (float)temp_internal_raw;
-    uint64_t balancing_mask = (1ULL << 8) - 1ULL;
-    uint64_t balancing_raw = (data >> 0) & balancing_mask;
-    bms_status->balancing = (uint8_t)balancing_raw;
 }
 
 void receive_cell_voltage(const can_msg_t *message, cell_voltage_t *cell_voltage) {
@@ -605,70 +693,43 @@ void receive_segment_isospi_communication_status(const can_msg_t *message, segme
     uint64_t verification_attempts_mask = (1ULL << 8) - 1ULL;
     uint64_t verification_attempts_raw = (data >> 8) & verification_attempts_mask;
     segment_isospi_communication_status->verification_attempts = (uint8_t)verification_attempts_raw;
-    uint64_t recovery_successful_mask = (1ULL << 8) - 1ULL;
-    uint64_t recovery_successful_raw = (data >> 0) & recovery_successful_mask;
+    uint64_t recovery_successful_mask = (1ULL << 1) - 1ULL;
+    uint64_t recovery_successful_raw = (data >> 7) & recovery_successful_mask;
     segment_isospi_communication_status->recovery_successful = (uint8_t)recovery_successful_raw;
 }
 
 void receive_fault_status(const can_msg_t *message, fault_status_t *fault_status) {
     
-    uint64_t data_bigendian;
-    memcpy(&data_bigendian, message->data, 8);
-    uint64_t data = __builtin_bswap64(data_bigendian);
-    uint64_t ccl_enforce_mask = (1ULL << 1) - 1ULL;
-    uint64_t ccl_enforce_raw = (data >> 63) & ccl_enforce_mask;
-    fault_status->ccl_enforce = (bool)ccl_enforce_raw;
-    uint64_t charger_can_mask = (1ULL << 1) - 1ULL;
-    uint64_t charger_can_raw = (data >> 62) & charger_can_mask;
-    fault_status->charger_can = (bool)charger_can_raw;
-    uint64_t battery_therm_mask = (1ULL << 1) - 1ULL;
-    uint64_t battery_therm_raw = (data >> 61) & battery_therm_mask;
-    fault_status->battery_therm = (bool)battery_therm_raw;
-    uint64_t charger_safety_mask = (1ULL << 1) - 1ULL;
-    uint64_t charger_safety_raw = (data >> 60) & charger_safety_mask;
-    fault_status->charger_safety = (bool)charger_safety_raw;
+    uint16_t data_bigendian;
+    memcpy(&data_bigendian, message->data, 2);
+    uint16_t data = __builtin_bswap16(data_bigendian);
     uint64_t dcl_enforce_mask = (1ULL << 1) - 1ULL;
-    uint64_t dcl_enforce_raw = (data >> 59) & dcl_enforce_mask;
+    uint64_t dcl_enforce_raw = (data >> 15) & dcl_enforce_mask;
     fault_status->dcl_enforce = (bool)dcl_enforce_raw;
-    uint64_t external_can_mask = (1ULL << 1) - 1ULL;
-    uint64_t external_can_raw = (data >> 58) & external_can_mask;
-    fault_status->external_can = (bool)external_can_raw;
-    uint64_t weak_pack_mask = (1ULL << 1) - 1ULL;
-    uint64_t weak_pack_raw = (data >> 57) & weak_pack_mask;
-    fault_status->weak_pack = (bool)weak_pack_raw;
-    uint64_t low_cell_volts_mask = (1ULL << 1) - 1ULL;
-    uint64_t low_cell_volts_raw = (data >> 56) & low_cell_volts_mask;
-    fault_status->low_cell_volts = (bool)low_cell_volts_raw;
-    uint64_t charge_reading_mask = (1ULL << 1) - 1ULL;
-    uint64_t charge_reading_raw = (data >> 55) & charge_reading_mask;
-    fault_status->charge_reading = (bool)charge_reading_raw;
-    uint64_t current_sense_mask = (1ULL << 1) - 1ULL;
-    uint64_t current_sense_raw = (data >> 54) & current_sense_mask;
-    fault_status->current_sense = (bool)current_sense_raw;
-    uint64_t ic_comm_mask = (1ULL << 1) - 1ULL;
-    uint64_t ic_comm_raw = (data >> 53) & ic_comm_mask;
-    fault_status->ic_comm = (bool)ic_comm_raw;
-    uint64_t thermal_err_mask = (1ULL << 1) - 1ULL;
-    uint64_t thermal_err_raw = (data >> 52) & thermal_err_mask;
-    fault_status->thermal_err = (bool)thermal_err_raw;
-    uint64_t sw_err_mask = (1ULL << 1) - 1ULL;
-    uint64_t sw_err_raw = (data >> 51) & sw_err_mask;
-    fault_status->sw_err = (bool)sw_err_raw;
-    uint64_t open_wire_mask = (1ULL << 1) - 1ULL;
-    uint64_t open_wire_raw = (data >> 50) & open_wire_mask;
-    fault_status->open_wire = (bool)open_wire_raw;
-    uint64_t pack_overheat_mask = (1ULL << 1) - 1ULL;
-    uint64_t pack_overheat_raw = (data >> 49) & pack_overheat_mask;
-    fault_status->pack_overheat = (bool)pack_overheat_raw;
-    uint64_t cell_uv_mask = (1ULL << 1) - 1ULL;
-    uint64_t cell_uv_raw = (data >> 48) & cell_uv_mask;
-    fault_status->cell_uv = (bool)cell_uv_raw;
-    uint64_t cell_ov_mask = (1ULL << 1) - 1ULL;
-    uint64_t cell_ov_raw = (data >> 47) & cell_ov_mask;
-    fault_status->cell_ov = (bool)cell_ov_raw;
-    uint64_t cell_not_balancing_mask = (1ULL << 1) - 1ULL;
-    uint64_t cell_not_balancing_raw = (data >> 46) & cell_not_balancing_mask;
-    fault_status->cell_not_balancing = (bool)cell_not_balancing_raw;
+    uint64_t ccl_enforce_mask = (1ULL << 1) - 1ULL;
+    uint64_t ccl_enforce_raw = (data >> 14) & ccl_enforce_mask;
+    fault_status->ccl_enforce = (bool)ccl_enforce_raw;
+    uint64_t low_cell_volt_mask = (1ULL << 1) - 1ULL;
+    uint64_t low_cell_volt_raw = (data >> 13) & low_cell_volt_mask;
+    fault_status->low_cell_volt = (bool)low_cell_volt_raw;
+    uint64_t high_cell_volt_mask = (1ULL << 1) - 1ULL;
+    uint64_t high_cell_volt_raw = (data >> 12) & high_cell_volt_mask;
+    fault_status->high_cell_volt = (bool)high_cell_volt_raw;
+    uint64_t high_charge_volt_mask = (1ULL << 1) - 1ULL;
+    uint64_t high_charge_volt_raw = (data >> 11) & high_charge_volt_mask;
+    fault_status->high_charge_volt = (bool)high_charge_volt_raw;
+    uint64_t pack_hot_mask = (1ULL << 1) - 1ULL;
+    uint64_t pack_hot_raw = (data >> 10) & pack_hot_mask;
+    fault_status->pack_hot = (bool)pack_hot_raw;
+    uint64_t die_temp_max_mask = (1ULL << 1) - 1ULL;
+    uint64_t die_temp_max_raw = (data >> 9) & die_temp_max_mask;
+    fault_status->die_temp_max = (bool)die_temp_max_raw;
+    uint64_t segment_comms_mask = (1ULL << 1) - 1ULL;
+    uint64_t segment_comms_raw = (data >> 8) & segment_comms_mask;
+    fault_status->segment_comms = (bool)segment_comms_raw;
+    uint64_t hv_plate_comms_mask = (1ULL << 1) - 1ULL;
+    uint64_t hv_plate_comms_raw = (data >> 7) & hv_plate_comms_mask;
+    fault_status->hv_plate_comms = (bool)hv_plate_comms_raw;
 }
 
 void receive_segment_average_voltages(const can_msg_t *message, segment_average_voltages_t *segment_average_voltages) {
@@ -820,27 +881,6 @@ void receive_overflow_notification_for_percell(const can_msg_t *message, overflo
     overflow_notification_for_percell->overflow_cnt = (uint16_t)overflow_cnt_raw;
 }
 
-void receive_pec_error_count_notification_per_chip(const can_msg_t *message, pec_error_count_notification_per_chip_t *pec_error_count_notification_per_chip) {
-    
-    uint32_t data_bigendian;
-    memcpy(&data_bigendian, message->data, 4);
-    uint32_t data = __builtin_bswap32(data_bigendian);
-    uint64_t pec_error_chip_mask = (1ULL << 8) - 1ULL;
-    uint64_t pec_error_chip_raw = (data >> 16) & pec_error_chip_mask;
-    pec_error_count_notification_per_chip->pec_error_chip = (uint8_t)pec_error_chip_raw;
-    uint64_t pec_error_cnt_mask = (1ULL << 16) - 1ULL;
-    uint64_t pec_error_cnt_raw = (data >> 0) & pec_error_cnt_mask;
-    pec_error_count_notification_per_chip->pec_error_cnt = (uint16_t)pec_error_cnt_raw;
-}
-
-void receive_pec_error_count_notification_for_hv_plate(const can_msg_t *message, pec_error_count_notification_for_hv_plate_t *pec_error_count_notification_for_hv_plate) {
-    
-    uint8_t data = message->data[0];
-    uint64_t pec_error_count_mask = (1ULL << 8) - 1ULL;
-    uint64_t pec_error_count_raw = (data >> 0) & pec_error_count_mask;
-    pec_error_count_notification_for_hv_plate->pec_error_count = (uint8_t)pec_error_count_raw;
-}
-
 void receive_alpha_cell_data_debug(const can_msg_t *message, alpha_cell_data_debug_t *alpha_cell_data_debug) {
     
     uint64_t data_bigendian;
@@ -915,192 +955,84 @@ void receive_beta_cell_data_debug(const can_msg_t *message, beta_cell_data_debug
     beta_cell_data_debug->cvs_b = (bool)cvs_b_raw;
 }
 
-void receive_beta_chip_a_debug(const can_msg_t *message, beta_chip_a_debug_t *beta_chip_a_debug) {
+void receive_chip_a_debug(const can_msg_t *message, chip_a_debug_t *chip_a_debug) {
     
     uint64_t data_bigendian;
     memcpy(&data_bigendian, message->data, 8);
     uint64_t data = __builtin_bswap64(data_bigendian);
-    uint64_t therm_last_mask = (1ULL << 10) - 1ULL;
-    uint64_t therm_last_raw = (data >> 54) & therm_last_mask;
-    beta_chip_a_debug->therm_last = (float)((double)therm_last_raw / 10);
-    uint64_t voltage_last_mask = (1ULL << 13) - 1ULL;
-    uint64_t voltage_last_raw = (data >> 41) & voltage_last_mask;
-    beta_chip_a_debug->voltage_last = (float)((double)voltage_last_raw / 1000);
-    uint64_t discharging_last_mask = (1ULL << 1) - 1ULL;
-    uint64_t discharging_last_raw = (data >> 40) & discharging_last_mask;
-    beta_chip_a_debug->discharging_last = (bool)discharging_last_raw;
     uint64_t chip_id_mask = (1ULL << 4) - 1ULL;
-    uint64_t chip_id_raw = (data >> 36) & chip_id_mask;
-    beta_chip_a_debug->chip_id = (uint8_t)chip_id_raw;
-    uint64_t seg_temp_mask = (1ULL << 10) - 1ULL;
-    uint64_t seg_temp_raw = (data >> 26) & seg_temp_mask;
-    beta_chip_a_debug->seg_temp = (float)((double)seg_temp_raw / 10);
+    uint64_t chip_id_raw = (data >> 60) & chip_id_mask;
+    chip_a_debug->chip_id = (uint8_t)chip_id_raw;
     uint64_t die_temp_mask = (1ULL << 13) - 1ULL;
-    uint64_t die_temp_raw = (data >> 13) & die_temp_mask;
-    beta_chip_a_debug->die_temp = (float)((double)die_temp_raw / 100);
+    uint64_t die_temp_raw = (data >> 47) & die_temp_mask;
+    chip_a_debug->die_temp = (float)((double)die_temp_raw / 100);
     uint64_t vpv_mask = (1ULL << 13) - 1ULL;
-    uint64_t vpv_raw = (data >> 0) & vpv_mask;
-    beta_chip_a_debug->vpv = (float)((double)vpv_raw / 100);
-}
-
-void receive_beta_chip_b_debug(const can_msg_t *message, beta_chip_b_debug_t *beta_chip_b_debug) {
-    
-    uint64_t data_bigendian;
-    memcpy(&data_bigendian, message->data, 8);
-    uint64_t data = __builtin_bswap64(data_bigendian);
-    uint64_t vref2_mask = (1ULL << 13) - 1ULL;
-    uint64_t vref2_raw = (data >> 51) & vref2_mask;
-    beta_chip_b_debug->vref2 = (float)((double)vref2_raw / 1000);
-    uint64_t v_analog_mask = (1ULL << 10) - 1ULL;
-    uint64_t v_analog_raw = (data >> 41) & v_analog_mask;
-    beta_chip_b_debug->v_analog = (float)((double)v_analog_raw / 100);
-    uint64_t v_digital_mask = (1ULL << 10) - 1ULL;
-    uint64_t v_digital_raw = (data >> 31) & v_digital_mask;
-    beta_chip_b_debug->v_digital = (float)((double)v_digital_raw / 100);
-    uint64_t chip_id_mask = (1ULL << 4) - 1ULL;
-    uint64_t chip_id_raw = (data >> 27) & chip_id_mask;
-    beta_chip_b_debug->chip_id = (uint8_t)chip_id_raw;
-    uint64_t v_res_mask = (1ULL << 13) - 1ULL;
-    uint64_t v_res_raw = (data >> 14) & v_res_mask;
-    beta_chip_b_debug->v_res = (float)((double)v_res_raw / 1000);
+    uint64_t vpv_raw = (data >> 34) & vpv_mask;
+    chip_a_debug->vpv = (float)((double)vpv_raw / 100);
     uint64_t vmv_mask = (1ULL << 13) - 1ULL;
-    uint64_t vmv_raw = (data >> 1) & vmv_mask;
-    beta_chip_b_debug->vmv = (float)((double)vmv_raw / 1000);
-    uint64_t cvs_last_mask = (1ULL << 1) - 1ULL;
-    uint64_t cvs_last_raw = (data >> 0) & cvs_last_mask;
-    beta_chip_b_debug->cvs_last = (bool)cvs_last_raw;
-}
-
-void receive_beta_chip_c_debug(const can_msg_t *message, beta_chip_c_debug_t *beta_chip_c_debug) {
-    
-    uint32_t data_bigendian;
-    memcpy(&data_bigendian, message->data, 4);
-    uint32_t data = __builtin_bswap32(data_bigendian);
-    uint64_t chip_id_mask = (1ULL << 4) - 1ULL;
-    uint64_t chip_id_raw = (data >> 20) & chip_id_mask;
-    beta_chip_c_debug->chip_id = (bool)chip_id_raw;
+    uint64_t vmv_raw = (data >> 21) & vmv_mask;
+    chip_a_debug->vmv = (float)((double)vmv_raw / 1000);
     uint64_t va_ov_mask = (1ULL << 1) - 1ULL;
-    uint64_t va_ov_raw = (data >> 19) & va_ov_mask;
-    beta_chip_c_debug->va_ov = (bool)va_ov_raw;
+    uint64_t va_ov_raw = (data >> 20) & va_ov_mask;
+    chip_a_debug->va_ov = (bool)va_ov_raw;
     uint64_t va_uv_mask = (1ULL << 1) - 1ULL;
-    uint64_t va_uv_raw = (data >> 18) & va_uv_mask;
-    beta_chip_c_debug->va_uv = (bool)va_uv_raw;
+    uint64_t va_uv_raw = (data >> 19) & va_uv_mask;
+    chip_a_debug->va_uv = (bool)va_uv_raw;
     uint64_t vd_ov_mask = (1ULL << 1) - 1ULL;
-    uint64_t vd_ov_raw = (data >> 17) & vd_ov_mask;
-    beta_chip_c_debug->vd_ov = (bool)vd_ov_raw;
+    uint64_t vd_ov_raw = (data >> 18) & vd_ov_mask;
+    chip_a_debug->vd_ov = (bool)vd_ov_raw;
     uint64_t vd_uv_mask = (1ULL << 1) - 1ULL;
-    uint64_t vd_uv_raw = (data >> 16) & vd_uv_mask;
-    beta_chip_c_debug->vd_uv = (bool)vd_uv_raw;
+    uint64_t vd_uv_raw = (data >> 17) & vd_uv_mask;
+    chip_a_debug->vd_uv = (bool)vd_uv_raw;
     uint64_t vde_mask = (1ULL << 1) - 1ULL;
-    uint64_t vde_raw = (data >> 15) & vde_mask;
-    beta_chip_c_debug->vde = (bool)vde_raw;
+    uint64_t vde_raw = (data >> 16) & vde_mask;
+    chip_a_debug->vde = (bool)vde_raw;
     uint64_t vdel_mask = (1ULL << 1) - 1ULL;
-    uint64_t vdel_raw = (data >> 14) & vdel_mask;
-    beta_chip_c_debug->vdel = (bool)vdel_raw;
+    uint64_t vdel_raw = (data >> 15) & vdel_mask;
+    chip_a_debug->vdel = (bool)vdel_raw;
     uint64_t spiflt_mask = (1ULL << 1) - 1ULL;
-    uint64_t spiflt_raw = (data >> 13) & spiflt_mask;
-    beta_chip_c_debug->spiflt = (bool)spiflt_raw;
+    uint64_t spiflt_raw = (data >> 14) & spiflt_mask;
+    chip_a_debug->spiflt = (bool)spiflt_raw;
     uint64_t sleep_mask = (1ULL << 1) - 1ULL;
-    uint64_t sleep_raw = (data >> 12) & sleep_mask;
-    beta_chip_c_debug->sleep = (bool)sleep_raw;
+    uint64_t sleep_raw = (data >> 13) & sleep_mask;
+    chip_a_debug->sleep = (bool)sleep_raw;
     uint64_t thsd_mask = (1ULL << 1) - 1ULL;
-    uint64_t thsd_raw = (data >> 11) & thsd_mask;
-    beta_chip_c_debug->thsd = (bool)thsd_raw;
+    uint64_t thsd_raw = (data >> 12) & thsd_mask;
+    chip_a_debug->thsd = (bool)thsd_raw;
     uint64_t tmodchk_mask = (1ULL << 1) - 1ULL;
-    uint64_t tmodchk_raw = (data >> 10) & tmodchk_mask;
-    beta_chip_c_debug->tmodchk = (bool)tmodchk_raw;
+    uint64_t tmodchk_raw = (data >> 11) & tmodchk_mask;
+    chip_a_debug->tmodchk = (bool)tmodchk_raw;
     uint64_t oscchk_mask = (1ULL << 1) - 1ULL;
-    uint64_t oscchk_raw = (data >> 9) & oscchk_mask;
-    beta_chip_c_debug->oscchk = (bool)oscchk_raw;
-    uint64_t otp1_med_mask = (1ULL << 1) - 1ULL;
-    uint64_t otp1_med_raw = (data >> 8) & otp1_med_mask;
-    beta_chip_c_debug->otp1_med = (bool)otp1_med_raw;
-    uint64_t otp2_med_mask = (1ULL << 1) - 1ULL;
-    uint64_t otp2_med_raw = (data >> 7) & otp2_med_mask;
-    beta_chip_c_debug->otp2_med = (bool)otp2_med_raw;
+    uint64_t oscchk_raw = (data >> 10) & oscchk_mask;
+    chip_a_debug->oscchk = (bool)oscchk_raw;
 }
 
-void receive_alpha_chip_a_debug(const can_msg_t *message, alpha_chip_a_debug_t *alpha_chip_a_debug) {
-    
-    uint64_t data_bigendian;
-    memcpy(&data_bigendian, message->data, 8);
-    uint64_t data = __builtin_bswap64(data_bigendian);
-    uint64_t seg_temp_mask = (1ULL << 10) - 1ULL;
-    uint64_t seg_temp_raw = (data >> 54) & seg_temp_mask;
-    alpha_chip_a_debug->seg_temp = (float)((double)seg_temp_raw / 10);
-    uint64_t chip_id_mask = (1ULL << 4) - 1ULL;
-    uint64_t chip_id_raw = (data >> 50) & chip_id_mask;
-    alpha_chip_a_debug->chip_id = (uint8_t)chip_id_raw;
-    uint64_t die_temp_mask = (1ULL << 13) - 1ULL;
-    uint64_t die_temp_raw = (data >> 37) & die_temp_mask;
-    alpha_chip_a_debug->die_temp = (float)((double)die_temp_raw / 100);
-    uint64_t vpv_mask = (1ULL << 13) - 1ULL;
-    uint64_t vpv_raw = (data >> 24) & vpv_mask;
-    alpha_chip_a_debug->vpv = (float)((double)vpv_raw / 100);
-    uint64_t vmv_mask = (1ULL << 13) - 1ULL;
-    uint64_t vmv_raw = (data >> 11) & vmv_mask;
-    alpha_chip_a_debug->vmv = (float)((double)vmv_raw / 1000);
-    uint64_t va_ov_mask = (1ULL << 1) - 1ULL;
-    uint64_t va_ov_raw = (data >> 10) & va_ov_mask;
-    alpha_chip_a_debug->va_ov = (bool)va_ov_raw;
-    uint64_t va_uv_mask = (1ULL << 1) - 1ULL;
-    uint64_t va_uv_raw = (data >> 9) & va_uv_mask;
-    alpha_chip_a_debug->va_uv = (bool)va_uv_raw;
-    uint64_t vd_ov_mask = (1ULL << 1) - 1ULL;
-    uint64_t vd_ov_raw = (data >> 8) & vd_ov_mask;
-    alpha_chip_a_debug->vd_ov = (bool)vd_ov_raw;
-    uint64_t vd_uv_mask = (1ULL << 1) - 1ULL;
-    uint64_t vd_uv_raw = (data >> 7) & vd_uv_mask;
-    alpha_chip_a_debug->vd_uv = (bool)vd_uv_raw;
-    uint64_t vde_mask = (1ULL << 1) - 1ULL;
-    uint64_t vde_raw = (data >> 6) & vde_mask;
-    alpha_chip_a_debug->vde = (bool)vde_raw;
-    uint64_t vdel_mask = (1ULL << 1) - 1ULL;
-    uint64_t vdel_raw = (data >> 5) & vdel_mask;
-    alpha_chip_a_debug->vdel = (bool)vdel_raw;
-    uint64_t spiflt_mask = (1ULL << 1) - 1ULL;
-    uint64_t spiflt_raw = (data >> 4) & spiflt_mask;
-    alpha_chip_a_debug->spiflt = (bool)spiflt_raw;
-    uint64_t sleep_mask = (1ULL << 1) - 1ULL;
-    uint64_t sleep_raw = (data >> 3) & sleep_mask;
-    alpha_chip_a_debug->sleep = (bool)sleep_raw;
-    uint64_t thsd_mask = (1ULL << 1) - 1ULL;
-    uint64_t thsd_raw = (data >> 2) & thsd_mask;
-    alpha_chip_a_debug->thsd = (bool)thsd_raw;
-    uint64_t tmodchk_mask = (1ULL << 1) - 1ULL;
-    uint64_t tmodchk_raw = (data >> 1) & tmodchk_mask;
-    alpha_chip_a_debug->tmodchk = (bool)tmodchk_raw;
-    uint64_t oscchk_mask = (1ULL << 1) - 1ULL;
-    uint64_t oscchk_raw = (data >> 0) & oscchk_mask;
-    alpha_chip_a_debug->oscchk = (bool)oscchk_raw;
-}
-
-void receive_alpha_chip_b_debug(const can_msg_t *message, alpha_chip_b_debug_t *alpha_chip_b_debug) {
+void receive_chip_b_debug(const can_msg_t *message, chip_b_debug_t *chip_b_debug) {
     
     uint64_t data_bigendian;
     memcpy(&data_bigendian, message->data, 8);
     uint64_t data = __builtin_bswap64(data_bigendian);
     uint64_t vres_mask = (1ULL << 13) - 1ULL;
     uint64_t vres_raw = (data >> 51) & vres_mask;
-    alpha_chip_b_debug->vres = (float)((double)vres_raw / 1000);
+    chip_b_debug->vres = (float)((double)vres_raw / 1000);
     uint64_t chip_id_mask = (1ULL << 4) - 1ULL;
     uint64_t chip_id_raw = (data >> 47) & chip_id_mask;
-    alpha_chip_b_debug->chip_id = (uint8_t)chip_id_raw;
+    chip_b_debug->chip_id = (uint8_t)chip_id_raw;
     uint64_t vref2_mask = (1ULL << 13) - 1ULL;
     uint64_t vref2_raw = (data >> 34) & vref2_mask;
-    alpha_chip_b_debug->vref2 = (float)((double)vref2_raw / 1000);
+    chip_b_debug->vref2 = (float)((double)vref2_raw / 1000);
     uint64_t v_analog_mask = (1ULL << 13) - 1ULL;
     uint64_t v_analog_raw = (data >> 21) & v_analog_mask;
-    alpha_chip_b_debug->v_analog = (float)((double)v_analog_raw / 1000);
+    chip_b_debug->v_analog = (float)((double)v_analog_raw / 1000);
     uint64_t v_digital_mask = (1ULL << 13) - 1ULL;
     uint64_t v_digital_raw = (data >> 8) & v_digital_mask;
-    alpha_chip_b_debug->v_digital = (float)((double)v_digital_raw / 1000);
+    chip_b_debug->v_digital = (float)((double)v_digital_raw / 1000);
     uint64_t otp1_med_mask = (1ULL << 1) - 1ULL;
     uint64_t otp1_med_raw = (data >> 7) & otp1_med_mask;
-    alpha_chip_b_debug->otp1_med = (bool)otp1_med_raw;
+    chip_b_debug->otp1_med = (bool)otp1_med_raw;
     uint64_t opt2_med_mask = (1ULL << 1) - 1ULL;
     uint64_t opt2_med_raw = (data >> 6) & opt2_med_mask;
-    alpha_chip_b_debug->opt2_med = (bool)opt2_med_raw;
+    chip_b_debug->opt2_med = (bool)opt2_med_raw;
 }
 
 void receive_fan_duty_cycle_percentage(const can_msg_t *message, fan_duty_cycle_percentage_t *fan_duty_cycle_percentage) {
@@ -1109,5 +1041,128 @@ void receive_fan_duty_cycle_percentage(const can_msg_t *message, fan_duty_cycle_
     uint64_t fan_duty_cycle_mask = (1ULL << 8) - 1ULL;
     uint64_t fan_duty_cycle_raw = (data >> 0) & fan_duty_cycle_mask;
     fan_duty_cycle_percentage->fan_duty_cycle = (uint8_t)fan_duty_cycle_raw;
+}
+
+void receive_onboard_therm_temperatures(const can_msg_t *message, onboard_therm_temperatures_t *onboard_therm_temperatures) {
+    
+    uint8_t data = message->data[0];
+    uint64_t chip_id_mask = (1ULL << 1) - 1ULL;
+    uint64_t chip_id_raw = (data >> 7) & chip_id_mask;
+    onboard_therm_temperatures->chip_id = (uint8_t)chip_id_raw;
+    uint64_t therm_temp_1_mask = (1ULL << 2) - 1ULL;
+    uint64_t therm_temp_1_raw = (data >> 5) & therm_temp_1_mask;
+    onboard_therm_temperatures->therm_temp_1 = (float)therm_temp_1_raw;
+    uint64_t therm_temp_2_mask = (1ULL << 2) - 1ULL;
+    uint64_t therm_temp_2_raw = (data >> 3) & therm_temp_2_mask;
+    onboard_therm_temperatures->therm_temp_2 = (float)therm_temp_2_raw;
+    uint64_t therm_temp_3_mask = (1ULL << 2) - 1ULL;
+    uint64_t therm_temp_3_raw = (data >> 1) & therm_temp_3_mask;
+    onboard_therm_temperatures->therm_temp_3 = (float)therm_temp_3_raw;
+}
+
+void receive_precharge_status(const can_msg_t *message, precharge_status_t *precharge_status) {
+    
+    uint8_t data = message->data[0];
+    uint64_t precharge_status_mask = (1ULL << 1) - 1ULL;
+    uint64_t precharge_status_raw = (data >> 7) & precharge_status_mask;
+    precharge_status->precharge_status = (bool)precharge_status_raw;
+}
+
+void receive_hv_plate_data(const can_msg_t *message, hv_plate_data_t *hv_plate_data) {
+    
+    uint64_t data_bigendian;
+    memcpy(&data_bigendian, message->data, 8);
+    uint64_t data = __builtin_bswap64(data_bigendian);
+    uint64_t batt_voltage_mask = (1ULL << 16) - 1ULL;
+    uint64_t batt_voltage_bits = (data >> 48) & batt_voltage_mask;
+    int64_t batt_voltage_raw = (batt_voltage_bits & (1ULL << (16 - 1)))
+        ? (int64_t)(batt_voltage_bits | ~batt_voltage_mask)
+        : (int64_t)batt_voltage_bits;
+    hv_plate_data->batt_voltage = (float)((double)batt_voltage_raw / 100);
+    uint64_t ts_voltage_mask = (1ULL << 16) - 1ULL;
+    uint64_t ts_voltage_bits = (data >> 32) & ts_voltage_mask;
+    int64_t ts_voltage_raw = (ts_voltage_bits & (1ULL << (16 - 1)))
+        ? (int64_t)(ts_voltage_bits | ~ts_voltage_mask)
+        : (int64_t)ts_voltage_bits;
+    hv_plate_data->ts_voltage = (float)((double)ts_voltage_raw / 100);
+    uint64_t shunt_temp_mask = (1ULL << 16) - 1ULL;
+    uint64_t shunt_temp_bits = (data >> 16) & shunt_temp_mask;
+    int64_t shunt_temp_raw = (shunt_temp_bits & (1ULL << (16 - 1)))
+        ? (int64_t)(shunt_temp_bits | ~shunt_temp_mask)
+        : (int64_t)shunt_temp_bits;
+    hv_plate_data->shunt_temp = (float)((double)shunt_temp_raw / 100);
+    uint64_t pack_current_mask = (1ULL << 16) - 1ULL;
+    uint64_t pack_current_bits = (data >> 0) & pack_current_mask;
+    int64_t pack_current_raw = (pack_current_bits & (1ULL << (16 - 1)))
+        ? (int64_t)(pack_current_bits | ~pack_current_mask)
+        : (int64_t)pack_current_bits;
+    hv_plate_data->pack_current = (float)((double)pack_current_raw / 100);
+}
+
+void receive_segment_pec_errors(const can_msg_t *message, segment_pec_errors_t *segment_pec_errors) {
+    
+    uint32_t data_bigendian;
+    memcpy(&data_bigendian, message->data, 4);
+    uint32_t data = __builtin_bswap32(data_bigendian);
+    uint64_t chip_id_mask = (1ULL << 8) - 1ULL;
+    uint64_t chip_id_raw = (data >> 16) & chip_id_mask;
+    segment_pec_errors->chip_id = (uint8_t)chip_id_raw;
+    uint64_t pec_errors_mask = (1ULL << 16) - 1ULL;
+    uint64_t pec_errors_raw = (data >> 0) & pec_errors_mask;
+    segment_pec_errors->pec_errors = (uint16_t)pec_errors_raw;
+}
+
+void receive_hv_plate_pec_errors(const can_msg_t *message, hv_plate_pec_errors_t *hv_plate_pec_errors) {
+    
+    uint16_t data_bigendian;
+    memcpy(&data_bigendian, message->data, 2);
+    uint16_t data = __builtin_bswap16(data_bigendian);
+    uint64_t pec_errors_mask = (1ULL << 16) - 1ULL;
+    uint64_t pec_errors_raw = (data >> 0) & pec_errors_mask;
+    hv_plate_pec_errors->pec_errors = (uint16_t)pec_errors_raw;
+}
+
+void receive_hv_plate_diagnostics(const can_msg_t *message, hv_plate_diagnostics_t *hv_plate_diagnostics) {
+    
+    uint64_t data_bigendian;
+    memcpy(&data_bigendian, message->data, 8);
+    uint64_t data = __builtin_bswap64(data_bigendian);
+    uint64_t flags_mask = (1ULL << 12) - 1ULL;
+    uint64_t flags_raw = (data >> 52) & flags_mask;
+    hv_plate_diagnostics->flags = (uint16_t)flags_raw;
+    uint64_t vreg_mask = (1ULL << 12) - 1ULL;
+    uint64_t vreg_raw = (data >> 40) & vreg_mask;
+    hv_plate_diagnostics->vreg = (float)((double)vreg_raw / 100);
+    uint64_t tmp1_mask = (1ULL << 12) - 1ULL;
+    uint64_t tmp1_raw = (data >> 28) & tmp1_mask;
+    hv_plate_diagnostics->tmp1 = (float)((double)tmp1_raw / 100);
+    uint64_t vref1p25_mask = (1ULL << 12) - 1ULL;
+    uint64_t vref1p25_raw = (data >> 16) & vref1p25_mask;
+    hv_plate_diagnostics->vref1p25 = (float)((double)vref1p25_raw / 100);
+    uint64_t osccnt_mask = (1ULL << 16) - 1ULL;
+    uint64_t osccnt_raw = (data >> 0) & osccnt_mask;
+    hv_plate_diagnostics->osccnt = (uint16_t)osccnt_raw;
+}
+
+void receive_hv_plate_diagnostics_second(const can_msg_t *message, hv_plate_diagnostics_second_t *hv_plate_diagnostics_second) {
+    
+    uint64_t data_bigendian;
+    memcpy(&data_bigendian, message->data, 8);
+    uint64_t data = __builtin_bswap64(data_bigendian);
+    uint64_t epad_mask = (1ULL << 12) - 1ULL;
+    uint64_t epad_raw = (data >> 52) & epad_mask;
+    hv_plate_diagnostics_second->epad = (float)((double)epad_raw / 100);
+    uint64_t vdig_mask = (1ULL << 12) - 1ULL;
+    uint64_t vdig_raw = (data >> 40) & vdig_mask;
+    hv_plate_diagnostics_second->vdig = (float)((double)vdig_raw / 100);
+    uint64_t vdd_mask = (1ULL << 12) - 1ULL;
+    uint64_t vdd_raw = (data >> 28) & vdd_mask;
+    hv_plate_diagnostics_second->vdd = (float)((double)vdd_raw / 100);
+    uint64_t tmp2_mask = (1ULL << 12) - 1ULL;
+    uint64_t tmp2_raw = (data >> 16) & tmp2_mask;
+    hv_plate_diagnostics_second->tmp2 = (float)((double)tmp2_raw / 100);
+    uint64_t vdiv_mask = (1ULL << 12) - 1ULL;
+    uint64_t vdiv_raw = (data >> 4) & vdiv_mask;
+    hv_plate_diagnostics_second->vdiv = (float)((double)vdiv_raw / 100);
 }
 

@@ -929,14 +929,14 @@ void vPeripherals(ULONG thread_input) {
             lfiu_adc_t lfiu_data = adc_getLfiuData();
 
             /* Send the LFIU_1 message. */
-            send_lfiu_one_current_adc_readings(
+            send_lfiu_low_current_adc_readings(
                 lfiu_data.raw[LFIU_1],
                 lfiu_data.voltage[LFIU_1],
                 lfiu_data.current[LFIU_1]
             );
 
             /* Send the LFIU_2 message. */
-            send_lfiu_two_current_adc_readings(
+            send_lfiu_high_current_adc_readings(
                 lfiu_data.raw[LFIU_2],
                 lfiu_data.voltage[LFIU_2],
                 lfiu_data.current[LFIU_2]

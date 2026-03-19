@@ -151,6 +151,18 @@ uint8_t send_mc_efuse
 
 /**
 * Contents of this message:
+* VCU/eFuses/Spare/ADC - Raw ADC Value.
+* VCU/eFuses/Spare/Voltage - Spare eFuse Voltage
+* VCU/eFuses/Spare/Current - Spare eFuse Current.
+* VCU/eFuses/Spare/Faulted? - The state of the Spare eFuse's fault pin.
+* VCU/eFuses/Spare/Enabled? - The state of the Spare eFuse's Enable pin.
+* VCU/eFuses/Spare/Control_State - The eFuse's control state.
+*/
+uint8_t send_spare_efuse
+(uint16_t ADC,float voltage,float current,bool is_faulted,bool is_enabled,uint8_t control_state);
+
+/**
+* Contents of this message:
 * VCU/Shutdown/BMS_GPIO - 
 * VCU/Shutdown/BOTS_GPIO - 
 * VCU/Shutdown/SPARE_GPIO - 
@@ -285,23 +297,40 @@ uint8_t send_dti_controller_temp_as_reported_by_vcu
 * VCU/Echo/Battbox_Temp - BMS Battbox Temp
 */
 uint8_t send_bms_battbox_temp_as_reported_by_vcu
-(uint16_t temp);
+(float temp);
 
 /**
 * Contents of this message:
-* VCU/LFIU/LFIU_1/ADC - Raw ADC Readings for LFIU_1.
-* VCU/LFIU/LFIU_1/Voltage - ADC Voltage Reading for LFIU_1
-* VCU/LFIU/LFIU_1/Current - Current Reading for LFIU_1.
+* VCU/Echo/Brake_State - Brake State
 */
-uint8_t send_lfiu_one_current_adc_readings
+uint8_t send_brake_state_as_reported_by_vcu
+(bool brake_state);
+
+/**
+* Contents of this message:
+* VCU/RTDS/Pin_State - The state of the RTDS Pin.
+* VCU/RTDS/Sounding_State - Whether or not the RTDS system is attempting to sound the main continuous RTDS sound.
+* VCU/RTDS/Reverse_State - Whether or not the RTDS system is attempting to sound the reverse sound.
+* VCU/RTDS/Error_State - Indicates if an error occured during reading.
+*/
+uint8_t send_rtds_state_message
+(bool pin_state,bool sounding_state,bool reverse_state,bool error);
+
+/**
+* Contents of this message:
+* VCU/LFIU/LFIU_Low/ADC - Raw ADC Readings for LFIU_1.
+* VCU/LFIU/LFIU_Low/Voltage - ADC Voltage Reading for LFIU_1
+* VCU/LFIU/LFIU_Low/Current - Current Reading for LFIU_1.
+*/
+uint8_t send_lfiu_low_current_adc_readings
 (uint16_t raw,float voltage,float current);
 
 /**
 * Contents of this message:
-* VCU/LFIU/LFIU_2/ADC - Raw ADC Readings for LFIU_2.
-* VCU/LFIU/LFIU_2/Voltage - ADC Voltage Reading for LFIU_2
-* VCU/LFIU/LFIU_2/Current - Current Reading for LFIU_2.
+* VCU/LFIU/LFIU_High/ADC - Raw ADC Readings for LFIU_2.
+* VCU/LFIU/LFIU_High/Voltage - ADC Voltage Reading for LFIU_2
+* VCU/LFIU/LFIU_High/Current - Current Reading for LFIU_2.
 */
-uint8_t send_lfiu_two_current_adc_readings
+uint8_t send_lfiu_high_current_adc_readings
 (uint16_t raw,float voltage,float current);
 #endif
