@@ -1172,7 +1172,10 @@ void receive_bms_test_message_one(const can_msg_t *message, bms_test_message_one
     memcpy(&data_bigendian, message->data, 8);
     uint64_t data = __builtin_bswap64(data_bigendian);
     uint64_t one_mask = (1ULL << 32) - 1ULL;
-    uint64_t one_raw = (data >> 32) & one_mask;
+    uint64_t one_bits = (data >> 32) & one_mask;
+    int64_t one_raw = (one_bits & (1ULL << (32 - 1)))
+        ? (int64_t)(one_bits | ~one_mask)
+        : (int64_t)one_bits;
     bms_test_message_one->one = (float)((double)one_raw / 1000);
     uint64_t two_mask = (1ULL << 16) - 1ULL;
     uint64_t two_bits = (data >> 16) & two_mask;

@@ -137,9 +137,9 @@ void HAL_FDCAN_RxFifo0Callback(FDCAN_HandleTypeDef *hfdcan, uint32_t RxFifo0ITs)
 	  message.len = (uint8_t)rx_header.DataLength;
 
 		/* Check message size */
-		if (rx_header.DataLength > 8)
+		if (rx_header.DataLength > 9)
 		{
-			PRINTLN_ERROR("Recieved CAN message is larger than 8 bytes (rx_header.DataLength: %ld).", rx_header.DataLength);
+			PRINTLN_ERROR("Recieved CAN message is larger than 8 bytes (rx_header.DataLength: %ld, id: 0x%X).", rx_header.DataLength, rx_header.Identifier);
       queue_send(&faults, &(fault_t){CAN_INCOMING_FAULT}, TX_NO_WAIT);
 			return;
 		}

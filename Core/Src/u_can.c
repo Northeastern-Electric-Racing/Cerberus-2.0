@@ -47,37 +47,53 @@ uint8_t can1_init(FDCAN_HandleTypeDef *hcan) {
         return U_ERROR;
     }
 
-    /* Add fitlers for extended IDs */
-    uint32_t extended1[] = {CANID_CALYPSO_EFCTRL_DASHBOARD, CANID_CALYPSO_EFCTRL_BRAKE};
-    status = can_add_filter_extended(&can1, extended1);
+    /* Add filters for standard IDs */
+    uint16_t standard4[] = {0x102, 0x103};
+    status = can_add_filter_standard(&can1, standard4);
     if (status != HAL_OK) {
-        PRINTLN_ERROR("Failed to add extended filter to can1 (Status: %d/%s, ID1: %ld, ID2: %ld).", status, hal_status_toString(status), extended1[0], extended1[1]);
+        PRINTLN_ERROR("Failed to add standard filter to can1 (Status: %d/%s, ID1: 0x%X, ID2: 0x%X).", status, hal_status_toString(status), standard4[0], standard4[1]);
         return U_ERROR;
     }
 
-    /* Add fitlers for extended IDs */
-    uint32_t extended2[] = {CANID_CALYPSO_EFCTRL_SHUTDOWN, CANID_CALYPSO_EFCTRL_LV};
-    status = can_add_filter_extended(&can1, extended2);
+    /* Add filters for standard IDs */
+    uint16_t standard5[] = {0x100, 0x00};
+    status = can_add_filter_standard(&can1, standard5);
     if (status != HAL_OK) {
-        PRINTLN_ERROR("Failed to add extended filter to can1 (Status: %d/%s, ID1: %ld, ID2: %ld).", status, hal_status_toString(status), extended2[0], extended2[1]);
+        PRINTLN_ERROR("Failed to add standard filter to can1 (Status: %d/%s, ID1: 0x%X, ID2: 0x%X).", status, hal_status_toString(status), standard5[0], standard5[1]);
         return U_ERROR;
     }
 
-    /* Add fitlers for extended IDs */
-    uint32_t extended3[] = {CANID_CALYPSO_EFCTRL_RADFAN, CANID_CALYPSO_EFCTRL_FANBATT};
-    status = can_add_filter_extended(&can1, extended3);
-    if (status != HAL_OK) {
-        PRINTLN_ERROR("Failed to add extended filter to can1 (Status: %d/%s, ID1: %ld, ID2: %ld).", status, hal_status_toString(status), extended3[0], extended3[1]);
-        return U_ERROR;
-    }
+    // /* Add fitlers for extended IDs */
+    // uint32_t extended1[] = {CANID_CALYPSO_EFCTRL_DASHBOARD, CANID_CALYPSO_EFCTRL_BRAKE};
+    // status = can_add_filter_extended(&can1, extended1);
+    // if (status != HAL_OK) {
+    //     PRINTLN_ERROR("Failed to add extended filter to can1 (Status: %d/%s, ID1: %ld, ID2: %ld).", status, hal_status_toString(status), extended1[0], extended1[1]);
+    //     return U_ERROR;
+    // }
 
-    /* Add fitlers for extended IDs */
-    uint32_t extended4[] = {CANID_CALYPSO_EFCTRL_PUMPONE, CANID_CALYPSO_EFCTRL_PUMPTWO};
-    status = can_add_filter_extended(&can1, extended4);
-    if (status != HAL_OK) {
-        PRINTLN_ERROR("Failed to add extended filter to can1 (Status: %d/%s, ID1: %ld, ID2: %ld).", status, hal_status_toString(status), extended4[0], extended4[1]);
-        return U_ERROR;
-    }
+    // /* Add fitlers for extended IDs */
+    // uint32_t extended2[] = {CANID_CALYPSO_EFCTRL_SHUTDOWN, CANID_CALYPSO_EFCTRL_LV};
+    // status = can_add_filter_extended(&can1, extended2);
+    // if (status != HAL_OK) {
+    //     PRINTLN_ERROR("Failed to add extended filter to can1 (Status: %d/%s, ID1: %ld, ID2: %ld).", status, hal_status_toString(status), extended2[0], extended2[1]);
+    //     return U_ERROR;
+    // }
+
+    // /* Add fitlers for extended IDs */
+    // uint32_t extended3[] = {CANID_CALYPSO_EFCTRL_RADFAN, CANID_CALYPSO_EFCTRL_FANBATT};
+    // status = can_add_filter_extended(&can1, extended3);
+    // if (status != HAL_OK) {
+    //     PRINTLN_ERROR("Failed to add extended filter to can1 (Status: %d/%s, ID1: %ld, ID2: %ld).", status, hal_status_toString(status), extended3[0], extended3[1]);
+    //     return U_ERROR;
+    // }
+
+    // /* Add fitlers for extended IDs */
+    // uint32_t extended4[] = {CANID_CALYPSO_EFCTRL_PUMPONE, CANID_CALYPSO_EFCTRL_PUMPTWO};
+    // status = can_add_filter_extended(&can1, extended4);
+    // if (status != HAL_OK) {
+    //     PRINTLN_ERROR("Failed to add extended filter to can1 (Status: %d/%s, ID1: %ld, ID2: %ld).", status, hal_status_toString(status), extended4[0], extended4[1]);
+    //     return U_ERROR;
+    // }
 
     /* Add fitlers for extended IDs */
     uint32_t extended5[] = {CANID_CALYPSO_EFCTRL_BATTBOX, CANID_CALYPSO_EFCTRL_MC};
@@ -95,13 +111,15 @@ uint8_t can1_init(FDCAN_HandleTypeDef *hcan) {
         return U_ERROR;
     }
 
-    /* Add fitlers for extended IDs */
-    uint32_t extended7[] = {0xBAD3, 0xBAD4};
-    status = can_add_filter_extended(&can1, extended7);
-    if (status != HAL_OK) {
-        PRINTLN_ERROR("Failed to add extended filter to can1 (Status: %d/%s, ID1: %ld, ID2: %ld).", status, hal_status_toString(status), extended7[0], extended7[1]);
-        return U_ERROR;
-    }
+    // /* Add fitlers for extended IDs */
+    // uint32_t extended7[] = {0xBAD3, 0xBAD4};
+    // status = can_add_filter_extended(&can1, extended7);
+    // if (status != HAL_OK) {
+    //     PRINTLN_ERROR("Failed to add extended filter to can1 (Status: %d/%s, ID1: %ld, ID2: %ld).", status, hal_status_toString(status), extended7[0], extended7[1]);
+    //     return U_ERROR;
+    // } else {
+    //     PRINTLN_INFO("Added 0x%X and 0x%X to extended filter.", extended7[0], extended7[1]);
+    // }
 
     PRINTLN_INFO("Ran can1_init().");
 
@@ -110,6 +128,7 @@ uint8_t can1_init(FDCAN_HandleTypeDef *hcan) {
 
 /* Processes received CAN messages. */
 void can_inbox(can_msg_t *message) {
+    PRINTLN_INFO("Received message with id 0x%X.", message->id);
     switch (message->id) {
     case CANID_BMS_DCL_MSG:
         bms_handleDclMessage();
@@ -206,7 +225,7 @@ void can_inbox(can_msg_t *message) {
             default: break;
         }
         break;
-    case 0xBAD3:
+    case 0x102:
         static int times_received_one = 0;
         bms_test_message_one_t test_message_one;
         receive_bms_test_message_one(message, &test_message_one);
@@ -217,7 +236,7 @@ void can_inbox(can_msg_t *message) {
         serial_monitor("bms_test_message_one", "three", "%d", test_message_one.three);
         serial_monitor("bms_test_message_one", "times_received", "%d", times_received_one);
         break;
-    case 0xBAD4:
+    case 0x103:
         static int times_received_two = 0;
         bms_test_message_two_t test_message_two;
         receive_bms_test_message_one(message, &test_message_two);
