@@ -1,0 +1,424 @@
+{
+	"output": "..tire-model-longitudinal-graph.figure...tire-model-lateral-graph.figure..",
+	"outputs": [
+		{ "id": "tire-model-longitudinal-graph", "property": "figure" },
+		{ "id": "tire-model-lateral-graph", "property": "figure" }
+	],
+	"inputs": [
+		{
+			"id": {
+				"base": "tire-model-page",
+				"component": "VehicleSelectAIO",
+				"subcomponent": "selected-vehicle-data-store-type"
+			},
+			"property": "data"
+		},
+		{ "id": "normal-force-slider", "property": "value", "value": 600 },
+		[
+			{
+				"id": {
+					"base": "tire-model-page",
+					"component": "input",
+					"field": "rolling_resistance",
+					"subcomponent": "PacejkaTireModelInputs"
+				},
+				"property": "value",
+				"value": 0.015
+			},
+			{
+				"id": {
+					"base": "tire-model-page",
+					"component": "input",
+					"field": "viscous_resistance_coefficient",
+					"subcomponent": "PacejkaTireModelInputs"
+				},
+				"property": "value",
+				"value": 2
+			},
+			{
+				"id": {
+					"base": "tire-model-page",
+					"component": "input",
+					"field": "lateral_scrub_coefficeint",
+					"subcomponent": "PacejkaTireModelInputs"
+				},
+				"property": "value",
+				"value": 0.1
+			},
+			{
+				"id": {
+					"base": "tire-model-page",
+					"component": "input",
+					"field": "use_fitted_model",
+					"subcomponent": "PacejkaTireModelInputs"
+				},
+				"property": "value",
+				"value": true
+			},
+			{
+				"id": {
+					"base": "tire-model-page",
+					"component": "input",
+					"field": "B",
+					"subcomponent": "PacejkaTireModelInputs"
+				},
+				"property": "value",
+				"value": 13.9716
+			},
+			{
+				"id": {
+					"base": "tire-model-page",
+					"component": "input",
+					"field": "C",
+					"subcomponent": "PacejkaTireModelInputs"
+				},
+				"property": "value",
+				"value": 1.0447
+			},
+			{
+				"id": {
+					"base": "tire-model-page",
+					"component": "input",
+					"field": "D",
+					"subcomponent": "PacejkaTireModelInputs"
+				},
+				"property": "value",
+				"value": 1.7709
+			},
+			{
+				"id": {
+					"base": "tire-model-page",
+					"component": "input",
+					"field": "E",
+					"subcomponent": "PacejkaTireModelInputs"
+				},
+				"property": "value",
+				"value": -0.9634
+			},
+			{
+				"id": {
+					"base": "tire-model-page",
+					"component": "input",
+					"field": "fy",
+					"subcomponent": "PacejkaTireModelInputs"
+				},
+				"property": "value",
+				"value": 10.7122
+			},
+			{
+				"id": {
+					"base": "tire-model-page",
+					"component": "input",
+					"field": "B_Lon",
+					"subcomponent": "PacejkaTireModelInputs"
+				},
+				"property": "value",
+				"value": 12.47
+			},
+			{
+				"id": {
+					"base": "tire-model-page",
+					"component": "input",
+					"field": "C_Lon",
+					"subcomponent": "PacejkaTireModelInputs"
+				},
+				"property": "value",
+				"value": 1.374
+			},
+			{
+				"id": {
+					"base": "tire-model-page",
+					"component": "input",
+					"field": "D_Lon",
+					"subcomponent": "PacejkaTireModelInputs"
+				},
+				"property": "value",
+				"value": 1.286
+			},
+			{
+				"id": {
+					"base": "tire-model-page",
+					"component": "input",
+					"field": "E_Lon",
+					"subcomponent": "PacejkaTireModelInputs"
+				},
+				"property": "value",
+				"value": -0.645
+			},
+			{
+				"id": {
+					"base": "tire-model-page",
+					"component": "input",
+					"field": "mu_x",
+					"subcomponent": "PacejkaTireModelInputs"
+				},
+				"property": "value",
+				"value": 1.1
+			},
+			{
+				"id": {
+					"base": "tire-model-page",
+					"component": "input",
+					"field": "mu_y",
+					"subcomponent": "PacejkaTireModelInputs"
+				},
+				"property": "value",
+				"value": 1.2
+			},
+			{
+				"id": {
+					"base": "tire-model-page",
+					"component": "input",
+					"field": "alpha_max",
+					"subcomponent": "PacejkaTireModelInputs"
+				},
+				"property": "value",
+				"value": 20
+			}
+		],
+		[
+			{
+				"id": {
+					"base": "tire-model-page",
+					"component": "input",
+					"field": "rolling_resistance",
+					"subcomponent": "PacejkaTireModelInputs"
+				},
+				"property": "id",
+				"value": {
+					"component": "input",
+					"subcomponent": "PacejkaTireModelInputs",
+					"field": "rolling_resistance",
+					"base": "tire-model-page"
+				}
+			},
+			{
+				"id": {
+					"base": "tire-model-page",
+					"component": "input",
+					"field": "viscous_resistance_coefficient",
+					"subcomponent": "PacejkaTireModelInputs"
+				},
+				"property": "id",
+				"value": {
+					"component": "input",
+					"subcomponent": "PacejkaTireModelInputs",
+					"field": "viscous_resistance_coefficient",
+					"base": "tire-model-page"
+				}
+			},
+			{
+				"id": {
+					"base": "tire-model-page",
+					"component": "input",
+					"field": "lateral_scrub_coefficeint",
+					"subcomponent": "PacejkaTireModelInputs"
+				},
+				"property": "id",
+				"value": {
+					"component": "input",
+					"subcomponent": "PacejkaTireModelInputs",
+					"field": "lateral_scrub_coefficeint",
+					"base": "tire-model-page"
+				}
+			},
+			{
+				"id": {
+					"base": "tire-model-page",
+					"component": "input",
+					"field": "use_fitted_model",
+					"subcomponent": "PacejkaTireModelInputs"
+				},
+				"property": "id",
+				"value": {
+					"component": "input",
+					"subcomponent": "PacejkaTireModelInputs",
+					"field": "use_fitted_model",
+					"base": "tire-model-page"
+				}
+			},
+			{
+				"id": {
+					"base": "tire-model-page",
+					"component": "input",
+					"field": "B",
+					"subcomponent": "PacejkaTireModelInputs"
+				},
+				"property": "id",
+				"value": {
+					"component": "input",
+					"subcomponent": "PacejkaTireModelInputs",
+					"field": "B",
+					"base": "tire-model-page"
+				}
+			},
+			{
+				"id": {
+					"base": "tire-model-page",
+					"component": "input",
+					"field": "C",
+					"subcomponent": "PacejkaTireModelInputs"
+				},
+				"property": "id",
+				"value": {
+					"component": "input",
+					"subcomponent": "PacejkaTireModelInputs",
+					"field": "C",
+					"base": "tire-model-page"
+				}
+			},
+			{
+				"id": {
+					"base": "tire-model-page",
+					"component": "input",
+					"field": "D",
+					"subcomponent": "PacejkaTireModelInputs"
+				},
+				"property": "id",
+				"value": {
+					"component": "input",
+					"subcomponent": "PacejkaTireModelInputs",
+					"field": "D",
+					"base": "tire-model-page"
+				}
+			},
+			{
+				"id": {
+					"base": "tire-model-page",
+					"component": "input",
+					"field": "E",
+					"subcomponent": "PacejkaTireModelInputs"
+				},
+				"property": "id",
+				"value": {
+					"component": "input",
+					"subcomponent": "PacejkaTireModelInputs",
+					"field": "E",
+					"base": "tire-model-page"
+				}
+			},
+			{
+				"id": {
+					"base": "tire-model-page",
+					"component": "input",
+					"field": "fy",
+					"subcomponent": "PacejkaTireModelInputs"
+				},
+				"property": "id",
+				"value": {
+					"component": "input",
+					"subcomponent": "PacejkaTireModelInputs",
+					"field": "fy",
+					"base": "tire-model-page"
+				}
+			},
+			{
+				"id": {
+					"base": "tire-model-page",
+					"component": "input",
+					"field": "B_Lon",
+					"subcomponent": "PacejkaTireModelInputs"
+				},
+				"property": "id",
+				"value": {
+					"component": "input",
+					"subcomponent": "PacejkaTireModelInputs",
+					"field": "B_Lon",
+					"base": "tire-model-page"
+				}
+			},
+			{
+				"id": {
+					"base": "tire-model-page",
+					"component": "input",
+					"field": "C_Lon",
+					"subcomponent": "PacejkaTireModelInputs"
+				},
+				"property": "id",
+				"value": {
+					"component": "input",
+					"subcomponent": "PacejkaTireModelInputs",
+					"field": "C_Lon",
+					"base": "tire-model-page"
+				}
+			},
+			{
+				"id": {
+					"base": "tire-model-page",
+					"component": "input",
+					"field": "D_Lon",
+					"subcomponent": "PacejkaTireModelInputs"
+				},
+				"property": "id",
+				"value": {
+					"component": "input",
+					"subcomponent": "PacejkaTireModelInputs",
+					"field": "D_Lon",
+					"base": "tire-model-page"
+				}
+			},
+			{
+				"id": {
+					"base": "tire-model-page",
+					"component": "input",
+					"field": "E_Lon",
+					"subcomponent": "PacejkaTireModelInputs"
+				},
+				"property": "id",
+				"value": {
+					"component": "input",
+					"subcomponent": "PacejkaTireModelInputs",
+					"field": "E_Lon",
+					"base": "tire-model-page"
+				}
+			},
+			{
+				"id": {
+					"base": "tire-model-page",
+					"component": "input",
+					"field": "mu_x",
+					"subcomponent": "PacejkaTireModelInputs"
+				},
+				"property": "id",
+				"value": {
+					"component": "input",
+					"subcomponent": "PacejkaTireModelInputs",
+					"field": "mu_x",
+					"base": "tire-model-page"
+				}
+			},
+			{
+				"id": {
+					"base": "tire-model-page",
+					"component": "input",
+					"field": "mu_y",
+					"subcomponent": "PacejkaTireModelInputs"
+				},
+				"property": "id",
+				"value": {
+					"component": "input",
+					"subcomponent": "PacejkaTireModelInputs",
+					"field": "mu_y",
+					"base": "tire-model-page"
+				}
+			},
+			{
+				"id": {
+					"base": "tire-model-page",
+					"component": "input",
+					"field": "alpha_max",
+					"subcomponent": "PacejkaTireModelInputs"
+				},
+				"property": "id",
+				"value": {
+					"component": "input",
+					"subcomponent": "PacejkaTireModelInputs",
+					"field": "alpha_max",
+					"base": "tire-model-page"
+				}
+			}
+		]
+	],
+	"changedPropIds": ["normal-force-slider.value"],
+	"parsedChangedPropsIds": ["normal-force-slider.value"]
+}
