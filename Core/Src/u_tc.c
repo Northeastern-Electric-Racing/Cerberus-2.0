@@ -361,6 +361,4 @@ void tc_process(void) {
 
   float slip = _calc_slip((float)dti_get_rpm(), vx_car);
   _tc_state.torque_scale = _update_pi(&_tc_state.pi, _tc_state.tire_curve, slip, _tc_state.dt);
-
-  PRINTLN_INFO("TC: vx=%.3f scale=%.3f", vx_car, _tc_state.torque_scale);
 }

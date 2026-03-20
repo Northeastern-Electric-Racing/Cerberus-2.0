@@ -2,6 +2,7 @@
 #include "mock_u_dti.h"
 #include "mock_u_peripherals.h"
 #include "u_tc.h"
+#include "u_tx_debug.h"
 #include <stdint.h>
 #include <stdbool.h>
 #include <assert.h>
@@ -229,7 +230,7 @@ void test_process_scale_bounded_over_many_iterations(void) {
     tc_record_front_rpm(make_rpm_msg(1000, 1000));
     _mock_motor_rpm = 5000;
 
-    for (int i = 0; i < 50; i++) {
+    for (int i = 0; i < 75; i++) {
         _mock_tick_ms += 50;
         tc_process();
         float s = tc_get_torque_scale();
@@ -265,14 +266,24 @@ void test_process_reduces_torque_on_high_motor_rpm(void) {
     /* Front wheels slow (low vx_car), motor spinning very fast -> high slip
      * -> PI should reduce torque scale below 1.0 after several iterations. */
     tc_record_front_rpm(make_rpm_msg(100, 100));
-    _mock_motor_rpm = 20000;
+    _mock_motor_rpm = 10000;
 
-    for (int i = 0; i < 25; i++) {
+    for (int i = 0; i < 100; i++) {
         _mock_tick_ms += 100;
+        _mock_motor_rpm -= 50; 
         tc_process();
+        PRINTLN_INFO("Iteration %d: torque_scale=%.3f, RPM=%d", i, tc_get_torque_scale(), _mock_motor_rpm);
     }
     TEST_ASSERT_TRUE(tc_get_torque_scale() < 1.0f);
     TEST_ASSERT_TRUE(tc_get_torque_scale() >= 0.0f);
+
+    for (int i = 100; i < 200; i++) {
+        _mock_tick_ms += 100;
+        _mock_motor_rpm -= 50; 
+        tc_process();
+        PRINTLN_INFO("Iteration %d: torque_scale=%.3f, RPM=%d", i, tc_get_torque_scale(), _mock_motor_rpm);
+    }
+    TEST_ASSERT_TRUE(tc_get_torque_scale() == 1.0f);
 }
 
 void test_process_zero_motor_rpm_no_reduction(void) {
@@ -305,7 +316,7 @@ void test_process_imu_failure_multiple_iterations(void) {
     _mock_imu_ret   = 1; /* U_ERROR for all calls */
     _mock_motor_rpm = 3000;
     tc_record_front_rpm(make_rpm_msg(1000, 1000));
-    for (int i = 0; i < 20; i++) {
+    for (int i = 0; i < 200; i++) {
         _mock_tick_ms += 100;
         tc_process();
         TEST_ASSERT_TRUE(tc_get_torque_scale() >= 0.0f);
@@ -347,7 +358,7 @@ void test_process_large_negative_imu_ax(void) {
 
 void test_process_scale_bounded_alternating_motor_rpm(void) {
     /* Simulate varying motor RPM across iterations. */
-    for (int i = 0; i < 30; i++) {
+    for (int i = 0; i < 200; i++) {
         int16_t f_rpm = (int16_t)(1000 + (i % 3) * 200);
         _mock_motor_rpm = 3000 + (i % 5) * 1000;
         tc_record_front_rpm(make_rpm_msg(f_rpm, f_rpm));
