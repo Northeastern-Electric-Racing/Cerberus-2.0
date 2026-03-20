@@ -419,6 +419,8 @@ static void _handle_performance(float mph, float percentage_accel)
 		}
 	} else if (mph * MPH_TO_KMH > 5 && percentage_accel <= REGEN_THRESHOLD) {
 		_accel_pedal_regen_braking(percentage_accel);
+	} else if (mph * MPH_TO_KMH <= 5 && percentage_accel >= 0) {
+		_accel_pedal_regen_torque(percentage_accel);
 	} else {
 		/* Pedal travel is between thresholds, so there should not be acceleration or braking */
 		dti_set_torque(0);
@@ -441,6 +443,8 @@ static void _handle_endurance(float mph, float percentage_accel)
 		_accel_pedal_regen_torque(percentage_accel);
 	} else if (mph * MPH_TO_KMH > 5 && percentage_accel <= REGEN_THRESHOLD) {
 		_accel_pedal_regen_braking(percentage_accel);
+	} else if (mph * MPH_TO_KMH <= 5 && percentage_accel >= 0) {
+		_accel_pedal_regen_torque(percentage_accel);
 	} else {
 		/* Pedal travel is between thresholds, so there should not be acceleration or braking */
 		dti_set_torque(0);
