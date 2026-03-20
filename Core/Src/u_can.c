@@ -56,7 +56,7 @@ uint8_t can1_init(FDCAN_HandleTypeDef *hcan) {
     }
 
     /* Add filters for standard IDs */
-    uint16_t standard5[] = {0x100, CANID_SHEPHERD_PRECHARGE};
+    uint16_t standard5[] = {CANID_SHEPHERD_PRECHARGE, 0x00};
     status = can_add_filter_standard(&can1, standard5);
     if (status != HAL_OK) {
         PRINTLN_ERROR("Failed to add standard filter to can1 (Status: %d/%s, ID1: 0x%X, ID2: 0x%X).", status, hal_status_toString(status), standard5[0], standard5[1]);
@@ -201,7 +201,8 @@ void can_inbox(can_msg_t *message) {
         receive_mc_efuse_state(message, &mc);
         efuse_update_state(EFUSE_MC, (efuse_control_state_t)mc.state);
         break;
-    case CANID_SHEPHERD_PRECHARGE: 
+    case CANID_SHEPHERD_PRECHARGE:
+        PRINTLN_INFO("recieved shepherd precharge message");
         bms_setPrecharge(message->data[0]); //first byte of the can mssg data
         break;
     case CANID_CALYPSO_EFCTRL_SPARE:
@@ -242,7 +243,7 @@ void can_inbox(can_msg_t *message) {
     case 0x103:
         static int times_received_two = 0;
         bms_test_message_two_t test_message_two;
-        receive_bms_test_message_one(message, &test_message_two);
+        receive_bms_test_message_two(message, &test_message_two);
         times_received_two++;
 
         serial_monitor("bms_test_message_two", "one", "%d", test_message_two.one);
