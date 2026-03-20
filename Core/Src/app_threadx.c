@@ -36,7 +36,7 @@
 #include "u_tc.h"
 #include "u_threads.h"
 #include "u_tsms.h"
-
+#include "u_efuses.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -80,6 +80,7 @@ UINT App_ThreadX_Init(VOID *memory_ptr) {
   CATCH_ERROR(faults_init(), U_SUCCESS);
   CATCH_ERROR(mutexes_init(), U_SUCCESS);
   CATCH_ERROR(rtds_init(), U_SUCCESS);
+  CATCH_ERROR(efuse_init(), U_SUCCESS);
   CATCH_ERROR(pedals_init(), U_SUCCESS);
   CATCH_ERROR(bms_init(), U_SUCCESS);
   CATCH_ERROR(lightning_init(), U_SUCCESS);

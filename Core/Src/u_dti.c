@@ -122,6 +122,9 @@ void dti_set_regen(uint16_t current_target)
 
 void dti_set_current(int16_t current)
 {
+	if (!bms_getPrecharge()) {
+		return;
+	}
 	can_msg_t msg = { .id = 0x036, .len = 2, .data = { 0 } };
 
 #ifdef TSMS_OVERRIDE
@@ -145,6 +148,10 @@ void dti_set_current(int16_t current)
 
 void dti_send_brake_current(uint16_t brake_current)
 {
+	if (!bms_getPrecharge()) {
+		return;
+	}
+
 	can_msg_t msg = { .id = 0x056,
 			  .len = 8,
 			  .data = { 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0 } };
@@ -185,6 +192,9 @@ void dti_set_position(int16_t angle)
 
 void dti_set_relative_current(int16_t relative_current)
 {
+	if (!bms_getPrecharge()) {
+		return;
+	}
 	can_msg_t msg = { .id = 0x0B6, .len = 2, .data = { 0 } };
 
 	/* convert to big endian */
@@ -197,6 +207,9 @@ void dti_set_relative_current(int16_t relative_current)
 
 void dti_set_relative_brake_current(int16_t relative_brake_current)
 {
+	if (!bms_getPrecharge()) {
+		return;
+	}
 	can_msg_t msg = { .id = 0x0D6, .len = 2, .data = { 0 } };
 
 	/* convert to big endian */
@@ -220,6 +233,9 @@ void dti_set_digital_output(uint8_t output, bool value)
 
 void dti_set_max_ac_current(int16_t current)
 {
+	if (!bms_getPrecharge()) {
+		return;
+	}
 	can_msg_t msg = { .id = 0x116, .len = 2, .data = { 0 } };
 
 	/* convert to big endian */
@@ -232,6 +248,9 @@ void dti_set_max_ac_current(int16_t current)
 
 void dti_set_max_ac_brake_current(int16_t current)
 {
+	if (!bms_getPrecharge()) {
+		return;
+	}
 	can_msg_t msg = { .id = 0x136, .len = 2, .data = { 0 } };
 
 	/* convert to big endian */
@@ -244,6 +263,9 @@ void dti_set_max_ac_brake_current(int16_t current)
 
 void dti_set_max_dc_current(int16_t current)
 {
+	if (!bms_getPrecharge()) {
+		return;
+	}
 	can_msg_t msg = { .id = 0x156, .len = 2, .data = { 0 } };
 
 	/* convert to big endian */
@@ -256,6 +278,9 @@ void dti_set_max_dc_current(int16_t current)
 
 void dti_set_max_dc_brake_current(int16_t current)
 {
+	if (!bms_getPrecharge()) {
+		return;
+	}
 	can_msg_t msg = { .id = 0x176, .len = 2, .data = { 0 } };
 
 	/* convert to big endian */
@@ -292,21 +317,21 @@ float dti_get_mph(void)
 	       (TIRE_DIAMETER / 63360.0) * M_PI;
 }
 
-void dti_record_rpm(can_msg_t msg)
+void dti_record_rpm(can_msg_t* msg)
 {
 	/* ERPM is first four bytes of can message in big endian format */
-	int32_t erpm = (msg.data[0] << 24) + (msg.data[1] << 16) +
-		       (msg.data[2] << 8) + (msg.data[3]);
+	int32_t erpm = (msg->data[0] << 24) + (msg->data[1] << 16) +
+		       (msg->data[2] << 8) + (msg->data[3]);
 
 	int32_t rpm = erpm / POLE_PAIRS;
 
 	mc.rpm = rpm;
 }
 
-void dti_record_temp(can_msg_t msg)
+void dti_record_temp(can_msg_t* msg)
 {
-	uint16_t controllerTemp = (msg.data[0] << 8) + (msg.data[1]);
-	uint16_t motorTemp = (msg.data[2] << 8) + (msg.data[3]);
+	uint16_t controllerTemp = (msg->data[0] << 8) + (msg->data[1]);
+	uint16_t motorTemp = (msg->data[2] << 8) + (msg->data[3]);
 
 	controllerTemp /= 10;
 	motorTemp /= 10;
@@ -325,11 +350,11 @@ uint16_t dti_get_controller_temp(void)
 	return mc.contr_temp;
 }
 
-void dti_record_currents(can_msg_t msg)
+void dti_record_currents(can_msg_t* msg)
 {
 
-	int16_t ac_current = (msg.data[0] << 8) + (msg.data[1]) / 10;
-	int16_t dc_current = (msg.data[2] << 8) + (msg.data[3]) / 10;
+	int16_t ac_current = (msg->data[0] << 8) + (msg->data[1]) / 10;
+	int16_t dc_current = (msg->data[2] << 8) + (msg->data[3]) / 10;
 
 	mc.ac_current = ac_current;
 	mc.dc_current = dc_current;

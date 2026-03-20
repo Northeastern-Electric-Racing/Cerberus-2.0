@@ -36,9 +36,10 @@ uint8_t send_drive_enable_command
 * VCU/eFuses/Dashboard/Current - Dashboard eFuse Current.
 * VCU/eFuses/Dashboard/Faulted? - The state of the Dashboard eFuse's fault pin.
 * VCU/eFuses/Dashboard/Enabled? - The state of the Dashboard eFuse's Enable pin.
+* VCU/eFuses/Dashboard/Control_State - The eFuse's control state.
 */
 uint8_t send_dashboard_efuse
-(uint16_t ADC,float voltage,float current,bool is_faulted,bool is_enabled);
+(uint16_t ADC,float voltage,float current,bool is_faulted,bool is_enabled,uint8_t control_state);
 
 /**
 * Contents of this message:
@@ -47,9 +48,10 @@ uint8_t send_dashboard_efuse
 * VCU/eFuses/Brake/Current - Brake eFuse Current.
 * VCU/eFuses/Brake/Faulted? - The state of the Brake eFuse's fault pin.
 * VCU/eFuses/Brake/Enabled? - The state of the Brake eFuse's Enable pin.
+* VCU/eFuses/Brake/Control_State - The eFuse's control state.
 */
 uint8_t send_brake_efuse
-(uint16_t ADC,float voltage,float current,bool is_faulted,bool is_enabled);
+(uint16_t ADC,float voltage,float current,bool is_faulted,bool is_enabled,uint8_t control_state);
 
 /**
 * Contents of this message:
@@ -58,9 +60,10 @@ uint8_t send_brake_efuse
 * VCU/eFuses/Shutdown/Current - Shutdown eFuse Current.
 * VCU/eFuses/Shutdown/Faulted? - The state of the Shutdown eFuse's fault pin.
 * VCU/eFuses/Shutdown/Enabled? - The state of the Shutdown eFuse's Enable pin.
+* VCU/eFuses/Shutdown/Control_State - The eFuse's control state.
 */
 uint8_t send_shutdown_efuse
-(uint16_t ADC,float voltage,float current,bool is_faulted,bool is_enabled);
+(uint16_t ADC,float voltage,float current,bool is_faulted,bool is_enabled,uint8_t control_state);
 
 /**
 * Contents of this message:
@@ -69,9 +72,10 @@ uint8_t send_shutdown_efuse
 * VCU/eFuses/LV/Current - LV eFuse Current.
 * VCU/eFuses/LV/Faulted? - The state of the LV eFuse's fault pin.
 * VCU/eFuses/LV/Enabled? - The state of the LV eFuse's Enable pin.
+* VCU/eFuses/LV/Control_State - The eFuse's control state.
 */
 uint8_t send_lv_efuse
-(uint16_t ADC,float voltage,float current,bool is_faulted,bool is_enabled);
+(uint16_t ADC,float voltage,float current,bool is_faulted,bool is_enabled,uint8_t control_state);
 
 /**
 * Contents of this message:
@@ -80,9 +84,10 @@ uint8_t send_lv_efuse
 * VCU/eFuses/Radfan/Current - Radfan eFuse Current.
 * VCU/eFuses/Radfan/Faulted? - The state of the Radfan eFuse's fault pin.
 * VCU/eFuses/Radfan/Enabled? - The state of the Radfan eFuse's Enable pin.
+* VCU/eFuses/Radfan/Control_State - The eFuse's control state.
 */
 uint8_t send_radfan_efuse
-(uint16_t ADC,float voltage,float current,bool is_faulted,bool is_enabled);
+(uint16_t ADC,float voltage,float current,bool is_faulted,bool is_enabled,uint8_t control_state);
 
 /**
 * Contents of this message:
@@ -91,9 +96,10 @@ uint8_t send_radfan_efuse
 * VCU/eFuses/Fanbatt/Current - Fanbatt eFuse Current.
 * VCU/eFuses/Fanbatt/Faulted? - The state of the Fanbatt eFuse's fault pin.
 * VCU/eFuses/Fanbatt/Enabled? - The state of the Fanbatt eFuse's Enable pin.
+* VCU/eFuses/Fanbatt/Control_State - The eFuse's control state.
 */
 uint8_t send_fanbatt_efuse
-(uint16_t ADC,float voltage,float current,bool is_faulted,bool is_enabled);
+(uint16_t ADC,float voltage,float current,bool is_faulted,bool is_enabled,uint8_t control_state);
 
 /**
 * Contents of this message:
@@ -102,9 +108,10 @@ uint8_t send_fanbatt_efuse
 * VCU/eFuses/PumpOne/Current - PumpOne eFuse Current.
 * VCU/eFuses/PumpOne/Faulted? - The state of the PumpOne eFuse's fault pin.
 * VCU/eFuses/PumpOne/Enabled? - The state of the PumpOne eFuse's Enable pin.
+* VCU/eFuses/PumpOne/Control_State - The eFuse's control state.
 */
 uint8_t send_pumpone_efuse
-(uint16_t ADC,float voltage,float current,bool is_faulted,bool is_enabled);
+(uint16_t ADC,float voltage,float current,bool is_faulted,bool is_enabled,uint8_t control_state);
 
 /**
 * Contents of this message:
@@ -113,9 +120,10 @@ uint8_t send_pumpone_efuse
 * VCU/eFuses/PumpTwo/Current - PumpTwo eFuse Current.
 * VCU/eFuses/PumpTwo/Faulted? - The state of the PumpTwo eFuse's fault pin.
 * VCU/eFuses/PumpTwo/Enabled? - The state of the PumpTwo eFuse's Enable pin.
+* VCU/eFuses/PumpTwo/Control_State - The eFuse's control state.
 */
 uint8_t send_pumptwo_efuse
-(uint16_t ADC,float voltage,float current,bool is_faulted,bool is_enabled);
+(uint16_t ADC,float voltage,float current,bool is_faulted,bool is_enabled,uint8_t control_state);
 
 /**
 * Contents of this message:
@@ -124,9 +132,10 @@ uint8_t send_pumptwo_efuse
 * VCU/eFuses/Battbox/Current - Battbox eFuse Current.
 * VCU/eFuses/Battbox/Faulted? - The state of the Battbox eFuse's fault pin.
 * VCU/eFuses/Battbox/Enabled? - The state of the Battbox eFuse's Enable pin.
+* VCU/eFuses/Battbox/Control_State - The eFuse's control state.
 */
 uint8_t send_battbox_efuse
-(uint16_t ADC,float voltage,float current,bool is_faulted,bool is_enabled);
+(uint16_t ADC,float voltage,float current,bool is_faulted,bool is_enabled,uint8_t control_state);
 
 /**
 * Contents of this message:
@@ -135,9 +144,22 @@ uint8_t send_battbox_efuse
 * VCU/eFuses/MC/Current - MC eFuse Current.
 * VCU/eFuses/MC/Faulted? - The state of the MC eFuse's fault pin.
 * VCU/eFuses/MC/Enabled? - The state of the MC eFuse's Enable pin.
+* VCU/eFuses/MC/Control_State - The eFuse's control state.
 */
 uint8_t send_mc_efuse
-(uint16_t ADC,float voltage,float current,bool is_faulted,bool is_enabled);
+(uint16_t ADC,float voltage,float current,bool is_faulted,bool is_enabled,uint8_t control_state);
+
+/**
+* Contents of this message:
+* VCU/eFuses/Spare/ADC - Raw ADC Value.
+* VCU/eFuses/Spare/Voltage - Spare eFuse Voltage
+* VCU/eFuses/Spare/Current - Spare eFuse Current.
+* VCU/eFuses/Spare/Faulted? - The state of the Spare eFuse's fault pin.
+* VCU/eFuses/Spare/Enabled? - The state of the Spare eFuse's Enable pin.
+* VCU/eFuses/Spare/Control_State - The eFuse's control state.
+*/
+uint8_t send_spare_efuse
+(uint16_t ADC,float voltage,float current,bool is_faulted,bool is_enabled,uint8_t control_state);
 
 /**
 * Contents of this message:
@@ -255,4 +277,42 @@ uint8_t send_lv_voltage
 */
 uint8_t send_vcu_test_message
 (uint8_t three_bits,float float_value,uint8_t five_bits,uint16_t sixteen_bits,int8_t signed_8_bits);
+
+/**
+* Contents of this message:
+* VCU/Echo/Motor_Temp - DTI Motor Temp
+*/
+uint8_t send_dti_motor_temp_as_reported_by_vcu
+(uint16_t temp);
+
+/**
+* Contents of this message:
+* VCU/Echo/Controller_Temp - DTI Controller Temp
+*/
+uint8_t send_dti_controller_temp_as_reported_by_vcu
+(uint16_t temp);
+
+/**
+* Contents of this message:
+* VCU/Echo/Battbox_Temp - BMS Battbox Temp
+*/
+uint8_t send_bms_battbox_temp_as_reported_by_vcu
+(float temp);
+
+/**
+* Contents of this message:
+* VCU/Echo/Brake_State - Brake State
+*/
+uint8_t send_brake_state_as_reported_by_vcu
+(bool brake_state);
+
+/**
+* Contents of this message:
+* VCU/RTDS/Pin_State - The state of the RTDS Pin.
+* VCU/RTDS/Sounding_State - Whether or not the RTDS system is attempting to sound the main continuous RTDS sound.
+* VCU/RTDS/Reverse_State - Whether or not the RTDS system is attempting to sound the reverse sound.
+* VCU/RTDS/Error_State - Indicates if an error occured during reading.
+*/
+uint8_t send_rtds_state_message
+(bool pin_state,bool sounding_state,bool reverse_state,bool error);
 #endif

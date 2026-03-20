@@ -13,11 +13,13 @@
 #include "u_efuses.h"
 #include "u_statemachine.h"
 #include "u_tsms.h"
+#include "u_bms.h"
 #include "u_peripherals.h"
 #include "u_ethernet.h"
 #include "bitstream.h"
 #include "serial.h"
 #include "u_lightning.h"
+#include "u_rtds.h"
 #include "timer.h"
 #include "debounce.h"
 
@@ -36,6 +38,7 @@
 #define PRIO_vShutdown         1
 #define PRIO_vEFuses           2
 #define PRIO_vMux              2
+#define PRIO_vRTDS             2
 #define PRIO_vTest             2
 #define PRIO_vPeripherals      2
 
@@ -67,11 +70,11 @@ void vTest(ULONG thread_input) {
     }
 
     efuse_disable(EFUSE_DASHBOARD);
-    efuse_enable(EFUSE_BRAKE);
+    efuse_disable(EFUSE_BRAKE);
     efuse_disable(EFUSE_SHUTDOWN);
     efuse_disable(EFUSE_LV);
     efuse_disable(EFUSE_RADFAN);
-    efuse_disable(EFUSE_FANBATT);
+    efuse_enable(EFUSE_FANBATT);
     efuse_disable(EFUSE_PUMP1);
     efuse_disable(EFUSE_PUMP2);
     efuse_disable(EFUSE_BATTBOX);
@@ -123,8 +126,6 @@ void vDefault(ULONG thread_input) {
         HAL_IWDG_Refresh(&hiwdg); // Internal Watchdog
         HAL_GPIO_TogglePin(WATCHDOG_GPIO_Port, WATCHDOG_Pin); // External Watchdog
 
-        PRINTLN_INFO("Ran default thread");
-
         /* Sleep Thread for specified number of ticks. */
         tx_thread_sleep(default_thread.sleep);
     }
@@ -144,8 +145,6 @@ static thread_t ethernet_incoming_thread = {
 void vEthernetIncoming(ULONG thread_input) {
 
     while(1) {
-
-        PRINTLN_INFO("thread ran");
 
         ethernet_message_t message;
 
@@ -172,8 +171,6 @@ static thread_t ethernet_outgoing_thread = {
 void vEthernetOutgoing(ULONG thread_input) {
 
     while(1) {
-
-        PRINTLN_INFO("thread ran");
 
         ethernet_message_t message;
         uint8_t status;
@@ -210,8 +207,6 @@ void vCANIncoming(ULONG thread_input) {
 
         can_msg_t message;
 
-        PRINTLN_INFO("thread ran");
-
         /* Process incoming messages */
         while(queue_receive(&can_incoming, &message, TX_WAIT_FOREVER) == U_SUCCESS) {
             can_inbox(&message);
@@ -238,8 +233,6 @@ void vCANOutgoing(ULONG thread_input) {
 
         can_msg_t message;
         HAL_StatusTypeDef status;
-
-        PRINTLN_INFO("thread ran");
 
         /* Send outgoing messages */
         while(queue_receive(&can_outgoing, &message, TX_WAIT_FOREVER) == U_SUCCESS) {
@@ -268,8 +261,6 @@ void vFaultsQueue(ULONG thread_input) {
 
     while(1) {
 
-        PRINTLN_INFO("thread ran");
-
         /* Process queued faults */
         fault_t fault_id;
         while(queue_receive(&faults, &fault_id, TX_WAIT_FOREVER) == U_SUCCESS) {
@@ -295,8 +286,6 @@ void vStatemachine(ULONG thread_input) {
 
     while(1) {
 
-        PRINTLN_INFO("thread ran");
-
         state_req_t new_state_req;
         while(queue_receive(&state_transition_queue, &new_state_req, TX_WAIT_FOREVER) == U_SUCCESS) {
             statemachine_process(new_state_req);
@@ -319,8 +308,6 @@ static thread_t faults_thread = {
 void vFaults(ULONG thread_input) {
 
     while(1) {
-
-        PRINTLN_INFO("thread ran");
 
         /* Send a CAN message containing the current fault statuses. */
         send_faults(
@@ -434,8 +421,6 @@ void vPedals(ULONG thread_input) {
 
     while(1) {
 
-        PRINTLN_INFO("thread ran");
-
         pedals_process();
 
         /* Sleep Thread for specified number of ticks. */
@@ -468,10 +453,149 @@ void vEFuses(ULONG thread_input) {
 
     while(1) {
 
-        PRINTLN_INFO("thread ran");
-
         /* Get data. */
         efuse_data_t data = efuse_getData();
+
+        /* Get data for AUTO eFuses. */
+        uint16_t motor_temp = dti_get_motor_temp();
+        float battbox_temp = bms_getBattboxTemp();
+        uint16_t controller_temp = dti_get_controller_temp();
+        bool brake_state = pedals_getBrakeState();
+
+        /* Report the temp readings. */
+        send_dti_motor_temp_as_reported_by_vcu(motor_temp);
+        send_bms_battbox_temp_as_reported_by_vcu(battbox_temp);
+        send_dti_controller_temp_as_reported_by_vcu(controller_temp);
+        send_brake_state_as_reported_by_vcu(brake_state);
+
+        /* Determine radfan eFuse state. */
+        static const uint16_t RADFAN_UPPERBOUND = 65;
+        static const uint16_t RADFAN_LOWERBOUND = 35;
+        switch(data.control_state[EFUSE_RADFAN]) {
+            case EF_ON: efuse_enable(EFUSE_RADFAN); break;
+            case EF_OFF: efuse_disable(EFUSE_RADFAN); break;
+            case EF_AUTO:
+                if(motor_temp >= RADFAN_UPPERBOUND) {
+                    efuse_enable(EFUSE_RADFAN);
+                } else if (motor_temp <= RADFAN_LOWERBOUND) {
+                    efuse_disable(EFUSE_RADFAN);
+                }
+                break;
+            default: efuse_enable(EFUSE_RADFAN); break;
+        }
+
+        /* Determine fanbatt eFuse state. */
+        static const float FANBATT_UPPERBOUND = 50;
+        static const float FANBATT_LOWERBOUND = 30;
+        switch(data.control_state[EFUSE_FANBATT]) {
+            case EF_ON: efuse_enable(EFUSE_FANBATT); break;
+            case EF_OFF: efuse_disable(EFUSE_FANBATT); break;
+            case EF_AUTO:
+                if(battbox_temp >= FANBATT_UPPERBOUND) {
+                    efuse_enable(EFUSE_FANBATT);
+                } else if (battbox_temp <= FANBATT_LOWERBOUND) {
+                    efuse_disable(EFUSE_FANBATT);
+                }
+                break;
+            default: efuse_enable(EFUSE_FANBATT); break;
+        }
+
+        /* Determine pump1 eFuse state. */
+        static const uint16_t PUMP1_UPPERBOUND = 45;
+        static const uint16_t PUMP1_LOWERBOUND = 35;
+        switch(data.control_state[EFUSE_PUMP1]) {
+            case EF_ON: efuse_enable(EFUSE_PUMP1); break;
+            case EF_OFF: efuse_disable(EFUSE_PUMP1); break;
+            case EF_AUTO:
+                if(motor_temp >= PUMP1_UPPERBOUND) {
+                    efuse_enable(EFUSE_PUMP1);
+                } else if (motor_temp <= PUMP1_LOWERBOUND) {
+                    efuse_disable(EFUSE_PUMP1);
+                }
+                break;
+            default: efuse_enable(EFUSE_PUMP1); break;
+        }
+
+        /* Determine pump2 eFuse state. */
+        static const uint16_t PUMP2_UPPERBOUND = 45;
+        static const uint16_t PUMP2_LOWERBOUND = 35;
+        switch(data.control_state[EFUSE_PUMP2]) {
+            case EF_ON: efuse_enable(EFUSE_PUMP2); break;
+            case EF_OFF: efuse_disable(EFUSE_PUMP2); break;
+            case EF_AUTO:
+                if(controller_temp >= PUMP2_UPPERBOUND) {
+                    efuse_enable(EFUSE_PUMP2);
+                } else if (controller_temp <= PUMP2_LOWERBOUND) {
+                    efuse_disable(EFUSE_PUMP2);
+                }
+                break;
+            default: efuse_enable(EFUSE_PUMP2); break;
+        }
+
+        /* Determine dashboard eFuse state. */
+        switch(data.control_state[EFUSE_DASHBOARD]) {
+            case EF_ON: efuse_enable(EFUSE_DASHBOARD); break;
+            case EF_OFF: efuse_disable(EFUSE_DASHBOARD); break;
+            default: efuse_enable(EFUSE_DASHBOARD); break;
+        }
+
+        /* Determine brake eFuse state. */
+        switch(data.control_state[EFUSE_BRAKE]) {
+            case EF_ON: efuse_enable(EFUSE_BRAKE); break;
+            case EF_OFF: efuse_disable(EFUSE_BRAKE); break;
+            case EF_AUTO:
+                if(brake_state == true) {
+                    efuse_enable(EFUSE_BRAKE);
+                } else {
+                    efuse_disable(EFUSE_BRAKE);
+                }
+                break;
+            default: efuse_enable(EFUSE_BRAKE); break;
+        }
+
+        /* Determine shutdown eFuse state. */
+        switch(data.control_state[EFUSE_SHUTDOWN]) {
+            case EF_ON: efuse_enable(EFUSE_SHUTDOWN); break;
+            case EF_OFF: efuse_disable(EFUSE_SHUTDOWN); break;
+            default: efuse_enable(EFUSE_SHUTDOWN); break;
+        }
+
+        /* Determine LV eFuse state. */
+        switch(data.control_state[EFUSE_LV]) {
+            case EF_ON: efuse_enable(EFUSE_LV); break;
+            case EF_OFF: efuse_disable(EFUSE_LV); break;
+            default: efuse_enable(EFUSE_LV); break;
+        }
+
+        /* Determine battbox eFuse state. */
+        switch(data.control_state[EFUSE_BATTBOX]) {
+            case EF_ON: efuse_enable(EFUSE_BATTBOX); break;
+            case EF_OFF: efuse_disable(EFUSE_BATTBOX); break;
+            default: efuse_enable(EFUSE_BATTBOX); break;
+        }
+
+        /* Determine MC eFuse state. */
+        switch(data.control_state[EFUSE_MC]) {
+            case EF_ON: efuse_enable(EFUSE_MC); break;
+            case EF_OFF: efuse_disable(EFUSE_MC); break;
+            default: efuse_enable(EFUSE_MC); break;
+        }
+
+        /* Determine Spare (other radfan) eFuse state. */
+        static const uint16_t SPARE_UPPERBOUND = 65;
+        static const uint16_t SPARE_LOWERBOUND = 35;
+        switch(data.control_state[EFUSE_SPARE]) {
+            case EF_ON: efuse_enable(EFUSE_SPARE); break;
+            case EF_OFF: efuse_disable(EFUSE_SPARE); break;
+            case EF_AUTO:
+                if(controller_temp >= SPARE_UPPERBOUND) {
+                    efuse_enable(EFUSE_SPARE);
+                } else if (controller_temp <= SPARE_LOWERBOUND) {
+                    efuse_disable(EFUSE_SPARE);
+                }
+                break;
+            default: efuse_enable(EFUSE_SPARE); break;
+        }
 
         /* Send dashboard eFuse message. */
         send_dashboard_efuse(
@@ -479,7 +603,8 @@ void vEFuses(ULONG thread_input) {
             data.voltage[EFUSE_DASHBOARD],
             data.current[EFUSE_DASHBOARD],
             data.faulted[EFUSE_DASHBOARD],
-            data.enabled[EFUSE_DASHBOARD]
+            data.enabled[EFUSE_DASHBOARD],
+            data.control_state[EFUSE_DASHBOARD]
         );
         // serial_monitor("dashboard_efuse", "raw", "%d", data.raw[EFUSE_DASHBOARD]);
         // serial_monitor("dashboard_efuse", "voltage", "%f", data.voltage[EFUSE_DASHBOARD]);
@@ -487,20 +612,20 @@ void vEFuses(ULONG thread_input) {
         // serial_monitor("dashboard_efuse", "faulted?", "%d", data.faulted[EFUSE_DASHBOARD]);
         // serial_monitor("dashboard_efuse", "enabled?", "%d", data.enabled[EFUSE_DASHBOARD]);
 
-
         /* Send brake eFuse message. */
         send_brake_efuse(
             data.raw[EFUSE_BRAKE],
             data.voltage[EFUSE_BRAKE],
             data.current[EFUSE_BRAKE],
             data.faulted[EFUSE_BRAKE],
-            data.enabled[EFUSE_BRAKE]
+            data.enabled[EFUSE_BRAKE],
+            data.control_state[EFUSE_BRAKE]
         );
-        serial_monitor("brake_efuse", "raw", "%d", data.raw[EFUSE_BRAKE]);
-        serial_monitor("brake_efuse", "voltage", "%f", data.voltage[EFUSE_BRAKE]);
-        serial_monitor("brake_efuse", "current", "%f", data.current[EFUSE_BRAKE]);
-        serial_monitor("brake_efuse", "faulted?", "%d", data.faulted[EFUSE_BRAKE]);
-        serial_monitor("brake_efuse", "enabled?", "%d", data.enabled[EFUSE_BRAKE]);
+        // serial_monitor("brake_efuse", "raw", "%d", data.raw[EFUSE_BRAKE]);
+        // serial_monitor("brake_efuse", "voltage", "%f", data.voltage[EFUSE_BRAKE]);
+        // serial_monitor("brake_efuse", "current", "%f", data.current[EFUSE_BRAKE]);
+        // serial_monitor("brake_efuse", "faulted?", "%d", data.faulted[EFUSE_BRAKE]);
+        // serial_monitor("brake_efuse", "enabled?", "%d", data.enabled[EFUSE_BRAKE]);
 
         /* Send shutdown eFuse message. */
         send_shutdown_efuse(
@@ -508,7 +633,8 @@ void vEFuses(ULONG thread_input) {
             data.voltage[EFUSE_SHUTDOWN],
             data.current[EFUSE_SHUTDOWN],
             data.faulted[EFUSE_SHUTDOWN],
-            data.enabled[EFUSE_SHUTDOWN]
+            data.enabled[EFUSE_SHUTDOWN],
+            data.control_state[EFUSE_SHUTDOWN]
         );
         // serial_monitor("shutdown_efuse", "raw", "%d", data.raw[EFUSE_SHUTDOWN]);
         // serial_monitor("shutdown_efuse", "voltage", "%f", data.voltage[EFUSE_SHUTDOWN]);
@@ -522,7 +648,8 @@ void vEFuses(ULONG thread_input) {
             data.voltage[EFUSE_LV],
             data.current[EFUSE_LV],
             data.faulted[EFUSE_LV],
-            data.enabled[EFUSE_LV]
+            data.enabled[EFUSE_LV],
+            data.control_state[EFUSE_LV]
         );
         // serial_monitor("lv_efuse", "raw", "%d", data.raw[EFUSE_LV]);
         // serial_monitor("lv_efuse", "voltage", "%f", data.voltage[EFUSE_LV]);
@@ -530,14 +657,14 @@ void vEFuses(ULONG thread_input) {
         // serial_monitor("lv_efuse", "faulted?", "%d", data.faulted[EFUSE_LV]);
         // serial_monitor("lv_efuse", "enabled?", "%d", data.enabled[EFUSE_LV]);
 
-
         /* Send radfan eFuse message. */
         send_radfan_efuse(
             data.raw[EFUSE_RADFAN],
             data.voltage[EFUSE_RADFAN],
             data.current[EFUSE_RADFAN],
             data.faulted[EFUSE_RADFAN],
-            data.enabled[EFUSE_RADFAN]
+            data.enabled[EFUSE_RADFAN],
+            data.control_state[EFUSE_RADFAN]
         );
         // serial_monitor("radfan_efuse", "raw", "%d", data.raw[EFUSE_RADFAN]);
         // serial_monitor("radfan_efuse", "voltage", "%f", data.voltage[EFUSE_RADFAN]);
@@ -551,8 +678,14 @@ void vEFuses(ULONG thread_input) {
             data.voltage[EFUSE_FANBATT],
             data.current[EFUSE_FANBATT],
             data.faulted[EFUSE_FANBATT],
-            data.enabled[EFUSE_FANBATT]
+            data.enabled[EFUSE_FANBATT],
+            data.control_state[EFUSE_FANBATT]
         );
+        // serial_monitor("efuse_fanbatt", "raw", "%d", data.raw[EFUSE_FANBATT]);
+        // serial_monitor("efuse_fanbatt", "voltage", "%f", data.voltage[EFUSE_FANBATT]);
+        // serial_monitor("efuse_fanbatt", "current", "%f", data.current[EFUSE_FANBATT]);
+        // serial_monitor("efuse_fanbatt", "faulted?", "%d", data.faulted[EFUSE_FANBATT]);
+        // serial_monitor("efuse_fanbatt", "enabled?", "%d", data.enabled[EFUSE_FANBATT]);
 
         /* Send pump1 eFuse message. */
         send_pumpone_efuse(
@@ -560,7 +693,8 @@ void vEFuses(ULONG thread_input) {
             data.voltage[EFUSE_PUMP1],
             data.current[EFUSE_PUMP1],
             data.faulted[EFUSE_PUMP1],
-            data.enabled[EFUSE_PUMP1]
+            data.enabled[EFUSE_PUMP1],
+            data.control_state[EFUSE_PUMP1]
         );
         // serial_monitor("pumpone_efuse", "raw", "%d", data.raw[EFUSE_PUMP1]);
         // serial_monitor("pumpone_efuse", "voltage", "%f", data.voltage[EFUSE_PUMP1]);
@@ -574,7 +708,8 @@ void vEFuses(ULONG thread_input) {
             data.voltage[EFUSE_PUMP2],
             data.current[EFUSE_PUMP2],
             data.faulted[EFUSE_PUMP2],
-            data.enabled[EFUSE_PUMP2]
+            data.enabled[EFUSE_PUMP2],
+            data.control_state[EFUSE_PUMP2]
         );
 
         /* Send battbox eFuse message. */
@@ -583,7 +718,8 @@ void vEFuses(ULONG thread_input) {
             data.voltage[EFUSE_BATTBOX],
             data.current[EFUSE_BATTBOX],
             data.faulted[EFUSE_BATTBOX],
-            data.enabled[EFUSE_BATTBOX]
+            data.enabled[EFUSE_BATTBOX],
+            data.control_state[EFUSE_BATTBOX]
         );
 
         /* Send MC eFuse message. */
@@ -592,8 +728,30 @@ void vEFuses(ULONG thread_input) {
             data.voltage[EFUSE_MC],
             data.current[EFUSE_MC],
             data.faulted[EFUSE_MC],
-            data.enabled[EFUSE_MC]
+            data.enabled[EFUSE_MC],
+            data.control_state[EFUSE_MC]
         );
+        // serial_monitor("mc", "raw", "%d", data.raw[EFUSE_MC]);
+        // serial_monitor("mc", "voltage", "%f", data.voltage[EFUSE_MC]);
+        // serial_monitor("mc", "current", "%f", data.current[EFUSE_MC]);
+        // serial_monitor("mc", "faulted?", "%d", data.faulted[EFUSE_MC]);
+        // serial_monitor("mc", "enabled?", "%d", data.enabled[EFUSE_MC]);
+
+        /* Send Spare eFuse message. */
+        send_spare_efuse(
+            data.raw[EFUSE_SPARE],
+            data.voltage[EFUSE_SPARE],
+            data.current[EFUSE_SPARE],
+            data.faulted[EFUSE_SPARE],
+            data.enabled[EFUSE_SPARE],
+            data.control_state[EFUSE_SPARE]
+        );
+        // serial_monitor("test1", "mc - faulted pinstate", "%d", (bool)(HAL_GPIO_ReadPin(EF_MC_ER_GPIO_Port, EF_MC_ER_Pin) == GPIO_PIN_SET));
+        // serial_monitor("test1", "lv - faulted pinstate", "%d", (bool)(HAL_GPIO_ReadPin(EF_LV_ER_GPIO_Port, EF_LV_ER_Pin) == GPIO_PIN_SET));
+        // serial_monitor("test1", "spare - faulted pinstate", "%d", (bool)(HAL_GPIO_ReadPin(EF_SPARE_ER_GPIO_Port, EF_SPARE_ER_Pin) == GPIO_PIN_SET));
+        // serial_monitor("test1", "mc - enabled pinstate", "%d", (bool)(HAL_GPIO_ReadPin(EF_MC_EN_GPIO_Port, EF_MC_EN_Pin) == GPIO_PIN_SET));
+        // serial_monitor("test1", "lv - enabled pinstate", "%d", (bool)(HAL_GPIO_ReadPin(EF_LV_EN_GPIO_Port, EF_LV_EN_Pin) == GPIO_PIN_SET));
+        // serial_monitor("test1", "spare - enabled pinstate", "%d", (bool)(HAL_GPIO_ReadPin(EF_SPARE_EN_GPIO_Port, EF_SPARE_EN_Pin) == GPIO_PIN_SET));
 
         /* Sleep Thread for specified number of ticks. */
         tx_thread_sleep(efuses_thread.sleep);
@@ -615,8 +773,6 @@ void vTSMS(ULONG thread_input) {
 
     while(1) {
 
-        PRINTLN_INFO("thread ran");
-
         tsms_update();
 
         /* Sleep Thread for specified number of ticks. */
@@ -632,14 +788,12 @@ static thread_t mux_thread = {
         .threshold  = 0,                      /* Preemption Threshold */
         .time_slice = TX_NO_TIME_SLICE,       /* Time Slice */
         .auto_start = TX_AUTO_START,          /* Auto Start */
-        .sleep      = 100,                    /* Sleep (in ticks) */
+        .sleep      = 5000,                   /* Sleep (in ticks) */
         .function   = vMux                    /* Thread Function */
     };
 void vMux(ULONG thread_input) {
 
     while(1) {
-
-        PRINTLN_INFO("thread ran");
 
         /* Switches the multiplexer state and updates the buffer. */
         adc_switchMuxState();
@@ -683,8 +837,6 @@ void vPeripherals(ULONG thread_input) {
 	} gyro_CAN_t;
 
     while(1) {
-
-        PRINTLN_INFO("thread ran");
 
         /* SECTION 1: Read the temperature sensor data and send it over CAN. */
         do {
@@ -777,6 +929,46 @@ void vPeripherals(ULONG thread_input) {
     }
 }
 
+/* RTDS Telemetry Thread. 
+   This thread is for RTDS telemetry. The actual state of the RTDS is managed by the statemachine. */
+static thread_t rtds_telemetry_thread = {
+        .name       = "RTDS Telemetry Thread", /* Name */
+        .size       = 2048,                    /* Stack Size (in bytes) */
+        .priority   = PRIO_vRTDS,              /* Priority */
+        .threshold  = 0,                       /* Preemption Threshold */
+        .time_slice = TX_NO_TIME_SLICE,        /* Time Slice */
+        .auto_start = TX_AUTO_START,           /* Auto Start */
+        .sleep      = 100,                     /* Sleep (in ticks) */
+        .function   = vRTDS                    /* Thread Function */
+    };
+void vRTDS(ULONG thread_input) {
+
+    while(1) {
+
+        PRINTLN_INFO("thread ran");
+
+        bool rtds_pin_state = rtds_readRTDS();
+        bool rtds_sounding_state = false;
+        bool rtds_reverse_state = false;
+        bool error_state = false;
+
+        int status = rtds_isInSounding(&rtds_sounding_state);
+        if(status != U_SUCCESS) {
+            error_state = true;
+        }
+
+        status = rtds_isInReverse(&rtds_reverse_state);
+        if(status != U_SUCCESS) {
+            error_state = true;
+        }
+
+        send_rtds_state_message(rtds_pin_state, rtds_sounding_state, rtds_reverse_state, error_state);
+
+        /* Sleep Thread for specified number of ticks. */
+        tx_thread_sleep(rtds_telemetry_thread.sleep);
+    }
+}
+
 /* Initializes all ThreadX threads.
 *  Calls to _create_thread() should go in here
 */
@@ -798,6 +990,7 @@ uint8_t threads_init(TX_BYTE_POOL *byte_pool) {
     CATCH_ERROR(create_thread(byte_pool, &ethernet_incoming_thread), U_SUCCESS); // Create Incoming Ethernet thread.
     CATCH_ERROR(create_thread(byte_pool, &ethernet_outgoing_thread), U_SUCCESS); // Create Outgoing Ethernet thread.
     CATCH_ERROR(create_thread(byte_pool, &test_thread), U_SUCCESS);                // Create Test thread.
+    CATCH_ERROR(create_thread(byte_pool, &rtds_telemetry_thread), U_SUCCESS);      // Create RTDS Telemetry thread.
 
     // add more threads here if need
 
