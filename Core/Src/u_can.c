@@ -56,7 +56,7 @@ uint8_t can1_init(FDCAN_HandleTypeDef *hcan) {
     }
 
     /* Add filters for standard IDs */
-    uint16_t standard5[] = {0x100, 0x00};
+    uint16_t standard5[] = {0x100, CANID_SHEPHERD_PRECHARGE};
     status = can_add_filter_standard(&can1, standard5);
     if (status != HAL_OK) {
         PRINTLN_ERROR("Failed to add standard filter to can1 (Status: %d/%s, ID1: 0x%X, ID2: 0x%X).", status, hal_status_toString(status), standard5[0], standard5[1]);
