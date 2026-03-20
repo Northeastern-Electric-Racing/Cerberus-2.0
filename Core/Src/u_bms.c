@@ -11,6 +11,7 @@
 
 /* Globals. */
 static _Atomic float battbox_temp;
+static _Atomic bool precharge;
 
 /* Fault callback(s). */
 static void _bms_fault_callback(ULONG args) {queue_send(&faults, &(fault_t){BMS_CAN_MONITOR_FAULT}, TX_NO_WAIT);}; // Queues the BMS CAN Monitor Fault.
@@ -58,4 +59,12 @@ float bms_getBattboxTemp(void) {
 /* Sets the battbox temperature. The "temp" parameter should be taken from the 'BMS/Cells/Temp_Avg_Value' CAN message. */
 void bms_setBattboxTemp(float temp) {
     battbox_temp = temp;
+}
+
+void bms_setPrecharge(bool state) {
+    precharge = state;
+}
+
+bool bms_getPrecharge(void) {
+    return precharge;
 }

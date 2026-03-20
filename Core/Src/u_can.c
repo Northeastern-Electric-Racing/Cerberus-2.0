@@ -201,6 +201,9 @@ void can_inbox(can_msg_t *message) {
         receive_mc_efuse_state(message, &mc);
         efuse_update_state(EFUSE_MC, (efuse_control_state_t)mc.state);
         break;
+    case CANID_SHEPHERD_PRECHARGE: 
+        bms_setPrecharge(message->data[0]); //first byte of the can mssg data
+        break;
     case CANID_CALYPSO_EFCTRL_SPARE:
         spare_efuse_state_t spare = { 0 };
         receive_spare_efuse_state(message, &spare);
@@ -257,5 +260,6 @@ void can_inbox(can_msg_t *message) {
     default:
         PRINTLN_WARNING("Unknown CAN Message Recieved (Message ID: 0x%X).", message->id);
         break;
+
     }
 }
