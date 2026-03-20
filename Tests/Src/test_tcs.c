@@ -114,6 +114,7 @@ void setUp(void) {
     imu_getAcceleration_Stub(_imu_stub);
 
     assert(tc_init() == 0);
+    assert(enable_tc() == 0);
 }
 
 void tearDown(void) {
@@ -260,6 +261,30 @@ void test_process_scale_bounded_with_high_front_rpm(void) {
     tc_process();
     TEST_ASSERT_TRUE(tc_get_torque_scale() >= 0.0f);
     TEST_ASSERT_TRUE(tc_get_torque_scale() <= 1.0f);
+}
+
+void test_process_reduces_torque_on_high_motor_rpm_tc_off(void) {
+    /* Front wheels slow (low vx_car), motor spinning very fast -> high slip
+     * -> PI should reduce torque scale below 1.0 after several iterations. */
+    disable_tc();
+    tc_record_front_rpm(make_rpm_msg(100, 100));
+    _mock_motor_rpm = 10000;
+
+    for (int i = 0; i < 100; i++) {
+        _mock_tick_ms += 100;
+        _mock_motor_rpm -= 50; 
+        tc_process();
+        PRINTLN_INFO("Iteration %d: torque_scale=%.3f, RPM=%d", i, tc_get_torque_scale(), _mock_motor_rpm);
+    }
+    TEST_ASSERT_TRUE(tc_get_torque_scale() == 1.0f);
+
+    for (int i = 100; i < 200; i++) {
+        _mock_tick_ms += 100;
+        _mock_motor_rpm -= 50; 
+        tc_process();
+        PRINTLN_INFO("Iteration %d: torque_scale=%.3f, RPM=%d", i, tc_get_torque_scale(), _mock_motor_rpm);
+    }
+    TEST_ASSERT_TRUE(tc_get_torque_scale() == 1.0f);
 }
 
 void test_process_reduces_torque_on_high_motor_rpm(void) {
@@ -425,6 +450,7 @@ int main(void) {
     RUN_TEST(test_process_zero_speed_slip_is_zero);
     RUN_TEST(test_process_scale_bounded_with_high_front_rpm);
     RUN_TEST(test_process_reduces_torque_on_high_motor_rpm);
+    RUN_TEST(test_process_reduces_torque_on_high_motor_rpm_tc_off);
     RUN_TEST(test_process_zero_motor_rpm_no_reduction);
     RUN_TEST(test_process_imu_failure_falls_back_gracefully);
     RUN_TEST(test_process_imu_failure_multiple_iterations);
