@@ -9,6 +9,9 @@
 # Build files
 build/
 
+# Test files
+Mocks/
+
 # Prerequisites
 *.d
 
