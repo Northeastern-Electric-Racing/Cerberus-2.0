@@ -55,9 +55,6 @@ void can_inbox(can_msg_t *message) {
     case CANID_F_RPM:
         tc_record_front_rpm(*message);
         break;
-    case CANID_R_RPM:
-        tc_record_rear_rpm(*message);
-        break;
     default:
         PRINTLN_ERROR("Unknown CAN Message Recieved (Message ID: %ld).", message->id);
         break;

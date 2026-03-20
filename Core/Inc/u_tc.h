@@ -18,12 +18,6 @@ int tc_init(void);
 void tc_record_front_rpm(can_msg_t msg);
 
 /**
- * @brief Records rear wheel speeds from a CAN message.
- * Expected format: bytes 0-1 = int16 RL RPM, bytes 2-3 = int16 RR RPM.
- */
-void tc_record_rear_rpm(can_msg_t msg);
-
-/**
  * @brief Runs one iteration of the traction control algorithm.
  * Updates the internal torque scale factor based on current slip.
  */

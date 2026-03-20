@@ -16,8 +16,9 @@
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 
 // Unit conversions
-#define INCHES_TO_MILES     63360.0f
-#define SECONDS_TO_HOURS    1.0f / 3600.0f
+#define INCHES_TO_MILES     63360.0f       // inches per mile (use as divisor: inches / INCHES_TO_MILES = miles)
+#define SECONDS_TO_HOURS    (1.0f / 3600.0f) // hours per second (use as divisor: /SECONDS_TO_HOURS = *3600)
+#define G_IN_PER_S2         386.09f        // standard gravity in in/s²
 
 // TC
 #define TC_CURVE_MAGIC      0x004E4552 // " NER" in hex
@@ -73,8 +74,6 @@ typedef struct {
 
   float omega_fl;
   float omega_fr;
-  float omega_rl;
-  float omega_rr;
   float torque_scale;
   float dt;
   uint32_t last_tick;
@@ -137,14 +136,14 @@ static void _load_tire_curve(tire_curve_t *curve, const uint8_t *data,
 
 /**
  * @brief Calculates the slip ratio based on the wheel speeds. Uses the average of the front left and right wheel speeds as the reference speed for slip calculation, since the TC algorithm is designed to prevent slip of the driven rear wheels relative to the front wheels.
- * 
- * @param motor_rpm The RPM of the motor (from DTI)
+ *
+ * @param motor_rpm Motor RPM from the DTI
  * @param vx_car The longitudinal velocity of the car in miles per hour (estimated from wheel speeds and IMU)
- * @return float 
+ * @return float
  */
 static float _calc_slip(float motor_rpm, float vx_car) {
-  float rear_rps = motor_rpm / GEAR_RATIO / 60.0f;
-  float v_rear = rear_rps * (TIRE_DIAMETER * M_PI / 2.0f) * INCHES_TO_MILES * SECONDS_TO_HOURS;
+  float wheel_rps = motor_rpm / GEAR_RATIO / 60.0f;
+  float v_rear = wheel_rps * M_PI * TIRE_DIAMETER / INCHES_TO_MILES / SECONDS_TO_HOURS;
   float denom = fmaxf(fabsf(vx_car), fabsf(v_rear)); 
   // Avoid division by zero and undefined slip at very low speeds
   if (denom < TC_MIN_VX) return 0.0f;
@@ -227,10 +226,13 @@ static void _init_vel_estimator(vel_estimator_t *est, float avg_ax_stationary) {
  * @return float Estimated longitudinal velocity in miles per hour
  */
 static float _estimate_velocity(vel_estimator_t *est, float avg_front_rads, float ax, float dt) {
-  // MPH
-  float vx_wheel = avg_front_rads * TIRE_DIAMETER * INCHES_TO_MILES * SECONDS_TO_HOURS;
+  // MPH: v = ω * r / INCHES_TO_MILES / SECONDS_TO_HOURS
+  //      = ω [rad/s] * r [in] * (1 mi / 63360 in) * (3600 s / hr)
+  float vx_wheel = avg_front_rads * (TIRE_DIAMETER / 2.0f) / INCHES_TO_MILES / SECONDS_TO_HOURS;
   float ax_corrected = ax - est->ax_bias;
-  float vx_imu = est->v_x + (ax_corrected * dt * SECONDS_TO_HOURS * INCHES_TO_MILES);
+  // IMU integration: a [mg] * (G_IN_PER_S2/1000) [in/s² per mg] * dt [s]
+  //                  then convert in/s to mph: / INCHES_TO_MILES / SECONDS_TO_HOURS
+  float vx_imu = est->v_x + ax_corrected * (G_IN_PER_S2 / 1000.0f) * dt / INCHES_TO_MILES / SECONDS_TO_HOURS;
 
   // Complementary filter to combine wheel and IMU estimates
   est->v_x = (est->alpha * vx_wheel) + ((1.0f - est->alpha) * vx_imu);
@@ -304,19 +306,6 @@ void tc_record_front_rpm(can_msg_t msg) {
 }
 
 /**
- * @brief Parses a rear RPM CAN message and updates the stored rear wheel
- * speeds. Expected format: bytes 0-1 = int16 RL RPM, bytes 2-3 = int16 RR RPM.
- *
- * @param msg The CAN message to parse
- */
-void tc_record_rear_rpm(can_msg_t msg) {
-  int16_t rl_rpm = (int16_t)((msg.data[0] << 8) | msg.data[1]);
-  int16_t rr_rpm = (int16_t)((msg.data[2] << 8) | msg.data[3]);
-  _tc_state.omega_rl = _rpm_to_rads(rl_rpm);
-  _tc_state.omega_rr = _rpm_to_rads(rr_rpm);
-}
-
-/**
  * @brief Returns the current TC torque scale factor.
  * A value of 1.0 means no reduction; 0.0 means full cutoff.
  *
@@ -369,7 +358,7 @@ void tc_process(void) {
   float f_rpms = (_tc_state.omega_fl + _tc_state.omega_fr) / 2.0f;
   float vx_car = _estimate_velocity(&_tc_state.vel_estimator, f_rpms, accel.x, _tc_state.dt);
 
-  float slip = _calc_slip(_tc_state.omega_rl, vx_car);
+  float slip = _calc_slip((float)dti_get_rpm(), vx_car);
   _tc_state.torque_scale = _update_pi(&_tc_state.pi, _tc_state.tire_curve, slip, _tc_state.dt);
 
   PRINTLN_INFO("TC: vx=%.3f scale=%.3f", vx_car, _tc_state.torque_scale);
