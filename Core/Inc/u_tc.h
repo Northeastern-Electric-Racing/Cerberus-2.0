@@ -12,6 +12,20 @@
 int tc_init(void);
 
 /**
+ * @brief Enables traction control.
+ * 
+ * @return int 
+ */
+int enable_tc(void);
+
+/**
+ * @brief Disables traction control.
+ * 
+ * @return int 
+ */
+int disable_tc(void);
+
+/**
  * @brief Records front wheel speeds from a CAN message.
  * Expected format: bytes 0-1 = int16 FL RPM, bytes 2-3 = int16 FR RPM.
  */

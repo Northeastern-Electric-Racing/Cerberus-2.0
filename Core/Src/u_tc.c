@@ -72,9 +72,10 @@ typedef struct {
   vel_estimator_t          vel_estimator;
   tc_pi_t                  pi;
 
+  _Atomic float torque_scale;
+  _Atomic bool tc_enabled;
   float omega_fl;
   float omega_fr;
-  float torque_scale;
   float dt;
   uint32_t last_tick;
   bool tire_curve_loaded;
@@ -294,6 +295,26 @@ int tc_init(void) {
 }
 
 /**
+ * @brief Enables traction control.
+ * 
+ * @return int 
+ */
+int enable_tc(void) {
+  _tc_state.tc_enabled = true;
+  return U_SUCCESS;
+}
+
+/**
+ * @brief Disables traction control.
+ * 
+ * @return int 
+ */
+int disable_tc(void) {
+  _tc_state.tc_enabled = false;
+  return U_SUCCESS;
+}
+
+/**
  * @brief Parses a front RPM CAN message and updates the stored front wheel
  * speeds. Expected format: bytes 0-1 = int16 FL RPM, bytes 2-3 = int16 FR RPM.
  *
@@ -322,6 +343,11 @@ float tc_get_torque_scale(void) {
  * Should be called periodically from the TC thread.
  */
 void tc_process(void) {
+  if (!_tc_state.tc_enabled) {
+    _tc_state.torque_scale = 1.0f;
+    return;
+  }
+
   if (!_tc_state.tire_curve_loaded) {
     _tc_state.torque_scale = 1.0f;
     return;
