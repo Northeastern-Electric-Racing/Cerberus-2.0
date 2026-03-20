@@ -4,6 +4,7 @@
 #include "u_nx_ethernet.h"
 #include "u_bms.h"
 #include "u_lightning.h"
+#include "u_tc.h"
 #include "u_rtds.h"
 #include "u_dti.h"
 #include "u_efuses.h"
@@ -122,6 +123,9 @@ void can_inbox(can_msg_t *message) {
         break;
     case IMU_CAN_MSG_ID:
         lightning_handleIMUMessage();
+        break;
+    case CANID_F_RPM:
+        tc_record_front_rpm(*message);
         break;
     case DTI_CANID_TEMPS_FAULT:
         dti_record_temp(message);

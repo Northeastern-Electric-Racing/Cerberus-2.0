@@ -16,7 +16,7 @@
 
 /* Config. */
 #define TIRE_DIAMETER 16 /* inches */
-#define GEAR_RATIO    41 / 13.0 /* unitless */
+#define GEAR_RATIO    (41.0f / 13.0f) /* unitless */
 #define POLE_PAIRS    10 /* unitless */
 
 /**

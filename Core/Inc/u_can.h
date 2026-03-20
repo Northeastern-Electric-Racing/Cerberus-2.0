@@ -64,5 +64,7 @@ extern can_t can1;
 #define CANID_IMU_ACCEL	  0x506
 #define CANID_IMU_GYRO	  0x507
 #define CANID_TEMP_SENSOR 0x508
+#define CANID_F_RPM       0xDB0
+#define CANID_R_RPM       0xDB1
 
 #endif /* u_can.h */

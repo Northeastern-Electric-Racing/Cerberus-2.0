@@ -16,6 +16,7 @@
 #include "u_dti.h"
 #include "u_statemachine.h"
 #include "u_adc.h"
+#include "u_tc.h"
 
 /* Globals. */
 static uint16_t regen_limits[2] = { 0, 50 }; // [PERFORMANCE, ENDURANCE]
@@ -260,8 +261,8 @@ static void _linear_accel_to_torque(float percentage_accel)
 		percentage_accel = 1.0;
 	}
 
-	/* Linearly map acceleration to torque */
-	int16_t torque = (int16_t)(percentage_accel * MAX_TORQUE);
+	/* Linearly map acceleration to torque, scaled by TC */
+	int16_t torque = (int16_t)(percentage_accel * MAX_TORQUE * tc_get_torque_scale());
 
 	dti_set_torque(torque);
 }
@@ -277,7 +278,7 @@ static void _power_regression_accel_to_torque(float percentage_accel)
 	}
 	/*  map acceleration to torque */
 	int16_t torque =
-		(int16_t)(0.137609 * powf(percentage_accel, 1.43068) * MAX_TORQUE);
+		(int16_t)(0.137609 * powf(percentage_accel, 1.43068) * MAX_TORQUE * tc_get_torque_scale());
 	/* These values came from creating a power regression function intersecting three points: (0,0) (20,10) & (100,100)*/
 
 	dti_set_torque(torque);
@@ -333,7 +334,7 @@ static int16_t _derate_torque(float mph, float percentage_accel)
 static void _accel_pedal_regen_torque(float percentage_accel)
 {
 	/* Coefficient to map accel pedal travel % to the % of max torqye we should command */
-	float coeff =  (percentage_accel - ACCELERATION_THRESHOLD) / (1.0 - ACCELERATION_THRESHOLD);
+	float coeff = tc_get_torque_scale() * (percentage_accel - ACCELERATION_THRESHOLD) / (1.0 - ACCELERATION_THRESHOLD);
 
 	/* Makes acceleration pedal more sensitive since domain is compressed but range is the same */
 	uint16_t torque = coeff * torque_limit_percentage * MAX_TORQUE;
@@ -643,6 +644,9 @@ void pedals_process(void) {
         dti_set_torque(0);
 	    return;
 	}
+
+    /* Update TC torque scale before issuing any torque command. */
+    tc_process();
 
     switch(get_func_state()) {
         case READY:
