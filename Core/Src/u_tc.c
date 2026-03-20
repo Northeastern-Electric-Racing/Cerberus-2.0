@@ -1,8 +1,8 @@
+#include <stdint.h>
 #include "u_tc.h"
 #include "u_dti.h"
 #include "u_tx_debug.h"
 #include "u_peripherals.h"
-#include <stdint.h>
 
 // CONSTANTS ---------------------------------------------------------
 
@@ -16,9 +16,9 @@
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 
 // Unit conversions
-#define INCHES_TO_MILES     63360.0f       // inches per mile (use as divisor: inches / INCHES_TO_MILES = miles)
-#define SECONDS_TO_HOURS    (1.0f / 3600.0f) // hours per second (use as divisor: /SECONDS_TO_HOURS = *3600)
-#define G_IN_PER_S2         386.09f        // standard gravity in in/s²
+#define INCHES_TO_MILES     63360.0f   // inches per mile
+#define SECONDS_TO_HOURS    3600.0f    // seconds per hour
+#define G_IN_PER_S2         386.09f    // standard gravity in in/s^2
 
 // TC
 #define TC_CURVE_MAGIC      0x004E4552 // " NER" in hex
@@ -143,7 +143,7 @@ static void _load_tire_curve(tire_curve_t *curve, const uint8_t *data,
  */
 static float _calc_slip(float motor_rpm, float vx_car) {
   float wheel_rps = motor_rpm / GEAR_RATIO / 60.0f;
-  float v_rear = wheel_rps * M_PI * TIRE_DIAMETER / INCHES_TO_MILES / SECONDS_TO_HOURS;
+  float v_rear = wheel_rps * M_PI * TIRE_DIAMETER * SECONDS_TO_HOURS / INCHES_TO_MILES;
   float denom = fmaxf(fabsf(vx_car), fabsf(v_rear)); 
   // Avoid division by zero and undefined slip at very low speeds
   if (denom < TC_MIN_VX) return 0.0f;
@@ -166,7 +166,8 @@ static float _rpm_to_rads(int16_t rpm) {
  */
 static void _update_dt(void) {
   uint32_t current_tick = HAL_GetTick();
-  _tc_state.dt = (current_tick - _tc_state.last_tick) / 1000.0f; // Convert ms to seconds
+  // Convert ms to seconds
+  _tc_state.dt = (current_tick - _tc_state.last_tick) / 1000.0f;
   _tc_state.last_tick = current_tick;
 }
 
@@ -226,13 +227,13 @@ static void _init_vel_estimator(vel_estimator_t *est, float avg_ax_stationary) {
  * @return float Estimated longitudinal velocity in miles per hour
  */
 static float _estimate_velocity(vel_estimator_t *est, float avg_front_rads, float ax, float dt) {
-  // MPH: v = ω * r / INCHES_TO_MILES / SECONDS_TO_HOURS
-  //      = ω [rad/s] * r [in] * (1 mi / 63360 in) * (3600 s / hr)
-  float vx_wheel = avg_front_rads * (TIRE_DIAMETER / 2.0f) / INCHES_TO_MILES / SECONDS_TO_HOURS;
+  // MPH: v = ω * r * SECONDS_TO_HOURS / INCHES_TO_MILES
+  //      = ω [rad/s] * r [in] * (3600 s/hr) / (63360 in/mi)
+  float vx_wheel = avg_front_rads * (TIRE_DIAMETER / 2.0f) * SECONDS_TO_HOURS / INCHES_TO_MILES;
   float ax_corrected = ax - est->ax_bias;
-  // IMU integration: a [mg] * (G_IN_PER_S2/1000) [in/s² per mg] * dt [s]
-  //                  then convert in/s to mph: / INCHES_TO_MILES / SECONDS_TO_HOURS
-  float vx_imu = est->v_x + ax_corrected * (G_IN_PER_S2 / 1000.0f) * dt / INCHES_TO_MILES / SECONDS_TO_HOURS;
+  // IMU integration: a [mg] * (G_IN_PER_S2/1000) [in/s² per mg] * dt [s] → dv [in/s]
+  //                  then convert dv to mph and add to current estimate
+  float vx_imu = est->v_x + ax_corrected * (G_IN_PER_S2 / 1000.0f) * dt * SECONDS_TO_HOURS / INCHES_TO_MILES;
 
   // Complementary filter to combine wheel and IMU estimates
   est->v_x = (est->alpha * vx_wheel) + ((1.0f - est->alpha) * vx_imu);
@@ -328,7 +329,7 @@ void tc_process(void) {
 
   /* Calibration phase: accumulate TC_CALIB_SAMPLES stationary IMU readings
    * to establish the accelerometer x-axis bias before driving begins. */
-  if (_tc_state.vel_estimator.init) {
+  if (!_tc_state.vel_estimator.init) {
     static float    _ax_sum       = 0.0f;
     static uint16_t _sample_count = 0;
 
