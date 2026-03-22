@@ -225,6 +225,38 @@ typedef struct {
 void receive_rtds_command_message(const can_msg_t *message, rtds_command_message_t *rtds_command_message);
 
 typedef struct {
+ float accel_x;
+ float accel_y;
+ float accel_z;
+} lightning_board_imu_acceleration_data_t;
+
+void receive_lightning_board_imu_acceleration_data(const can_msg_t *message, lightning_board_imu_acceleration_data_t *lightning_board_imu_acceleration_data);
+
+typedef struct {
+ float gyro_x;
+ float gyro_y;
+ float gyro_z;
+} lightning_board_imu_gyro_data_t;
+
+void receive_lightning_board_imu_gyro_data(const can_msg_t *message, lightning_board_imu_gyro_data_t *lightning_board_imu_gyro_data);
+
+typedef struct {
+ uint8_t interrupt;
+ uint8_t distance;
+ uint32_t energy;
+} lightning_board_lightning_sensor_information_t;
+
+void receive_lightning_board_lightning_sensor_information(const can_msg_t *message, lightning_board_lightning_sensor_information_t *lightning_board_lightning_sensor_information);
+
+typedef struct {
+ float mag_x;
+ float mag_y;
+ float mag_z;
+} lightning_board_magnometer_sensor_information_t;
+
+void receive_lightning_board_magnometer_sensor_information(const can_msg_t *message, lightning_board_magnometer_sensor_information_t *lightning_board_magnometer_sensor_information);
+
+typedef struct {
  float charge_volts;
  float charge_current;
  uint8_t enable_charging;
@@ -245,8 +277,6 @@ void receive_pack_status(const can_msg_t *message, pack_status_t *pack_status);
 typedef struct {
  uint8_t state;
  float temp_average;
- float temp_internal;
- uint8_t balancing;
 } bms_status_t;
 
 void receive_bms_status(const can_msg_t *message, bms_status_t *bms_status);
@@ -295,24 +325,15 @@ typedef struct {
 void receive_segment_isospi_communication_status(const can_msg_t *message, segment_isospi_communication_status_t *segment_isospi_communication_status);
 
 typedef struct {
- bool ccl_enforce;
- bool charger_can;
- bool battery_therm;
- bool charger_safety;
  bool dcl_enforce;
- bool external_can;
- bool weak_pack;
- bool low_cell_volts;
- bool charge_reading;
- bool current_sense;
- bool ic_comm;
- bool thermal_err;
- bool sw_err;
- bool open_wire;
- bool pack_overheat;
- bool cell_uv;
- bool cell_ov;
- bool cell_not_balancing;
+ bool ccl_enforce;
+ bool low_cell_volt;
+ bool high_cell_volt;
+ bool high_charge_volt;
+ bool pack_hot;
+ bool die_temp_max;
+ bool segment_comms;
+ bool hv_plate_comms;
 } fault_status_t;
 
 void receive_fault_status(const can_msg_t *message, fault_status_t *fault_status);
@@ -389,19 +410,6 @@ typedef struct {
 void receive_overflow_notification_for_percell(const can_msg_t *message, overflow_notification_for_percell_t *overflow_notification_for_percell);
 
 typedef struct {
- uint8_t pec_error_chip;
- uint16_t pec_error_cnt;
-} pec_error_count_notification_per_chip_t;
-
-void receive_pec_error_count_notification_per_chip(const can_msg_t *message, pec_error_count_notification_per_chip_t *pec_error_count_notification_per_chip);
-
-typedef struct {
- uint8_t pec_error_count;
-} pec_error_count_notification_for_hv_plate_t;
-
-void receive_pec_error_count_notification_for_hv_plate(const can_msg_t *message, pec_error_count_notification_for_hv_plate_t *pec_error_count_notification_for_hv_plate);
-
-typedef struct {
  float therm;
  float voltage_a;
  float voltage_b;
@@ -432,50 +440,6 @@ typedef struct {
 void receive_beta_cell_data_debug(const can_msg_t *message, beta_cell_data_debug_t *beta_cell_data_debug);
 
 typedef struct {
- float therm_last;
- float voltage_last;
- bool discharging_last;
- uint8_t chip_id;
- float seg_temp;
- float die_temp;
- float vpv;
-} beta_chip_a_debug_t;
-
-void receive_beta_chip_a_debug(const can_msg_t *message, beta_chip_a_debug_t *beta_chip_a_debug);
-
-typedef struct {
- float vref2;
- float v_analog;
- float v_digital;
- uint8_t chip_id;
- float v_res;
- float vmv;
- bool cvs_last;
-} beta_chip_b_debug_t;
-
-void receive_beta_chip_b_debug(const can_msg_t *message, beta_chip_b_debug_t *beta_chip_b_debug);
-
-typedef struct {
- bool chip_id;
- bool va_ov;
- bool va_uv;
- bool vd_ov;
- bool vd_uv;
- bool vde;
- bool vdel;
- bool spiflt;
- bool sleep;
- bool thsd;
- bool tmodchk;
- bool oscchk;
- bool otp1_med;
- bool otp2_med;
-} beta_chip_c_debug_t;
-
-void receive_beta_chip_c_debug(const can_msg_t *message, beta_chip_c_debug_t *beta_chip_c_debug);
-
-typedef struct {
- float seg_temp;
  uint8_t chip_id;
  float die_temp;
  float vpv;
@@ -491,9 +455,9 @@ typedef struct {
  bool thsd;
  bool tmodchk;
  bool oscchk;
-} alpha_chip_a_debug_t;
+} chip_a_debug_t;
 
-void receive_alpha_chip_a_debug(const can_msg_t *message, alpha_chip_a_debug_t *alpha_chip_a_debug);
+void receive_chip_a_debug(const can_msg_t *message, chip_a_debug_t *chip_a_debug);
 
 typedef struct {
  float vres;
@@ -503,15 +467,117 @@ typedef struct {
  float v_digital;
  bool otp1_med;
  bool opt2_med;
-} alpha_chip_b_debug_t;
+} chip_b_debug_t;
 
-void receive_alpha_chip_b_debug(const can_msg_t *message, alpha_chip_b_debug_t *alpha_chip_b_debug);
+void receive_chip_b_debug(const can_msg_t *message, chip_b_debug_t *chip_b_debug);
 
 typedef struct {
  uint8_t fan_duty_cycle;
 } fan_duty_cycle_percentage_t;
 
 void receive_fan_duty_cycle_percentage(const can_msg_t *message, fan_duty_cycle_percentage_t *fan_duty_cycle_percentage);
+
+typedef struct {
+ uint8_t chip_id;
+ float therm_temp_1;
+ float therm_temp_2;
+ float therm_temp_3;
+} onboard_therm_temperatures_t;
+
+void receive_onboard_therm_temperatures(const can_msg_t *message, onboard_therm_temperatures_t *onboard_therm_temperatures);
+
+typedef struct {
+ bool precharge_status;
+} precharge_status_t;
+
+void receive_precharge_status(const can_msg_t *message, precharge_status_t *precharge_status);
+
+typedef struct {
+ float batt_voltage;
+ float ts_voltage;
+ float shunt_temp;
+ float pack_current;
+} hv_plate_data_t;
+
+void receive_hv_plate_data(const can_msg_t *message, hv_plate_data_t *hv_plate_data);
+
+typedef struct {
+ uint8_t chip_id;
+ uint16_t pec_errors;
+} segment_pec_errors_t;
+
+void receive_segment_pec_errors(const can_msg_t *message, segment_pec_errors_t *segment_pec_errors);
+
+typedef struct {
+ uint16_t pec_errors;
+} hv_plate_pec_errors_t;
+
+void receive_hv_plate_pec_errors(const can_msg_t *message, hv_plate_pec_errors_t *hv_plate_pec_errors);
+
+typedef struct {
+ uint16_t flags;
+ float vreg;
+ float tmp1;
+ float vref1p25;
+ uint16_t osccnt;
+} hv_plate_diagnostics_t;
+
+void receive_hv_plate_diagnostics(const can_msg_t *message, hv_plate_diagnostics_t *hv_plate_diagnostics);
+
+typedef struct {
+ float epad;
+ float vdig;
+ float vdd;
+ float tmp2;
+ float vdiv;
+} hv_plate_diagnostics_second_t;
+
+void receive_hv_plate_diagnostics_second(const can_msg_t *message, hv_plate_diagnostics_second_t *hv_plate_diagnostics_second);
+
+typedef struct {
+ float internal_temp;
+} bms_onboard_temperature_t;
+
+void receive_bms_onboard_temperature(const can_msg_t *message, bms_onboard_temperature_t *bms_onboard_temperature);
+
+typedef struct {
+ float imu_accelerometer_x;
+ float imu_accelerometer_y;
+ float imu_accelerometer_z;
+} bms_imu_accelerometer_t;
+
+void receive_bms_imu_accelerometer(const can_msg_t *message, bms_imu_accelerometer_t *bms_imu_accelerometer);
+
+typedef struct {
+ float imu_gyro_x;
+ float imu_gyro_y;
+ float imu_gyro_z;
+} bms_imu_gyro_t;
+
+void receive_bms_imu_gyro(const can_msg_t *message, bms_imu_gyro_t *bms_imu_gyro);
+
+typedef struct {
+ float one;
+ int16_t two;
+ uint8_t three;
+} bms_test_message_one_t;
+
+void receive_bms_test_message_one(const can_msg_t *message, bms_test_message_one_t *bms_test_message_one);
+
+typedef struct {
+ uint8_t one;
+ bool two;
+ uint8_t three;
+ uint8_t four;
+ bool five;
+ bool six;
+ bool seven;
+ bool eight;
+ uint32_t nine;
+ uint16_t ten;
+} bms_test_message_two_t;
+
+void receive_bms_test_message_two(const can_msg_t *message, bms_test_message_two_t *bms_test_message_two);
 
 
 void receive_can(const can_msg_t *msg);

@@ -101,6 +101,7 @@ void vTest(ULONG thread_input) {
         // PRINTLN_INFO("TIME: %2u/%02u/%u %02u:%02u:%02u.%09lu\r\n", date.day, date.month, date.year, date.hour, date.minute, date.second, date.nanosecond);
 
         send_vcu_test_message(7, 19.342, 30, 13942, -122);
+        send_second_vcu_test_message(12132, 3, 2, false, 35, 100000);
         tx_thread_sleep(test_thread.sleep);
     }
 }
@@ -921,6 +922,26 @@ void vPeripherals(ULONG thread_input) {
             if (lv_data.voltage < LV_LOW_VOLTAGE_THRESHOLD) {
                 queue_send(&faults, &(fault_t){LV_LOW_VOLTAGE_FAULT}, TX_NO_WAIT);
             }
+
+        } while (0);
+
+        /* SECTION 5: Send LFIU ADC Message. */
+        do {
+            lfiu_adc_t lfiu_data = adc_getLfiuData();
+
+            /* Send the LFIU_1 message. */
+            send_lfiu_low_current_adc_readings(
+                lfiu_data.raw[LFIU_1],
+                lfiu_data.voltage[LFIU_1],
+                lfiu_data.current[LFIU_1]
+            );
+
+            /* Send the LFIU_2 message. */
+            send_lfiu_high_current_adc_readings(
+                lfiu_data.raw[LFIU_2],
+                lfiu_data.voltage[LFIU_2],
+                lfiu_data.current[LFIU_2]
+            );
 
         } while (0);
 
