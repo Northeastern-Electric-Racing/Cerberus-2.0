@@ -20,8 +20,12 @@ typedef struct { uint16_t data[NUM_PEDALS]; } raw_pedal_adc_t; // Struct to stor
 raw_pedal_adc_t adc_getPedalData(void);
 
 /* Get LFIU sensor ADC data. */
-typedef struct { uint16_t data[NUM_LFIU]; } raw_lfiu_adc_t; // Struct to store the data.
-raw_lfiu_adc_t adc_getLfiuData(void);
+typedef struct { 
+    uint16_t raw[NUM_LFIU];
+    float voltage[NUM_LFIU];
+    float current[NUM_LFIU];
+} lfiu_adc_t; // Struct to store the data.
+lfiu_adc_t adc_getLfiuData(void);
 
 /* Get LV_BATT Voltage ADC data. */
 typedef struct { 
