@@ -8,7 +8,7 @@
 
 /*
 *   Basically just a wrapper for ThreadX stuff. Lets you create/configure threads.
-*   
+*
 *   Author: Blake Jackson
 */
 
@@ -17,8 +17,7 @@ uint8_t threads_init(TX_BYTE_POOL *byte_pool);
 
 /* Thread Functions */
 void vDefault(ULONG thread_input);
-void vEthernetIncoming(ULONG thread_input);
-void vEthernetOutgoing(ULONG thread_input);
+void vEthernet1Manager(ULONG thread_input);
 void vCANIncoming(ULONG thread_input);
 void vCANOutgoing(ULONG thread_input);
 void vFaults(ULONG thread_input);
