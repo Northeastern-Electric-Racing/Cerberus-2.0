@@ -3,6 +3,7 @@
 
 #include "main.h"
 #include "lsm6dsv_reg.h"
+#include <stdbool.h>
 
 /* File for VCU's I2C/SPI peripherals. */
 

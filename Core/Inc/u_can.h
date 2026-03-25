@@ -58,10 +58,13 @@ extern can_t can1;
 #define LIGHT_BOARD_CAN_MSG_ID 0xCA
 #define IMU_CAN_MSG_ID	       0xAAB
 #define CANID_VCU_TEST_MESSAGE 0xBAD
+#define CANID_SHEPHERD_PRECHARGE 0x601
 
 /* Peripheral CAN IDs. */
 #define CANID_IMU_ACCEL	  0x506
 #define CANID_IMU_GYRO	  0x507
 #define CANID_TEMP_SENSOR 0x508
+#define CANID_F_RPM       0xDB0
+#define CANID_R_RPM       0xDB1
 
 #endif /* u_can.h */

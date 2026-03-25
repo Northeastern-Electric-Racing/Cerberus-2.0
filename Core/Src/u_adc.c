@@ -176,11 +176,33 @@ raw_pedal_adc_t adc_getPedalData(void) {
 }
 
 /* Get raw LFIU sensor ADC Data. */
-raw_lfiu_adc_t adc_getLfiuData(void) {
-    raw_lfiu_adc_t sensors = { 0 };
+lfiu_adc_t adc_getLfiuData(void) {
+    lfiu_adc_t sensors = { 0 };
 
-    sensors.data[LFIU_1] = _mux_buffer[SEL2_HIGH];
-    sensors.data[LFIU_2] = _mux_buffer[SEL2_LOW];
+    /* Get the raw ADC values. */
+    sensors.raw[LFIU_1] = _mux_buffer[SEL2_HIGH];
+    sensors.raw[LFIU_2] = _mux_buffer[SEL2_LOW];
+
+    /* Calculate the ADC voltage. */
+    const float V_REF = 3.3f;
+    sensors.voltage[LFIU_1] = (sensors.raw[LFIU_1] / 4095.0) * V_REF;
+    sensors.voltage[LFIU_2] = (sensors.raw[LFIU_2] / 4095.0) * V_REF;
+
+    /* Calculate the LFIU_1 current. */
+    sensors.current[LFIU_1] = ((13.333f * sensors.voltage[LFIU_1]) - 20.0f);
+    // This conversion is based on the linear fit function: f(x) = 13.333x - 20
+    // This fit was created from these three datapoints provided by the electrical team:
+    // 0.0V : -20A
+    // 1.5V : 0A
+    // 3.0V : 20A
+
+    /* Calculate the LFIU_2 current. */
+    sensors.current[LFIU_2] = ((133.333f * sensors.voltage[LFIU_2]) - 200.0f);
+    // This conversion is based on the linear fit function: f(x) = 133.333x - 200
+    // This fit was created from these three datapoints provided by the electrical team:
+    // 0.0V : -200A
+    // 1.5V : 0A
+    // 3.0V : 200A
 
     return sensors;
 }

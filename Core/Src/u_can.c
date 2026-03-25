@@ -4,6 +4,7 @@
 #include "u_nx_ethernet.h"
 #include "u_bms.h"
 #include "u_lightning.h"
+#include "u_tc.h"
 #include "u_rtds.h"
 #include "u_dti.h"
 #include "u_efuses.h"
@@ -46,6 +47,16 @@ uint8_t can1_init(FDCAN_HandleTypeDef *hcan) {
         return U_ERROR;
     }
 
+    /* Add filters for standard IDs */
+    uint16_t standard4[] = {CANID_SHEPHERD_PRECHARGE, 0x00};
+    status = can_add_filter_standard(&can1, standard4);
+    if (status != HAL_OK) {
+        PRINTLN_ERROR("Failed to add standard filter to can1 (Status: %d/%s, ID1: 0x%X, ID2: 0x%X).", status, hal_status_toString(status), standard4[0], standard4[1]);
+        return U_ERROR;
+    }
+
+
+
     /* Add fitlers for extended IDs */
     uint32_t extended1[] = {CANID_CALYPSO_EFCTRL_DASHBOARD, CANID_CALYPSO_EFCTRL_BRAKE};
     status = can_add_filter_extended(&can1, extended1);
@@ -87,7 +98,7 @@ uint8_t can1_init(FDCAN_HandleTypeDef *hcan) {
     }
 
     /* Add fitlers for extended IDs */
-    uint32_t extended6[] = {CANID_CALYPSO_RTDS_STATE, 0x00};
+    uint32_t extended6[] = {CANID_CALYPSO_EFCTRL_SPARE, CANID_CALYPSO_RTDS_STATE};
     status = can_add_filter_extended(&can1, extended6);
     if (status != HAL_OK) {
         PRINTLN_ERROR("Failed to add extended filter to can1 (Status: %d/%s, ID1: %ld, ID2: %ld).", status, hal_status_toString(status), extended6[0], extended6[1]);
@@ -112,6 +123,9 @@ void can_inbox(can_msg_t *message) {
         break;
     case IMU_CAN_MSG_ID:
         lightning_handleIMUMessage();
+        break;
+    case CANID_F_RPM:
+        tc_record_front_rpm(*message);
         break;
     case DTI_CANID_TEMPS_FAULT:
         dti_record_temp(message);
@@ -173,6 +187,9 @@ void can_inbox(can_msg_t *message) {
         receive_mc_efuse_state(message, &mc);
         efuse_update_state(EFUSE_MC, (efuse_control_state_t)mc.state);
         break;
+    case CANID_SHEPHERD_PRECHARGE: 
+        bms_setPrecharge(message->data[0]); //first byte of the can mssg data
+        break;
     case CANID_CALYPSO_EFCTRL_SPARE:
         spare_efuse_state_t spare = { 0 };
         receive_spare_efuse_state(message, &spare);
@@ -196,8 +213,10 @@ void can_inbox(can_msg_t *message) {
             case STOP_REVERSE: rtds_stopReverseSound(); break;
             default: break;
         }
-    default:
-        PRINTLN_ERROR("Unknown CAN Message Recieved (Message ID: %ld).", message->id);
         break;
+    default:
+        PRINTLN_WARNING("Unknown CAN Message Recieved (Message ID: 0x%X).", message->id);
+        break;
+
     }
 }
