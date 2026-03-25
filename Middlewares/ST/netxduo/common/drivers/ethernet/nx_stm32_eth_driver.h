@@ -72,6 +72,8 @@ extern   "C" {
 #define NX_DRIVER_STATE_INITIALIZED             3
 #define NX_DRIVER_STATE_LINK_ENABLED            4
 
+#define NX_DRIVER_GET_STATE                     51
+
 #define NX_DRIVER_ERROR                         90
 
 

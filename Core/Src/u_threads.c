@@ -27,8 +27,7 @@
 /* (please keep these organized in increasing order) */
 #define PRIO_vDefault          0
 #define PRIO_vFaultsQueue      0
-#define PRIO_vEthernetIncoming 0
-#define PRIO_vEthernetOutgoing 0
+#define PRIO_vEthernetManager  0
 #define PRIO_vCANIncoming      0
 #define PRIO_vCANOutgoing      0
 #define PRIO_vStatemachine     0
@@ -97,8 +96,8 @@ void vTest(ULONG thread_input) {
 
         // PRINTLN_INFO("Ran vTest");
 
-        // NX_PTP_DATE_TIME date = ethernet_get_time();
-        // PRINTLN_INFO("TIME: %2u/%02u/%u %02u:%02u:%02u.%09lu\r\n", date.day, date.month, date.year, date.hour, date.minute, date.second, date.nanosecond);
+        float a  = 4.0;
+        ethernet1_mqtt_send("TEST/A/Two", 11, "z", 2, &a, 1, 69);
 
         send_vcu_test_message(7, 19.342, 30, 13942, -122);
         tx_thread_sleep(test_thread.sleep);
@@ -131,64 +130,17 @@ void vDefault(ULONG thread_input) {
     }
 }
 
-/* Incoming Ethernet Thread. Processes incoming messages. */
-static thread_t ethernet_incoming_thread = {
-        .name       = "Incoming Ethernet Thread",  /* Name */
-        .size       = 2048,                        /* Stack Size (in bytes) */
-        .priority   = PRIO_vEthernetIncoming,      /* Priority */
-        .threshold  = 0,                           /* Preemption Threshold */
-        .time_slice = TX_NO_TIME_SLICE,            /* Time Slice */
-        .auto_start = TX_AUTO_START,               /* Auto Start */
-        .sleep      =  0,                          /* Sleep (in ticks) */
-        .function   = vEthernetIncoming            /* Thread Function */
-    };
-void vEthernetIncoming(ULONG thread_input) {
-
-    while(1) {
-
-        ethernet_message_t message;
-
-        /* Process incoming messages */
-        while(queue_receive(&eth_incoming, &message, TX_WAIT_FOREVER) == U_SUCCESS) {
-            ethernet_inbox(&message);
-        }
-
-        /* No sleep. Thread timing is controlled completely by the queue timeout. */
-    }
-}
-
 /* Outgoing Ethernet Thread. Sends outgoing messages. */
-static thread_t ethernet_outgoing_thread = {
-        .name       = "Outgoing Ethernet Thread",  /* Name */
+static thread_t ethernet_manager = {
+        .name       = "Ethernet Management thread",  /* Name */
         .size       = 2048,                        /* Stack Size (in bytes) */
-        .priority   = PRIO_vEthernetOutgoing,      /* Priority */
+        .priority   = PRIO_vEthernetManager,      /* Priority */
         .threshold  = 0,                           /* Preemption Threshold */
         .time_slice = TX_NO_TIME_SLICE,            /* Time Slice */
         .auto_start = TX_AUTO_START,               /* Auto Start */
         .sleep      =  0,                          /* Sleep (in ticks) */
-        .function   = vEthernetOutgoing            /* Thread Function */
-    };
-void vEthernetOutgoing(ULONG thread_input) {
-
-    while(1) {
-
-        ethernet_message_t message;
-        uint8_t status;
-
-        /* Send outgoing messages */
-        while(queue_receive(&eth_outgoing, &message, TX_WAIT_FOREVER) == U_SUCCESS) {
-            status = ethernet_send_message(&message);
-            if(status != U_SUCCESS) {
-                PRINTLN_WARNING("Failed to send Ethernet message after removing from outgoing queue (Message ID: %d).", message.message_id);
-                // u_TODO - maybe add the message back into the queue if it fails to send? not sure if this is a good idea tho
-            } else {
-                PRINTLN_INFO("Sent ethernet message!");
-            }
-        }
-
-        /* No sleep. Thread timing is controlled completely by the queue timeout. */
-    }
-}
+        .function   = vEthernet1Manager            /* Thread Function */
+};
 
 /* Incoming CAN Thread. Processes incoming messages. */
 static thread_t can_incoming_thread = {
@@ -972,11 +924,10 @@ uint8_t threads_init(TX_BYTE_POOL *byte_pool) {
     CATCH_ERROR(create_thread(byte_pool, &shutdown_thread), U_SUCCESS);          // Create Shutdown thread.
     //CATCH_ERROR(create_thread(byte_pool, &statemachine_thread), U_SUCCESS);      // Create State Machine thread.
     //CATCH_ERROR(create_thread(byte_pool, &pedals_thread), U_SUCCESS);            // Create Pedals thread.
-    CATCH_ERROR(create_thread(byte_pool, &efuses_thread), U_SUCCESS);              // Create eFuses thread.
-    CATCH_ERROR(create_thread(byte_pool, &mux_thread), U_SUCCESS);               // Create Mux thread.
-    CATCH_ERROR(create_thread(byte_pool, &peripherals_thread), U_SUCCESS);       // Create Peripherals thread.
-    CATCH_ERROR(create_thread(byte_pool, &ethernet_incoming_thread), U_SUCCESS); // Create Incoming Ethernet thread.
-    CATCH_ERROR(create_thread(byte_pool, &ethernet_outgoing_thread), U_SUCCESS); // Create Outgoing Ethernet thread.
+    //CATCH_ERROR(create_thread(byte_pool, &efuses_thread), U_SUCCESS);              // Create eFuses thread.
+    //CATCH_ERROR(create_thread(byte_pool, &mux_thread), U_SUCCESS);               // Create Mux thread.
+    //CATCH_ERROR(create_thread(byte_pool, &peripherals_thread), U_SUCCESS);       // Create Peripherals thread.
+    CATCH_ERROR(create_thread(byte_pool, &ethernet_manager), U_SUCCESS); // Create Outgoing Ethernet thread.
     CATCH_ERROR(create_thread(byte_pool, &test_thread), U_SUCCESS);                // Create Test thread.
     CATCH_ERROR(create_thread(byte_pool, &rtds_telemetry_thread), U_SUCCESS);      // Create RTDS Telemetry thread.
 
