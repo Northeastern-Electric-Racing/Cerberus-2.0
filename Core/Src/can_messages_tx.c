@@ -632,7 +632,7 @@ uint8_t send_shutdown_pins
 }
 
 uint8_t send_car_state
-(bool home_mode,uint8_t nero_index,int32_t car_speed,bool tsms,uint32_t torque_limit_percentage,bool reverse,uint16_t regen_limit,bool launch_control)
+(bool home_mode,uint8_t nero_index,int32_t car_speed,bool tsms,uint32_t torque_limit_percentage,bool reverse,uint16_t regen_limit,bool launch_control,uint8_t functional_state)
 {
     can_msg_t msg;
     msg.id = 0x501;
@@ -680,6 +680,11 @@ uint8_t send_car_state
                         if(launch_control_i > 1ULL) {launch_control_i = 1;
                         }
                         data |= ((launch_control_i) & 0x1ULL) << 20;
+            
+                        uint32_t functional_state_i = (uint32_t)(functional_state);
+                        if(functional_state_i > 15ULL) {functional_state_i = 15;
+                        }
+                        data |= ((functional_state_i) & 0xFULL) << 16;
             
             uint64_t data_bigendian = __builtin_bswap64(data);
             memcpy(msg.data, &data_bigendian, 8);

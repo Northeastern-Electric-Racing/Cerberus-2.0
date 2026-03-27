@@ -41,7 +41,7 @@ static timer_t ts_rising_timer = {
 	.auto_activate = false
 };
 
-static void _send_nero_msg(void)
+void send_carstate_msg(void)
 {
 	/* Send the nero (car state) message. */
 	send_car_state(
@@ -52,7 +52,8 @@ static void _send_nero_msg(void)
 		pedals_getTorqueLimitPercentage(),
 		(cerberus_state.functional != F_REVERSE),
 		pedals_getRegenLimit(),
-		pedals_getLaunchControl()
+		pedals_getLaunchControl(),
+		cerberus_state.functional
 	);
 }
 
@@ -331,7 +332,4 @@ void statemachine_process(state_req_t new_state_req) {
 		is_ts_rising = false;
 		enter_drive_enabled = false;
 	}
-
-	// send nero data periodically
-	_send_nero_msg();
 }

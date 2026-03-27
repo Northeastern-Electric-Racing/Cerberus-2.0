@@ -126,6 +126,13 @@ int set_ready_mode();
  */
 int fault();
 
+/**
+ * @brief Sends the nero/CarState message.
+ * 
+ * @return void
+ */
+void send_carstate_msg(void);
+
 /* Process the state machine */
 void statemachine_process(state_req_t new_state_req);
 int init_statemachine(void);

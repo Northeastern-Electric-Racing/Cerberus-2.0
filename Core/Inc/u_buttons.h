@@ -2,16 +2,16 @@
 
 /* Enum for each button. */
 typedef enum {
-    BUTTON_0,
-    BUTTON_1,
-    BUTTON_2,
-    BUTTON_3,
-    BUTTON_4,
-    BUTTON_5,
-    BUTTON_6,
-    BUTTON_7,
-    BUTTON_8,
-    BUTTON_9
+    BUTTON_ESC,
+    BUTTON_LEFT,
+    BUTTON_LAUNCH_CONTROL_OFF,
+    BUTTON_UP_REGEN,
+    BUTTON_DOWN_REGEN,
+    BUTTON_ENTER,
+    BUTTON_RIGHT,
+    BUTTON_LAUNCH_CONTROL_ON,
+    BUTTON_UP_TORQUE,
+    BUTTON_DOWN_TORQUE
 } button_t;
 
 /* Processes incoming buttonp presses. */

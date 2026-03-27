@@ -187,9 +187,10 @@ uint8_t send_shutdown_pins
 * VCU/CarState/not_in_reverse - Whether or not the car is in reverse.
 * VCU/CarState/regen_limit - The regenerative braking current limit (selected by the driver).
 * VCU/CarState/launch_control - Whether or not launch control is enabled.
+* VCU/CarState/functional_state - VCU's functional state.
 */
 uint8_t send_car_state
-(bool home_mode,uint8_t nero_index,int32_t car_speed,bool tsms,uint32_t torque_limit_percentage,bool reverse,uint16_t regen_limit,bool launch_control);
+(bool home_mode,uint8_t nero_index,int32_t car_speed,bool tsms,uint32_t torque_limit_percentage,bool reverse,uint16_t regen_limit,bool launch_control,uint8_t functional_state);
 
 /**
 * Contents of this message:

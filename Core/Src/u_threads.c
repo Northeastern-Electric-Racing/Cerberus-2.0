@@ -102,6 +102,10 @@ void vTest(ULONG thread_input) {
 
         send_vcu_test_message(7, 19.342, 30, 13942, -122);
         send_second_vcu_test_message(12132, 3, 2, false, 35, 100000);
+
+        /* Send car state message */
+        send_carstate_msg();
+
         tx_thread_sleep(test_thread.sleep);
     }
 }
@@ -292,7 +296,8 @@ void vStatemachine(ULONG thread_input) {
             statemachine_process(new_state_req);
 	    }
 
-        /* No sleep. Thread timing is controlled completely by the queue timeout. */    }
+        /* No sleep. Thread timing is controlled completely by the queue timeout. */
+    }
 }
 
 /* Faults Thread. */
@@ -437,7 +442,7 @@ static thread_t efuses_thread = {
         .threshold  = 0,                      /* Preemption Threshold */
         .time_slice = TX_NO_TIME_SLICE,       /* Time Slice */
         .auto_start = TX_AUTO_START,          /* Auto Start */
-        .sleep      = 100,                    /* Sleep (in ticks) */
+        .sleep      = 1000,                   /* Sleep (in ticks) */
         .function   = vEFuses                 /* Thread Function */
     };
 void vEFuses(ULONG thread_input) {
@@ -812,7 +817,7 @@ static thread_t peripherals_thread = {
         .threshold  = 0,                      /* Preemption Threshold */
         .time_slice = TX_NO_TIME_SLICE,       /* Time Slice */
         .auto_start = TX_AUTO_START,          /* Auto Start */
-        .sleep      = 100,                    /* Sleep (in ticks) */
+        .sleep      = 1000,                   /* Sleep (in ticks) */
         .function   = vPeripherals            /* Thread Function */
     };
 void vPeripherals(ULONG thread_input) {
@@ -1003,7 +1008,7 @@ uint8_t threads_init(TX_BYTE_POOL *byte_pool) {
     CATCH_ERROR(create_thread(byte_pool, &faults_thread), U_SUCCESS);            // Create Faults thread.
     //CATCH_ERROR(create_thread(byte_pool, &tsms_thread), U_SUCCESS);              // Create TSMS thread.
     CATCH_ERROR(create_thread(byte_pool, &shutdown_thread), U_SUCCESS);          // Create Shutdown thread.
-    //CATCH_ERROR(create_thread(byte_pool, &statemachine_thread), U_SUCCESS);      // Create State Machine thread.
+    CATCH_ERROR(create_thread(byte_pool, &statemachine_thread), U_SUCCESS);      // Create State Machine thread.
     //CATCH_ERROR(create_thread(byte_pool, &pedals_thread), U_SUCCESS);            // Create Pedals thread.
     CATCH_ERROR(create_thread(byte_pool, &efuses_thread), U_SUCCESS);              // Create eFuses thread.
     CATCH_ERROR(create_thread(byte_pool, &mux_thread), U_SUCCESS);               // Create Mux thread.

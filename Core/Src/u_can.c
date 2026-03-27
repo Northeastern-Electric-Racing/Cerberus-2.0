@@ -216,6 +216,7 @@ void can_inbox(can_msg_t *message) {
         }
         break;
     case CANID_WHEEL_BUTTONS:
+        PRINTLN_INFO("recieved wheel message");
         wheel_buttons_t wheel_buttons = { 0 };
         receive_wheel_buttons(message, &wheel_buttons);
         buttons_process((button_t)wheel_buttons.button_id);
