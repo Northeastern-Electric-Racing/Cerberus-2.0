@@ -184,7 +184,7 @@ target_compile_definitions(${CMAKE_PROJECT_NAME} PRIVATE
 # Compiler options
 target_compile_options(${CMAKE_PROJECT_NAME} PRIVATE
     -Wno-unused-parameter # u_TODO - this doesn't seem to be working
-    -Wimplicit-function-declaration
+    -Werror=implicit-function-declaration
 )
 
 # Add linked libraries

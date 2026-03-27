@@ -1,5 +1,6 @@
 #include "main.h"
 #include "u_tx_debug.h"
+#include "u_nx_debug.h"
 #include "can_messages_tx.h"
 #include "u_threads.h"
 #include "u_queues.h"
