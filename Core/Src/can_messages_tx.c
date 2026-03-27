@@ -9,6 +9,7 @@
 #include "u_tx_debug.h"
 #include "u_queues.h"
 #include "c_utils.h"
+#include "u_can.h"
 #include "fdcan.h"
 #include "bitstream.h"
 
@@ -657,7 +658,8 @@ uint8_t send_car_state
                         data |= ((uint32_t)(car_speed_i) & 0xFFFFULL) << 40;
             
                         uint32_t tsms_i = (uint32_t)(tsms);
-                        if(tsms_i > 1ULL) {tsms_i = 1;
+                        if(tsms_i > 1ULL) {
+                            tsms_i = 1;
                         }
                         data |= ((tsms_i) & 0x1ULL) << 39;
             

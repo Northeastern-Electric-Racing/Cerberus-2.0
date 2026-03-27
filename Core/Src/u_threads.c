@@ -290,7 +290,6 @@ static thread_t statemachine_thread = {
 void vStatemachine(ULONG thread_input) {
 
     while(1) {
-
         state_req_t new_state_req;
         while(queue_receive(&state_transition_queue, &new_state_req, TX_WAIT_FOREVER) == U_SUCCESS) {
             statemachine_process(new_state_req);
