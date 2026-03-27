@@ -26,6 +26,20 @@ int enable_tc(void);
 int disable_tc(void);
 
 /**
+ * @brief Toggles traction control.
+ * 
+ * @return N/A 
+ */
+void toggle_tc(void);
+
+/**
+ * @brief Gets traction control enabled state.
+ * 
+ * @return 'true' if tc is enabled, 'false' if tc is not enabled. 
+ */
+bool tc_isEnabled(void);
+
+/**
  * @brief Records front wheel speeds from a CAN message.
  * Expected format: bytes 0-1 = int16 FL RPM, bytes 2-3 = int16 FR RPM.
  */

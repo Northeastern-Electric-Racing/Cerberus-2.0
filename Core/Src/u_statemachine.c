@@ -17,6 +17,7 @@
 #include "u_queues.h"
 #include "u_faults.h"
 #include "u_pedals.h"
+#include "u_tc.h"
 #include "u_tsms.h"
 #include "serial.h"
 
@@ -55,7 +56,8 @@ void send_carstate_msg(void)
 		(cerberus_state.functional != F_REVERSE),
 		pedals_getRegenLimit(),
 		pedals_getLaunchControl(),
-		cerberus_state.functional
+		cerberus_state.functional,
+		tc_isEnabled()
 	);
 
 	//serial_monitor("tsms_state", "tsms", "%d", tsms_get());

@@ -9,7 +9,6 @@
 #include "u_tx_debug.h"
 #include "u_queues.h"
 #include "c_utils.h"
-#include "u_can.h"
 #include "fdcan.h"
 #include "bitstream.h"
 
@@ -633,7 +632,7 @@ uint8_t send_shutdown_pins
 }
 
 uint8_t send_car_state
-(bool home_mode,uint8_t nero_index,int32_t car_speed,bool tsms,uint32_t torque_limit_percentage,bool reverse,uint16_t regen_limit,bool launch_control,uint8_t functional_state)
+(bool home_mode,uint8_t nero_index,int32_t car_speed,bool tsms,uint32_t torque_limit_percentage,bool reverse,uint16_t regen_limit,bool launch_control,uint8_t functional_state,bool traction_control)
 {
     can_msg_t msg;
     msg.id = 0x501;
@@ -658,8 +657,7 @@ uint8_t send_car_state
                         data |= ((uint32_t)(car_speed_i) & 0xFFFFULL) << 40;
             
                         uint32_t tsms_i = (uint32_t)(tsms);
-                        if(tsms_i > 1ULL) {
-                            tsms_i = 1;
+                        if(tsms_i > 1ULL) {tsms_i = 1;
                         }
                         data |= ((tsms_i) & 0x1ULL) << 39;
             
@@ -684,9 +682,14 @@ uint8_t send_car_state
                         data |= ((launch_control_i) & 0x1ULL) << 20;
             
                         uint32_t functional_state_i = (uint32_t)(functional_state);
-                        if(functional_state_i > 15ULL) {functional_state_i = 15;
+                        if(functional_state_i > 7ULL) {functional_state_i = 7;
                         }
-                        data |= ((functional_state_i) & 0xFULL) << 16;
+                        data |= ((functional_state_i) & 0x7ULL) << 17;
+            
+                        uint32_t traction_control_i = (uint32_t)(traction_control);
+                        if(traction_control_i > 1ULL) {traction_control_i = 1;
+                        }
+                        data |= ((traction_control_i) & 0x1ULL) << 16;
             
             uint64_t data_bigendian = __builtin_bswap64(data);
             memcpy(msg.data, &data_bigendian, 8);
@@ -866,7 +869,7 @@ uint8_t send_imu_gyro
 }
 
 uint8_t send_faults
-(bool CAN_OUTGOING_FAULT,bool CAN_INCOMING_FAULT,bool BMS_CAN_MONITOR_FAULT,bool LIGHTNING_CAN_MONITOR_FAULT,bool ONBOARD_TEMP_FAULT,bool IMU_ACCEL_FAULT,bool IMU_GYRO_FAULT,bool BSPD_PREFAULT,bool ONBOARD_BRAKE_OPEN_CIRCUIT_FAULT,bool ONBOARD_ACCEL_OPEN_CIRCUIT_FAULT,bool ONBOARD_BRAKE_SHORT_CIRCUIT_FAULT,bool ONBOARD_ACCEL_SHORT_CIRCUIT_FAULT,bool ONBOARD_PEDAL_DIFFERENCE_FAULT,bool RTDS_FAULT,bool LV_LOW_VOLTAGE_FAULT,int EXTRA)
+(bool CAN_OUTGOING_FAULT,bool CAN_INCOMING_FAULT,bool BMS_CAN_MONITOR_FAULT,bool LIGHTNING_CAN_MONITOR_FAULT,bool SHUTDOWN_FAULT,bool ONBOARD_TEMP_FAULT,bool IMU_ACCEL_FAULT,bool IMU_GYRO_FAULT,bool BSPD_PREFAULT,bool ONBOARD_BRAKE_OPEN_CIRCUIT_FAULT,bool ONBOARD_ACCEL_OPEN_CIRCUIT_FAULT,bool ONBOARD_BRAKE_SHORT_CIRCUIT_FAULT,bool ONBOARD_ACCEL_SHORT_CIRCUIT_FAULT,bool ONBOARD_PEDAL_DIFFERENCE_FAULT,bool RTDS_FAULT,bool LV_LOW_VOLTAGE_FAULT)
 {
     can_msg_t msg;
     msg.id = 0x502;
@@ -894,65 +897,65 @@ uint8_t send_faults
                         }
                         data |= ((LIGHTNING_CAN_MONITOR_FAULT_i) & 0x1ULL) << 12;
             
+                        uint32_t SHUTDOWN_FAULT_i = (uint32_t)(SHUTDOWN_FAULT);
+                        if(SHUTDOWN_FAULT_i > 1ULL) {SHUTDOWN_FAULT_i = 1;
+                        }
+                        data |= ((SHUTDOWN_FAULT_i) & 0x1ULL) << 11;
+            
                         uint32_t ONBOARD_TEMP_FAULT_i = (uint32_t)(ONBOARD_TEMP_FAULT);
                         if(ONBOARD_TEMP_FAULT_i > 1ULL) {ONBOARD_TEMP_FAULT_i = 1;
                         }
-                        data |= ((ONBOARD_TEMP_FAULT_i) & 0x1ULL) << 11;
+                        data |= ((ONBOARD_TEMP_FAULT_i) & 0x1ULL) << 10;
             
                         uint32_t IMU_ACCEL_FAULT_i = (uint32_t)(IMU_ACCEL_FAULT);
                         if(IMU_ACCEL_FAULT_i > 1ULL) {IMU_ACCEL_FAULT_i = 1;
                         }
-                        data |= ((IMU_ACCEL_FAULT_i) & 0x1ULL) << 10;
+                        data |= ((IMU_ACCEL_FAULT_i) & 0x1ULL) << 9;
             
                         uint32_t IMU_GYRO_FAULT_i = (uint32_t)(IMU_GYRO_FAULT);
                         if(IMU_GYRO_FAULT_i > 1ULL) {IMU_GYRO_FAULT_i = 1;
                         }
-                        data |= ((IMU_GYRO_FAULT_i) & 0x1ULL) << 9;
+                        data |= ((IMU_GYRO_FAULT_i) & 0x1ULL) << 8;
             
                         uint32_t BSPD_PREFAULT_i = (uint32_t)(BSPD_PREFAULT);
                         if(BSPD_PREFAULT_i > 1ULL) {BSPD_PREFAULT_i = 1;
                         }
-                        data |= ((BSPD_PREFAULT_i) & 0x1ULL) << 8;
+                        data |= ((BSPD_PREFAULT_i) & 0x1ULL) << 7;
             
                         uint32_t ONBOARD_BRAKE_OPEN_CIRCUIT_FAULT_i = (uint32_t)(ONBOARD_BRAKE_OPEN_CIRCUIT_FAULT);
                         if(ONBOARD_BRAKE_OPEN_CIRCUIT_FAULT_i > 1ULL) {ONBOARD_BRAKE_OPEN_CIRCUIT_FAULT_i = 1;
                         }
-                        data |= ((ONBOARD_BRAKE_OPEN_CIRCUIT_FAULT_i) & 0x1ULL) << 7;
+                        data |= ((ONBOARD_BRAKE_OPEN_CIRCUIT_FAULT_i) & 0x1ULL) << 6;
             
                         uint32_t ONBOARD_ACCEL_OPEN_CIRCUIT_FAULT_i = (uint32_t)(ONBOARD_ACCEL_OPEN_CIRCUIT_FAULT);
                         if(ONBOARD_ACCEL_OPEN_CIRCUIT_FAULT_i > 1ULL) {ONBOARD_ACCEL_OPEN_CIRCUIT_FAULT_i = 1;
                         }
-                        data |= ((ONBOARD_ACCEL_OPEN_CIRCUIT_FAULT_i) & 0x1ULL) << 6;
+                        data |= ((ONBOARD_ACCEL_OPEN_CIRCUIT_FAULT_i) & 0x1ULL) << 5;
             
                         uint32_t ONBOARD_BRAKE_SHORT_CIRCUIT_FAULT_i = (uint32_t)(ONBOARD_BRAKE_SHORT_CIRCUIT_FAULT);
                         if(ONBOARD_BRAKE_SHORT_CIRCUIT_FAULT_i > 1ULL) {ONBOARD_BRAKE_SHORT_CIRCUIT_FAULT_i = 1;
                         }
-                        data |= ((ONBOARD_BRAKE_SHORT_CIRCUIT_FAULT_i) & 0x1ULL) << 5;
+                        data |= ((ONBOARD_BRAKE_SHORT_CIRCUIT_FAULT_i) & 0x1ULL) << 4;
             
                         uint32_t ONBOARD_ACCEL_SHORT_CIRCUIT_FAULT_i = (uint32_t)(ONBOARD_ACCEL_SHORT_CIRCUIT_FAULT);
                         if(ONBOARD_ACCEL_SHORT_CIRCUIT_FAULT_i > 1ULL) {ONBOARD_ACCEL_SHORT_CIRCUIT_FAULT_i = 1;
                         }
-                        data |= ((ONBOARD_ACCEL_SHORT_CIRCUIT_FAULT_i) & 0x1ULL) << 4;
+                        data |= ((ONBOARD_ACCEL_SHORT_CIRCUIT_FAULT_i) & 0x1ULL) << 3;
             
                         uint32_t ONBOARD_PEDAL_DIFFERENCE_FAULT_i = (uint32_t)(ONBOARD_PEDAL_DIFFERENCE_FAULT);
                         if(ONBOARD_PEDAL_DIFFERENCE_FAULT_i > 1ULL) {ONBOARD_PEDAL_DIFFERENCE_FAULT_i = 1;
                         }
-                        data |= ((ONBOARD_PEDAL_DIFFERENCE_FAULT_i) & 0x1ULL) << 3;
+                        data |= ((ONBOARD_PEDAL_DIFFERENCE_FAULT_i) & 0x1ULL) << 2;
             
                         uint32_t RTDS_FAULT_i = (uint32_t)(RTDS_FAULT);
                         if(RTDS_FAULT_i > 1ULL) {RTDS_FAULT_i = 1;
                         }
-                        data |= ((RTDS_FAULT_i) & 0x1ULL) << 2;
+                        data |= ((RTDS_FAULT_i) & 0x1ULL) << 1;
             
                         uint32_t LV_LOW_VOLTAGE_FAULT_i = (uint32_t)(LV_LOW_VOLTAGE_FAULT);
                         if(LV_LOW_VOLTAGE_FAULT_i > 1ULL) {LV_LOW_VOLTAGE_FAULT_i = 1;
                         }
-                        data |= ((LV_LOW_VOLTAGE_FAULT_i) & 0x1ULL) << 1;
-            
-                        uint32_t EXTRA_i = (uint32_t)(EXTRA);
-                        if(EXTRA_i > 1ULL) {EXTRA_i = 1;
-                        }
-                        data |= ((EXTRA_i) & 0x1ULL) << 0;
+                        data |= ((LV_LOW_VOLTAGE_FAULT_i) & 0x1ULL) << 0;
             
             uint16_t data_bigendian = __builtin_bswap16(data);
             memcpy(msg.data, &data_bigendian, 2);

@@ -1,6 +1,7 @@
 #include "u_buttons.h"
 #include "u_statemachine.h"
 #include "u_pedals.h"
+#include "u_tc.h"
 #include "u_tx_debug.h"
 
 /* Processes incoming button presses. */
@@ -16,9 +17,9 @@ void buttons_process(button_t button) {
             PRINTLN_INFO("Button BUTTON_LEFT pressed.");
 		    decrement_nero_index();
             break;
-        case BUTTON_LAUNCH_CONTROL_OFF:
-            PRINTLN_INFO("Button BUTTON_LAUNCH_CONTROL_OFF pressed.");
-            pedals_disableLaunchControl();
+        case BUTTON_LAUNCH_CONTROL_TOGGLE:
+            PRINTLN_INFO("Button BUTTON_LAUNCH_CONTROL_TOGGLE pressed.");
+            pedals_toggleLaunchControl();
             break;
         case BUTTON_UP_REGEN:
             PRINTLN_INFO("Button BUTTON_UP_REGEN pressed.");
@@ -40,9 +41,9 @@ void buttons_process(button_t button) {
             PRINTLN_INFO("Button BUTTON_RIGHT pressed.");
 		    increment_nero_index();
             break;
-        case BUTTON_LAUNCH_CONTROL_ON:
-            PRINTLN_INFO("Button BUTTON_LAUNCH_CONTROL_ON pressed.");
-            pedals_enableLaunchControl();
+        case BUTTON_TRACTION_CONTROL_TOGGLE:
+            PRINTLN_INFO("Button BUTTON_TRACTION_CONTROL_TOGGLE pressed.");
+            toggle_tc();
             break;
         case BUTTON_UP_TORQUE:
             PRINTLN_INFO("Button BUTTON_UP_TORQUE pressed.");

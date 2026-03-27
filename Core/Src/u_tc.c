@@ -315,6 +315,24 @@ int disable_tc(void) {
 }
 
 /**
+ * @brief Toggles traction control.
+ * 
+ * @return N/A 
+ */
+void toggle_tc(void) {
+  _tc_state.tc_enabled = !_tc_state.tc_enabled;
+}
+
+/**
+ * @brief Gets traction control enabled state.
+ * 
+ * @return 'true' if tc is enabled, 'false' if tc is not enabled. 
+ */
+bool tc_isEnabled(void) {
+  return _tc_state.tc_enabled;
+}
+
+/**
  * @brief Parses a front RPM CAN message and updates the stored front wheel
  * speeds. Expected format: bytes 0-1 = int16 FL RPM, bytes 2-3 = int16 FR RPM.
  *

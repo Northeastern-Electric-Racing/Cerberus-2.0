@@ -321,6 +321,7 @@ void vFaults(ULONG thread_input) {
             get_fault(CAN_INCOMING_FAULT),
             get_fault(BMS_CAN_MONITOR_FAULT),
             get_fault(LIGHTNING_CAN_MONITOR_FAULT),
+            get_fault(SHUTDOWN_FAULT),
             get_fault(ONBOARD_TEMP_FAULT),
             get_fault(IMU_ACCEL_FAULT),
             get_fault(IMU_GYRO_FAULT),
@@ -331,8 +332,7 @@ void vFaults(ULONG thread_input) {
             get_fault(ONBOARD_ACCEL_SHORT_CIRCUIT_FAULT),
             get_fault(ONBOARD_PEDAL_DIFFERENCE_FAULT),
             get_fault(RTDS_FAULT),
-            get_fault(LV_LOW_VOLTAGE_FAULT),
-            0
+            get_fault(LV_LOW_VOLTAGE_FAULT)
         );
 
         /* Sleep Thread for specified number of ticks. */
