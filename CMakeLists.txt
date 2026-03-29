@@ -134,6 +134,7 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     "./Core/Src/u_adc.c"
     "./Core/Src/u_peripherals.c"
     "./Core/Src/u_tsms.c"
+    "./Core/Src/u_buttons.c"
     "./Core/Src/u_lightning.c"
     "./Core/Src/u_debug.c"
     "./Core/Src/u_ethernet.c"
@@ -183,6 +184,7 @@ target_compile_definitions(${CMAKE_PROJECT_NAME} PRIVATE
 # Compiler options
 target_compile_options(${CMAKE_PROJECT_NAME} PRIVATE
     -Wno-unused-parameter # u_TODO - this doesn't seem to be working
+    -Werror=implicit-function-declaration
 )
 
 # Add linked libraries

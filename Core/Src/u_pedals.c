@@ -35,7 +35,7 @@ static uint8_t drive_lock_map = 0;
 
 static _Atomic bool brake_pressed = false;
 static _Atomic bool launch_control_enabled = false;
-static _Atomic float torque_limit_percentage = 1.0f;
+static float torque_limit_percentage = 1.0f;
 
 /* Pedal Data. */
 typedef struct {
@@ -505,6 +505,9 @@ int pedals_init(void) {
 /* Returns the brake state (true=brake pressed, false=brake not pressed). */
 bool pedals_getBrakeState(void) {
     return brake_pressed;
+
+	/* TEMPORARY OVERRIDE FOR TSMS! should be commented out normally! */
+	//return true;
 }
 
 /* Returns the torque limit percentgae. */
@@ -585,6 +588,16 @@ uint16_t pedals_getRegenLimit(void)
 void pedals_toggleLaunchControl(void)
 {
 	launch_control_enabled = !launch_control_enabled;
+}
+
+void pedals_enableLaunchControl(void)
+{
+	launch_control_enabled = true;
+}
+
+void pedals_disableLaunchControl(void)
+{
+	launch_control_enabled = false;
 }
 
 bool pedals_getLaunchControl(void)

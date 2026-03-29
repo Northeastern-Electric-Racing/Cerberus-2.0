@@ -65,6 +65,9 @@ void tsms_update(void) {
         /* If TSMS pin is not high, no debouncing is needed. Just set 'tsms' to false (after getting the mutex).*/
         tsms = false;
     }
+
+    /* TEMPORARY OVERRIDE FOR TSMS! Should be commented out normally! */
+    //tsms = false;
 }
 
 /* Gets the Offical TSMS State (not the raw pin state, but the state stored in the debounced 'tsms' bool). */

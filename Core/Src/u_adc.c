@@ -224,5 +224,10 @@ lvread_adc_t adc_getLVData(void) {
     // The adc_voltage should thus be scaled up by around *11 (since 24V/2.18V = 11.0):
     data.voltage = adc_voltage * 11.0;
 
+    /* temporary correction scaling since the ADC  is messed up rn */
+    // double x = adc_voltage;
+    // float actual_voltage = -39.079629 + 98.844514 * x - 66.973026 * x * x + 17.188363 * x * x * x;
+    // data.voltage = actual_voltage;
+
     return data;
 }

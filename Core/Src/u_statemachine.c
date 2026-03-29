@@ -11,12 +11,15 @@
 #include "u_dti.h"
 #include "u_pedals.h"
 #include "u_can.h"
+#include "can_messages_tx.h"
 #include "u_rtds.h"
 #include "u_tx_debug.h"
 #include "u_queues.h"
 #include "u_faults.h"
 #include "u_pedals.h"
+#include "u_tc.h"
 #include "u_tsms.h"
+#include "serial.h"
 
 #define STATE_TRANS_QUEUE_SIZE 4
 
@@ -31,7 +34,10 @@ static bool is_ts_rising = false;
 static bool enter_drive_enabled = false;
 
 /* Rising TS Callback and Timer */
-static void _rising_ts_cb(ULONG input) { enter_drive_enabled = true; }
+static void _rising_ts_cb(ULONG input) { 
+	PRINTLN_INFO("rising ts callback");
+	enter_drive_enabled = true; 
+}
 static timer_t ts_rising_timer = {
 	.name = "TS Rising Timer",
 	.callback = _rising_ts_cb,
@@ -41,7 +47,7 @@ static timer_t ts_rising_timer = {
 	.auto_activate = false
 };
 
-static void _send_nero_msg(void)
+void send_carstate_msg(void)
 {
 	/* Send the nero (car state) message. */
 	send_car_state(
@@ -52,8 +58,12 @@ static void _send_nero_msg(void)
 		pedals_getTorqueLimitPercentage(),
 		(cerberus_state.functional != F_REVERSE),
 		pedals_getRegenLimit(),
-		pedals_getLaunchControl()
+		pedals_getLaunchControl(),
+		cerberus_state.functional,
+		tc_isEnabled()
 	);
+
+	//serial_monitor("tsms_state", "tsms", "%d", tsms_get());
 }
 
 int init_statemachine(void) {
@@ -153,6 +163,7 @@ static int transition_functional_state(func_state_t new_state)
 	}
 
 	cerberus_state.functional = new_state;
+	PRINTLN_INFO("Transitioned functional state to %d.", cerberus_state.functional);
 
 	return 0;
 }
@@ -199,6 +210,7 @@ static int transition_nero_state(nero_state_t new_state)
 	}
 
 	cerberus_state.nero = new_state;
+	PRINTLN_INFO("ran transition_nero_state()");
 
 	return 0;
 }
@@ -244,6 +256,7 @@ static int queue_state_transition(state_req_t new_state)
 /* HANDLE USER INPUT */
 int increment_nero_index()
 {
+	PRINTLN_INFO("called increment_nero_index()");
 	/* Wrap around if end of menu reached */
 	if (get_nero_state().nero_index + 1 >= MAX_NERO_STATES) {
 		return queue_state_transition((state_req_t){
@@ -305,7 +318,7 @@ int fault()
 }
 
 void statemachine_process(state_req_t new_state_req) {
-	
+	PRINTLN_INFO("inside statemachine_process()");
 	if(check_state_change(new_state_req)) {
 		if(new_state_req.id == NERO) { transition_nero_state(new_state_req.state.nero); }
 		else if(new_state_req.id == FUNCTIONAL) { transition_functional_state(new_state_req.state.functional); }
@@ -331,7 +344,5 @@ void statemachine_process(state_req_t new_state_req) {
 		is_ts_rising = false;
 		enter_drive_enabled = false;
 	}
-
-	// send nero data periodically
-	_send_nero_msg();
+	send_carstate_msg();
 }

@@ -225,6 +225,12 @@ typedef struct {
 void receive_rtds_command_message(const can_msg_t *message, rtds_command_message_t *rtds_command_message);
 
 typedef struct {
+ uint8_t button_id;
+} wheel_buttons_t;
+
+void receive_wheel_buttons(const can_msg_t *message, wheel_buttons_t *wheel_buttons);
+
+typedef struct {
  float accel_x;
  float accel_y;
  float accel_z;
@@ -263,16 +269,6 @@ typedef struct {
 } bms_charge_message_send_t;
 
 void receive_bms_charge_message_send(const can_msg_t *message, bms_charge_message_send_t *bms_charge_message_send);
-
-typedef struct {
- float voltage;
- float current;
- float amp_hours;
- float soc;
- float health;
-} pack_status_t;
-
-void receive_pack_status(const can_msg_t *message, pack_status_t *pack_status);
 
 typedef struct {
  uint8_t state;
@@ -557,27 +553,11 @@ typedef struct {
 void receive_bms_imu_gyro(const can_msg_t *message, bms_imu_gyro_t *bms_imu_gyro);
 
 typedef struct {
- float one;
- int16_t two;
- uint8_t three;
-} bms_test_message_one_t;
+ float Pack_SoC;
+ float Pack_SoC_Drift;
+} pack_soc_status_t;
 
-void receive_bms_test_message_one(const can_msg_t *message, bms_test_message_one_t *bms_test_message_one);
-
-typedef struct {
- uint8_t one;
- bool two;
- uint8_t three;
- uint8_t four;
- bool five;
- bool six;
- bool seven;
- bool eight;
- uint32_t nine;
- uint16_t ten;
-} bms_test_message_two_t;
-
-void receive_bms_test_message_two(const can_msg_t *message, bms_test_message_two_t *bms_test_message_two);
+void receive_pack_soc_status(const can_msg_t *message, pack_soc_status_t *pack_soc_status);
 
 
 void receive_can(const can_msg_t *msg);

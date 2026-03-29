@@ -187,9 +187,11 @@ uint8_t send_shutdown_pins
 * VCU/CarState/not_in_reverse - Whether or not the car is in reverse.
 * VCU/CarState/regen_limit - The regenerative braking current limit (selected by the driver).
 * VCU/CarState/launch_control - Whether or not launch control is enabled.
+* VCU/CarState/functional_state - VCU's functional state.
+* VCU/CarState/traction_control - Whether or not traction control is enabled.
 */
 uint8_t send_car_state
-(bool home_mode,uint8_t nero_index,int32_t car_speed,bool tsms,uint32_t torque_limit_percentage,bool reverse,uint16_t regen_limit,bool launch_control);
+(bool home_mode,uint8_t nero_index,int32_t car_speed,bool tsms,uint32_t torque_limit_percentage,bool reverse,uint16_t regen_limit,bool launch_control,uint8_t functional_state,bool traction_control);
 
 /**
 * Contents of this message:
@@ -240,24 +242,25 @@ uint8_t send_imu_gyro
 
 /**
 * Contents of this message:
-* VCU/Faults/CAN_OUTGOING_FAULT - 
-* VCU/Faults/CAN_INCOMING_FAULT - 
-* VCU/Faults/BMS_CAN_MONITOR_FAULT - 
-* VCU/Faults/LIGHTNING_CAN_MONITOR_FAULT - 
-* VCU/Faults/ONBOARD_TEMP_FAULT - 
-* VCU/Faults/IMU_ACCEL_FAULT - 
-* VCU/Faults/IMU_GYRO_FAULT - 
-* VCU/Faults/BSPD_PREFAULT - 
-* VCU/Faults/ONBOARD_BRAKE_OPEN_CIRCUIT_FAULT - 
-* VCU/Faults/ONBOARD_ACCEL_OPEN_CIRCUIT_FAULT - 
-* VCU/Faults/ONBOARD_BRAKE_SHORT_CIRCUIT_FAULT - 
-* VCU/Faults/ONBOARD_ACCEL_SHORT_CIRCUIT_FAULT - 
-* VCU/Faults/ONBOARD_PEDAL_DIFFERENCE_FAULT - 
-* VCU/Faults/RTDS_FAULT - 
-* VCU/Faults/LV_LOW_VOLTAGE_FAULT - 
+* VCU/Faults/Critical/CAN_OUTGOING_FAULT - 
+* VCU/Faults/Critical/CAN_INCOMING_FAULT - 
+* VCU/Faults/Critical/BMS_CAN_MONITOR_FAULT - 
+* VCU/Faults/Critical/LIGHTNING_CAN_MONITOR_FAULT - 
+* VCU/Faults/Critical/SHUTDOWN_FAULT - 
+* VCU/Faults/Non-Critical/ONBOARD_TEMP_FAULT - 
+* VCU/Faults/Non-Critical/IMU_ACCEL_FAULT - 
+* VCU/Faults/Non-Critical/IMU_GYRO_FAULT - 
+* VCU/Faults/Non-Critical/BSPD_PREFAULT - 
+* VCU/Faults/Non-Critical/ONBOARD_BRAKE_OPEN_CIRCUIT_FAULT - 
+* VCU/Faults/Non-Critical/ONBOARD_ACCEL_OPEN_CIRCUIT_FAULT - 
+* VCU/Faults/Non-Critical/ONBOARD_BRAKE_SHORT_CIRCUIT_FAULT - 
+* VCU/Faults/Non-Critical/ONBOARD_ACCEL_SHORT_CIRCUIT_FAULT - 
+* VCU/Faults/Non-Critical/ONBOARD_PEDAL_DIFFERENCE_FAULT - 
+* VCU/Faults/Non-Critical/RTDS_FAULT - 
+* VCU/Faults/Non-Critical/LV_LOW_VOLTAGE_FAULT - 
 */
 uint8_t send_faults
-(bool CAN_OUTGOING_FAULT,bool CAN_INCOMING_FAULT,bool BMS_CAN_MONITOR_FAULT,bool LIGHTNING_CAN_MONITOR_FAULT,bool ONBOARD_TEMP_FAULT,bool IMU_ACCEL_FAULT,bool IMU_GYRO_FAULT,bool BSPD_PREFAULT,bool ONBOARD_BRAKE_OPEN_CIRCUIT_FAULT,bool ONBOARD_ACCEL_OPEN_CIRCUIT_FAULT,bool ONBOARD_BRAKE_SHORT_CIRCUIT_FAULT,bool ONBOARD_ACCEL_SHORT_CIRCUIT_FAULT,bool ONBOARD_PEDAL_DIFFERENCE_FAULT,bool RTDS_FAULT,bool LV_LOW_VOLTAGE_FAULT,int EXTRA);
+(bool CAN_OUTGOING_FAULT,bool CAN_INCOMING_FAULT,bool BMS_CAN_MONITOR_FAULT,bool LIGHTNING_CAN_MONITOR_FAULT,bool SHUTDOWN_FAULT,bool ONBOARD_TEMP_FAULT,bool IMU_ACCEL_FAULT,bool IMU_GYRO_FAULT,bool BSPD_PREFAULT,bool ONBOARD_BRAKE_OPEN_CIRCUIT_FAULT,bool ONBOARD_ACCEL_OPEN_CIRCUIT_FAULT,bool ONBOARD_BRAKE_SHORT_CIRCUIT_FAULT,bool ONBOARD_ACCEL_SHORT_CIRCUIT_FAULT,bool ONBOARD_PEDAL_DIFFERENCE_FAULT,bool RTDS_FAULT,bool LV_LOW_VOLTAGE_FAULT);
 
 /**
 * Contents of this message:
