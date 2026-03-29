@@ -21,8 +21,6 @@ endif()
 # Set the project name
 set(CMAKE_PROJECT_NAME Cerberus-2.0)
 
-# NER Include toolchain file
-
 # Enable compile command to ease indexing with e.g. clangd
 set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
 
@@ -57,6 +55,18 @@ enable_language(C ASM)
 
 # Create an executable object type
 add_executable(${CMAKE_PROJECT_NAME})
+
+# NER Compiler options
+target_compile_options(${CMAKE_PROJECT_NAME} PRIVATE
+    -Wno-unused-parameter
+    -Werror=double-promotion # do not allow passing to a function that will cast to double
+    -fsingle-precision-constant # when using constants, make them floats
+    -Werror=undef # do not allow undefined macros
+    -fno-common # do not allow duplicate global variables
+    -Wformat # check the types going to printf
+    -Wshadow # prevent redefinition of unsassigned global vars
+    -fanalyzer # GCC static analysis
+)
 
 # Add STM32CubeMX generated sources
 add_subdirectory(cmake/stm32cubemx)
@@ -178,11 +188,6 @@ target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
 # Add project symbols (macros)
 target_compile_definitions(${CMAKE_PROJECT_NAME} PRIVATE
     # Add user defined symbols
-)
-
-# Compiler options
-target_compile_options(${CMAKE_PROJECT_NAME} PRIVATE
-    -Wno-unused-parameter # u_TODO - this doesn't seem to be working
 )
 
 # Add linked libraries
