@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "can_messages_tx.h"
 #include "tx_api.h"
 #include "u_tx_timers.h"
 #include "bitstream.h"
@@ -52,7 +53,9 @@ static void _send_nero_msg(void)
 		pedals_getTorqueLimitPercentage(),
 		(cerberus_state.functional != F_REVERSE),
 		pedals_getRegenLimit(),
-		pedals_getLaunchControl()
+		pedals_getLaunchControl(),
+		0, // temporary
+		0
 	);
 }
 
@@ -305,7 +308,7 @@ int fault()
 }
 
 void statemachine_process(state_req_t new_state_req) {
-	
+
 	if(check_state_change(new_state_req)) {
 		if(new_state_req.id == NERO) { transition_nero_state(new_state_req.state.nero); }
 		else if(new_state_req.id == FUNCTIONAL) { transition_functional_state(new_state_req.state.functional); }

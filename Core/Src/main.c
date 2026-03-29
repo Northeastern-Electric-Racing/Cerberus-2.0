@@ -130,7 +130,7 @@ void HAL_FDCAN_RxFifo0Callback(FDCAN_HandleTypeDef *hfdcan, uint32_t RxFifo0ITs)
     /* Get the message. */
     HAL_StatusTypeDef status = HAL_FDCAN_GetRxMessage(hfdcan, FDCAN_RX_FIFO0, &rx_header, message.data);
     if(status != HAL_OK) {
-      PRINTLN_ERROR("Failed to call HAL_FDCAN_GetRxMessage() (Status: %ld/%s).", status, hal_status_toString(status));
+      PRINTLN_ERROR("Failed to call HAL_FDCAN_GetRxMessage() (Status: %d/%s).", status, hal_status_toString(status));
       queue_send(&faults, &(fault_t){CAN_INCOMING_FAULT}, TX_NO_WAIT);
       return;
     }
@@ -143,7 +143,7 @@ void HAL_FDCAN_RxFifo0Callback(FDCAN_HandleTypeDef *hfdcan, uint32_t RxFifo0ITs)
 		/* Check message size */
 		if (rx_header.DataLength > 8)
 		{
-			PRINTLN_ERROR("Recieved CAN message is larger than 8 bytes (rx_header.DataLength: %ld, id: 0x%X).", rx_header.DataLength, rx_header.Identifier);
+			PRINTLN_ERROR("Recieved CAN message is larger than 8 bytes (rx_header.DataLength: %ld, id: 0x%lX).", rx_header.DataLength, rx_header.Identifier);
       queue_send(&faults, &(fault_t){CAN_INCOMING_FAULT}, TX_NO_WAIT);
 			return;
 		}
@@ -209,7 +209,7 @@ int main(void)
 
   /* We should never get here as control is now taken by the scheduler */
 
-  
+
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
