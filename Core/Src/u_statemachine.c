@@ -34,7 +34,10 @@ static bool is_ts_rising = false;
 static bool enter_drive_enabled = false;
 
 /* Rising TS Callback and Timer */
-static void _rising_ts_cb(ULONG input) { enter_drive_enabled = true; }
+static void _rising_ts_cb(ULONG input) { 
+	PRINTLN_INFO("rising ts callback");
+	enter_drive_enabled = true; 
+}
 static timer_t ts_rising_timer = {
 	.name = "TS Rising Timer",
 	.callback = _rising_ts_cb,
@@ -160,6 +163,7 @@ static int transition_functional_state(func_state_t new_state)
 	}
 
 	cerberus_state.functional = new_state;
+	PRINTLN_INFO("Transitioned functional state to %d.", cerberus_state.functional);
 
 	return 0;
 }

@@ -504,7 +504,9 @@ int pedals_init(void) {
 
 /* Returns the brake state (true=brake pressed, false=brake not pressed). */
 bool pedals_getBrakeState(void) {
-    return brake_pressed;
+    //return brake_pressed;
+	return true;
+	// u_TODO - change this!
 }
 
 /* Returns the torque limit percentgae. */

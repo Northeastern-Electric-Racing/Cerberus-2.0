@@ -42,29 +42,31 @@ int tsms_init(void) {
 
 /* Checks the state of the TSMS pin and updates the 'tsms' bool accordingly. Handles all the debounding stuff. Should only be called by the TSMS thread. */
 void tsms_update(void) {
-    if((HAL_GPIO_ReadPin(TSMS_GPIO_GPIO_Port, TSMS_GPIO_Pin) == GPIO_PIN_SET)) {
-        /* If the TSMS pin is high, initiate a debounce routine. */
-        /* But first, if a debounce routine is already active (i.e. the timer is actively running), just return and let the timer do its thing. */
-        bool active;
-        int status = timer_isActive(&timer, &active);
-        if(status != U_SUCCESS) {
-            PRINTLN_ERROR("Failed to get active status of the TSMS timer (Status: %d).", status);
-            return;
-        }
+    // if((HAL_GPIO_ReadPin(TSMS_GPIO_GPIO_Port, TSMS_GPIO_Pin) == GPIO_PIN_SET)) {
+    //     /* If the TSMS pin is high, initiate a debounce routine. */
+    //     /* But first, if a debounce routine is already active (i.e. the timer is actively running), just return and let the timer do its thing. */
+    //     bool active;
+    //     int status = timer_isActive(&timer, &active);
+    //     if(status != U_SUCCESS) {
+    //         PRINTLN_ERROR("Failed to get active status of the TSMS timer (Status: %d).", status);
+    //         return;
+    //     }
 
-        /* If timer is active, return. */
-        if(active) {return;}
+    //     /* If timer is active, return. */
+    //     if(active) {return;}
 
-        /* If timer isn't active, start a new debounce routine. */
-        status = timer_restart(&timer);
-        if(status != U_SUCCESS) {
-            PRINTLN_ERROR("Failed to restart TSMS debounce timer (Status: %d).", status);
-        }
+    //     /* If timer isn't active, start a new debounce routine. */
+    //     status = timer_restart(&timer);
+    //     if(status != U_SUCCESS) {
+    //         PRINTLN_ERROR("Failed to restart TSMS debounce timer (Status: %d).", status);
+    //     }
         
-    } else {
-        /* If TSMS pin is not high, no debouncing is needed. Just set 'tsms' to false (after getting the mutex).*/
-        tsms = false;
-    }
+    // } else {
+    //     /* If TSMS pin is not high, no debouncing is needed. Just set 'tsms' to false (after getting the mutex).*/
+    //     tsms = false;
+    // }
+    tsms = false;
+    // u_TODO - change this!
 }
 
 /* Gets the Offical TSMS State (not the raw pin state, but the state stored in the debounced 'tsms' bool). */
