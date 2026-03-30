@@ -1249,6 +1249,26 @@ uint8_t send_second_vcu_test_message
     return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
 }
 
+uint8_t send_lv_box_fan_pwm
+(uint8_t fan_pwm_percentage)
+{
+    can_msg_t msg;
+    msg.id = 0xD5;
+    msg.id_is_extended = false;
+    msg.len = 1;
+
+            uint8_t data = 0;
+                        uint32_t fan_pwm_percentage_i = (uint32_t)(fan_pwm_percentage);
+                        if(fan_pwm_percentage_i > 100ULL) {fan_pwm_percentage_i = 100;
+                        }
+                        data |= ((fan_pwm_percentage_i) & 0xFFULL) << 0;
+
+            msg.data[0] = data;
+
+
+    return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
+}
+
 
 
 /// @brief A helper which sends appropriate error to stdout and CAN if a bistream overflows
