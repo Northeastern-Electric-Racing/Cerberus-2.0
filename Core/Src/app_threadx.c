@@ -35,7 +35,6 @@
 #include "u_rtds.h"
 #include "u_tc.h"
 #include "u_threads.h"
-#include "u_tsms.h"
 #include "u_statemachine.h"
 #include "u_efuses.h"
 /* USER CODE END Includes */
@@ -87,7 +86,6 @@ UINT App_ThreadX_Init(VOID *memory_ptr) {
   CATCH_ERROR(lightning_init(), U_SUCCESS);
   CATCH_ERROR(adc_init(), U_SUCCESS);
   CATCH_ERROR(peripherals_init(), U_SUCCESS);
-  CATCH_ERROR(tsms_init(), U_SUCCESS);
   CATCH_ERROR(tc_init(), U_SUCCESS);
   CATCH_ERROR(init_statemachine(), U_SUCCESS);
 

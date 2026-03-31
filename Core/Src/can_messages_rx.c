@@ -1222,3 +1222,11 @@ void receive_pack_soc_status(const can_msg_t *message, pack_soc_status_t *pack_s
     pack_soc_status->Pack_SoC_Drift = (float)(Pack_SoC_Drift_raw / 1000);
 }
 
+void receive_shutdown_as_read_by_bms(const can_msg_t *message, shutdown_as_read_by_bms_t *shutdown_as_read_by_bms) {
+    
+    uint8_t data = message->data[0];
+    uint64_t shutdown_mask = (1ULL << 8) - 1ULL;
+    uint64_t shutdown_raw = (data >> 0) & shutdown_mask;
+    shutdown_as_read_by_bms->shutdown = (bool)shutdown_raw;
+}
+

@@ -18,7 +18,6 @@
 #include "u_faults.h"
 #include "u_pedals.h"
 #include "u_tc.h"
-#include "u_tsms.h"
 #include "serial.h"
 
 #define STATE_TRANS_QUEUE_SIZE 4
@@ -32,6 +31,7 @@
 static state_t cerberus_state;
 static bool is_ts_rising = false;
 static bool enter_drive_enabled = false;
+static _Atomic bool shutdown = false;
 
 /* Rising TS Callback and Timer */
 static void _rising_ts_cb(ULONG input) { 
@@ -54,7 +54,7 @@ void send_carstate_msg(void)
 		get_nero_state().home_mode,
 		get_nero_state().nero_index,
 		dti_get_mph(),
-		tsms_get(),
+		get_shutdown(),
 		pedals_getTorqueLimitPercentage(),
 		(cerberus_state.functional != F_REVERSE),
 		pedals_getRegenLimit(),
@@ -62,8 +62,14 @@ void send_carstate_msg(void)
 		cerberus_state.functional,
 		tc_isEnabled()
 	);
+}
 
-	//serial_monitor("tsms_state", "tsms", "%d", tsms_get());
+void update_shutdown(bool new_shutdown) {
+	shutdown = new_shutdown;
+}
+
+bool get_shutdown(void) {
+	return shutdown;
 }
 
 int init_statemachine(void) {
@@ -130,7 +136,7 @@ static int transition_functional_state(func_state_t new_state)
 
 		brake_state = pedals_getBrakeState();
 #ifdef TSMS_OVERRIDE
-		if (tsms_get() && (!brake_state || cerberus_state.functional == FAULTED)) { // only enforce brake / fault if tsms is actually on
+		if (get_shutdown() && (!brake_state || cerberus_state.functional == FAULTED)) { // only enforce brake / fault if tsms is actually on
 			return 3;
 		}
 		printf("Ignoring tsms\n\n");
@@ -146,12 +152,12 @@ static int transition_functional_state(func_state_t new_state)
 		}
 
 		/* Only turn on motor if brakes engaged and tsms is on */
-		if (!brake_state || !tsms_get()) {
+		if (!brake_state || !get_shutdown()) {
 			return 3;
 		}
 #endif
 
-		if (tsms_get()) {
+		if (get_shutdown()) {
 			rtds_soundRTDS();
 		}
 
@@ -194,7 +200,7 @@ static int transition_nero_state(nero_state_t new_state)
 		/* TSMS OFF and MPH = 0 to enter games */
 		if (new_state.nero_index == GAMES) {
 #ifndef TSMS_OVERRIDE
-			if (tsms_get() || dti_get_mph() >= 1) {
+			if (get_shutdown() || dti_get_mph() >= 1) {
 				return 1;
 			}
 #endif
@@ -324,21 +330,21 @@ void statemachine_process(state_req_t new_state_req) {
 		else if(new_state_req.id == FUNCTIONAL) { transition_functional_state(new_state_req.state.functional); }
 	}
 
-	if (!is_ts_rising && tsms_get()) {
+	if (!is_ts_rising && get_shutdown()) {
 		is_ts_rising = true;
 
 		/* Restart TS Rising timer. */
 		int status = timer_restart(&ts_rising_timer);
 		if(status != U_SUCCESS) {
-			PRINTLN_ERROR("Failed to restart TS Rising timer (in !ts_rising && tsms_get()) (Status: %d).", status);
+			PRINTLN_ERROR("Failed to restart TS Rising timer (in !ts_rising && get_shutdown()) (Status: %d).", status);
 			return;
 		}
 
-	} else if (!tsms_get()) {
+	} else if (!get_shutdown()) {
 		/* Stop the TS Rising timer. */
     	int status = timer_stop(&ts_rising_timer);
     	if(status != U_SUCCESS) {
-        	PRINTLN_ERROR("Failed to stop TS Rising timer (in !tsms_get()) (Status: %d).", status);
+        	PRINTLN_ERROR("Failed to stop TS Rising timer (in !get_shutdown()) (Status: %d).", status);
         	return;
     	}
 		is_ts_rising = false;

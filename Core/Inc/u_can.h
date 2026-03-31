@@ -60,6 +60,7 @@ extern can_t can1;
 #define CANID_VCU_TEST_MESSAGE 0xBAD
 #define CANID_SHEPHERD_PRECHARGE 0x601
 #define CANID_WHEEL_BUTTONS    0x680
+#define CANID_SHUTDOWN 0x95
 
 /* Peripheral CAN IDs. */
 #define CANID_IMU_ACCEL	  0x506

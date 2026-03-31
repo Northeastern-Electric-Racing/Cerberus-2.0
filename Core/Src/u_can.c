@@ -7,6 +7,7 @@
 #include "u_tc.h"
 #include "u_rtds.h"
 #include "u_buttons.h"
+#include "u_statemachine.h"
 #include "u_dti.h"
 #include "u_efuses.h"
 #include "can_messages_tx.h"
@@ -53,6 +54,14 @@ uint8_t can1_init(FDCAN_HandleTypeDef *hcan) {
     status = can_add_filter_standard(&can1, standard4);
     if (status != HAL_OK) {
         PRINTLN_ERROR("Failed to add standard filter to can1 (Status: %d/%s, ID1: 0x%X, ID2: 0x%X).", status, hal_status_toString(status), standard4[0], standard4[1]);
+        return U_ERROR;
+    }
+
+    /* Add filters for standard IDs */
+    uint16_t standard5[] = {CANID_SHUTDOWN, 0x00};
+    status = can_add_filter_standard(&can1, standard5);
+    if (status != HAL_OK) {
+        PRINTLN_ERROR("Failed to add standard filter to can1 (Status: %d/%s, ID1: 0x%X, ID2: 0x%X).", status, hal_status_toString(status), standard5[0], standard5[1]);
         return U_ERROR;
     }
 
@@ -220,6 +229,11 @@ void can_inbox(can_msg_t *message) {
         wheel_buttons_t wheel_buttons = { 0 };
         receive_wheel_buttons(message, &wheel_buttons);
         buttons_process((button_t)wheel_buttons.button_id);
+        break;
+    case CANID_SHUTDOWN:
+        shutdown_as_read_by_bms_t bms = { 0 };
+        receive_shutdown_as_read_by_bms(message, &bms);
+        update_shutdown(bms.shutdown);
         break;
     default:
         PRINTLN_WARNING("Unknown CAN Message Recieved (Message ID: 0x%X).", message->id);
