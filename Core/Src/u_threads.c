@@ -13,7 +13,6 @@
 #include "u_debug.h"
 #include "u_efuses.h"
 #include "u_statemachine.h"
-#include "u_tsms.h"
 #include "u_bms.h"
 #include "u_peripherals.h"
 #include "u_ethernet.h"
@@ -403,7 +402,7 @@ void vShutdown(ULONG thread_input) {
                                 || hv_c || hvd_gpio || imd_gpio || ckpt_gpio
                                 || inertia_sw_gpio || tsms_gpio;
 
-        if (shutdown_active && tsms_get() == true) { // if tsms is still on when shutdown is active, trigger fault
+        if (shutdown_active && get_shutdown() == true) { // if tsms is still on when shutdown is active, trigger fault
             queue_send(&faults, &(fault_t){SHUTDOWN_FAULT}, TX_NO_WAIT);
         }
 
@@ -764,28 +763,6 @@ void vEFuses(ULONG thread_input) {
     }
 }
 
-/* TSMS Thread. */
-static thread_t tsms_thread = {
-        .name       = "TSMS Thread",          /* Name */
-        .size       = 2048,                   /* Stack Size (in bytes) */
-        .priority   = PRIO_vTSMS,             /* Priority */
-        .threshold  = 0,                      /* Preemption Threshold */
-        .time_slice = TX_NO_TIME_SLICE,       /* Time Slice */
-        .auto_start = TX_AUTO_START,          /* Auto Start */
-        .sleep      = 50,                     /* Sleep (in ticks) */
-        .function   = vTSMS                   /* Thread Function */
-    };
-void vTSMS(ULONG thread_input) {
-
-    while(1) {
-
-        tsms_update();
-
-        /* Sleep Thread for specified number of ticks. */
-        tx_thread_sleep(tsms_thread.sleep);
-    }
-}
-
 /* Mux Thread (for the ADC multiplexer). */
 static thread_t mux_thread = {
         .name       = "Mux Thread",           /* Name */
@@ -1006,7 +983,6 @@ uint8_t threads_init(TX_BYTE_POOL *byte_pool) {
     CATCH_ERROR(create_thread(byte_pool, &can_outgoing_thread), U_SUCCESS);      // Create Outgoing CAN thread.
     CATCH_ERROR(create_thread(byte_pool, &faults_queue_thread), U_SUCCESS);      // Create Faults Queue thread.
     CATCH_ERROR(create_thread(byte_pool, &faults_thread), U_SUCCESS);            // Create Faults thread.
-    CATCH_ERROR(create_thread(byte_pool, &tsms_thread), U_SUCCESS);              // Create TSMS thread.
     CATCH_ERROR(create_thread(byte_pool, &shutdown_thread), U_SUCCESS);          // Create Shutdown thread.
     CATCH_ERROR(create_thread(byte_pool, &statemachine_thread), U_SUCCESS);      // Create State Machine thread.
     //CATCH_ERROR(create_thread(byte_pool, &pedals_thread), U_SUCCESS);            // Create Pedals thread.
