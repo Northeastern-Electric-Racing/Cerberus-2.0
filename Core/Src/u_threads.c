@@ -73,7 +73,8 @@ void vTest(ULONG thread_input) {
 
     while(1) {
 
-        ethernet_mqtt_message_t message = nx_protobuf_mqtt_message_create("MQTT_TEST/A/One", "A", 19.2f, 12.1f);
+        float third_one = 23134.31f;
+        ethernet_mqtt_message_t message = nx_protobuf_mqtt_message_create("MQTT_TEST/A/One", "A", 19.2f, 12.1f, third_one);
         queue_send(&eth_manager, &message, TX_NO_WAIT);
 
         send_vcu_test_message(7, 19.342, 30, 13942, -122);
