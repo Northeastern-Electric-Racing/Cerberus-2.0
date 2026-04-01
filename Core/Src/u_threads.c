@@ -6,6 +6,7 @@
 #include "u_can.h"
 #include "u_nx_ethernet.h"
 #include "nxd_ptp_client.h"
+#include "u_nx_protobuf.h"
 #include "u_faults.h"
 #include "u_pedals.h"
 #include "u_adc.h"
@@ -68,36 +69,12 @@ void vTest(ULONG thread_input) {
         PRINTLN_ERROR("Failed to call ethernet1_init() (Status: %d/%s).", status, nx_status_toString(status));
     }
 
-    efuse_disable(EFUSE_DASHBOARD);
-    efuse_disable(EFUSE_BRAKE);
-    efuse_disable(EFUSE_SHUTDOWN);
-    efuse_disable(EFUSE_LV);
-    efuse_disable(EFUSE_RADFAN);
-    efuse_enable(EFUSE_FANBATT);
-    efuse_disable(EFUSE_PUMP1);
-    efuse_disable(EFUSE_PUMP2);
-    efuse_disable(EFUSE_BATTBOX);
-    efuse_disable(EFUSE_MC);
-    HAL_GPIO_WritePin(EF_SPARE_EN_GPIO_Port, EF_SPARE_EN_Pin, GPIO_PIN_RESET);
-
     //tx_thread_sleep(5000);
 
     while(1) {
 
-        // //char message[8] = "message";
-        // uint8_t message = 210;
-        // ethernet_message_t msg = ethernet_create_message(0x01, TPU, &message, sizeof(message));
-        // int status = queue_send(&eth_outgoing, &msg, TX_WAIT_FOREVER);
-        // if(status != U_SUCCESS) {
-        //     PRINTLN_ERROR("Failed to call queue_send when sending ethernet message (Status: %d).", status);
-        // } else {
-        //     PRINTLN_INFO("Added message to ethernet outgoing queue.");
-        // }
-
-        // PRINTLN_INFO("Ran vTest");
-
-        float a  = 4.0;
-        ethernet1_mqtt_send("TEST/A/Two", 11, "z", 2, &a, 1, 69);
+        ethernet_mqtt_message_t message = nx_protobuf_mqtt_message_create("MQTT_TEST/A/One", "A", 19.2f, 12.1f);
+        queue_send(&eth_manager, &message, TX_NO_WAIT);
 
         send_vcu_test_message(7, 19.342, 30, 13942, -122);
         send_second_vcu_test_message(12132, 3, 2, false, 35, 100000);
