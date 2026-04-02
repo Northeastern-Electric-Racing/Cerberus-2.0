@@ -813,6 +813,10 @@ void vPeripherals(ULONG thread_input) {
                 acceleration.y,
                 acceleration.z
             );
+
+            /* Send accel over ethernet! */
+            ethernet_mqtt_message_t message = nx_protobuf_mqtt_message_create("VCU_Ethernet/A/Acceleration", "mdps", acceleration.x, acceleration.y, acceleration.z);
+            queue_send(&eth_manager, &message, TX_NO_WAIT);
         } while (0);
 
         /* SECTION 3: Read IMU gyro data and send it over CAN. */
