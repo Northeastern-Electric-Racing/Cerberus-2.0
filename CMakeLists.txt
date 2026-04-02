@@ -194,4 +194,4 @@ target_link_libraries(${CMAKE_PROJECT_NAME}
 )
 
 # NER add nanopb
-add_subdirectory(Drivers/Odyssey-Definitions/nanopb)
+add_subdirectory(Drivers/Embedded-Base/dev/nanopb)
