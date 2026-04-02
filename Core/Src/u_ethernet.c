@@ -2,7 +2,6 @@
 #include "u_queues.h"
 #include "nx_stm32_eth_driver.h"
 #include "u_nx_ethernet.h"
-#include "u_nx_protobuf.h"
 #include "u_nx_debug.h"
 #include "main.h"
 #include "u_tx_debug.h"
@@ -33,13 +32,6 @@ UINT ethernet1_init(void) {
 
 
 void vEthernet1Manager(ULONG thread_input) {
-
-    // all calls to the ethernet driver in this thread only to prevent race conditons
-    UINT status = ethernet1_init();
-    if(status != NX_SUCCESS) {
-        PRINTLN_ERROR("Failed to call ethernet1_init() (Status: %d/%s).", status, nx_status_toString(status));
-    }
-    PRINTLN_INFO("Successfully initialized ethernet 1!");
 
     ethernet_mqtt_message_t message = { 0 };
 

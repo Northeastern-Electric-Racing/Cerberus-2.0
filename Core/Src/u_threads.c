@@ -74,7 +74,7 @@ void vTest(ULONG thread_input) {
     while(1) {
 
         float third_one = 23134.31f;
-        ethernet_mqtt_message_t message = nx_protobuf_mqtt_message_create("MQTT_TEST/A/One", "A", 19.2f, 12.1f, third_one);
+        ethernet_mqtt_message_t message = nx_protobuf_mqtt_message_create("VCU_Ethernet/A/big_message", "A", 19.2f, 12.1f, third_one, true, -12);
         queue_send(&eth_manager, &message, TX_NO_WAIT);
 
         send_vcu_test_message(7, 19.342, 30, 13942, -122);
@@ -836,6 +836,10 @@ void vPeripherals(ULONG thread_input) {
                 gyro.y,
                 gyro.z
             );
+
+            /* Send gyro over ethernet! */
+            ethernet_mqtt_message_t message = nx_protobuf_mqtt_message_create("VCU_Ethernet/A/Gyro", "mdps", gyro.x, gyro.y, gyro.z);
+            queue_send(&eth_manager, &message, TX_NO_WAIT);
         } while (0);
 
         /* SECTION 4: Send LV ADC Message. */
@@ -933,7 +937,7 @@ uint8_t threads_init(TX_BYTE_POOL *byte_pool) {
     CATCH_ERROR(create_thread(byte_pool, &faults_thread), U_SUCCESS);            // Create Faults thread.
     //CATCH_ERROR(create_thread(byte_pool, &tsms_thread), U_SUCCESS);              // Create TSMS thread.
     CATCH_ERROR(create_thread(byte_pool, &shutdown_thread), U_SUCCESS);          // Create Shutdown thread.
-    //CATCH_ERROR(create_thread(byte_pool, &statemachine_thread), U_SUCCESS);      // Create State Machine thread.
+    CATCH_ERROR(create_thread(byte_pool, &statemachine_thread), U_SUCCESS);      // Create State Machine thread.
     //CATCH_ERROR(create_thread(byte_pool, &pedals_thread), U_SUCCESS);            // Create Pedals thread.
     //CATCH_ERROR(create_thread(byte_pool, &efuses_thread), U_SUCCESS);              // Create eFuses thread.
     //CATCH_ERROR(create_thread(byte_pool, &mux_thread), U_SUCCESS);               // Create Mux thread.
