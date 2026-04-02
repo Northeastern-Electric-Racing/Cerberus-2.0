@@ -1,5 +1,6 @@
 #pragma once
 #include "serverdata.pb.h"
+#include "u_nx_protobuf.h"
 #include "tx_api.h"
 #include <stdint.h>
 
