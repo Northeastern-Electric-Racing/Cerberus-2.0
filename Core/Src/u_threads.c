@@ -941,7 +941,7 @@ uint8_t threads_init(TX_BYTE_POOL *byte_pool) {
     //CATCH_ERROR(create_thread(byte_pool, &pedals_thread), U_SUCCESS);            // Create Pedals thread.
     //CATCH_ERROR(create_thread(byte_pool, &efuses_thread), U_SUCCESS);              // Create eFuses thread.
     //CATCH_ERROR(create_thread(byte_pool, &mux_thread), U_SUCCESS);               // Create Mux thread.
-    //CATCH_ERROR(create_thread(byte_pool, &peripherals_thread), U_SUCCESS);       // Create Peripherals thread.
+    CATCH_ERROR(create_thread(byte_pool, &peripherals_thread), U_SUCCESS);       // Create Peripherals thread.
     CATCH_ERROR(create_thread(byte_pool, &ethernet_manager), U_SUCCESS); // Create Outgoing Ethernet thread.
     CATCH_ERROR(create_thread(byte_pool, &test_thread), U_SUCCESS);                // Create Test thread.
     CATCH_ERROR(create_thread(byte_pool, &rtds_telemetry_thread), U_SUCCESS);      // Create RTDS Telemetry thread.
