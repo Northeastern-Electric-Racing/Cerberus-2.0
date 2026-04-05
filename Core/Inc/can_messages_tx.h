@@ -348,4 +348,11 @@ uint8_t send_lfiu_high_current_adc_readings
 */
 uint8_t send_second_vcu_test_message
 (uint16_t one,uint8_t two,uint8_t three,bool four,uint8_t five,uint32_t six);
+
+/**
+* Contents of this message:
+* VCU/LVBox/Fan_PWM - LV Box Fan PWM Percentage
+*/
+uint8_t send_lv_box_fan_pwm
+(uint8_t fan_pwm_percentage);
 #endif

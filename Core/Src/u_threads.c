@@ -842,6 +842,14 @@ void vPeripherals(ULONG thread_input) {
                 temperature,
                 humidity
             );
+
+            /*Calculate LV box fan PWM from temperature and send over CAN,
+            Linear mapping: 20C --> 0%, 40C --> 100%. Clamped to values [0, 100]. */
+            float fan_pwm_f = (temperature - 20.0f)/ (40.0f - 20.0f) * 100.0f;
+            if (fan_pwm_f<0.0f) {fan_pwm_f = 0.0f;}
+            if (fan_pwm_f>100.0f) {fan_pwm_f = 100.0f;}
+            send_lv_box_fan_pwm((uint8_t)fan_pwm_f);
+
         } while (0);
 
         /* SECTION 2: Read IMU acceleration data and send it over CAN. */
