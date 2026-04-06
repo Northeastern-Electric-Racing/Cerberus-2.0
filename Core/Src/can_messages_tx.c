@@ -6,8 +6,8 @@
 #include "can_messages_tx.h"
 #include <stdbool.h>
 
-#include "u_queues.h"
 #include "u_tx_debug.h"
+#include "u_queues.h"
 #include "c_utils.h"
 #include "fdcan.h"
 #include "bitstream.h"
@@ -22,23 +22,17 @@ uint8_t send_ac_current_command
     can_msg_t msg;
     msg.id = 0x036;
     msg.id_is_extended = false;
-    msg.len = 2;
-
     
             uint16_t data = 0;
+            msg.len = 2;
                         int32_t current_target_ac_i = (int32_t)(current_target_ac*10);
-                        if(current_target_ac_i > 32767) {
-                            PRINTLN_WARNING("Overflow occured for point current_target_ac! Capping point to its max value (point is 16 bits signed, so max_value=32767).");
-                            current_target_ac_i = 32767;
-                        } else if(current_target_ac_i < -32768) {
-                            PRINTLN_WARNING("Underflow occured for point current_target_ac! Capping point to its min value (point is 16 bits signed, so min_value=-32768).");
-                            current_target_ac_i = -32768;
+                        if(current_target_ac_i > 32767) {current_target_ac_i = 32767;
+                        } else if(current_target_ac_i < -32768) {current_target_ac_i = -32768;
                         }
                         data |= ((uint32_t)(current_target_ac_i) & 0xFFFFULL) << 0;
             
             uint16_t data_bigendian = __builtin_bswap16(data);
             memcpy(msg.data, &data_bigendian, 2);
-        
 
     return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
 }
@@ -49,23 +43,17 @@ uint8_t send_brake_current_command
     can_msg_t msg;
     msg.id = 0x056;
     msg.id_is_extended = false;
-    msg.len = 8;
-
     
             uint64_t data = 0;
+            msg.len = 8;
                         int32_t brake_ac_current_i = (int32_t)(brake_ac_current*10);
-                        if(brake_ac_current_i > 32767) {
-                            PRINTLN_WARNING("Overflow occured for point brake_ac_current! Capping point to its max value (point is 16 bits signed, so max_value=32767).");
-                            brake_ac_current_i = 32767;
-                        } else if(brake_ac_current_i < -32768) {
-                            PRINTLN_WARNING("Underflow occured for point brake_ac_current! Capping point to its min value (point is 16 bits signed, so min_value=-32768).");
-                            brake_ac_current_i = -32768;
+                        if(brake_ac_current_i > 32767) {brake_ac_current_i = 32767;
+                        } else if(brake_ac_current_i < -32768) {brake_ac_current_i = -32768;
                         }
                         data |= ((uint32_t)(brake_ac_current_i) & 0xFFFFULL) << 48;
             
             uint64_t data_bigendian = __builtin_bswap64(data);
             memcpy(msg.data, &data_bigendian, 8);
-        
 
     return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
 }
@@ -76,529 +64,499 @@ uint8_t send_drive_enable_command
     can_msg_t msg;
     msg.id = 0x196;
     msg.id_is_extended = false;
-    msg.len = 1;
-
     
             uint8_t data = 0;
+            msg.len = 1;
                         uint32_t drive_enable_i = (uint32_t)(drive_enable);
-                        if(drive_enable_i > 255ULL) {
-                            PRINTLN_WARNING("Overflow occured for point drive_enable! Capping point to its max value (point is 8 bits, so max_value=255).");
-                            drive_enable_i = 255;
+                        if(drive_enable_i > 255ULL) {drive_enable_i = 255;
                         }
                         data |= ((drive_enable_i) & 0xFFULL) << 0;
             
             msg.data[0] = data;
-        
 
     return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
 }
 
 uint8_t send_dashboard_efuse
-(uint16_t ADC,float voltage,float current,bool is_faulted,bool is_enabled)
+(uint16_t ADC,float voltage,float current,bool is_faulted,bool is_enabled,uint8_t control_state)
 {
     can_msg_t msg;
     msg.id = 0xEF0;
-    msg.id_is_extended = true;msg.len = 8;
-
-    
+    msg.id_is_extended = true;
             uint64_t data = 0;
+            msg.len = 8;
                         uint32_t ADC_i = (uint32_t)(ADC);
-                        if(ADC_i > 65535ULL) {
-                            PRINTLN_WARNING("Overflow occured for point ADC! Capping point to its max value (point is 16 bits, so max_value=65535).");
-                            ADC_i = 65535;
+                        if(ADC_i > 65535ULL) {ADC_i = 65535;
                         }
                         data |= ((ADC_i) & 0xFFFFULL) << 48;
             
                         uint32_t voltage_i = (uint32_t)(voltage*1000);
-                        if(voltage_i > 65535ULL) {
-                            PRINTLN_WARNING("Overflow occured for point voltage! Capping point to its max value (point is 16 bits, so max_value=65535).");
-                            voltage_i = 65535;
+                        if(voltage_i > 65535ULL) {voltage_i = 65535;
                         }
                         data |= ((voltage_i) & 0xFFFFULL) << 32;
             
                         uint32_t current_i = (uint32_t)(current*1000);
-                        if(current_i > 65535ULL) {
-                            PRINTLN_WARNING("Overflow occured for point current! Capping point to its max value (point is 16 bits, so max_value=65535).");
-                            current_i = 65535;
+                        if(current_i > 65535ULL) {current_i = 65535;
                         }
                         data |= ((current_i) & 0xFFFFULL) << 16;
             
                         uint32_t is_faulted_i = (uint32_t)(is_faulted);
-                        if(is_faulted_i > 255ULL) {
-                            PRINTLN_WARNING("Overflow occured for point is_faulted! Capping point to its max value (point is 8 bits, so max_value=255).");
-                            is_faulted_i = 255;
+                        if(is_faulted_i > 15ULL) {is_faulted_i = 15;
                         }
-                        data |= ((is_faulted_i) & 0xFFULL) << 8;
+                        data |= ((is_faulted_i) & 0xFULL) << 12;
             
                         uint32_t is_enabled_i = (uint32_t)(is_enabled);
-                        if(is_enabled_i > 255ULL) {
-                            PRINTLN_WARNING("Overflow occured for point is_enabled! Capping point to its max value (point is 8 bits, so max_value=255).");
-                            is_enabled_i = 255;
+                        if(is_enabled_i > 15ULL) {is_enabled_i = 15;
                         }
-                        data |= ((is_enabled_i) & 0xFFULL) << 0;
+                        data |= ((is_enabled_i) & 0xFULL) << 8;
+            
+                        uint32_t control_state_i = (uint32_t)(control_state);
+                        if(control_state_i > 255ULL) {control_state_i = 255;
+                        }
+                        data |= ((control_state_i) & 0xFFULL) << 0;
             
             uint64_t data_bigendian = __builtin_bswap64(data);
             memcpy(msg.data, &data_bigendian, 8);
-        
 
     return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
 }
 
 uint8_t send_brake_efuse
-(uint16_t ADC,float voltage,float current,bool is_faulted,bool is_enabled)
+(uint16_t ADC,float voltage,float current,bool is_faulted,bool is_enabled,uint8_t control_state)
 {
     can_msg_t msg;
     msg.id = 0xEF1;
-    msg.id_is_extended = true;msg.len = 8;
-
-    
+    msg.id_is_extended = true;
             uint64_t data = 0;
+            msg.len = 8;
                         uint32_t ADC_i = (uint32_t)(ADC);
-                        if(ADC_i > 65535ULL) {
-                            PRINTLN_WARNING("Overflow occured for point ADC! Capping point to its max value (point is 16 bits, so max_value=65535).");
-                            ADC_i = 65535;
+                        if(ADC_i > 65535ULL) {ADC_i = 65535;
                         }
                         data |= ((ADC_i) & 0xFFFFULL) << 48;
             
                         uint32_t voltage_i = (uint32_t)(voltage*1000);
-                        if(voltage_i > 65535ULL) {
-                            PRINTLN_WARNING("Overflow occured for point voltage! Capping point to its max value (point is 16 bits, so max_value=65535).");
-                            voltage_i = 65535;
+                        if(voltage_i > 65535ULL) {voltage_i = 65535;
                         }
                         data |= ((voltage_i) & 0xFFFFULL) << 32;
             
                         uint32_t current_i = (uint32_t)(current*1000);
-                        if(current_i > 65535ULL) {
-                            PRINTLN_WARNING("Overflow occured for point current! Capping point to its max value (point is 16 bits, so max_value=65535).");
-                            current_i = 65535;
+                        if(current_i > 65535ULL) {current_i = 65535;
                         }
                         data |= ((current_i) & 0xFFFFULL) << 16;
             
                         uint32_t is_faulted_i = (uint32_t)(is_faulted);
-                        if(is_faulted_i > 255ULL) {
-                            PRINTLN_WARNING("Overflow occured for point is_faulted! Capping point to its max value (point is 8 bits, so max_value=255).");
-                            is_faulted_i = 255;
+                        if(is_faulted_i > 15ULL) {is_faulted_i = 15;
                         }
-                        data |= ((is_faulted_i) & 0xFFULL) << 8;
+                        data |= ((is_faulted_i) & 0xFULL) << 12;
             
                         uint32_t is_enabled_i = (uint32_t)(is_enabled);
-                        if(is_enabled_i > 255ULL) {
-                            PRINTLN_WARNING("Overflow occured for point is_enabled! Capping point to its max value (point is 8 bits, so max_value=255).");
-                            is_enabled_i = 255;
+                        if(is_enabled_i > 15ULL) {is_enabled_i = 15;
                         }
-                        data |= ((is_enabled_i) & 0xFFULL) << 0;
+                        data |= ((is_enabled_i) & 0xFULL) << 8;
+            
+                        uint32_t control_state_i = (uint32_t)(control_state);
+                        if(control_state_i > 255ULL) {control_state_i = 255;
+                        }
+                        data |= ((control_state_i) & 0xFFULL) << 0;
             
             uint64_t data_bigendian = __builtin_bswap64(data);
             memcpy(msg.data, &data_bigendian, 8);
-        
 
     return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
 }
 
 uint8_t send_shutdown_efuse
-(uint16_t ADC,float voltage,float current,bool is_faulted,bool is_enabled)
+(uint16_t ADC,float voltage,float current,bool is_faulted,bool is_enabled,uint8_t control_state)
 {
     can_msg_t msg;
     msg.id = 0xEF2;
-    msg.id_is_extended = true;msg.len = 8;
-
-    
+    msg.id_is_extended = true;
             uint64_t data = 0;
+            msg.len = 8;
                         uint32_t ADC_i = (uint32_t)(ADC);
-                        if(ADC_i > 65535ULL) {
-                            PRINTLN_WARNING("Overflow occured for point ADC! Capping point to its max value (point is 16 bits, so max_value=65535).");
-                            ADC_i = 65535;
+                        if(ADC_i > 65535ULL) {ADC_i = 65535;
                         }
                         data |= ((ADC_i) & 0xFFFFULL) << 48;
             
                         uint32_t voltage_i = (uint32_t)(voltage*1000);
-                        if(voltage_i > 65535ULL) {
-                            PRINTLN_WARNING("Overflow occured for point voltage! Capping point to its max value (point is 16 bits, so max_value=65535).");
-                            voltage_i = 65535;
+                        if(voltage_i > 65535ULL) {voltage_i = 65535;
                         }
                         data |= ((voltage_i) & 0xFFFFULL) << 32;
             
                         uint32_t current_i = (uint32_t)(current*1000);
-                        if(current_i > 65535ULL) {
-                            PRINTLN_WARNING("Overflow occured for point current! Capping point to its max value (point is 16 bits, so max_value=65535).");
-                            current_i = 65535;
+                        if(current_i > 65535ULL) {current_i = 65535;
                         }
                         data |= ((current_i) & 0xFFFFULL) << 16;
             
                         uint32_t is_faulted_i = (uint32_t)(is_faulted);
-                        if(is_faulted_i > 255ULL) {
-                            PRINTLN_WARNING("Overflow occured for point is_faulted! Capping point to its max value (point is 8 bits, so max_value=255).");
-                            is_faulted_i = 255;
+                        if(is_faulted_i > 15ULL) {is_faulted_i = 15;
                         }
-                        data |= ((is_faulted_i) & 0xFFULL) << 8;
+                        data |= ((is_faulted_i) & 0xFULL) << 12;
             
                         uint32_t is_enabled_i = (uint32_t)(is_enabled);
-                        if(is_enabled_i > 255ULL) {
-                            PRINTLN_WARNING("Overflow occured for point is_enabled! Capping point to its max value (point is 8 bits, so max_value=255).");
-                            is_enabled_i = 255;
+                        if(is_enabled_i > 15ULL) {is_enabled_i = 15;
                         }
-                        data |= ((is_enabled_i) & 0xFFULL) << 0;
+                        data |= ((is_enabled_i) & 0xFULL) << 8;
+            
+                        uint32_t control_state_i = (uint32_t)(control_state);
+                        if(control_state_i > 255ULL) {control_state_i = 255;
+                        }
+                        data |= ((control_state_i) & 0xFFULL) << 0;
             
             uint64_t data_bigendian = __builtin_bswap64(data);
             memcpy(msg.data, &data_bigendian, 8);
-        
 
     return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
 }
 
 uint8_t send_lv_efuse
-(uint16_t ADC,float voltage,float current,bool is_faulted,bool is_enabled)
+(uint16_t ADC,float voltage,float current,bool is_faulted,bool is_enabled,uint8_t control_state)
 {
     can_msg_t msg;
     msg.id = 0xEF3;
-    msg.id_is_extended = true;msg.len = 8;
-
-    
+    msg.id_is_extended = true;
             uint64_t data = 0;
+            msg.len = 8;
                         uint32_t ADC_i = (uint32_t)(ADC);
-                        if(ADC_i > 65535ULL) {
-                            PRINTLN_WARNING("Overflow occured for point ADC! Capping point to its max value (point is 16 bits, so max_value=65535).");
-                            ADC_i = 65535;
+                        if(ADC_i > 65535ULL) {ADC_i = 65535;
                         }
                         data |= ((ADC_i) & 0xFFFFULL) << 48;
             
                         uint32_t voltage_i = (uint32_t)(voltage*1000);
-                        if(voltage_i > 65535ULL) {
-                            PRINTLN_WARNING("Overflow occured for point voltage! Capping point to its max value (point is 16 bits, so max_value=65535).");
-                            voltage_i = 65535;
+                        if(voltage_i > 65535ULL) {voltage_i = 65535;
                         }
                         data |= ((voltage_i) & 0xFFFFULL) << 32;
             
                         uint32_t current_i = (uint32_t)(current*1000);
-                        if(current_i > 65535ULL) {
-                            PRINTLN_WARNING("Overflow occured for point current! Capping point to its max value (point is 16 bits, so max_value=65535).");
-                            current_i = 65535;
+                        if(current_i > 65535ULL) {current_i = 65535;
                         }
                         data |= ((current_i) & 0xFFFFULL) << 16;
             
                         uint32_t is_faulted_i = (uint32_t)(is_faulted);
-                        if(is_faulted_i > 255ULL) {
-                            PRINTLN_WARNING("Overflow occured for point is_faulted! Capping point to its max value (point is 8 bits, so max_value=255).");
-                            is_faulted_i = 255;
+                        if(is_faulted_i > 15ULL) {is_faulted_i = 15;
                         }
-                        data |= ((is_faulted_i) & 0xFFULL) << 8;
+                        data |= ((is_faulted_i) & 0xFULL) << 12;
             
                         uint32_t is_enabled_i = (uint32_t)(is_enabled);
-                        if(is_enabled_i > 255ULL) {
-                            PRINTLN_WARNING("Overflow occured for point is_enabled! Capping point to its max value (point is 8 bits, so max_value=255).");
-                            is_enabled_i = 255;
+                        if(is_enabled_i > 15ULL) {is_enabled_i = 15;
                         }
-                        data |= ((is_enabled_i) & 0xFFULL) << 0;
+                        data |= ((is_enabled_i) & 0xFULL) << 8;
+            
+                        uint32_t control_state_i = (uint32_t)(control_state);
+                        if(control_state_i > 255ULL) {control_state_i = 255;
+                        }
+                        data |= ((control_state_i) & 0xFFULL) << 0;
             
             uint64_t data_bigendian = __builtin_bswap64(data);
             memcpy(msg.data, &data_bigendian, 8);
-        
 
     return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
 }
 
 uint8_t send_radfan_efuse
-(uint16_t ADC,float voltage,float current,bool is_faulted,bool is_enabled)
+(uint16_t ADC,float voltage,float current,bool is_faulted,bool is_enabled,uint8_t control_state)
 {
     can_msg_t msg;
     msg.id = 0xEF4;
-    msg.id_is_extended = true;msg.len = 8;
-
-    
+    msg.id_is_extended = true;
             uint64_t data = 0;
+            msg.len = 8;
                         uint32_t ADC_i = (uint32_t)(ADC);
-                        if(ADC_i > 65535ULL) {
-                            PRINTLN_WARNING("Overflow occured for point ADC! Capping point to its max value (point is 16 bits, so max_value=65535).");
-                            ADC_i = 65535;
+                        if(ADC_i > 65535ULL) {ADC_i = 65535;
                         }
                         data |= ((ADC_i) & 0xFFFFULL) << 48;
             
                         uint32_t voltage_i = (uint32_t)(voltage*1000);
-                        if(voltage_i > 65535ULL) {
-                            PRINTLN_WARNING("Overflow occured for point voltage! Capping point to its max value (point is 16 bits, so max_value=65535).");
-                            voltage_i = 65535;
+                        if(voltage_i > 65535ULL) {voltage_i = 65535;
                         }
                         data |= ((voltage_i) & 0xFFFFULL) << 32;
             
                         uint32_t current_i = (uint32_t)(current*1000);
-                        if(current_i > 65535ULL) {
-                            PRINTLN_WARNING("Overflow occured for point current! Capping point to its max value (point is 16 bits, so max_value=65535).");
-                            current_i = 65535;
+                        if(current_i > 65535ULL) {current_i = 65535;
                         }
                         data |= ((current_i) & 0xFFFFULL) << 16;
             
                         uint32_t is_faulted_i = (uint32_t)(is_faulted);
-                        if(is_faulted_i > 255ULL) {
-                            PRINTLN_WARNING("Overflow occured for point is_faulted! Capping point to its max value (point is 8 bits, so max_value=255).");
-                            is_faulted_i = 255;
+                        if(is_faulted_i > 15ULL) {is_faulted_i = 15;
                         }
-                        data |= ((is_faulted_i) & 0xFFULL) << 8;
+                        data |= ((is_faulted_i) & 0xFULL) << 12;
             
                         uint32_t is_enabled_i = (uint32_t)(is_enabled);
-                        if(is_enabled_i > 255ULL) {
-                            PRINTLN_WARNING("Overflow occured for point is_enabled! Capping point to its max value (point is 8 bits, so max_value=255).");
-                            is_enabled_i = 255;
+                        if(is_enabled_i > 15ULL) {is_enabled_i = 15;
                         }
-                        data |= ((is_enabled_i) & 0xFFULL) << 0;
+                        data |= ((is_enabled_i) & 0xFULL) << 8;
+            
+                        uint32_t control_state_i = (uint32_t)(control_state);
+                        if(control_state_i > 255ULL) {control_state_i = 255;
+                        }
+                        data |= ((control_state_i) & 0xFFULL) << 0;
             
             uint64_t data_bigendian = __builtin_bswap64(data);
             memcpy(msg.data, &data_bigendian, 8);
-        
 
     return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
 }
 
 uint8_t send_fanbatt_efuse
-(uint16_t ADC,float voltage,float current,bool is_faulted,bool is_enabled)
+(uint16_t ADC,float voltage,float current,bool is_faulted,bool is_enabled,uint8_t control_state)
 {
     can_msg_t msg;
     msg.id = 0xEF5;
-    msg.id_is_extended = true;msg.len = 8;
-
-    
+    msg.id_is_extended = true;
             uint64_t data = 0;
+            msg.len = 8;
                         uint32_t ADC_i = (uint32_t)(ADC);
-                        if(ADC_i > 65535ULL) {
-                            PRINTLN_WARNING("Overflow occured for point ADC! Capping point to its max value (point is 16 bits, so max_value=65535).");
-                            ADC_i = 65535;
+                        if(ADC_i > 65535ULL) {ADC_i = 65535;
                         }
                         data |= ((ADC_i) & 0xFFFFULL) << 48;
             
                         uint32_t voltage_i = (uint32_t)(voltage*1000);
-                        if(voltage_i > 65535ULL) {
-                            PRINTLN_WARNING("Overflow occured for point voltage! Capping point to its max value (point is 16 bits, so max_value=65535).");
-                            voltage_i = 65535;
+                        if(voltage_i > 65535ULL) {voltage_i = 65535;
                         }
                         data |= ((voltage_i) & 0xFFFFULL) << 32;
             
                         uint32_t current_i = (uint32_t)(current*1000);
-                        if(current_i > 65535ULL) {
-                            PRINTLN_WARNING("Overflow occured for point current! Capping point to its max value (point is 16 bits, so max_value=65535).");
-                            current_i = 65535;
+                        if(current_i > 65535ULL) {current_i = 65535;
                         }
                         data |= ((current_i) & 0xFFFFULL) << 16;
             
                         uint32_t is_faulted_i = (uint32_t)(is_faulted);
-                        if(is_faulted_i > 255ULL) {
-                            PRINTLN_WARNING("Overflow occured for point is_faulted! Capping point to its max value (point is 8 bits, so max_value=255).");
-                            is_faulted_i = 255;
+                        if(is_faulted_i > 15ULL) {is_faulted_i = 15;
                         }
-                        data |= ((is_faulted_i) & 0xFFULL) << 8;
+                        data |= ((is_faulted_i) & 0xFULL) << 12;
             
                         uint32_t is_enabled_i = (uint32_t)(is_enabled);
-                        if(is_enabled_i > 255ULL) {
-                            PRINTLN_WARNING("Overflow occured for point is_enabled! Capping point to its max value (point is 8 bits, so max_value=255).");
-                            is_enabled_i = 255;
+                        if(is_enabled_i > 15ULL) {is_enabled_i = 15;
                         }
-                        data |= ((is_enabled_i) & 0xFFULL) << 0;
+                        data |= ((is_enabled_i) & 0xFULL) << 8;
+            
+                        uint32_t control_state_i = (uint32_t)(control_state);
+                        if(control_state_i > 255ULL) {control_state_i = 255;
+                        }
+                        data |= ((control_state_i) & 0xFFULL) << 0;
             
             uint64_t data_bigendian = __builtin_bswap64(data);
             memcpy(msg.data, &data_bigendian, 8);
-        
 
     return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
 }
 
 uint8_t send_pumpone_efuse
-(uint16_t ADC,float voltage,float current,bool is_faulted,bool is_enabled)
+(uint16_t ADC,float voltage,float current,bool is_faulted,bool is_enabled,uint8_t control_state)
 {
     can_msg_t msg;
     msg.id = 0xEF6;
-    msg.id_is_extended = true;msg.len = 8;
-
-    
+    msg.id_is_extended = true;
             uint64_t data = 0;
+            msg.len = 8;
                         uint32_t ADC_i = (uint32_t)(ADC);
-                        if(ADC_i > 65535ULL) {
-                            PRINTLN_WARNING("Overflow occured for point ADC! Capping point to its max value (point is 16 bits, so max_value=65535).");
-                            ADC_i = 65535;
+                        if(ADC_i > 65535ULL) {ADC_i = 65535;
                         }
                         data |= ((ADC_i) & 0xFFFFULL) << 48;
             
                         uint32_t voltage_i = (uint32_t)(voltage*1000);
-                        if(voltage_i > 65535ULL) {
-                            PRINTLN_WARNING("Overflow occured for point voltage! Capping point to its max value (point is 16 bits, so max_value=65535).");
-                            voltage_i = 65535;
+                        if(voltage_i > 65535ULL) {voltage_i = 65535;
                         }
                         data |= ((voltage_i) & 0xFFFFULL) << 32;
             
                         uint32_t current_i = (uint32_t)(current*1000);
-                        if(current_i > 65535ULL) {
-                            PRINTLN_WARNING("Overflow occured for point current! Capping point to its max value (point is 16 bits, so max_value=65535).");
-                            current_i = 65535;
+                        if(current_i > 65535ULL) {current_i = 65535;
                         }
                         data |= ((current_i) & 0xFFFFULL) << 16;
             
                         uint32_t is_faulted_i = (uint32_t)(is_faulted);
-                        if(is_faulted_i > 255ULL) {
-                            PRINTLN_WARNING("Overflow occured for point is_faulted! Capping point to its max value (point is 8 bits, so max_value=255).");
-                            is_faulted_i = 255;
+                        if(is_faulted_i > 15ULL) {is_faulted_i = 15;
                         }
-                        data |= ((is_faulted_i) & 0xFFULL) << 8;
+                        data |= ((is_faulted_i) & 0xFULL) << 12;
             
                         uint32_t is_enabled_i = (uint32_t)(is_enabled);
-                        if(is_enabled_i > 255ULL) {
-                            PRINTLN_WARNING("Overflow occured for point is_enabled! Capping point to its max value (point is 8 bits, so max_value=255).");
-                            is_enabled_i = 255;
+                        if(is_enabled_i > 15ULL) {is_enabled_i = 15;
                         }
-                        data |= ((is_enabled_i) & 0xFFULL) << 0;
+                        data |= ((is_enabled_i) & 0xFULL) << 8;
+            
+                        uint32_t control_state_i = (uint32_t)(control_state);
+                        if(control_state_i > 255ULL) {control_state_i = 255;
+                        }
+                        data |= ((control_state_i) & 0xFFULL) << 0;
             
             uint64_t data_bigendian = __builtin_bswap64(data);
             memcpy(msg.data, &data_bigendian, 8);
-        
 
     return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
 }
 
 uint8_t send_pumptwo_efuse
-(uint16_t ADC,float voltage,float current,bool is_faulted,bool is_enabled)
+(uint16_t ADC,float voltage,float current,bool is_faulted,bool is_enabled,uint8_t control_state)
 {
     can_msg_t msg;
     msg.id = 0xEF7;
-    msg.id_is_extended = true;msg.len = 8;
-
-    
+    msg.id_is_extended = true;
             uint64_t data = 0;
+            msg.len = 8;
                         uint32_t ADC_i = (uint32_t)(ADC);
-                        if(ADC_i > 65535ULL) {
-                            PRINTLN_WARNING("Overflow occured for point ADC! Capping point to its max value (point is 16 bits, so max_value=65535).");
-                            ADC_i = 65535;
+                        if(ADC_i > 65535ULL) {ADC_i = 65535;
                         }
                         data |= ((ADC_i) & 0xFFFFULL) << 48;
             
                         uint32_t voltage_i = (uint32_t)(voltage*1000);
-                        if(voltage_i > 65535ULL) {
-                            PRINTLN_WARNING("Overflow occured for point voltage! Capping point to its max value (point is 16 bits, so max_value=65535).");
-                            voltage_i = 65535;
+                        if(voltage_i > 65535ULL) {voltage_i = 65535;
                         }
                         data |= ((voltage_i) & 0xFFFFULL) << 32;
             
                         uint32_t current_i = (uint32_t)(current*1000);
-                        if(current_i > 65535ULL) {
-                            PRINTLN_WARNING("Overflow occured for point current! Capping point to its max value (point is 16 bits, so max_value=65535).");
-                            current_i = 65535;
+                        if(current_i > 65535ULL) {current_i = 65535;
                         }
                         data |= ((current_i) & 0xFFFFULL) << 16;
             
                         uint32_t is_faulted_i = (uint32_t)(is_faulted);
-                        if(is_faulted_i > 255ULL) {
-                            PRINTLN_WARNING("Overflow occured for point is_faulted! Capping point to its max value (point is 8 bits, so max_value=255).");
-                            is_faulted_i = 255;
+                        if(is_faulted_i > 15ULL) {is_faulted_i = 15;
                         }
-                        data |= ((is_faulted_i) & 0xFFULL) << 8;
+                        data |= ((is_faulted_i) & 0xFULL) << 12;
             
                         uint32_t is_enabled_i = (uint32_t)(is_enabled);
-                        if(is_enabled_i > 255ULL) {
-                            PRINTLN_WARNING("Overflow occured for point is_enabled! Capping point to its max value (point is 8 bits, so max_value=255).");
-                            is_enabled_i = 255;
+                        if(is_enabled_i > 15ULL) {is_enabled_i = 15;
                         }
-                        data |= ((is_enabled_i) & 0xFFULL) << 0;
+                        data |= ((is_enabled_i) & 0xFULL) << 8;
+            
+                        uint32_t control_state_i = (uint32_t)(control_state);
+                        if(control_state_i > 255ULL) {control_state_i = 255;
+                        }
+                        data |= ((control_state_i) & 0xFFULL) << 0;
             
             uint64_t data_bigendian = __builtin_bswap64(data);
             memcpy(msg.data, &data_bigendian, 8);
-        
 
     return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
 }
 
 uint8_t send_battbox_efuse
-(uint16_t ADC,float voltage,float current,bool is_faulted,bool is_enabled)
+(uint16_t ADC,float voltage,float current,bool is_faulted,bool is_enabled,uint8_t control_state)
 {
     can_msg_t msg;
     msg.id = 0xEF8;
-    msg.id_is_extended = true;msg.len = 8;
-
-    
+    msg.id_is_extended = true;
             uint64_t data = 0;
+            msg.len = 8;
                         uint32_t ADC_i = (uint32_t)(ADC);
-                        if(ADC_i > 65535ULL) {
-                            PRINTLN_WARNING("Overflow occured for point ADC! Capping point to its max value (point is 16 bits, so max_value=65535).");
-                            ADC_i = 65535;
+                        if(ADC_i > 65535ULL) {ADC_i = 65535;
                         }
                         data |= ((ADC_i) & 0xFFFFULL) << 48;
             
                         uint32_t voltage_i = (uint32_t)(voltage*1000);
-                        if(voltage_i > 65535ULL) {
-                            PRINTLN_WARNING("Overflow occured for point voltage! Capping point to its max value (point is 16 bits, so max_value=65535).");
-                            voltage_i = 65535;
+                        if(voltage_i > 65535ULL) {voltage_i = 65535;
                         }
                         data |= ((voltage_i) & 0xFFFFULL) << 32;
             
                         uint32_t current_i = (uint32_t)(current*1000);
-                        if(current_i > 65535ULL) {
-                            PRINTLN_WARNING("Overflow occured for point current! Capping point to its max value (point is 16 bits, so max_value=65535).");
-                            current_i = 65535;
+                        if(current_i > 65535ULL) {current_i = 65535;
                         }
                         data |= ((current_i) & 0xFFFFULL) << 16;
             
                         uint32_t is_faulted_i = (uint32_t)(is_faulted);
-                        if(is_faulted_i > 255ULL) {
-                            PRINTLN_WARNING("Overflow occured for point is_faulted! Capping point to its max value (point is 8 bits, so max_value=255).");
-                            is_faulted_i = 255;
+                        if(is_faulted_i > 15ULL) {is_faulted_i = 15;
                         }
-                        data |= ((is_faulted_i) & 0xFFULL) << 8;
+                        data |= ((is_faulted_i) & 0xFULL) << 12;
             
                         uint32_t is_enabled_i = (uint32_t)(is_enabled);
-                        if(is_enabled_i > 255ULL) {
-                            PRINTLN_WARNING("Overflow occured for point is_enabled! Capping point to its max value (point is 8 bits, so max_value=255).");
-                            is_enabled_i = 255;
+                        if(is_enabled_i > 15ULL) {is_enabled_i = 15;
                         }
-                        data |= ((is_enabled_i) & 0xFFULL) << 0;
+                        data |= ((is_enabled_i) & 0xFULL) << 8;
+            
+                        uint32_t control_state_i = (uint32_t)(control_state);
+                        if(control_state_i > 255ULL) {control_state_i = 255;
+                        }
+                        data |= ((control_state_i) & 0xFFULL) << 0;
             
             uint64_t data_bigendian = __builtin_bswap64(data);
             memcpy(msg.data, &data_bigendian, 8);
-        
 
     return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
 }
 
 uint8_t send_mc_efuse
-(uint16_t ADC,float voltage,float current,bool is_faulted,bool is_enabled)
+(uint16_t ADC,float voltage,float current,bool is_faulted,bool is_enabled,uint8_t control_state)
 {
     can_msg_t msg;
     msg.id = 0xEF9;
-    msg.id_is_extended = true;msg.len = 8;
-
-    
+    msg.id_is_extended = true;
             uint64_t data = 0;
+            msg.len = 8;
                         uint32_t ADC_i = (uint32_t)(ADC);
-                        if(ADC_i > 65535ULL) {
-                            PRINTLN_WARNING("Overflow occured for point ADC! Capping point to its max value (point is 16 bits, so max_value=65535).");
-                            ADC_i = 65535;
+                        if(ADC_i > 65535ULL) {ADC_i = 65535;
                         }
                         data |= ((ADC_i) & 0xFFFFULL) << 48;
             
                         uint32_t voltage_i = (uint32_t)(voltage*1000);
-                        if(voltage_i > 65535ULL) {
-                            PRINTLN_WARNING("Overflow occured for point voltage! Capping point to its max value (point is 16 bits, so max_value=65535).");
-                            voltage_i = 65535;
+                        if(voltage_i > 65535ULL) {voltage_i = 65535;
                         }
                         data |= ((voltage_i) & 0xFFFFULL) << 32;
             
                         uint32_t current_i = (uint32_t)(current*1000);
-                        if(current_i > 65535ULL) {
-                            PRINTLN_WARNING("Overflow occured for point current! Capping point to its max value (point is 16 bits, so max_value=65535).");
-                            current_i = 65535;
+                        if(current_i > 65535ULL) {current_i = 65535;
                         }
                         data |= ((current_i) & 0xFFFFULL) << 16;
             
                         uint32_t is_faulted_i = (uint32_t)(is_faulted);
-                        if(is_faulted_i > 255ULL) {
-                            PRINTLN_WARNING("Overflow occured for point is_faulted! Capping point to its max value (point is 8 bits, so max_value=255).");
-                            is_faulted_i = 255;
+                        if(is_faulted_i > 15ULL) {is_faulted_i = 15;
                         }
-                        data |= ((is_faulted_i) & 0xFFULL) << 8;
+                        data |= ((is_faulted_i) & 0xFULL) << 12;
             
                         uint32_t is_enabled_i = (uint32_t)(is_enabled);
-                        if(is_enabled_i > 255ULL) {
-                            PRINTLN_WARNING("Overflow occured for point is_enabled! Capping point to its max value (point is 8 bits, so max_value=255).");
-                            is_enabled_i = 255;
+                        if(is_enabled_i > 15ULL) {is_enabled_i = 15;
                         }
-                        data |= ((is_enabled_i) & 0xFFULL) << 0;
+                        data |= ((is_enabled_i) & 0xFULL) << 8;
+            
+                        uint32_t control_state_i = (uint32_t)(control_state);
+                        if(control_state_i > 255ULL) {control_state_i = 255;
+                        }
+                        data |= ((control_state_i) & 0xFFULL) << 0;
             
             uint64_t data_bigendian = __builtin_bswap64(data);
             memcpy(msg.data, &data_bigendian, 8);
-        
+
+    return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
+}
+
+uint8_t send_spare_efuse
+(uint16_t ADC,float voltage,float current,bool is_faulted,bool is_enabled,uint8_t control_state)
+{
+    can_msg_t msg;
+    msg.id = 0xEFA;
+    msg.id_is_extended = true;
+            uint64_t data = 0;
+            msg.len = 8;
+                        uint32_t ADC_i = (uint32_t)(ADC);
+                        if(ADC_i > 65535ULL) {ADC_i = 65535;
+                        }
+                        data |= ((ADC_i) & 0xFFFFULL) << 48;
+            
+                        uint32_t voltage_i = (uint32_t)(voltage*1000);
+                        if(voltage_i > 65535ULL) {voltage_i = 65535;
+                        }
+                        data |= ((voltage_i) & 0xFFFFULL) << 32;
+            
+                        uint32_t current_i = (uint32_t)(current*1000);
+                        if(current_i > 65535ULL) {current_i = 65535;
+                        }
+                        data |= ((current_i) & 0xFFFFULL) << 16;
+            
+                        uint32_t is_faulted_i = (uint32_t)(is_faulted);
+                        if(is_faulted_i > 15ULL) {is_faulted_i = 15;
+                        }
+                        data |= ((is_faulted_i) & 0xFULL) << 12;
+            
+                        uint32_t is_enabled_i = (uint32_t)(is_enabled);
+                        if(is_enabled_i > 15ULL) {is_enabled_i = 15;
+                        }
+                        data |= ((is_enabled_i) & 0xFULL) << 8;
+            
+                        uint32_t control_state_i = (uint32_t)(control_state);
+                        if(control_state_i > 255ULL) {control_state_i = 255;
+                        }
+                        data |= ((control_state_i) & 0xFFULL) << 0;
+            
+            uint64_t data_bigendian = __builtin_bswap64(data);
+            memcpy(msg.data, &data_bigendian, 8);
 
     return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
 }
@@ -609,166 +567,132 @@ uint8_t send_shutdown_pins
     can_msg_t msg;
     msg.id = 0x123;
     msg.id_is_extended = false;
-    msg.len = 2;
-
     
             uint16_t data = 0;
+            msg.len = 2;
                         uint32_t bms_gpio_i = (uint32_t)(bms_gpio);
-                        if(bms_gpio_i > 1ULL) {
-                            PRINTLN_WARNING("Overflow occured for point bms_gpio! Capping point to its max value (point is 1 bits, so max_value=1).");
-                            bms_gpio_i = 1;
+                        if(bms_gpio_i > 1ULL) {bms_gpio_i = 1;
                         }
                         data |= ((bms_gpio_i) & 0x1ULL) << 15;
             
                         uint32_t bots_gpio_i = (uint32_t)(bots_gpio);
-                        if(bots_gpio_i > 1ULL) {
-                            PRINTLN_WARNING("Overflow occured for point bots_gpio! Capping point to its max value (point is 1 bits, so max_value=1).");
-                            bots_gpio_i = 1;
+                        if(bots_gpio_i > 1ULL) {bots_gpio_i = 1;
                         }
                         data |= ((bots_gpio_i) & 0x1ULL) << 14;
             
                         uint32_t spare_gpio_i = (uint32_t)(spare_gpio);
-                        if(spare_gpio_i > 1ULL) {
-                            PRINTLN_WARNING("Overflow occured for point spare_gpio! Capping point to its max value (point is 1 bits, so max_value=1).");
-                            spare_gpio_i = 1;
+                        if(spare_gpio_i > 1ULL) {spare_gpio_i = 1;
                         }
                         data |= ((spare_gpio_i) & 0x1ULL) << 13;
             
                         uint32_t bspd_gpio_i = (uint32_t)(bspd_gpio);
-                        if(bspd_gpio_i > 1ULL) {
-                            PRINTLN_WARNING("Overflow occured for point bspd_gpio! Capping point to its max value (point is 1 bits, so max_value=1).");
-                            bspd_gpio_i = 1;
+                        if(bspd_gpio_i > 1ULL) {bspd_gpio_i = 1;
                         }
                         data |= ((bspd_gpio_i) & 0x1ULL) << 12;
             
                         uint32_t hv_c_i = (uint32_t)(hv_c);
-                        if(hv_c_i > 1ULL) {
-                            PRINTLN_WARNING("Overflow occured for point hv_c! Capping point to its max value (point is 1 bits, so max_value=1).");
-                            hv_c_i = 1;
+                        if(hv_c_i > 1ULL) {hv_c_i = 1;
                         }
                         data |= ((hv_c_i) & 0x1ULL) << 11;
             
                         uint32_t hvd_gpio_i = (uint32_t)(hvd_gpio);
-                        if(hvd_gpio_i > 1ULL) {
-                            PRINTLN_WARNING("Overflow occured for point hvd_gpio! Capping point to its max value (point is 1 bits, so max_value=1).");
-                            hvd_gpio_i = 1;
+                        if(hvd_gpio_i > 1ULL) {hvd_gpio_i = 1;
                         }
                         data |= ((hvd_gpio_i) & 0x1ULL) << 10;
             
                         uint32_t imd_gpio_i = (uint32_t)(imd_gpio);
-                        if(imd_gpio_i > 1ULL) {
-                            PRINTLN_WARNING("Overflow occured for point imd_gpio! Capping point to its max value (point is 1 bits, so max_value=1).");
-                            imd_gpio_i = 1;
+                        if(imd_gpio_i > 1ULL) {imd_gpio_i = 1;
                         }
                         data |= ((imd_gpio_i) & 0x1ULL) << 9;
             
                         uint32_t ckpt_gpio_i = (uint32_t)(ckpt_gpio);
-                        if(ckpt_gpio_i > 1ULL) {
-                            PRINTLN_WARNING("Overflow occured for point ckpt_gpio! Capping point to its max value (point is 1 bits, so max_value=1).");
-                            ckpt_gpio_i = 1;
+                        if(ckpt_gpio_i > 1ULL) {ckpt_gpio_i = 1;
                         }
                         data |= ((ckpt_gpio_i) & 0x1ULL) << 8;
             
                         uint32_t inertia_sw_gpio_i = (uint32_t)(inertia_sw_gpio);
-                        if(inertia_sw_gpio_i > 1ULL) {
-                            PRINTLN_WARNING("Overflow occured for point inertia_sw_gpio! Capping point to its max value (point is 1 bits, so max_value=1).");
-                            inertia_sw_gpio_i = 1;
+                        if(inertia_sw_gpio_i > 1ULL) {inertia_sw_gpio_i = 1;
                         }
                         data |= ((inertia_sw_gpio_i) & 0x1ULL) << 7;
             
                         uint32_t tsms_gpio_i = (uint32_t)(tsms_gpio);
-                        if(tsms_gpio_i > 1ULL) {
-                            PRINTLN_WARNING("Overflow occured for point tsms_gpio! Capping point to its max value (point is 1 bits, so max_value=1).");
-                            tsms_gpio_i = 1;
+                        if(tsms_gpio_i > 1ULL) {tsms_gpio_i = 1;
                         }
                         data |= ((tsms_gpio_i) & 0x1ULL) << 6;
             
                         uint32_t UNUSED_i = (uint32_t)(UNUSED);
-                        if(UNUSED_i > 63ULL) {
-                            PRINTLN_WARNING("Overflow occured for point UNUSED! Capping point to its max value (point is 6 bits, so max_value=63).");
-                            UNUSED_i = 63;
+                        if(UNUSED_i > 63ULL) {UNUSED_i = 63;
                         }
                         data |= ((UNUSED_i) & 0x3FULL) << 0;
             
             uint16_t data_bigendian = __builtin_bswap16(data);
             memcpy(msg.data, &data_bigendian, 2);
-        
 
     return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
 }
 
 uint8_t send_car_state
-(bool home_mode,uint8_t nero_index,int32_t car_speed,bool tsms,uint32_t torque_limit_percentage,bool reverse,uint16_t regen_limit,bool launch_control)
+(bool home_mode,uint8_t nero_index,int32_t car_speed,bool tsms,uint32_t torque_limit_percentage,bool reverse,uint16_t regen_limit,bool launch_control,uint8_t functional_state,bool traction_control)
 {
     can_msg_t msg;
     msg.id = 0x501;
     msg.id_is_extended = false;
-    msg.len = 6;
-
     
             uint64_t data = 0;
+            msg.len = 8;
                         uint32_t home_mode_i = (uint32_t)(home_mode);
-                        if(home_mode_i > 15ULL) {
-                            PRINTLN_WARNING("Overflow occured for point home_mode! Capping point to its max value (point is 4 bits, so max_value=15).");
-                            home_mode_i = 15;
+                        if(home_mode_i > 15ULL) {home_mode_i = 15;
                         }
                         data |= ((home_mode_i) & 0xFULL) << 60;
             
                         uint32_t nero_index_i = (uint32_t)(nero_index);
-                        if(nero_index_i > 15ULL) {
-                            PRINTLN_WARNING("Overflow occured for point nero_index! Capping point to its max value (point is 4 bits, so max_value=15).");
-                            nero_index_i = 15;
+                        if(nero_index_i > 15ULL) {nero_index_i = 15;
                         }
                         data |= ((nero_index_i) & 0xFULL) << 56;
             
                         int32_t car_speed_i = (int32_t)(car_speed*10);
-                        if(car_speed_i > 32767) {
-                            PRINTLN_WARNING("Overflow occured for point car_speed! Capping point to its max value (point is 16 bits signed, so max_value=32767).");
-                            car_speed_i = 32767;
-                        } else if(car_speed_i < -32768) {
-                            PRINTLN_WARNING("Underflow occured for point car_speed! Capping point to its min value (point is 16 bits signed, so min_value=-32768).");
-                            car_speed_i = -32768;
+                        if(car_speed_i > 32767) {car_speed_i = 32767;
+                        } else if(car_speed_i < -32768) {car_speed_i = -32768;
                         }
                         data |= ((uint32_t)(car_speed_i) & 0xFFFFULL) << 40;
             
                         uint32_t tsms_i = (uint32_t)(tsms);
-                        if(tsms_i > 1ULL) {
-                            PRINTLN_WARNING("Overflow occured for point tsms! Capping point to its max value (point is 1 bits, so max_value=1).");
-                            tsms_i = 1;
+                        if(tsms_i > 1ULL) {tsms_i = 1;
                         }
                         data |= ((tsms_i) & 0x1ULL) << 39;
             
                         uint32_t torque_limit_percentage_i = (uint32_t)(torque_limit_percentage*100);
-                        if(torque_limit_percentage_i > 127ULL) {
-                            PRINTLN_WARNING("Overflow occured for point torque_limit_percentage! Capping point to its max value (point is 7 bits, so max_value=127).");
-                            torque_limit_percentage_i = 127;
+                        if(torque_limit_percentage_i > 127ULL) {torque_limit_percentage_i = 127;
                         }
                         data |= ((torque_limit_percentage_i) & 0x7FULL) << 32;
             
                         uint32_t reverse_i = (uint32_t)(reverse);
-                        if(reverse_i > 1ULL) {
-                            PRINTLN_WARNING("Overflow occured for point reverse! Capping point to its max value (point is 1 bits, so max_value=1).");
-                            reverse_i = 1;
+                        if(reverse_i > 1ULL) {reverse_i = 1;
                         }
                         data |= ((reverse_i) & 0x1ULL) << 31;
             
                         uint32_t regen_limit_i = (uint32_t)(regen_limit);
-                        if(regen_limit_i > 1023ULL) {
-                            PRINTLN_WARNING("Overflow occured for point regen_limit! Capping point to its max value (point is 10 bits, so max_value=1023).");
-                            regen_limit_i = 1023;
+                        if(regen_limit_i > 1023ULL) {regen_limit_i = 1023;
                         }
                         data |= ((regen_limit_i) & 0x3FFULL) << 21;
             
                         uint32_t launch_control_i = (uint32_t)(launch_control);
-                        if(launch_control_i > 1ULL) {
-                            PRINTLN_WARNING("Overflow occured for point launch_control! Capping point to its max value (point is 1 bits, so max_value=1).");
-                            launch_control_i = 1;
+                        if(launch_control_i > 1ULL) {launch_control_i = 1;
                         }
                         data |= ((launch_control_i) & 0x1ULL) << 20;
             
+                        uint32_t functional_state_i = (uint32_t)(functional_state);
+                        if(functional_state_i > 7ULL) {functional_state_i = 7;
+                        }
+                        data |= ((functional_state_i) & 0x7ULL) << 17;
+            
+                        uint32_t traction_control_i = (uint32_t)(traction_control);
+                        if(traction_control_i > 1ULL) {traction_control_i = 1;
+                        }
+                        data |= ((traction_control_i) & 0x1ULL) << 16;
+            
             uint64_t data_bigendian = __builtin_bswap64(data);
             memcpy(msg.data, &data_bigendian, 8);
-        
 
     return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
 }
@@ -779,27 +703,21 @@ uint8_t send_pedal_percent_pressed_values
     can_msg_t msg;
     msg.id = 0x505;
     msg.id_is_extended = false;
-    msg.len = 4;
-
     
             uint32_t data = 0;
+            msg.len = 4;
                         uint32_t accel_norm_i = (uint32_t)(accel_norm*100);
-                        if(accel_norm_i > 65535ULL) {
-                            PRINTLN_WARNING("Overflow occured for point accel_norm! Capping point to its max value (point is 16 bits, so max_value=65535).");
-                            accel_norm_i = 65535;
+                        if(accel_norm_i > 65535ULL) {accel_norm_i = 65535;
                         }
                         data |= ((accel_norm_i) & 0xFFFFULL) << 16;
             
                         uint32_t brake_norm_i = (uint32_t)(brake_norm*100);
-                        if(brake_norm_i > 65535ULL) {
-                            PRINTLN_WARNING("Overflow occured for point brake_norm! Capping point to its max value (point is 16 bits, so max_value=65535).");
-                            brake_norm_i = 65535;
+                        if(brake_norm_i > 65535ULL) {brake_norm_i = 65535;
                         }
                         data |= ((brake_norm_i) & 0xFFFFULL) << 0;
             
             uint32_t data_bigendian = __builtin_bswap32(data);
             memcpy(msg.data, &data_bigendian, 4);
-        
 
     return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
 }
@@ -810,41 +728,31 @@ uint8_t send_pedal_sensor_voltages
     can_msg_t msg;
     msg.id = 0x504;
     msg.id_is_extended = false;
-    msg.len = 8;
-
     
             uint64_t data = 0;
+            msg.len = 8;
                         uint32_t accel1_volts_i = (uint32_t)(accel1_volts*100);
-                        if(accel1_volts_i > 65535ULL) {
-                            PRINTLN_WARNING("Overflow occured for point accel1_volts! Capping point to its max value (point is 16 bits, so max_value=65535).");
-                            accel1_volts_i = 65535;
+                        if(accel1_volts_i > 65535ULL) {accel1_volts_i = 65535;
                         }
                         data |= ((accel1_volts_i) & 0xFFFFULL) << 48;
             
                         uint32_t accel2_volts_i = (uint32_t)(accel2_volts*100);
-                        if(accel2_volts_i > 65535ULL) {
-                            PRINTLN_WARNING("Overflow occured for point accel2_volts! Capping point to its max value (point is 16 bits, so max_value=65535).");
-                            accel2_volts_i = 65535;
+                        if(accel2_volts_i > 65535ULL) {accel2_volts_i = 65535;
                         }
                         data |= ((accel2_volts_i) & 0xFFFFULL) << 32;
             
                         uint32_t brake1_volts_i = (uint32_t)(brake1_volts*100);
-                        if(brake1_volts_i > 65535ULL) {
-                            PRINTLN_WARNING("Overflow occured for point brake1_volts! Capping point to its max value (point is 16 bits, so max_value=65535).");
-                            brake1_volts_i = 65535;
+                        if(brake1_volts_i > 65535ULL) {brake1_volts_i = 65535;
                         }
                         data |= ((brake1_volts_i) & 0xFFFFULL) << 16;
             
                         uint32_t brake2_volts_i = (uint32_t)(brake2_volts*100);
-                        if(brake2_volts_i > 65535ULL) {
-                            PRINTLN_WARNING("Overflow occured for point brake2_volts! Capping point to its max value (point is 16 bits, so max_value=65535).");
-                            brake2_volts_i = 65535;
+                        if(brake2_volts_i > 65535ULL) {brake2_volts_i = 65535;
                         }
                         data |= ((brake2_volts_i) & 0xFFFFULL) << 0;
             
             uint64_t data_bigendian = __builtin_bswap64(data);
             memcpy(msg.data, &data_bigendian, 8);
-        
 
     return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
 }
@@ -855,19 +763,15 @@ uint8_t send_lightning_board_light_status
     can_msg_t msg;
     msg.id = 0xCA;
     msg.id_is_extended = false;
-    msg.len = 1;
-
     
             uint8_t data = 0;
+            msg.len = 1;
                         uint32_t status_i = (uint32_t)(status);
-                        if(status_i > 3ULL) {
-                            PRINTLN_WARNING("Overflow occured for point status! Capping point to its max value (point is 2 bits, so max_value=3).");
-                            status_i = 3;
+                        if(status_i > 3ULL) {status_i = 3;
                         }
                         data |= ((status_i) & 0x3ULL) << 6;
             
             msg.data[0] = data;
-        
 
     return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
 }
@@ -878,30 +782,22 @@ uint8_t send_temperature_sensor
     can_msg_t msg;
     msg.id = 0x508;
     msg.id_is_extended = false;
-    msg.len = 4;
-
     
             uint32_t data = 0;
+            msg.len = 4;
                         int32_t vcu_temperature_i = (int32_t)(vcu_temperature*100);
-                        if(vcu_temperature_i > 32767) {
-                            PRINTLN_WARNING("Overflow occured for point vcu_temperature! Capping point to its max value (point is 16 bits signed, so max_value=32767).");
-                            vcu_temperature_i = 32767;
-                        } else if(vcu_temperature_i < -32768) {
-                            PRINTLN_WARNING("Underflow occured for point vcu_temperature! Capping point to its min value (point is 16 bits signed, so min_value=-32768).");
-                            vcu_temperature_i = -32768;
+                        if(vcu_temperature_i > 32767) {vcu_temperature_i = 32767;
+                        } else if(vcu_temperature_i < -32768) {vcu_temperature_i = -32768;
                         }
                         data |= ((uint32_t)(vcu_temperature_i) & 0xFFFFULL) << 16;
             
                         uint32_t vcu_humidity_i = (uint32_t)(vcu_humidity*100);
-                        if(vcu_humidity_i > 65535ULL) {
-                            PRINTLN_WARNING("Overflow occured for point vcu_humidity! Capping point to its max value (point is 16 bits, so max_value=65535).");
-                            vcu_humidity_i = 65535;
+                        if(vcu_humidity_i > 65535ULL) {vcu_humidity_i = 65535;
                         }
                         data |= ((vcu_humidity_i) & 0xFFFFULL) << 0;
             
             uint32_t data_bigendian = __builtin_bswap32(data);
             memcpy(msg.data, &data_bigendian, 4);
-        
 
     return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
 }
@@ -912,43 +808,29 @@ uint8_t send_imu_accelerometer
     can_msg_t msg;
     msg.id = 0x506;
     msg.id_is_extended = false;
-    msg.len = 6;
-
     
             uint64_t data = 0;
+            msg.len = 8;
                         int32_t imu_accelerometer_x_i = (int32_t)(imu_accelerometer_x*4);
-                        if(imu_accelerometer_x_i > 32767) {
-                            PRINTLN_WARNING("Overflow occured for point imu_accelerometer_x! Capping point to its max value (point is 16 bits signed, so max_value=32767).");
-                            imu_accelerometer_x_i = 32767;
-                        } else if(imu_accelerometer_x_i < -32768) {
-                            PRINTLN_WARNING("Underflow occured for point imu_accelerometer_x! Capping point to its min value (point is 16 bits signed, so min_value=-32768).");
-                            imu_accelerometer_x_i = -32768;
+                        if(imu_accelerometer_x_i > 32767) {imu_accelerometer_x_i = 32767;
+                        } else if(imu_accelerometer_x_i < -32768) {imu_accelerometer_x_i = -32768;
                         }
                         data |= ((uint32_t)(imu_accelerometer_x_i) & 0xFFFFULL) << 48;
             
                         int32_t imu_accelerometer_y_i = (int32_t)(imu_accelerometer_y*4);
-                        if(imu_accelerometer_y_i > 32767) {
-                            PRINTLN_WARNING("Overflow occured for point imu_accelerometer_y! Capping point to its max value (point is 16 bits signed, so max_value=32767).");
-                            imu_accelerometer_y_i = 32767;
-                        } else if(imu_accelerometer_y_i < -32768) {
-                            PRINTLN_WARNING("Underflow occured for point imu_accelerometer_y! Capping point to its min value (point is 16 bits signed, so min_value=-32768).");
-                            imu_accelerometer_y_i = -32768;
+                        if(imu_accelerometer_y_i > 32767) {imu_accelerometer_y_i = 32767;
+                        } else if(imu_accelerometer_y_i < -32768) {imu_accelerometer_y_i = -32768;
                         }
                         data |= ((uint32_t)(imu_accelerometer_y_i) & 0xFFFFULL) << 32;
             
                         int32_t imu_accelerometer_z_i = (int32_t)(imu_accelerometer_z*4);
-                        if(imu_accelerometer_z_i > 32767) {
-                            PRINTLN_WARNING("Overflow occured for point imu_accelerometer_z! Capping point to its max value (point is 16 bits signed, so max_value=32767).");
-                            imu_accelerometer_z_i = 32767;
-                        } else if(imu_accelerometer_z_i < -32768) {
-                            PRINTLN_WARNING("Underflow occured for point imu_accelerometer_z! Capping point to its min value (point is 16 bits signed, so min_value=-32768).");
-                            imu_accelerometer_z_i = -32768;
+                        if(imu_accelerometer_z_i > 32767) {imu_accelerometer_z_i = 32767;
+                        } else if(imu_accelerometer_z_i < -32768) {imu_accelerometer_z_i = -32768;
                         }
                         data |= ((uint32_t)(imu_accelerometer_z_i) & 0xFFFFULL) << 16;
             
             uint64_t data_bigendian = __builtin_bswap64(data);
             memcpy(msg.data, &data_bigendian, 8);
-        
 
     return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
 }
@@ -959,172 +841,124 @@ uint8_t send_imu_gyro
     can_msg_t msg;
     msg.id = 0x507;
     msg.id_is_extended = false;
-    msg.len = 6;
-
     
             uint64_t data = 0;
+            msg.len = 8;
                         int32_t imu_gyro_x_i = (int32_t)(imu_gyro_x*100);
-                        if(imu_gyro_x_i > 32767) {
-                            PRINTLN_WARNING("Overflow occured for point imu_gyro_x! Capping point to its max value (point is 16 bits signed, so max_value=32767).");
-                            imu_gyro_x_i = 32767;
-                        } else if(imu_gyro_x_i < -32768) {
-                            PRINTLN_WARNING("Underflow occured for point imu_gyro_x! Capping point to its min value (point is 16 bits signed, so min_value=-32768).");
-                            imu_gyro_x_i = -32768;
+                        if(imu_gyro_x_i > 32767) {imu_gyro_x_i = 32767;
+                        } else if(imu_gyro_x_i < -32768) {imu_gyro_x_i = -32768;
                         }
                         data |= ((uint32_t)(imu_gyro_x_i) & 0xFFFFULL) << 48;
             
                         int32_t imu_gyro_y_i = (int32_t)(imu_gyro_y*100);
-                        if(imu_gyro_y_i > 32767) {
-                            PRINTLN_WARNING("Overflow occured for point imu_gyro_y! Capping point to its max value (point is 16 bits signed, so max_value=32767).");
-                            imu_gyro_y_i = 32767;
-                        } else if(imu_gyro_y_i < -32768) {
-                            PRINTLN_WARNING("Underflow occured for point imu_gyro_y! Capping point to its min value (point is 16 bits signed, so min_value=-32768).");
-                            imu_gyro_y_i = -32768;
+                        if(imu_gyro_y_i > 32767) {imu_gyro_y_i = 32767;
+                        } else if(imu_gyro_y_i < -32768) {imu_gyro_y_i = -32768;
                         }
                         data |= ((uint32_t)(imu_gyro_y_i) & 0xFFFFULL) << 32;
             
                         int32_t imu_gyro_z_i = (int32_t)(imu_gyro_z*100);
-                        if(imu_gyro_z_i > 32767) {
-                            PRINTLN_WARNING("Overflow occured for point imu_gyro_z! Capping point to its max value (point is 16 bits signed, so max_value=32767).");
-                            imu_gyro_z_i = 32767;
-                        } else if(imu_gyro_z_i < -32768) {
-                            PRINTLN_WARNING("Underflow occured for point imu_gyro_z! Capping point to its min value (point is 16 bits signed, so min_value=-32768).");
-                            imu_gyro_z_i = -32768;
+                        if(imu_gyro_z_i > 32767) {imu_gyro_z_i = 32767;
+                        } else if(imu_gyro_z_i < -32768) {imu_gyro_z_i = -32768;
                         }
                         data |= ((uint32_t)(imu_gyro_z_i) & 0xFFFFULL) << 16;
             
             uint64_t data_bigendian = __builtin_bswap64(data);
             memcpy(msg.data, &data_bigendian, 8);
-        
 
     return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
 }
 
 uint8_t send_faults
-(bool CAN_OUTGOING_FAULT,bool CAN_INCOMING_FAULT,bool BMS_CAN_MONITOR_FAULT,bool LIGHTNING_CAN_MONITOR_FAULT,bool ONBOARD_TEMP_FAULT,bool IMU_ACCEL_FAULT,bool IMU_GYRO_FAULT,bool BSPD_PREFAULT,bool ONBOARD_BRAKE_OPEN_CIRCUIT_FAULT,bool ONBOARD_ACCEL_OPEN_CIRCUIT_FAULT,bool ONBOARD_BRAKE_SHORT_CIRCUIT_FAULT,bool ONBOARD_ACCEL_SHORT_CIRCUIT_FAULT,bool ONBOARD_PEDAL_DIFFERENCE_FAULT,bool RTDS_FAULT,bool LV_LOW_VOLTAGE_FAULT,int EXTRA)
+(bool CAN_OUTGOING_FAULT,bool CAN_INCOMING_FAULT,bool BMS_CAN_MONITOR_FAULT,bool LIGHTNING_CAN_MONITOR_FAULT,bool SHUTDOWN_FAULT,bool ONBOARD_TEMP_FAULT,bool IMU_ACCEL_FAULT,bool IMU_GYRO_FAULT,bool BSPD_PREFAULT,bool ONBOARD_BRAKE_OPEN_CIRCUIT_FAULT,bool ONBOARD_ACCEL_OPEN_CIRCUIT_FAULT,bool ONBOARD_BRAKE_SHORT_CIRCUIT_FAULT,bool ONBOARD_ACCEL_SHORT_CIRCUIT_FAULT,bool ONBOARD_PEDAL_DIFFERENCE_FAULT,bool RTDS_FAULT,bool LV_LOW_VOLTAGE_FAULT)
 {
     can_msg_t msg;
     msg.id = 0x502;
     msg.id_is_extended = false;
-    msg.len = 2;
-
     
             uint16_t data = 0;
+            msg.len = 2;
                         uint32_t CAN_OUTGOING_FAULT_i = (uint32_t)(CAN_OUTGOING_FAULT);
-                        if(CAN_OUTGOING_FAULT_i > 1ULL) {
-                            PRINTLN_WARNING("Overflow occured for point CAN_OUTGOING_FAULT! Capping point to its max value (point is 1 bits, so max_value=1).");
-                            CAN_OUTGOING_FAULT_i = 1;
+                        if(CAN_OUTGOING_FAULT_i > 1ULL) {CAN_OUTGOING_FAULT_i = 1;
                         }
                         data |= ((CAN_OUTGOING_FAULT_i) & 0x1ULL) << 15;
             
                         uint32_t CAN_INCOMING_FAULT_i = (uint32_t)(CAN_INCOMING_FAULT);
-                        if(CAN_INCOMING_FAULT_i > 1ULL) {
-                            PRINTLN_WARNING("Overflow occured for point CAN_INCOMING_FAULT! Capping point to its max value (point is 1 bits, so max_value=1).");
-                            CAN_INCOMING_FAULT_i = 1;
+                        if(CAN_INCOMING_FAULT_i > 1ULL) {CAN_INCOMING_FAULT_i = 1;
                         }
                         data |= ((CAN_INCOMING_FAULT_i) & 0x1ULL) << 14;
             
                         uint32_t BMS_CAN_MONITOR_FAULT_i = (uint32_t)(BMS_CAN_MONITOR_FAULT);
-                        if(BMS_CAN_MONITOR_FAULT_i > 1ULL) {
-                            PRINTLN_WARNING("Overflow occured for point BMS_CAN_MONITOR_FAULT! Capping point to its max value (point is 1 bits, so max_value=1).");
-                            BMS_CAN_MONITOR_FAULT_i = 1;
+                        if(BMS_CAN_MONITOR_FAULT_i > 1ULL) {BMS_CAN_MONITOR_FAULT_i = 1;
                         }
                         data |= ((BMS_CAN_MONITOR_FAULT_i) & 0x1ULL) << 13;
             
                         uint32_t LIGHTNING_CAN_MONITOR_FAULT_i = (uint32_t)(LIGHTNING_CAN_MONITOR_FAULT);
-                        if(LIGHTNING_CAN_MONITOR_FAULT_i > 1ULL) {
-                            PRINTLN_WARNING("Overflow occured for point LIGHTNING_CAN_MONITOR_FAULT! Capping point to its max value (point is 1 bits, so max_value=1).");
-                            LIGHTNING_CAN_MONITOR_FAULT_i = 1;
+                        if(LIGHTNING_CAN_MONITOR_FAULT_i > 1ULL) {LIGHTNING_CAN_MONITOR_FAULT_i = 1;
                         }
                         data |= ((LIGHTNING_CAN_MONITOR_FAULT_i) & 0x1ULL) << 12;
             
-                        uint32_t ONBOARD_TEMP_FAULT_i = (uint32_t)(ONBOARD_TEMP_FAULT);
-                        if(ONBOARD_TEMP_FAULT_i > 1ULL) {
-                            PRINTLN_WARNING("Overflow occured for point ONBOARD_TEMP_FAULT! Capping point to its max value (point is 1 bits, so max_value=1).");
-                            ONBOARD_TEMP_FAULT_i = 1;
+                        uint32_t SHUTDOWN_FAULT_i = (uint32_t)(SHUTDOWN_FAULT);
+                        if(SHUTDOWN_FAULT_i > 1ULL) {SHUTDOWN_FAULT_i = 1;
                         }
-                        data |= ((ONBOARD_TEMP_FAULT_i) & 0x1ULL) << 11;
+                        data |= ((SHUTDOWN_FAULT_i) & 0x1ULL) << 11;
+            
+                        uint32_t ONBOARD_TEMP_FAULT_i = (uint32_t)(ONBOARD_TEMP_FAULT);
+                        if(ONBOARD_TEMP_FAULT_i > 1ULL) {ONBOARD_TEMP_FAULT_i = 1;
+                        }
+                        data |= ((ONBOARD_TEMP_FAULT_i) & 0x1ULL) << 10;
             
                         uint32_t IMU_ACCEL_FAULT_i = (uint32_t)(IMU_ACCEL_FAULT);
-                        if(IMU_ACCEL_FAULT_i > 1ULL) {
-                            PRINTLN_WARNING("Overflow occured for point IMU_ACCEL_FAULT! Capping point to its max value (point is 1 bits, so max_value=1).");
-                            IMU_ACCEL_FAULT_i = 1;
+                        if(IMU_ACCEL_FAULT_i > 1ULL) {IMU_ACCEL_FAULT_i = 1;
                         }
-                        data |= ((IMU_ACCEL_FAULT_i) & 0x1ULL) << 10;
+                        data |= ((IMU_ACCEL_FAULT_i) & 0x1ULL) << 9;
             
                         uint32_t IMU_GYRO_FAULT_i = (uint32_t)(IMU_GYRO_FAULT);
-                        if(IMU_GYRO_FAULT_i > 1ULL) {
-                            PRINTLN_WARNING("Overflow occured for point IMU_GYRO_FAULT! Capping point to its max value (point is 1 bits, so max_value=1).");
-                            IMU_GYRO_FAULT_i = 1;
+                        if(IMU_GYRO_FAULT_i > 1ULL) {IMU_GYRO_FAULT_i = 1;
                         }
-                        data |= ((IMU_GYRO_FAULT_i) & 0x1ULL) << 9;
+                        data |= ((IMU_GYRO_FAULT_i) & 0x1ULL) << 8;
             
                         uint32_t BSPD_PREFAULT_i = (uint32_t)(BSPD_PREFAULT);
-                        if(BSPD_PREFAULT_i > 1ULL) {
-                            PRINTLN_WARNING("Overflow occured for point BSPD_PREFAULT! Capping point to its max value (point is 1 bits, so max_value=1).");
-                            BSPD_PREFAULT_i = 1;
+                        if(BSPD_PREFAULT_i > 1ULL) {BSPD_PREFAULT_i = 1;
                         }
-                        data |= ((BSPD_PREFAULT_i) & 0x1ULL) << 8;
+                        data |= ((BSPD_PREFAULT_i) & 0x1ULL) << 7;
             
                         uint32_t ONBOARD_BRAKE_OPEN_CIRCUIT_FAULT_i = (uint32_t)(ONBOARD_BRAKE_OPEN_CIRCUIT_FAULT);
-                        if(ONBOARD_BRAKE_OPEN_CIRCUIT_FAULT_i > 1ULL) {
-                            PRINTLN_WARNING("Overflow occured for point ONBOARD_BRAKE_OPEN_CIRCUIT_FAULT! Capping point to its max value (point is 1 bits, so max_value=1).");
-                            ONBOARD_BRAKE_OPEN_CIRCUIT_FAULT_i = 1;
+                        if(ONBOARD_BRAKE_OPEN_CIRCUIT_FAULT_i > 1ULL) {ONBOARD_BRAKE_OPEN_CIRCUIT_FAULT_i = 1;
                         }
-                        data |= ((ONBOARD_BRAKE_OPEN_CIRCUIT_FAULT_i) & 0x1ULL) << 7;
+                        data |= ((ONBOARD_BRAKE_OPEN_CIRCUIT_FAULT_i) & 0x1ULL) << 6;
             
                         uint32_t ONBOARD_ACCEL_OPEN_CIRCUIT_FAULT_i = (uint32_t)(ONBOARD_ACCEL_OPEN_CIRCUIT_FAULT);
-                        if(ONBOARD_ACCEL_OPEN_CIRCUIT_FAULT_i > 1ULL) {
-                            PRINTLN_WARNING("Overflow occured for point ONBOARD_ACCEL_OPEN_CIRCUIT_FAULT! Capping point to its max value (point is 1 bits, so max_value=1).");
-                            ONBOARD_ACCEL_OPEN_CIRCUIT_FAULT_i = 1;
+                        if(ONBOARD_ACCEL_OPEN_CIRCUIT_FAULT_i > 1ULL) {ONBOARD_ACCEL_OPEN_CIRCUIT_FAULT_i = 1;
                         }
-                        data |= ((ONBOARD_ACCEL_OPEN_CIRCUIT_FAULT_i) & 0x1ULL) << 6;
+                        data |= ((ONBOARD_ACCEL_OPEN_CIRCUIT_FAULT_i) & 0x1ULL) << 5;
             
                         uint32_t ONBOARD_BRAKE_SHORT_CIRCUIT_FAULT_i = (uint32_t)(ONBOARD_BRAKE_SHORT_CIRCUIT_FAULT);
-                        if(ONBOARD_BRAKE_SHORT_CIRCUIT_FAULT_i > 1ULL) {
-                            PRINTLN_WARNING("Overflow occured for point ONBOARD_BRAKE_SHORT_CIRCUIT_FAULT! Capping point to its max value (point is 1 bits, so max_value=1).");
-                            ONBOARD_BRAKE_SHORT_CIRCUIT_FAULT_i = 1;
+                        if(ONBOARD_BRAKE_SHORT_CIRCUIT_FAULT_i > 1ULL) {ONBOARD_BRAKE_SHORT_CIRCUIT_FAULT_i = 1;
                         }
-                        data |= ((ONBOARD_BRAKE_SHORT_CIRCUIT_FAULT_i) & 0x1ULL) << 5;
+                        data |= ((ONBOARD_BRAKE_SHORT_CIRCUIT_FAULT_i) & 0x1ULL) << 4;
             
                         uint32_t ONBOARD_ACCEL_SHORT_CIRCUIT_FAULT_i = (uint32_t)(ONBOARD_ACCEL_SHORT_CIRCUIT_FAULT);
-                        if(ONBOARD_ACCEL_SHORT_CIRCUIT_FAULT_i > 1ULL) {
-                            PRINTLN_WARNING("Overflow occured for point ONBOARD_ACCEL_SHORT_CIRCUIT_FAULT! Capping point to its max value (point is 1 bits, so max_value=1).");
-                            ONBOARD_ACCEL_SHORT_CIRCUIT_FAULT_i = 1;
+                        if(ONBOARD_ACCEL_SHORT_CIRCUIT_FAULT_i > 1ULL) {ONBOARD_ACCEL_SHORT_CIRCUIT_FAULT_i = 1;
                         }
-                        data |= ((ONBOARD_ACCEL_SHORT_CIRCUIT_FAULT_i) & 0x1ULL) << 4;
+                        data |= ((ONBOARD_ACCEL_SHORT_CIRCUIT_FAULT_i) & 0x1ULL) << 3;
             
                         uint32_t ONBOARD_PEDAL_DIFFERENCE_FAULT_i = (uint32_t)(ONBOARD_PEDAL_DIFFERENCE_FAULT);
-                        if(ONBOARD_PEDAL_DIFFERENCE_FAULT_i > 1ULL) {
-                            PRINTLN_WARNING("Overflow occured for point ONBOARD_PEDAL_DIFFERENCE_FAULT! Capping point to its max value (point is 1 bits, so max_value=1).");
-                            ONBOARD_PEDAL_DIFFERENCE_FAULT_i = 1;
+                        if(ONBOARD_PEDAL_DIFFERENCE_FAULT_i > 1ULL) {ONBOARD_PEDAL_DIFFERENCE_FAULT_i = 1;
                         }
-                        data |= ((ONBOARD_PEDAL_DIFFERENCE_FAULT_i) & 0x1ULL) << 3;
+                        data |= ((ONBOARD_PEDAL_DIFFERENCE_FAULT_i) & 0x1ULL) << 2;
             
                         uint32_t RTDS_FAULT_i = (uint32_t)(RTDS_FAULT);
-                        if(RTDS_FAULT_i > 1ULL) {
-                            PRINTLN_WARNING("Overflow occured for point RTDS_FAULT! Capping point to its max value (point is 1 bits, so max_value=1).");
-                            RTDS_FAULT_i = 1;
+                        if(RTDS_FAULT_i > 1ULL) {RTDS_FAULT_i = 1;
                         }
-                        data |= ((RTDS_FAULT_i) & 0x1ULL) << 2;
+                        data |= ((RTDS_FAULT_i) & 0x1ULL) << 1;
             
                         uint32_t LV_LOW_VOLTAGE_FAULT_i = (uint32_t)(LV_LOW_VOLTAGE_FAULT);
-                        if(LV_LOW_VOLTAGE_FAULT_i > 1ULL) {
-                            PRINTLN_WARNING("Overflow occured for point LV_LOW_VOLTAGE_FAULT! Capping point to its max value (point is 1 bits, so max_value=1).");
-                            LV_LOW_VOLTAGE_FAULT_i = 1;
+                        if(LV_LOW_VOLTAGE_FAULT_i > 1ULL) {LV_LOW_VOLTAGE_FAULT_i = 1;
                         }
-                        data |= ((LV_LOW_VOLTAGE_FAULT_i) & 0x1ULL) << 1;
-            
-                        uint32_t EXTRA_i = (uint32_t)(EXTRA);
-                        if(EXTRA_i > 1ULL) {
-                            PRINTLN_WARNING("Overflow occured for point EXTRA! Capping point to its max value (point is 1 bits, so max_value=1).");
-                            EXTRA_i = 1;
-                        }
-                        data |= ((EXTRA_i) & 0x1ULL) << 0;
+                        data |= ((LV_LOW_VOLTAGE_FAULT_i) & 0x1ULL) << 0;
             
             uint16_t data_bigendian = __builtin_bswap16(data);
             memcpy(msg.data, &data_bigendian, 2);
-        
 
     return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
 }
@@ -1135,27 +969,21 @@ uint8_t send_lv_voltage
     can_msg_t msg;
     msg.id = 0x509;
     msg.id_is_extended = false;
-    msg.len = 6;
-
     
             uint64_t data = 0;
+            msg.len = 8;
                         uint32_t ADC_i = (uint32_t)(ADC);
-                        if(ADC_i > 65535ULL) {
-                            PRINTLN_WARNING("Overflow occured for point ADC! Capping point to its max value (point is 16 bits, so max_value=65535).");
-                            ADC_i = 65535;
+                        if(ADC_i > 65535ULL) {ADC_i = 65535;
                         }
                         data |= ((ADC_i) & 0xFFFFULL) << 48;
             
                         uint32_t Voltage_i = (uint32_t)(Voltage*1000);
-                        if(Voltage_i > 4294967295ULL) {
-                            PRINTLN_WARNING("Overflow occured for point Voltage! Capping point to its max value (point is 32 bits, so max_value=4294967295).");
-                            Voltage_i = 4294967295;
+                        if(Voltage_i > 4294967295ULL) {Voltage_i = 4294967295;
                         }
                         data |= ((Voltage_i) & 0xFFFFFFFFULL) << 16;
             
             uint64_t data_bigendian = __builtin_bswap64(data);
             memcpy(msg.data, &data_bigendian, 8);
-        
 
     return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
 }
@@ -1165,54 +993,278 @@ uint8_t send_vcu_test_message
 {
     can_msg_t msg;
     msg.id = 0xBAD;
-    msg.id_is_extended = true;msg.len = 8;
-
-    
+    msg.id_is_extended = true;
             uint64_t data = 0;
+            msg.len = 8;
                         uint32_t three_bits_i = (uint32_t)(three_bits);
-                        if(three_bits_i > 7ULL) {
-                            PRINTLN_WARNING("Overflow occured for point three_bits! Capping point to its max value (point is 3 bits, so max_value=7).");
-                            three_bits_i = 7;
+                        if(three_bits_i > 7ULL) {three_bits_i = 7;
                         }
                         data |= ((three_bits_i) & 0x7ULL) << 61;
             
                         int32_t float_value_i = (int32_t)(float_value*100);
-                        if(float_value_i > 2147483647) {
-                            PRINTLN_WARNING("Overflow occured for point float_value! Capping point to its max value (point is 32 bits signed, so max_value=2147483647).");
-                            float_value_i = 2147483647;
-                        } else if(float_value_i < -2147483648) {
-                            PRINTLN_WARNING("Underflow occured for point float_value! Capping point to its min value (point is 32 bits signed, so min_value=-2147483648).");
-                            float_value_i = -2147483648;
+                        if(float_value_i > 2147483647) {float_value_i = 2147483647;
+                        } else if(float_value_i < -2147483648) {float_value_i = -2147483648;
                         }
                         data |= ((uint32_t)(float_value_i) & 0xFFFFFFFFULL) << 29;
             
                         uint32_t five_bits_i = (uint32_t)(five_bits);
-                        if(five_bits_i > 31ULL) {
-                            PRINTLN_WARNING("Overflow occured for point five_bits! Capping point to its max value (point is 5 bits, so max_value=31).");
-                            five_bits_i = 31;
+                        if(five_bits_i > 31ULL) {five_bits_i = 31;
                         }
                         data |= ((five_bits_i) & 0x1FULL) << 24;
             
                         uint32_t sixteen_bits_i = (uint32_t)(sixteen_bits);
-                        if(sixteen_bits_i > 65535ULL) {
-                            PRINTLN_WARNING("Overflow occured for point sixteen_bits! Capping point to its max value (point is 16 bits, so max_value=65535).");
-                            sixteen_bits_i = 65535;
+                        if(sixteen_bits_i > 65535ULL) {sixteen_bits_i = 65535;
                         }
                         data |= ((sixteen_bits_i) & 0xFFFFULL) << 8;
             
                         int32_t signed_8_bits_i = (int32_t)(signed_8_bits);
-                        if(signed_8_bits_i > 127) {
-                            PRINTLN_WARNING("Overflow occured for point signed_8_bits! Capping point to its max value (point is 8 bits signed, so max_value=127).");
-                            signed_8_bits_i = 127;
-                        } else if(signed_8_bits_i < -128) {
-                            PRINTLN_WARNING("Underflow occured for point signed_8_bits! Capping point to its min value (point is 8 bits signed, so min_value=-128).");
-                            signed_8_bits_i = -128;
+                        if(signed_8_bits_i > 127) {signed_8_bits_i = 127;
+                        } else if(signed_8_bits_i < -128) {signed_8_bits_i = -128;
                         }
                         data |= ((uint32_t)(signed_8_bits_i) & 0xFFULL) << 0;
             
             uint64_t data_bigendian = __builtin_bswap64(data);
             memcpy(msg.data, &data_bigendian, 8);
-        
+
+    return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
+}
+
+uint8_t send_dti_motor_temp_as_reported_by_vcu
+(uint16_t temp)
+{
+    can_msg_t msg;
+    msg.id = 0xD0;
+    msg.id_is_extended = false;
+    
+            uint16_t data = 0;
+            msg.len = 2;
+                        uint32_t temp_i = (uint32_t)(temp);
+                        if(temp_i > 65535ULL) {temp_i = 65535;
+                        }
+                        data |= ((temp_i) & 0xFFFFULL) << 0;
+            
+            uint16_t data_bigendian = __builtin_bswap16(data);
+            memcpy(msg.data, &data_bigendian, 2);
+
+    return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
+}
+
+uint8_t send_dti_controller_temp_as_reported_by_vcu
+(uint16_t temp)
+{
+    can_msg_t msg;
+    msg.id = 0xD1;
+    msg.id_is_extended = false;
+    
+            uint16_t data = 0;
+            msg.len = 2;
+                        uint32_t temp_i = (uint32_t)(temp);
+                        if(temp_i > 65535ULL) {temp_i = 65535;
+                        }
+                        data |= ((temp_i) & 0xFFFFULL) << 0;
+            
+            uint16_t data_bigendian = __builtin_bswap16(data);
+            memcpy(msg.data, &data_bigendian, 2);
+
+    return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
+}
+
+uint8_t send_bms_battbox_temp_as_reported_by_vcu
+(float temp)
+{
+    can_msg_t msg;
+    msg.id = 0xD2;
+    msg.id_is_extended = false;
+    
+            uint32_t data = 0;
+            msg.len = 4;
+                        int32_t temp_i = (int32_t)(temp*100);
+                        if(temp_i > 2147483647) {temp_i = 2147483647;
+                        } else if(temp_i < -2147483648) {temp_i = -2147483648;
+                        }
+                        data |= ((uint32_t)(temp_i) & 0xFFFFFFFFULL) << 0;
+            
+            uint32_t data_bigendian = __builtin_bswap32(data);
+            memcpy(msg.data, &data_bigendian, 4);
+
+    return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
+}
+
+uint8_t send_brake_state_as_reported_by_vcu
+(bool brake_state)
+{
+    can_msg_t msg;
+    msg.id = 0xD3;
+    msg.id_is_extended = false;
+    
+            uint8_t data = 0;
+            msg.len = 1;
+                        int32_t brake_state_i = (int32_t)(brake_state*100);
+                        if(brake_state_i > 127) {brake_state_i = 127;
+                        } else if(brake_state_i < -128) {brake_state_i = -128;
+                        }
+                        data |= ((uint32_t)(brake_state_i) & 0xFFULL) << 0;
+            
+            msg.data[0] = data;
+
+    return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
+}
+
+uint8_t send_rtds_state_message
+(bool pin_state,bool sounding_state,bool reverse_state,bool error)
+{
+    can_msg_t msg;
+    msg.id = 0xD4;
+    msg.id_is_extended = false;
+    
+            uint32_t data = 0;
+            msg.len = 4;
+                        uint32_t pin_state_i = (uint32_t)(pin_state);
+                        if(pin_state_i > 255ULL) {pin_state_i = 255;
+                        }
+                        data |= ((pin_state_i) & 0xFFULL) << 24;
+            
+                        uint32_t sounding_state_i = (uint32_t)(sounding_state);
+                        if(sounding_state_i > 255ULL) {sounding_state_i = 255;
+                        }
+                        data |= ((sounding_state_i) & 0xFFULL) << 16;
+            
+                        uint32_t reverse_state_i = (uint32_t)(reverse_state);
+                        if(reverse_state_i > 255ULL) {reverse_state_i = 255;
+                        }
+                        data |= ((reverse_state_i) & 0xFFULL) << 8;
+            
+                        uint32_t error_i = (uint32_t)(error);
+                        if(error_i > 255ULL) {error_i = 255;
+                        }
+                        data |= ((error_i) & 0xFFULL) << 0;
+            
+            uint32_t data_bigendian = __builtin_bswap32(data);
+            memcpy(msg.data, &data_bigendian, 4);
+
+    return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
+}
+
+uint8_t send_lfiu_low_current_adc_readings
+(uint16_t raw,float voltage,float current)
+{
+    can_msg_t msg;
+    msg.id = 0xADC1;
+    msg.id_is_extended = true;
+            uint64_t data = 0;
+            msg.len = 8;
+                        uint32_t raw_i = (uint32_t)(raw);
+                        if(raw_i > 65535ULL) {raw_i = 65535;
+                        }
+                        data |= ((raw_i) & 0xFFFFULL) << 48;
+            
+                        uint32_t voltage_i = (uint32_t)(voltage*1000);
+                        if(voltage_i > 65535ULL) {voltage_i = 65535;
+                        }
+                        data |= ((voltage_i) & 0xFFFFULL) << 32;
+            
+                        int32_t current_i = (int32_t)(current*1000);
+                        if(current_i > 32767) {current_i = 32767;
+                        } else if(current_i < -32768) {current_i = -32768;
+                        }
+                        data |= ((uint32_t)(current_i) & 0xFFFFULL) << 16;
+            
+            uint64_t data_bigendian = __builtin_bswap64(data);
+            memcpy(msg.data, &data_bigendian, 8);
+
+    return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
+}
+
+uint8_t send_lfiu_high_current_adc_readings
+(uint16_t raw,float voltage,float current)
+{
+    can_msg_t msg;
+    msg.id = 0xADC2;
+    msg.id_is_extended = true;
+            uint64_t data = 0;
+            msg.len = 8;
+                        uint32_t raw_i = (uint32_t)(raw);
+                        if(raw_i > 65535ULL) {raw_i = 65535;
+                        }
+                        data |= ((raw_i) & 0xFFFFULL) << 48;
+            
+                        uint32_t voltage_i = (uint32_t)(voltage*1000);
+                        if(voltage_i > 65535ULL) {voltage_i = 65535;
+                        }
+                        data |= ((voltage_i) & 0xFFFFULL) << 32;
+            
+                        int32_t current_i = (int32_t)(current*100);
+                        if(current_i > 32767) {current_i = 32767;
+                        } else if(current_i < -32768) {current_i = -32768;
+                        }
+                        data |= ((uint32_t)(current_i) & 0xFFFFULL) << 16;
+            
+            uint64_t data_bigendian = __builtin_bswap64(data);
+            memcpy(msg.data, &data_bigendian, 8);
+
+    return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
+}
+
+uint8_t send_second_vcu_test_message
+(uint16_t one,uint8_t two,uint8_t three,bool four,uint8_t five,uint32_t six)
+{
+    can_msg_t msg;
+    msg.id = 0xBAD2;
+    msg.id_is_extended = true;
+            uint64_t data = 0;
+            msg.len = 8;
+                        uint32_t one_i = (uint32_t)(one);
+                        if(one_i > 16383ULL) {one_i = 16383;
+                        }
+                        data |= ((one_i) & 0x3FFFULL) << 50;
+            
+                        uint32_t two_i = (uint32_t)(two);
+                        if(two_i > 3ULL) {two_i = 3;
+                        }
+                        data |= ((two_i) & 0x3ULL) << 48;
+            
+                        uint32_t three_i = (uint32_t)(three);
+                        if(three_i > 3ULL) {three_i = 3;
+                        }
+                        data |= ((three_i) & 0x3ULL) << 46;
+            
+                        uint32_t four_i = (uint32_t)(four);
+                        if(four_i > 1ULL) {four_i = 1;
+                        }
+                        data |= ((four_i) & 0x1ULL) << 45;
+            
+                        uint32_t five_i = (uint32_t)(five);
+                        if(five_i > 63ULL) {five_i = 63;
+                        }
+                        data |= ((five_i) & 0x3FULL) << 39;
+            
+                        uint32_t six_i = (uint32_t)(six);
+                        if(six_i > 8388607ULL) {six_i = 8388607;
+                        }
+                        data |= ((six_i) & 0x7FFFFFULL) << 16;
+            
+            uint64_t data_bigendian = __builtin_bswap64(data);
+            memcpy(msg.data, &data_bigendian, 8);
+
+    return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
+}
+
+uint8_t send_lv_box_fan_pwm
+(uint8_t fan_pwm_percentage)
+{
+    can_msg_t msg;
+    msg.id = 0xD5;
+    msg.id_is_extended = false;
+    msg.len = 1;
+
+            uint8_t data = 0;
+                        uint32_t fan_pwm_percentage_i = (uint32_t)(fan_pwm_percentage);
+                        if(fan_pwm_percentage_i > 100ULL) {fan_pwm_percentage_i = 100;
+                        }
+                        data |= ((fan_pwm_percentage_i) & 0xFFULL) << 0;
+
+            msg.data[0] = data;
+
 
     return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
 }

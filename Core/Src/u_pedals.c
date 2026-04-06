@@ -16,6 +16,7 @@
 #include "u_dti.h"
 #include "u_statemachine.h"
 #include "u_adc.h"
+#include "u_tc.h"
 
 /* Globals. */
 static uint16_t regen_limits[2] = { 0, 50 }; // [PERFORMANCE, ENDURANCE]
@@ -34,7 +35,7 @@ static uint8_t drive_lock_map = 0;
 
 static _Atomic bool brake_pressed = false;
 static _Atomic bool launch_control_enabled = false;
-static _Atomic float torque_limit_percentage = 1.0f;
+static float torque_limit_percentage = 1.0f;
 
 /* Pedal Data. */
 typedef struct {
@@ -260,8 +261,8 @@ static void _linear_accel_to_torque(float percentage_accel)
 		percentage_accel = 1.0;
 	}
 
-	/* Linearly map acceleration to torque */
-	int16_t torque = (int16_t)(percentage_accel * MAX_TORQUE);
+	/* Linearly map acceleration to torque, scaled by TC */
+	int16_t torque = (int16_t)(percentage_accel * MAX_TORQUE * tc_get_torque_scale());
 
 	dti_set_torque(torque);
 }
@@ -277,7 +278,7 @@ static void _power_regression_accel_to_torque(float percentage_accel)
 	}
 	/*  map acceleration to torque */
 	int16_t torque =
-		(int16_t)(0.137609 * powf(percentage_accel, 1.43068) * MAX_TORQUE);
+		(int16_t)(0.137609 * powf(percentage_accel, 1.43068) * MAX_TORQUE * tc_get_torque_scale());
 	/* These values came from creating a power regression function intersecting three points: (0,0) (20,10) & (100,100)*/
 
 	dti_set_torque(torque);
@@ -307,8 +308,8 @@ static int16_t _derate_torque(float mph, float percentage_accel)
 		static const float max_torque_percent = 0.3;
 		/* Linearly derate torque from 30% to 0% as speed increases */
 		float torque_derating_factor =
-			max_torque_percent -
-			(max_torque_percent / PIT_MAX_SPEED);
+			max_torque_percent *
+			(1.0f - (mph / PIT_MAX_SPEED));
 		percentage_accel *= torque_derating_factor;
 		torque = MAX_TORQUE * percentage_accel;
 	}
@@ -332,11 +333,11 @@ static int16_t _derate_torque(float mph, float percentage_accel)
  */
 static void _accel_pedal_regen_torque(float percentage_accel)
 {
-	/* Coefficient to map accel pedal travel % to the max torque */
-	float coeff = (MAX_TORQUE * torque_limit_percentage);
+	/* Coefficient to map accel pedal travel % to the % of max torqye we should command */
+	float coeff = tc_get_torque_scale() * (percentage_accel - ACCELERATION_THRESHOLD) / (1.0 - ACCELERATION_THRESHOLD);
 
 	/* Makes acceleration pedal more sensitive since domain is compressed but range is the same */
-	uint16_t torque = coeff * (percentage_accel - ACCELERATION_THRESHOLD);
+	uint16_t torque = coeff * torque_limit_percentage * MAX_TORQUE;
 
 	/* Limit torque percentage wise in endurance mode */
 	if (torque > MAX_TORQUE * torque_limit_percentage) {
@@ -479,7 +480,11 @@ static float _adc_to_voltage(uint16_t raw_adc) {
 /* Returns the percentage the pedal is pressed down. */
 static float _get_pedal_percent_pressed(float voltage, float offset, float max)
 {
-	return voltage - offset < 0 ? 0 : (voltage - offset) / (max - offset);
+	float ret = voltage - offset < 0 ? 0 : (voltage - offset) / (max - offset);
+	if (ret > 1.0) {
+	    return 1.0;
+	}
+	return ret;
 }
 
 /* Initializes Pedals ADC and creates pedal data timer. */
@@ -500,6 +505,9 @@ int pedals_init(void) {
 /* Returns the brake state (true=brake pressed, false=brake not pressed). */
 bool pedals_getBrakeState(void) {
     return brake_pressed;
+
+	/* TEMPORARY OVERRIDE FOR TSMS! should be commented out normally! */
+	//return true;
 }
 
 /* Returns the torque limit percentgae. */
@@ -548,7 +556,8 @@ void pedals_decreaseRegenLimit(void)
 	if (func_state != F_PERFORMANCE && func_state != F_EFFICIENCY)
 		return;
 	uint16_t regen_limit = pedals_getRegenLimit();
-	if (regen_limit - REGEN_INCREMENT_STEP < 0) {
+	// protect against wraparound
+	if (regen_limit < REGEN_INCREMENT_STEP) {
 		pedals_setRegenLimit(0);
 	} else {
 		pedals_setRegenLimit(regen_limit -= REGEN_INCREMENT_STEP);
@@ -562,8 +571,6 @@ void pedals_setRegenLimit(uint16_t limit)
 		return;
 	if (limit > MAX_REGEN_CURRENT) {
 		regen_limits[func_state - F_PERFORMANCE] = MAX_REGEN_CURRENT;
-	} else if (limit < 0.0) {
-		regen_limits[func_state - F_PERFORMANCE] = 0.0;
 	} else {
 		regen_limits[func_state - F_PERFORMANCE] = limit;
 	}
@@ -581,6 +588,16 @@ uint16_t pedals_getRegenLimit(void)
 void pedals_toggleLaunchControl(void)
 {
 	launch_control_enabled = !launch_control_enabled;
+}
+
+void pedals_enableLaunchControl(void)
+{
+	launch_control_enabled = true;
+}
+
+void pedals_disableLaunchControl(void)
+{
+	launch_control_enabled = false;
 }
 
 bool pedals_getLaunchControl(void)
@@ -614,11 +631,15 @@ void pedals_process(void) {
     /* Set brake state, and turn brakelight on/off. */
     if(pedal_data.percentage_brake > PEDAL_BRAKE_THRESH) {
         brake_pressed = true;
-        efuse_enable(EFUSE_BRAKE);
+		if(efuse_get_state(EFUSE_BRAKE) == EF_AUTO) {
+			efuse_enable(EFUSE_BRAKE);
+		}
     }
     else {
         brake_pressed = false;
-        efuse_disable(EFUSE_BRAKE);
+		if(efuse_get_state(EFUSE_BRAKE) == EF_AUTO) {
+			efuse_disable(EFUSE_BRAKE);
+		}
     }
 
 	uint16_t dc_current = dti_get_dc_current();
@@ -636,6 +657,9 @@ void pedals_process(void) {
         dti_set_torque(0);
 	    return;
 	}
+
+    /* Update TC torque scale before issuing any torque command. */
+    tc_process();
 
     switch(get_func_state()) {
         case READY:

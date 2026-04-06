@@ -11,12 +11,14 @@
 #include "u_dti.h"
 #include "u_pedals.h"
 #include "u_can.h"
+#include "can_messages_tx.h"
 #include "u_rtds.h"
 #include "u_tx_debug.h"
 #include "u_queues.h"
 #include "u_faults.h"
 #include "u_pedals.h"
-#include "u_tsms.h"
+#include "u_tc.h"
+#include "serial.h"
 
 #define STATE_TRANS_QUEUE_SIZE 4
 
@@ -29,9 +31,13 @@
 static state_t cerberus_state;
 static bool is_ts_rising = false;
 static bool enter_drive_enabled = false;
+static _Atomic bool shutdown = false;
 
 /* Rising TS Callback and Timer */
-static void _rising_ts_cb(ULONG input) { enter_drive_enabled = true; }
+static void _rising_ts_cb(ULONG input) { 
+	PRINTLN_INFO("rising ts callback");
+	enter_drive_enabled = true; 
+}
 static timer_t ts_rising_timer = {
 	.name = "TS Rising Timer",
 	.callback = _rising_ts_cb,
@@ -41,19 +47,29 @@ static timer_t ts_rising_timer = {
 	.auto_activate = false
 };
 
-static void _send_nero_msg(void)
+void send_carstate_msg(void)
 {
 	/* Send the nero (car state) message. */
 	send_car_state(
 		get_nero_state().home_mode,
 		get_nero_state().nero_index,
 		dti_get_mph(),
-		tsms_get(),
+		get_shutdown(),
 		pedals_getTorqueLimitPercentage(),
 		(cerberus_state.functional != F_REVERSE),
 		pedals_getRegenLimit(),
-		pedals_getLaunchControl()
+		pedals_getLaunchControl(),
+		cerberus_state.functional,
+		tc_isEnabled()
 	);
+}
+
+void update_shutdown(bool new_shutdown) {
+	shutdown = new_shutdown;
+}
+
+bool get_shutdown(void) {
+	return shutdown;
 }
 
 int init_statemachine(void) {
@@ -120,7 +136,7 @@ static int transition_functional_state(func_state_t new_state)
 
 		brake_state = pedals_getBrakeState();
 #ifdef TSMS_OVERRIDE
-		if (tsms_get() && (!brake_state || cerberus_state.functional == FAULTED)) { // only enforce brake / fault if tsms is actually on
+		if (get_shutdown() && (!brake_state || cerberus_state.functional == FAULTED)) { // only enforce brake / fault if tsms is actually on
 			return 3;
 		}
 		printf("Ignoring tsms\n\n");
@@ -136,12 +152,12 @@ static int transition_functional_state(func_state_t new_state)
 		}
 
 		/* Only turn on motor if brakes engaged and tsms is on */
-		if (!brake_state || !tsms_get()) {
+		if (!brake_state || !get_shutdown()) {
 			return 3;
 		}
 #endif
 
-		if (tsms_get()) {
+		if (get_shutdown()) {
 			rtds_soundRTDS();
 		}
 
@@ -153,6 +169,7 @@ static int transition_functional_state(func_state_t new_state)
 	}
 
 	cerberus_state.functional = new_state;
+	PRINTLN_INFO("Transitioned functional state to %d.", cerberus_state.functional);
 
 	return 0;
 }
@@ -183,7 +200,7 @@ static int transition_nero_state(nero_state_t new_state)
 		/* TSMS OFF and MPH = 0 to enter games */
 		if (new_state.nero_index == GAMES) {
 #ifndef TSMS_OVERRIDE
-			if (tsms_get() || dti_get_mph() >= 1) {
+			if (get_shutdown() || dti_get_mph() >= 1) {
 				return 1;
 			}
 #endif
@@ -199,6 +216,7 @@ static int transition_nero_state(nero_state_t new_state)
 	}
 
 	cerberus_state.nero = new_state;
+	PRINTLN_INFO("ran transition_nero_state()");
 
 	return 0;
 }
@@ -244,6 +262,7 @@ static int queue_state_transition(state_req_t new_state)
 /* HANDLE USER INPUT */
 int increment_nero_index()
 {
+	PRINTLN_INFO("called increment_nero_index()");
 	/* Wrap around if end of menu reached */
 	if (get_nero_state().nero_index + 1 >= MAX_NERO_STATES) {
 		return queue_state_transition((state_req_t){
@@ -305,33 +324,31 @@ int fault()
 }
 
 void statemachine_process(state_req_t new_state_req) {
-	
+	PRINTLN_INFO("inside statemachine_process()");
 	if(check_state_change(new_state_req)) {
 		if(new_state_req.id == NERO) { transition_nero_state(new_state_req.state.nero); }
 		else if(new_state_req.id == FUNCTIONAL) { transition_functional_state(new_state_req.state.functional); }
 	}
 
-	if (!is_ts_rising && tsms_get()) {
+	if (!is_ts_rising && get_shutdown()) {
 		is_ts_rising = true;
 
 		/* Restart TS Rising timer. */
 		int status = timer_restart(&ts_rising_timer);
 		if(status != U_SUCCESS) {
-			PRINTLN_ERROR("Failed to restart TS Rising timer (in !ts_rising && tsms_get()) (Status: %d).", status);
+			PRINTLN_ERROR("Failed to restart TS Rising timer (in !ts_rising && get_shutdown()) (Status: %d).", status);
 			return;
 		}
 
-	} else if (!tsms_get()) {
+	} else if (!get_shutdown()) {
 		/* Stop the TS Rising timer. */
     	int status = timer_stop(&ts_rising_timer);
     	if(status != U_SUCCESS) {
-        	PRINTLN_ERROR("Failed to stop TS Rising timer (in !tsms_get()) (Status: %d).", status);
+        	PRINTLN_ERROR("Failed to stop TS Rising timer (in !get_shutdown()) (Status: %d).", status);
         	return;
     	}
 		is_ts_rising = false;
 		enter_drive_enabled = false;
 	}
-
-	// send nero data periodically
-	_send_nero_msg();
+	send_carstate_msg();
 }

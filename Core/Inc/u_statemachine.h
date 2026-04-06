@@ -126,6 +126,17 @@ int set_ready_mode();
  */
 int fault();
 
+/**
+ * @brief Sends the nero/CarState message.
+ * 
+ * @return void
+ */
+void send_carstate_msg(void);
+
+/* BMS-Reported Shutdown! */
+void update_shutdown(bool new_shutdown);
+bool get_shutdown(void);
+
 /* Process the state machine */
 void statemachine_process(state_req_t new_state_req);
 int init_statemachine(void);

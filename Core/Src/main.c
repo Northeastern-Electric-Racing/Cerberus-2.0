@@ -34,6 +34,10 @@
 #include "u_lightning.h"
 /* USER CODE END Includes */
 
+
+
+
+
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
 
@@ -118,6 +122,7 @@ int _write(int file, char *ptr, int len)
 /* Callback for any FIFO0 interrupt stuff */
 void HAL_FDCAN_RxFifo0Callback(FDCAN_HandleTypeDef *hfdcan, uint32_t RxFifo0ITs)
 {
+  //PRINTLN_INFO("HAL_FDCAN callback triggered");
 
 	/* If a message has just been recieved... */
 	if (RxFifo0ITs & FDCAN_IT_RX_FIFO0_NEW_MESSAGE)
@@ -141,7 +146,7 @@ void HAL_FDCAN_RxFifo0Callback(FDCAN_HandleTypeDef *hfdcan, uint32_t RxFifo0ITs)
 		/* Check message size */
 		if (rx_header.DataLength > 8)
 		{
-			PRINTLN_ERROR("Recieved CAN message is larger than 8 bytes (rx_header.DataLength: %ld).", rx_header.DataLength);
+			PRINTLN_ERROR("Recieved CAN message is larger than 8 bytes (rx_header.DataLength: %ld, id: 0x%X).", rx_header.DataLength, rx_header.Identifier);
       queue_send(&faults, &(fault_t){CAN_INCOMING_FAULT}, TX_NO_WAIT);
 			return;
 		}
@@ -203,9 +208,12 @@ int main(void)
 
   /* USER CODE END 2 */
 
+
   MX_ThreadX_Init();
 
   /* We should never get here as control is now taken by the scheduler */
+
+  
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
@@ -320,7 +328,7 @@ static void MX_ADC1_Init(void)
   */
   sConfig.Channel = ADC_CHANNEL_3;
   sConfig.Rank = ADC_REGULAR_RANK_1;
-  sConfig.SamplingTime = ADC_SAMPLETIME_2CYCLES_5;
+  sConfig.SamplingTime = ADC_SAMPLETIME_47CYCLES_5;
   sConfig.SingleDiff = ADC_SINGLE_ENDED;
   sConfig.OffsetNumber = ADC_OFFSET_NONE;
   sConfig.Offset = 0;
@@ -593,8 +601,8 @@ static void MX_FDCAN2_Init(void)
   hfdcan2.Init.DataSyncJumpWidth = 1;
   hfdcan2.Init.DataTimeSeg1 = 1;
   hfdcan2.Init.DataTimeSeg2 = 1;
-  hfdcan2.Init.StdFiltersNbr = 0;
-  hfdcan2.Init.ExtFiltersNbr = 0;
+  hfdcan2.Init.StdFiltersNbr = 28;
+  hfdcan2.Init.ExtFiltersNbr = 8;
   hfdcan2.Init.TxFifoQueueMode = FDCAN_TX_FIFO_OPERATION;
   if (HAL_FDCAN_Init(&hfdcan2) != HAL_OK)
   {

@@ -69,6 +69,26 @@ target_link_directories(${CMAKE_PROJECT_NAME} PRIVATE
 # Make it so floats can be printed
 target_link_options(${CMAKE_PROJECT_NAME} PRIVATE -u _printf_float)
 
+function(add_tire_curve target curve_name output_name)
+    set(INPUT  ${CMAKE_SOURCE_DIR}/tmg/${curve_name})
+    set(OUTPUT ${CMAKE_BINARY_DIR}/${output_name})
+
+    add_custom_command(
+        OUTPUT  ${OUTPUT}
+        COMMAND arm-none-eabi-objcopy
+            -I binary -O elf32-littlearm
+            --binary-architecture arm
+            --redefine-sym _binary__home_app_tmg_${curve_name}_bin_start=_tire_curve_start
+            --redefine-sym _binary__home_app_tmg_${curve_name}_bin_end=_tire_curve_end
+            --redefine-sym _binary__home_app_tmg_${curve_name}_bin_size=_tire_curve_size
+            ${INPUT}.bin
+            ${OUTPUT}
+        DEPENDS ${INPUT}.bin
+    )
+
+    target_sources(${target} PRIVATE ${OUTPUT})
+endfunction()
+
 # Add sources to executable
 target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     # Embedded-Base ThreadX Utils
@@ -104,6 +124,7 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     "./Core/Src/u_queues.c"
     "./Core/Src/u_can.c"
     "./Core/Src/can_messages_tx.c"
+    "./Core/Src/can_messages_rx.c"
     "./Core/Src/u_faults.c"
     "./Core/Src/u_mutexes.c"
     "./Core/Src/u_efuses.c"
@@ -113,11 +134,14 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     "./Core/Src/u_dti.c"
     "./Core/Src/u_adc.c"
     "./Core/Src/u_peripherals.c"
-    "./Core/Src/u_tsms.c"
+    "./Core/Src/u_buttons.c"
     "./Core/Src/u_lightning.c"
     "./Core/Src/u_debug.c"
     "./Core/Src/u_ethernet.c"
+    "./Core/Src/u_tc.c"
 )
+
+add_tire_curve(${CMAKE_PROJECT_NAME} "daytona_600" "tm_600.o")
 
 # Disable Logging in certain files
 set_source_files_properties(
@@ -135,7 +159,6 @@ set_source_files_properties(
     #"./Core/Src/u_dti.c"
     #"./Core/Src/u_adc.c"
     #"./Core/Src/u_peripherals.c"
-    #"./Core/Src/u_tsms.c"
 
     PROPERTIES COMPILE_DEFINITIONS "NO_LOG"
 )
@@ -160,6 +183,7 @@ target_compile_definitions(${CMAKE_PROJECT_NAME} PRIVATE
 # Compiler options
 target_compile_options(${CMAKE_PROJECT_NAME} PRIVATE
     -Wno-unused-parameter # u_TODO - this doesn't seem to be working
+    -Werror=implicit-function-declaration
 )
 
 # Add linked libraries
