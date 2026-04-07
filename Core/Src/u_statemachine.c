@@ -10,6 +10,7 @@
 #include "bitstream.h"
 #include "u_dti.h"
 #include "u_pedals.h"
+#include "u_ethernet.h"
 #include "u_can.h"
 #include "u_rtds.h"
 #include "u_tx_debug.h"

@@ -6,6 +6,7 @@
 #include "u_can.h"
 #include "u_nx_ethernet.h"
 #include "nxd_ptp_client.h"
+#include "u_nx_protobuf.h"
 #include "u_faults.h"
 #include "u_pedals.h"
 #include "u_adc.h"
@@ -68,36 +69,13 @@ void vTest(ULONG thread_input) {
         PRINTLN_ERROR("Failed to call ethernet1_init() (Status: %d/%s).", status, nx_status_toString(status));
     }
 
-    efuse_disable(EFUSE_DASHBOARD);
-    efuse_disable(EFUSE_BRAKE);
-    efuse_disable(EFUSE_SHUTDOWN);
-    efuse_disable(EFUSE_LV);
-    efuse_disable(EFUSE_RADFAN);
-    efuse_enable(EFUSE_FANBATT);
-    efuse_disable(EFUSE_PUMP1);
-    efuse_disable(EFUSE_PUMP2);
-    efuse_disable(EFUSE_BATTBOX);
-    efuse_disable(EFUSE_MC);
-    HAL_GPIO_WritePin(EF_SPARE_EN_GPIO_Port, EF_SPARE_EN_Pin, GPIO_PIN_RESET);
-
     //tx_thread_sleep(5000);
 
     while(1) {
 
-        // //char message[8] = "message";
-        // uint8_t message = 210;
-        // ethernet_message_t msg = ethernet_create_message(0x01, TPU, &message, sizeof(message));
-        // int status = queue_send(&eth_outgoing, &msg, TX_WAIT_FOREVER);
-        // if(status != U_SUCCESS) {
-        //     PRINTLN_ERROR("Failed to call queue_send when sending ethernet message (Status: %d).", status);
-        // } else {
-        //     PRINTLN_INFO("Added message to ethernet outgoing queue.");
-        // }
-
-        // PRINTLN_INFO("Ran vTest");
-
-        float a  = 4.0;
-        ethernet1_mqtt_send("TEST/A/Two", 11, "z", 2, &a, 1, 69);
+        float third_one = 23134.31f;
+        ethernet_mqtt_message_t message = nx_protobuf_mqtt_message_create("VCU_Ethernet/A/big_message", "A", 19.2f, 12.1f, third_one, true, -12);
+        queue_send(&eth_manager, &message, TX_NO_WAIT);
 
         send_vcu_test_message(7, 19.342, 30, 13942, -122);
         send_second_vcu_test_message(12132, 3, 2, false, 35, 100000);
@@ -719,7 +697,7 @@ static thread_t tsms_thread = {
         .threshold  = 0,                      /* Preemption Threshold */
         .time_slice = TX_NO_TIME_SLICE,       /* Time Slice */
         .auto_start = TX_AUTO_START,          /* Auto Start */
-        .sleep      = 50,                     /* Sleep (in ticks) */
+        .sleep      = 1000,                   /* Sleep (in ticks) */
         .function   = vTSMS                   /* Thread Function */
     };
 void vTSMS(ULONG thread_input) {
@@ -835,6 +813,10 @@ void vPeripherals(ULONG thread_input) {
                 acceleration.y,
                 acceleration.z
             );
+
+            /* Send accel over ethernet! */
+            ethernet_mqtt_message_t message = nx_protobuf_mqtt_message_create("VCU_Ethernet/A/Acceleration", "mdps", acceleration.x, acceleration.y, acceleration.z);
+            queue_send(&eth_manager, &message, TX_NO_WAIT);
         } while (0);
 
         /* SECTION 3: Read IMU gyro data and send it over CAN. */
@@ -858,6 +840,10 @@ void vPeripherals(ULONG thread_input) {
                 gyro.y,
                 gyro.z
             );
+
+            /* Send gyro over ethernet! */
+            ethernet_mqtt_message_t message = nx_protobuf_mqtt_message_create("VCU_Ethernet/A/Gyro", "mdps", gyro.x, gyro.y, gyro.z);
+            queue_send(&eth_manager, &message, TX_NO_WAIT);
         } while (0);
 
         /* SECTION 4: Send LV ADC Message. */
@@ -953,13 +939,13 @@ uint8_t threads_init(TX_BYTE_POOL *byte_pool) {
     CATCH_ERROR(create_thread(byte_pool, &can_outgoing_thread), U_SUCCESS);      // Create Outgoing CAN thread.
     CATCH_ERROR(create_thread(byte_pool, &faults_queue_thread), U_SUCCESS);      // Create Faults Queue thread.
     CATCH_ERROR(create_thread(byte_pool, &faults_thread), U_SUCCESS);            // Create Faults thread.
-    //CATCH_ERROR(create_thread(byte_pool, &tsms_thread), U_SUCCESS);              // Create TSMS thread.
+    CATCH_ERROR(create_thread(byte_pool, &tsms_thread), U_SUCCESS);              // Create TSMS thread.
     CATCH_ERROR(create_thread(byte_pool, &shutdown_thread), U_SUCCESS);          // Create Shutdown thread.
-    //CATCH_ERROR(create_thread(byte_pool, &statemachine_thread), U_SUCCESS);      // Create State Machine thread.
+    CATCH_ERROR(create_thread(byte_pool, &statemachine_thread), U_SUCCESS);      // Create State Machine thread.
     //CATCH_ERROR(create_thread(byte_pool, &pedals_thread), U_SUCCESS);            // Create Pedals thread.
-    //CATCH_ERROR(create_thread(byte_pool, &efuses_thread), U_SUCCESS);              // Create eFuses thread.
-    //CATCH_ERROR(create_thread(byte_pool, &mux_thread), U_SUCCESS);               // Create Mux thread.
-    //CATCH_ERROR(create_thread(byte_pool, &peripherals_thread), U_SUCCESS);       // Create Peripherals thread.
+    CATCH_ERROR(create_thread(byte_pool, &efuses_thread), U_SUCCESS);              // Create eFuses thread.
+    CATCH_ERROR(create_thread(byte_pool, &mux_thread), U_SUCCESS);               // Create Mux thread.
+    CATCH_ERROR(create_thread(byte_pool, &peripherals_thread), U_SUCCESS);       // Create Peripherals thread.
     CATCH_ERROR(create_thread(byte_pool, &ethernet_manager), U_SUCCESS); // Create Outgoing Ethernet thread.
     CATCH_ERROR(create_thread(byte_pool, &test_thread), U_SUCCESS);                // Create Test thread.
     CATCH_ERROR(create_thread(byte_pool, &rtds_telemetry_thread), U_SUCCESS);      // Create RTDS Telemetry thread.

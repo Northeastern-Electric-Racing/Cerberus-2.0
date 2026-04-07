@@ -4,14 +4,15 @@
 #include "u_faults.h"
 #include "u_statemachine.h"
 #include "u_ethernet.h"
+#include "u_nx_protobuf.h"
 #include <stdio.h>
 
 
 /* Outgoing Activity Queue */
 queue_t eth_manager = {
-    .name = "Outgoing Ethernet Queue",           /* Name of the queue. */
-    .message_size = sizeof(eth_mqtt_queue_message_t),  /* Size of each queue message, in bytes. */
-    .capacity = 10                               /* Number of messages the queue can hold. */
+    .name = "Outgoing Ethernet Queue",               /* Name of the queue. */
+    .message_size = sizeof(ethernet_mqtt_message_t), /* Size of each queue message, in bytes. */
+    .capacity = 10                                   /* Number of messages the queue can hold. */
 };
 
 /* Incoming CAN Queue */
