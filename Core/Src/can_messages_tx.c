@@ -1255,16 +1255,15 @@ uint8_t send_lv_box_fan_pwm
     can_msg_t msg;
     msg.id = 0xD5;
     msg.id_is_extended = false;
-    msg.len = 1;
-
+    
             uint8_t data = 0;
+            msg.len = 1;
                         uint32_t fan_pwm_percentage_i = (uint32_t)(fan_pwm_percentage);
-                        if(fan_pwm_percentage_i > 100ULL) {fan_pwm_percentage_i = 100;
+                        if(fan_pwm_percentage_i > 255ULL) {fan_pwm_percentage_i = 255;
                         }
                         data |= ((fan_pwm_percentage_i) & 0xFFULL) << 0;
-
+            
             msg.data[0] = data;
-
 
     return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
 }

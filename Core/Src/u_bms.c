@@ -14,7 +14,7 @@ static _Atomic float battbox_temp;
 static _Atomic bool precharge;
 
 /* Fault callback(s). */
-static void _bms_fault_callback(ULONG args) {queue_send(&faults, &(fault_t){BMS_CAN_MONITOR_FAULT}, TX_NO_WAIT);}; // Queues the BMS CAN Monitor Fault.
+static void _bms_fault_callback(ULONG args) {queue_send(&faults, &(fault_t){BMS_CAN_MONITOR_FAULT}, TX_NO_WAIT);} // Queues the BMS CAN Monitor Fault.
 static timer_t bms_fault_timer = {
     .name = "BMS Fault Timer",
     .callback = _bms_fault_callback,

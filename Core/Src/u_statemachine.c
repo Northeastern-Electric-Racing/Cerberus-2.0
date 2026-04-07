@@ -34,9 +34,9 @@ static bool enter_drive_enabled = false;
 static _Atomic bool shutdown = false;
 
 /* Rising TS Callback and Timer */
-static void _rising_ts_cb(ULONG input) { 
+static void _rising_ts_cb(ULONG input) {
 	PRINTLN_INFO("rising ts callback");
-	enter_drive_enabled = true; 
+	enter_drive_enabled = true;
 }
 static timer_t ts_rising_timer = {
 	.name = "TS Rising Timer",

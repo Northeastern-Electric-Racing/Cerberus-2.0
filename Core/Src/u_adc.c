@@ -48,7 +48,7 @@ typedef enum {
     /* SEL2 */
     SEL2_HIGH,  // LFIU_CURRENT_1
     SEL2_LOW,   // LFIU_CURRENT_2
-    
+
     /* SEL3 */
     SEL3_HIGH,  // LV_ADC
     SEL3_LOW,   // SHUTDOWN_ADC
@@ -115,14 +115,18 @@ int adc_switchMuxState(void) {
 /* Start ADC DMA. */
 int adc_init(void) {
     /* Start DMA for ADC1. */
-    int status = HAL_ADC_Start_DMA(&hadc1, (uint32_t *)_adc1_buffer, ADC1_SIZE);
+
+    int status = HAL_ADC_Start_DMA(&hadc1, (uint32_t *) _adc1_buffer, ADC1_SIZE);
+
     if(status != HAL_OK) {
         PRINTLN_ERROR("Failed to start ADC DMA for ADC1 (Status: %d/%s).", status, hal_status_toString(status));
         return U_ERROR;
     }
 
     /* Start DMA for ADC2. */
-    status = HAL_ADC_Start_DMA(&hadc2, (uint32_t *)_adc2_buffer, ADC2_SIZE);
+
+    status = HAL_ADC_Start_DMA(&hadc2, (uint32_t *) _adc2_buffer, ADC2_SIZE);
+
     if(status != HAL_OK) {
         PRINTLN_ERROR("Failed to start ADC DMA for ADC2 (Status: %d/%s).", status, hal_status_toString(status));
         return U_ERROR;
