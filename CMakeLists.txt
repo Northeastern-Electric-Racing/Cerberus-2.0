@@ -67,7 +67,7 @@ target_link_directories(${CMAKE_PROJECT_NAME} PRIVATE
 )
 
 # Make it so floats can be printed
-target_link_options(${CMAKE_PROJECT_NAME} PRIVATE -Wl,-u,_printf_float)
+target_link_options(${CMAKE_PROJECT_NAME} PRIVATE,-u,_printf_float)
 
 function(add_tire_curve target curve_name output_name)
     set(INPUT  ${CMAKE_SOURCE_DIR}/tmg/${curve_name})
