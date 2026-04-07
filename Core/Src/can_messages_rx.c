@@ -438,6 +438,14 @@ void receive_rtds_command_message(const can_msg_t *message, rtds_command_message
     rtds_command_message->command = (uint8_t)command_raw;
 }
 
+void receive_wheel_buttons(const can_msg_t *message, wheel_buttons_t *wheel_buttons) {
+    
+    uint8_t data = message->data[0];
+    uint64_t button_id_mask = (1ULL << 8) - 1ULL;
+    uint64_t button_id_raw = (data >> 0) & button_id_mask;
+    wheel_buttons->button_id = (uint8_t)button_id_raw;
+}
+
 void receive_lightning_board_imu_acceleration_data(const can_msg_t *message, lightning_board_imu_acceleration_data_t *lightning_board_imu_acceleration_data) {
     
     uint64_t data_bigendian;
@@ -543,31 +551,6 @@ void receive_bms_charge_message_send(const can_msg_t *message, bms_charge_messag
     uint64_t enable_charging_mask = (1ULL << 8) - 1ULL;
     uint64_t enable_charging_raw = (data >> 24) & enable_charging_mask;
     bms_charge_message_send->enable_charging = (uint8_t)enable_charging_raw;
-}
-
-void receive_pack_status(const can_msg_t *message, pack_status_t *pack_status) {
-    
-    uint64_t data_bigendian;
-    memcpy(&data_bigendian, message->data, 8);
-    uint64_t data = __builtin_bswap64(data_bigendian);
-    uint64_t voltage_mask = (1ULL << 16) - 1ULL;
-    uint64_t voltage_raw = (data >> 48) & voltage_mask;
-    pack_status->voltage = (float)(voltage_raw / 10);
-    uint64_t current_mask = (1ULL << 16) - 1ULL;
-    uint64_t current_bits = (data >> 32) & current_mask;
-    int64_t current_raw = (current_bits & (1ULL << (16 - 1)))
-        ? (int64_t)(current_bits | ~current_mask)
-        : (int64_t)current_bits;
-    pack_status->current = (float)(current_raw / 10);
-    uint64_t amp_hours_mask = (1ULL << 16) - 1ULL;
-    uint64_t amp_hours_raw = (data >> 16) & amp_hours_mask;
-    pack_status->amp_hours = (float)amp_hours_raw;
-    uint64_t soc_mask = (1ULL << 8) - 1ULL;
-    uint64_t soc_raw = (data >> 8) & soc_mask;
-    pack_status->soc = (float)soc_raw;
-    uint64_t health_mask = (1ULL << 8) - 1ULL;
-    uint64_t health_raw = (data >> 0) & health_mask;
-    pack_status->health = (float)health_raw;
 }
 
 void receive_bms_status(const can_msg_t *message, bms_status_t *bms_status) {
@@ -1223,62 +1206,27 @@ void receive_bms_imu_gyro(const can_msg_t *message, bms_imu_gyro_t *bms_imu_gyro
     bms_imu_gyro->imu_gyro_z = (float)(imu_gyro_z_raw / 100);
 }
 
-void receive_bms_test_message_one(const can_msg_t *message, bms_test_message_one_t *bms_test_message_one) {
+void receive_pack_soc_status(const can_msg_t *message, pack_soc_status_t *pack_soc_status) {
     
-    uint64_t data_bigendian;
-    memcpy(&data_bigendian, message->data, 8);
-    uint64_t data = __builtin_bswap64(data_bigendian);
-    uint64_t one_mask = (1ULL << 32) - 1ULL;
-    uint64_t one_bits = (data >> 32) & one_mask;
-    int64_t one_raw = (one_bits & (1ULL << (32 - 1)))
-        ? (int64_t)(one_bits | ~one_mask)
-        : (int64_t)one_bits;
-    bms_test_message_one->one = (float)(one_raw / 1000);
-    uint64_t two_mask = (1ULL << 16) - 1ULL;
-    uint64_t two_bits = (data >> 16) & two_mask;
-    int64_t two_raw = (two_bits & (1ULL << (16 - 1)))
-        ? (int64_t)(two_bits | ~two_mask)
-        : (int64_t)two_bits;
-    bms_test_message_one->two = (int16_t)two_raw;
-    uint64_t three_mask = (1ULL << 8) - 1ULL;
-    uint64_t three_raw = (data >> 8) & three_mask;
-    bms_test_message_one->three = (uint8_t)three_raw;
+    uint32_t data_bigendian;
+    memcpy(&data_bigendian, message->data, 4);
+    uint32_t data = __builtin_bswap32(data_bigendian);
+    uint64_t Pack_SoC_mask = (1ULL << 16) - 1ULL;
+    uint64_t Pack_SoC_raw = (data >> 16) & Pack_SoC_mask;
+    pack_soc_status->Pack_SoC = (float)(Pack_SoC_raw / 1000);
+    uint64_t Pack_SoC_Drift_mask = (1ULL << 16) - 1ULL;
+    uint64_t Pack_SoC_Drift_bits = (data >> 0) & Pack_SoC_Drift_mask;
+    int64_t Pack_SoC_Drift_raw = (Pack_SoC_Drift_bits & (1ULL << (16 - 1)))
+        ? (int64_t)(Pack_SoC_Drift_bits | ~Pack_SoC_Drift_mask)
+        : (int64_t)Pack_SoC_Drift_bits;
+    pack_soc_status->Pack_SoC_Drift = (float)(Pack_SoC_Drift_raw / 1000);
 }
 
-void receive_bms_test_message_two(const can_msg_t *message, bms_test_message_two_t *bms_test_message_two) {
+void receive_shutdown_as_read_by_bms(const can_msg_t *message, shutdown_as_read_by_bms_t *shutdown_as_read_by_bms) {
     
-    uint64_t data_bigendian;
-    memcpy(&data_bigendian, message->data, 8);
-    uint64_t data = __builtin_bswap64(data_bigendian);
-    uint64_t one_mask = (1ULL << 2) - 1ULL;
-    uint64_t one_raw = (data >> 62) & one_mask;
-    bms_test_message_two->one = (uint8_t)one_raw;
-    uint64_t two_mask = (1ULL << 1) - 1ULL;
-    uint64_t two_raw = (data >> 61) & two_mask;
-    bms_test_message_two->two = (bool)two_raw;
-    uint64_t three_mask = (1ULL << 3) - 1ULL;
-    uint64_t three_raw = (data >> 58) & three_mask;
-    bms_test_message_two->three = (uint8_t)three_raw;
-    uint64_t four_mask = (1ULL << 6) - 1ULL;
-    uint64_t four_raw = (data >> 52) & four_mask;
-    bms_test_message_two->four = (uint8_t)four_raw;
-    uint64_t five_mask = (1ULL << 1) - 1ULL;
-    uint64_t five_raw = (data >> 51) & five_mask;
-    bms_test_message_two->five = (bool)five_raw;
-    uint64_t six_mask = (1ULL << 1) - 1ULL;
-    uint64_t six_raw = (data >> 50) & six_mask;
-    bms_test_message_two->six = (bool)six_raw;
-    uint64_t seven_mask = (1ULL << 1) - 1ULL;
-    uint64_t seven_raw = (data >> 49) & seven_mask;
-    bms_test_message_two->seven = (bool)seven_raw;
-    uint64_t eight_mask = (1ULL << 1) - 1ULL;
-    uint64_t eight_raw = (data >> 48) & eight_mask;
-    bms_test_message_two->eight = (bool)eight_raw;
-    uint64_t nine_mask = (1ULL << 23) - 1ULL;
-    uint64_t nine_raw = (data >> 25) & nine_mask;
-    bms_test_message_two->nine = (uint32_t)nine_raw;
-    uint64_t ten_mask = (1ULL << 9) - 1ULL;
-    uint64_t ten_raw = (data >> 16) & ten_mask;
-    bms_test_message_two->ten = (uint16_t)ten_raw;
+    uint8_t data = message->data[0];
+    uint64_t shutdown_mask = (1ULL << 8) - 1ULL;
+    uint64_t shutdown_raw = (data >> 0) & shutdown_mask;
+    shutdown_as_read_by_bms->shutdown = (bool)shutdown_raw;
 }
 

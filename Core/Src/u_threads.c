@@ -1,5 +1,6 @@
 #include "main.h"
 #include "u_tx_debug.h"
+#include "u_nx_debug.h"
 #include "can_messages_tx.h"
 #include "u_threads.h"
 #include "u_queues.h"
@@ -13,7 +14,6 @@
 #include "u_debug.h"
 #include "u_efuses.h"
 #include "u_statemachine.h"
-#include "u_tsms.h"
 #include "u_bms.h"
 #include "u_peripherals.h"
 #include "u_ethernet.h"
@@ -79,6 +79,10 @@ void vTest(ULONG thread_input) {
 
         send_vcu_test_message(7, 19.342, 30, 13942, -122);
         send_second_vcu_test_message(12132, 3, 2, false, 35, 100000);
+
+        /* Send car state message */
+        send_carstate_msg();
+
         tx_thread_sleep(test_thread.sleep);
     }
 }
@@ -216,13 +220,13 @@ static thread_t statemachine_thread = {
 void vStatemachine(ULONG thread_input) {
 
     while(1) {
-
         state_req_t new_state_req;
         while(queue_receive(&state_transition_queue, &new_state_req, TX_WAIT_FOREVER) == U_SUCCESS) {
             statemachine_process(new_state_req);
 	    }
 
-        /* No sleep. Thread timing is controlled completely by the queue timeout. */    }
+        /* No sleep. Thread timing is controlled completely by the queue timeout. */
+    }
 }
 
 /* Faults Thread. */
@@ -246,6 +250,7 @@ void vFaults(ULONG thread_input) {
             get_fault(CAN_INCOMING_FAULT),
             get_fault(BMS_CAN_MONITOR_FAULT),
             get_fault(LIGHTNING_CAN_MONITOR_FAULT),
+            get_fault(SHUTDOWN_FAULT),
             get_fault(ONBOARD_TEMP_FAULT),
             get_fault(IMU_ACCEL_FAULT),
             get_fault(IMU_GYRO_FAULT),
@@ -256,8 +261,7 @@ void vFaults(ULONG thread_input) {
             get_fault(ONBOARD_ACCEL_SHORT_CIRCUIT_FAULT),
             get_fault(ONBOARD_PEDAL_DIFFERENCE_FAULT),
             get_fault(RTDS_FAULT),
-            get_fault(LV_LOW_VOLTAGE_FAULT),
-            0
+            get_fault(LV_LOW_VOLTAGE_FAULT)
         );
 
         /* Sleep Thread for specified number of ticks. */
@@ -328,7 +332,7 @@ void vShutdown(ULONG thread_input) {
                                 || hv_c || hvd_gpio || imd_gpio || ckpt_gpio
                                 || inertia_sw_gpio || tsms_gpio;
 
-        if (shutdown_active && tsms_get() == true) { // if tsms is still on when shutdown is active, trigger fault
+        if (shutdown_active && get_shutdown() == true) { // if tsms is still on when shutdown is active, trigger fault
             queue_send(&faults, &(fault_t){SHUTDOWN_FAULT}, TX_NO_WAIT);
         }
 
@@ -367,7 +371,7 @@ static thread_t efuses_thread = {
         .threshold  = 0,                      /* Preemption Threshold */
         .time_slice = TX_NO_TIME_SLICE,       /* Time Slice */
         .auto_start = TX_AUTO_START,          /* Auto Start */
-        .sleep      = 100,                    /* Sleep (in ticks) */
+        .sleep      = 1000,                   /* Sleep (in ticks) */
         .function   = vEFuses                 /* Thread Function */
     };
 void vEFuses(ULONG thread_input) {
@@ -689,28 +693,6 @@ void vEFuses(ULONG thread_input) {
     }
 }
 
-/* TSMS Thread. */
-static thread_t tsms_thread = {
-        .name       = "TSMS Thread",          /* Name */
-        .size       = 2048,                   /* Stack Size (in bytes) */
-        .priority   = PRIO_vTSMS,             /* Priority */
-        .threshold  = 0,                      /* Preemption Threshold */
-        .time_slice = TX_NO_TIME_SLICE,       /* Time Slice */
-        .auto_start = TX_AUTO_START,          /* Auto Start */
-        .sleep      = 1000,                   /* Sleep (in ticks) */
-        .function   = vTSMS                   /* Thread Function */
-    };
-void vTSMS(ULONG thread_input) {
-
-    while(1) {
-
-        tsms_update();
-
-        /* Sleep Thread for specified number of ticks. */
-        tx_thread_sleep(tsms_thread.sleep);
-    }
-}
-
 /* Mux Thread (for the ADC multiplexer). */
 static thread_t mux_thread = {
         .name       = "Mux Thread",           /* Name */
@@ -742,7 +724,7 @@ static thread_t peripherals_thread = {
         .threshold  = 0,                      /* Preemption Threshold */
         .time_slice = TX_NO_TIME_SLICE,       /* Time Slice */
         .auto_start = TX_AUTO_START,          /* Auto Start */
-        .sleep      = 100,                    /* Sleep (in ticks) */
+        .sleep      = 100,                   /* Sleep (in ticks) */
         .function   = vPeripherals            /* Thread Function */
     };
 void vPeripherals(ULONG thread_input) {
@@ -790,6 +772,14 @@ void vPeripherals(ULONG thread_input) {
                 temperature,
                 humidity
             );
+
+            /*Calculate LV box fan PWM from temperature and send over CAN,
+            Linear mapping: 20C --> 0%, 40C --> 100%. Clamped to values [0, 100]. */
+            float fan_pwm_f = (temperature - 20.0f)/ (40.0f - 20.0f) * 100.0f;
+            if (fan_pwm_f<0.0f) {fan_pwm_f = 0.0f;}
+            if (fan_pwm_f>100.0f) {fan_pwm_f = 100.0f;}
+            send_lv_box_fan_pwm((uint8_t)fan_pwm_f);
+
         } while (0);
 
         /* SECTION 2: Read IMU acceleration data and send it over CAN. */
@@ -939,7 +929,6 @@ uint8_t threads_init(TX_BYTE_POOL *byte_pool) {
     CATCH_ERROR(create_thread(byte_pool, &can_outgoing_thread), U_SUCCESS);      // Create Outgoing CAN thread.
     CATCH_ERROR(create_thread(byte_pool, &faults_queue_thread), U_SUCCESS);      // Create Faults Queue thread.
     CATCH_ERROR(create_thread(byte_pool, &faults_thread), U_SUCCESS);            // Create Faults thread.
-    CATCH_ERROR(create_thread(byte_pool, &tsms_thread), U_SUCCESS);              // Create TSMS thread.
     CATCH_ERROR(create_thread(byte_pool, &shutdown_thread), U_SUCCESS);          // Create Shutdown thread.
     CATCH_ERROR(create_thread(byte_pool, &statemachine_thread), U_SUCCESS);      // Create State Machine thread.
     //CATCH_ERROR(create_thread(byte_pool, &pedals_thread), U_SUCCESS);            // Create Pedals thread.
