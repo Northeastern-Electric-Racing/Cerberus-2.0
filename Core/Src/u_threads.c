@@ -20,6 +20,7 @@
 #include "serial.h"
 #include "u_lightning.h"
 #include "u_rtds.h"
+#include "u_nx_debug.h"
 #include "timer.h"
 #include "debounce.h"
 
@@ -351,11 +352,11 @@ static thread_t shutdown_thread = {
         .function   = vShutdown           /* Thread Function */
     };
 
-#define LIGHTNING_BOARD_DEBOUNCE 500 
+#define LIGHTNING_BOARD_DEBOUNCE 500
 
 void vShutdown(ULONG thread_input) {
     /* Debounce Timer */
-    static nertimer_t lightning_status_timer; 
+    static nertimer_t lightning_status_timer;
 
     while(1) {
 
@@ -370,10 +371,10 @@ void vShutdown(ULONG thread_input) {
         bool inertia_sw_gpio = (HAL_GPIO_ReadPin(INERTIA_SW_GPIO_GPIO_Port, INERTIA_SW_GPIO_Pin) == GPIO_PIN_SET);
         bool tsms_gpio = (HAL_GPIO_ReadPin(TSMS_GPIO_GPIO_Port, TSMS_GPIO_Pin) == GPIO_PIN_SET);
 
-            
+
         //lightning status with debounce
         bool lightning_fault = bms_gpio || imd_gpio;
-        
+
 
         //lightning status after debounce
         if (lightning_fault) {
@@ -940,7 +941,7 @@ void vPeripherals(ULONG thread_input) {
     }
 }
 
-/* RTDS Telemetry Thread. 
+/* RTDS Telemetry Thread.
    This thread is for RTDS telemetry. The actual state of the RTDS is managed by the statemachine. */
 static thread_t rtds_telemetry_thread = {
         .name       = "RTDS Telemetry Thread", /* Name */
