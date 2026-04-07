@@ -334,7 +334,7 @@ static int16_t _derate_torque(float mph, float percentage_accel)
 static void _accel_pedal_regen_torque(float percentage_accel)
 {
 	/* Coefficient to map accel pedal travel % to the % of max torqye we should command */
-	float coeff = tc_get_torque_scale() * (percentage_accel - ACCELERATION_THRESHOLD) / (1.0 - ACCELERATION_THRESHOLD);
+	float coeff = (percentage_accel - ACCELERATION_THRESHOLD) / (1.0 - ACCELERATION_THRESHOLD);
 
 	/* Makes acceleration pedal more sensitive since domain is compressed but range is the same */
 	uint16_t torque = coeff * torque_limit_percentage * MAX_TORQUE;
@@ -416,6 +416,7 @@ static void _handle_performance(float mph, float percentage_accel)
 		if (launch_control_enabled) {
 			_launch_control(mph, (percentage_accel - 0.25) / 0.75);
 		} else {
+			percentage_accel *= tc_get_torque_scale();
 			_accel_pedal_regen_torque(percentage_accel);
 		}
 	} else if (mph * MPH_TO_KMH > 5 && percentage_accel <= REGEN_THRESHOLD) {

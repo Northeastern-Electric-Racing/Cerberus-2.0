@@ -37,7 +37,7 @@ void toggle_tc(void);
  * 
  * @return 'true' if tc is enabled, 'false' if tc is not enabled. 
  */
-bool tc_isEnabled(void);
+bool tc_is_enabled(void);
 
 /**
  * @brief Records front wheel speeds from a CAN message.

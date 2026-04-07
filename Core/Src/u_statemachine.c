@@ -60,7 +60,7 @@ void send_carstate_msg(void)
 		pedals_getRegenLimit(),
 		pedals_getLaunchControl(),
 		cerberus_state.functional,
-		tc_isEnabled()
+		tc_is_enabled()
 	);
 }
 
