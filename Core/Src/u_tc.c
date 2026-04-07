@@ -1,4 +1,5 @@
 #include <stdint.h>
+#include <math.h>
 #include "u_tc.h"
 #include "u_dti.h"
 #include "u_tx_debug.h"
@@ -21,13 +22,20 @@
 #define G_IN_PER_S2         386.09f    // standard gravity in in/s^2
 
 // TC
-#define TC_CURVE_MAGIC      0x004E4552 // " NER" in hex
-#define TC_CURVE_VERSION    1
-#define TC_CURVE_POINTS_MAX 200
-#define TC_CALIB_SAMPLES    50
-#define TC_MIN_VX           0.5f
-#define VEL_ALPHA           0.98f 
-#define TC_INTEGRAL_LIMIT   1.0f
+#define TC_CURVE_MAGIC            0x004E4552 // " NER" in hex
+#define TC_CURVE_VERSION          1
+#define TC_CURVE_POINTS_MAX       200
+#define TC_CALIB_SAMPLES          50
+#define TC_MIN_VX                 0.5f
+#define VEL_ALPHA                 0.98f
+#define TC_INTEGRAL_LIMIT         1.0f
+#define TC_SLIP_THRESHOLD_FACTOR  1.1f   // engage when slip > peak * this
+#define TC_SLIP_RECOVERY_FACTOR   0.7f   // release when slip < peak * this
+#define TC_FF_SLIP_FACTOR         0.8f   // FF ceiling blend starts at peak * this
+#define TC_SLIP_RAW_WEIGHT        0.3f   // IIR filter: weight on raw slip signal
+#define TC_INTEGRAL_DECAY_TAU     0.1f   // s, exponential decay when TC inactive
+#define TC_RECOVERY_TIME_FAST     0.05f  // s, ramp rate when slip margin is large
+#define TC_RECOVERY_TIME_SLOW     0.20f  // s, ramp rate when slip just cleared recovery
 
 // STRUCTS -----------------------------------------------------------
 
@@ -79,11 +87,16 @@ typedef struct {
   float dt;
   uint32_t last_tick;
   bool tire_curve_loaded;
+
+  bool  tc_active;          // hysteresis: true while TC is engaged
+  float prev_slip;          // IIR filter memory
+  float prev_torque_scale;  // rate limiter reference
 } tc_state_t;
 
 static tc_state_t _tc_state = {
-  .pi           = { .kp = 1.5f, .ki = 0.2f },
-  .torque_scale = 1.0f,
+  .pi                = { .kp = 1.5f, .ki = 0.2f },
+  .torque_scale      = 1.0f,
+  .prev_torque_scale = 1.0f,
 };
 
 
@@ -97,7 +110,8 @@ static void _update_dt(void);
 static float _lookup_fx(const tire_curve_t *curve, float slip);
 static void _init_vel_estimator(vel_estimator_t *est, float avg_ax_stationary);
 static float _estimate_velocity(vel_estimator_t *est, float avg_front_rads, float ax, float dt);
-static float _update_pi(tc_pi_t *pi, const tire_curve_t *curve, float slip, float dt);
+static void _reset_tc_state(tc_state_t *s);
+static float _tc_core_process(tc_state_t *s, float slip_raw, float dt);
 
 // PRIVATE FUNCTION DEFINIIONS ----------------------------------------
 
@@ -246,32 +260,104 @@ static float _estimate_velocity(vel_estimator_t *est, float avg_front_rads, floa
 }
 
 /**
- * @brief Updates the PI controller and returns the resulting torque scale.
- * 
- * @param pi Pointer to the tc_pi_t struct containing the PI controller state and gains
- * @param curve Pointer to the tire curve struct for feedforward lookup
- * @param slip The current slip ratio
- * @param dt Time in seconds since the last update (should be the TC thread period)
- * @return float 
+ * @brief Resets TC hysteresis, integrator, and filter state. Called when TC
+ * is suppressed (low speed, disabled, or no tire data).
+ *
+ * @param s Pointer to the TC state struct
  */
-static float _update_pi(tc_pi_t *pi, const tire_curve_t *curve, float slip, float dt) {
-  // Target slip slightly below peak for stability
-  float slip_ref = curve->peak_lambda * 0.98f; 
-  float error = slip_ref - slip;
+static void _reset_tc_state(tc_state_t *s) {
+  s->tc_active         = false;
+  s->pi.integral       = 0.0f;
+  s->prev_slip         = 0.0f;
+  s->prev_torque_scale = 1.0f;
+}
 
-  pi->integral += error * dt;
-  if (pi->integral > TC_INTEGRAL_LIMIT) pi->integral = TC_INTEGRAL_LIMIT;
-  else if (pi->integral < -TC_INTEGRAL_LIMIT) pi->integral = -TC_INTEGRAL_LIMIT;
+/**
+ * @brief Core TC algorithm: feedforward ceiling + PI feedback with hysteresis,
+ * IIR slip filter, integrator decay, and rate-limited recovery.
+ *
+ * @param s        Pointer to the TC state struct (modified in place)
+ * @param slip_raw Raw slip ratio from _calc_slip()
+ * @param dt       Time in seconds since the last call
+ * @return float   Torque scale in [0.0, 1.0]
+ */
+static float _tc_core_process(tc_state_t *s, float slip_raw, float dt) {
+  const tire_curve_t *curve = s->tire_curve;
+  float peak_lambda = curve->peak_lambda;
 
-  // feedforward term from tire curve, plus PI control
-  float fx_ff = _lookup_fx(curve, slip_ref);
+  // 1. IIR low-pass filter on slip
+  float slip = TC_SLIP_RAW_WEIGHT * slip_raw
+               + (1.0f - TC_SLIP_RAW_WEIGHT) * s->prev_slip;
+  s->prev_slip = slip;
 
-  float feedback = pi->kp * error + pi->ki * pi->integral;
-  float torque_scale = fx_ff + feedback;
+  // 2. Hysteresis thresholds
+  float slip_threshold = peak_lambda * TC_SLIP_THRESHOLD_FACTOR;
+  float slip_recovery  = peak_lambda * TC_SLIP_RECOVERY_FACTOR;
 
+  // 3. Engagement / release
+  if (!s->tc_active && slip > slip_threshold) s->tc_active = true;
+  if ( s->tc_active && slip < slip_recovery)  s->tc_active = false;
+
+  // 4. Integral decay when TC is inactive — prevents wind-up between events
+  if (!s->tc_active) {
+    s->pi.integral *= expf(-dt / TC_INTEGRAL_DECAY_TAU);
+  }
+
+  // 5. Feedforward ceiling blend
+  //    Ramps continuously from open (1.0) to the tire curve peak as slip
+  //    rises from ff_slip_factor*peak to slip_threshold*peak, avoiding a
+  //    sudden torque step that would bypass the rate limiter.
+  float ff_denom = peak_lambda * (TC_SLIP_THRESHOLD_FACTOR - TC_FF_SLIP_FACTOR);
+  float ff_blend;
+  if (ff_denom > 0.0f) {
+    ff_blend = (slip - peak_lambda * TC_FF_SLIP_FACTOR) / ff_denom;
+    if (ff_blend < 0.0f) ff_blend = 0.0f;
+    if (ff_blend > 1.0f) ff_blend = 1.0f;
+  } else {
+    ff_blend = 0.0f;
+  }
+  float ff_scale_limit = _lookup_fx(curve, peak_lambda);
+  float ff_scale = 1.0f + ff_blend * (ff_scale_limit - 1.0f);
+  float torque_scale = (ff_scale < 1.0f) ? ff_scale : 1.0f;
+
+  // 6. PI correction — only applied when TC is active
+  if (s->tc_active) {
+    float slip_error = slip - peak_lambda;   // positive = too much slip
+
+    s->pi.integral += slip_error * dt;
+    if (s->pi.integral >  TC_INTEGRAL_LIMIT) s->pi.integral =  TC_INTEGRAL_LIMIT;
+    if (s->pi.integral < -TC_INTEGRAL_LIMIT) s->pi.integral = -TC_INTEGRAL_LIMIT;
+
+    float pi_correction = s->pi.kp * slip_error + s->pi.ki * s->pi.integral;
+    float trim = (pi_correction > 0.0f) ? pi_correction : 0.0f;
+    torque_scale -= trim;
+  }
+
+  // 7. Rate limiter — only on recovery from a TC-reduced state.
+  //    Instant snap-down is always allowed; ramp-up is capped only when
+  //    prev_torque_scale < 1.0 (i.e. TC was active last cycle).
+  //    Rate scales with slip margin: faster when well below recovery,
+  //    slower when slip just cleared the recovery threshold.
+  if (torque_scale > s->prev_torque_scale && s->prev_torque_scale < 1.0f) {
+    float slip_margin = (slip_recovery - slip) / fmaxf(slip_recovery, 0.01f);
+    if (slip_margin < 0.0f) slip_margin = 0.0f;
+    if (slip_margin > 1.0f) slip_margin = 1.0f;
+
+    float rate_fast  = 1.0f / TC_RECOVERY_TIME_FAST;
+    float rate_slow  = 1.0f / TC_RECOVERY_TIME_SLOW;
+    float rate_limit = rate_slow + slip_margin * (rate_fast - rate_slow);
+
+    float delta = torque_scale - s->prev_torque_scale;
+    float max_delta = rate_limit * dt;
+    if (delta > max_delta) delta = max_delta;
+    torque_scale = s->prev_torque_scale + delta;
+  }
+
+  // 8. Final clamp
   if (torque_scale < 0.0f) torque_scale = 0.0f;
   if (torque_scale > 1.0f) torque_scale = 1.0f;
 
+  s->prev_torque_scale = torque_scale;
   return torque_scale;
 }
 
@@ -328,7 +414,7 @@ void toggle_tc(void) {
  * 
  * @return 'true' if tc is enabled, 'false' if tc is not enabled. 
  */
-bool tc_isEnabled(void) {
+bool tc_is_enabled(void) {
   return _tc_state.tc_enabled;
 }
 
@@ -362,11 +448,13 @@ float tc_get_torque_scale(void) {
  */
 void tc_process(void) {
   if (!_tc_state.tc_enabled) {
+    _reset_tc_state(&_tc_state);
     _tc_state.torque_scale = 1.0f;
     return;
   }
 
   if (!_tc_state.tire_curve_loaded) {
+    _reset_tc_state(&_tc_state);
     _tc_state.torque_scale = 1.0f;
     return;
   }
@@ -403,6 +491,18 @@ void tc_process(void) {
   float f_rpms = (_tc_state.omega_fl + _tc_state.omega_fr) / 2.0f;
   float vx_car = _estimate_velocity(&_tc_state.vel_estimator, f_rpms, accel.x, _tc_state.dt);
 
-  float slip = _calc_slip((float)dti_get_rpm(), vx_car);
-  _tc_state.torque_scale = _update_pi(&_tc_state.pi, _tc_state.tire_curve, slip, _tc_state.dt);
+  float motor_rpm = (float)dti_get_rpm();
+
+  // Low-speed guard: suppress TC and reset state below TC_MIN_VX
+  float wheel_rps = motor_rpm / GEAR_RATIO / 60.0f;
+  float v_rear = wheel_rps * M_PI * TIRE_DIAMETER * SECONDS_TO_HOURS / INCHES_TO_MILES;
+  float denom = fmaxf(fabsf(vx_car), fabsf(v_rear));
+  if (denom < TC_MIN_VX) {
+    _reset_tc_state(&_tc_state);
+    _tc_state.torque_scale = 1.0f;
+    return;
+  }
+
+  float slip_raw = _calc_slip(motor_rpm, vx_car);
+  _tc_state.torque_scale = _tc_core_process(&_tc_state, slip_raw, _tc_state.dt);
 }
