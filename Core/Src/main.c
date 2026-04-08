@@ -34,10 +34,6 @@
 #include "u_lightning.h"
 /* USER CODE END Includes */
 
-
-
-
-
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
 
@@ -204,12 +200,9 @@ int main(void)
 
   /* USER CODE END 2 */
 
-
   MX_ThreadX_Init();
 
   /* We should never get here as control is now taken by the scheduler */
-
-
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
@@ -400,6 +393,7 @@ static void MX_ADC1_Init(void)
   */
   sConfig.Channel = ADC_CHANNEL_15;
   sConfig.Rank = ADC_REGULAR_RANK_9;
+  sConfig.SamplingTime = ADC_SAMPLETIME_247CYCLES_5;
   if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
   {
     Error_Handler();
