@@ -151,14 +151,35 @@ raw_efuse_adc_t adc_getEFuseData(void) {
     // serial_monitor("efuse_fanbatt", "_adc1_buffer[ADC1_CHANNEL6]=", "%d", _adc1_buffer[ADC1_CHANNEL6]);
 
     // serial_monitor("adc1", "ADC1_CHANNEL3", "%d", _adc1_buffer[ADC1_CHANNEL3]);
-    // serial_monitor("adc1", "ADC1_CHANNEL0", "%d", _adc1_buffer[ADC1_CHANNEL0]);
-    // serial_monitor("adc1", "ADC1_CHANNEL5", "%d", _adc1_buffer[ADC1_CHANNEL5]);
-    // serial_monitor("adc1", "ADC1_CHANNEL9", "%d", _adc1_buffer[ADC1_CHANNEL9]);
+    // serial_monitor("adc1", "ADC1_CHANNEL0 (mux)", "%d", _adc1_buffer[ADC1_CHANNEL0]);
+    // serial_monitor("adc1", "ADC1_CHANNEL5 (mux)", "%d", _adc1_buffer[ADC1_CHANNEL5]);
+    // serial_monitor("adc1", "ADC1_CHANNEL9 (mux)", "%d", _adc1_buffer[ADC1_CHANNEL9]);
     // serial_monitor("adc1", "ADC1_CHANNEL6", "%d", _adc1_buffer[ADC1_CHANNEL6]);
     // serial_monitor("adc1", "ADC1_CHANNEL2", "%d", _adc1_buffer[ADC1_CHANNEL2]);
     // serial_monitor("adc1", "ADC1_CHANNEL13", "%d", _adc1_buffer[ADC1_CHANNEL13]);
     // serial_monitor("adc1", "ADC1_CHANNEL18", "%d", _adc1_buffer[ADC1_CHANNEL18]);
-    // serial_monitor("adc1", "ADC1_CHANNEL15", "%d", _adc1_buffer[ADC1_CHANNEL15]);
+    // serial_monitor("adc1", "ADC1_CHANNEL15 (mux)", "%d", _adc1_buffer[ADC1_CHANNEL15]);
+    // serial_monitor("adc1", "mux_state (0=HIGH, 1=LOW)", "%d", mux_state_debug);
+
+    // serial_monitor("mux_debug", "SEL1_LOW", "%d", _mux_buffer[SEL1_LOW]);
+    // serial_monitor("mux_debug", "SEL1_HIGH", "%d", _mux_buffer[SEL1_HIGH]);
+    // serial_monitor("mux_debug", "SEL2_LOW", "%d", _mux_buffer[SEL2_LOW]);
+    // serial_monitor("mux_debug", "SEL2_HIGH", "%d", _mux_buffer[SEL2_HIGH]);
+    // serial_monitor("mux_debug", "SEL3_LOW", "%d", _mux_buffer[SEL3_LOW]);
+    // serial_monitor("mux_debug", "SEL3_HIGH", "%d", _mux_buffer[SEL3_HIGH]);
+    // serial_monitor("mux_debug", "SEL4_LOW", "%d", _mux_buffer[SEL4_LOW]);
+    // serial_monitor("mux_debug", "SEL4_HIGH", "%d", _mux_buffer[SEL4_HIGH]);
+
+    // serial_monitor("raw_efuse", "EFUSE_DASHBOARD", "%d", efuses.data[EFUSE_DASHBOARD]);
+    // serial_monitor("raw_efuse", "EFUSE_BRAKE", "%d", efuses.data[EFUSE_BRAKE]);
+    // serial_monitor("raw_efuse", "EFUSE_SHUTDOWN", "%d", efuses.data[EFUSE_SHUTDOWN]);
+    // serial_monitor("raw_efuse", "EFUSE_LV", "%d", efuses.data[EFUSE_LV]);
+    // serial_monitor("raw_efuse", "EFUSE_RADFAN", "%d", efuses.data[EFUSE_RADFAN]);
+    // serial_monitor("raw_efuse", "EFUSE_FANBATT", "%d", efuses.data[EFUSE_FANBATT]);
+    // serial_monitor("raw_efuse", "EFUSE_PUMP1", "%d", efuses.data[EFUSE_PUMP1]);
+    // serial_monitor("raw_efuse", "EFUSE_PUMP2", "%d", efuses.data[EFUSE_PUMP2]);
+    // serial_monitor("raw_efuse", "EFUSE_BATTBOX", "%d", efuses.data[EFUSE_BATTBOX]);
+    // serial_monitor("raw_efuse", "EFUSE_MC", "%d", efuses.data[EFUSE_MC]);
 
     return efuses;
 }
