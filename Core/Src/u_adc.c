@@ -252,3 +252,17 @@ lvread_adc_t adc_getLVData(void) {
 
     return data;
 }
+
+/* Gets LV_BATT Voltage ADC data, and does all conversions based on a f(x) found experimentally based on readings from VCU 001. Should result in more accurate conversions. */
+lvread_adc_t adc_getLVData_2(void) {
+    lvread_adc_t data = { 0 };
+
+    /* Get the raw ADC reading. */
+    data.raw = _mux_buffer[SEL4_LOW];
+
+    /* Convert the raw ADC reading directly to the full LV Voltage. */
+    // Based on a linear fit computed via experimental data from VCU 001, we have: f(x) = 0.008988x - 0.89151  V, where f(x) is the full LV Voltage and x is the raw ADC reading.
+    data.voltage = (data.raw*0.008988) - 0.89151;
+    
+    return data;
+}

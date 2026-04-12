@@ -32,6 +32,7 @@ typedef struct {
     uint16_t raw; 
     float voltage; 
 } lvread_adc_t; // Struct to store the data.
-lvread_adc_t adc_getLVData(void);
+lvread_adc_t adc_getLVData(void); // Gets LV_BATT Voltage ADC data, and does conversions based on ideal circuit component values.
+lvread_adc_t adc_getLVData_2(void); // Gets LV_BATT Voltage ADC data, and does all conversions based on a f(x) found experimentally based on readings from VCU 001. Should be more accurate than adc_getLVData().
 
 #endif /* u_adc.h */

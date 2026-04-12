@@ -901,7 +901,7 @@ void vPeripherals(ULONG thread_input) {
 
         /* SECTION 4: Send LV ADC Message. */
         do {
-            lvread_adc_t lv_data = adc_getLVData();
+            lvread_adc_t lv_data = adc_getLVData_2();
 
             /* Send the LV Voltage message. */
             send_lv_voltage(
