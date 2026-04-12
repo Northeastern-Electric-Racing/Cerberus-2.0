@@ -406,7 +406,7 @@ void vShutdown(ULONG thread_input) {
                                 || hv_c || hvd_gpio || imd_gpio || ckpt_gpio
                                 || inertia_sw_gpio || tsms_gpio;
 
-        if (shutdown_active && get_shutdown() == true) { // if tsms is still on when shutdown is active, trigger fault
+        if (shutdown_active || (get_shutdown() == true)) { // if tsms is still on when shutdown is active, trigger fault
             queue_send(&faults, &(fault_t){SHUTDOWN_FAULT}, TX_NO_WAIT);
         }
 
