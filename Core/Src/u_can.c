@@ -238,6 +238,7 @@ void can_inbox(can_msg_t *message) {
         /* If shutdown is active, cancel the RTDS sound if it's active. */
         if(bms.shutdown == true) {
             rtds_cancelRTDS();
+            rtds_stopReverseSound();
         }
         break;
     default:

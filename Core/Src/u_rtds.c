@@ -32,7 +32,7 @@ static timer_t reverse_sound_timer = {
 /* Sets (i.e. turns on) the RTDS pin. */
 static void _set_rtds_pin(void) {
     /* If shutdown is active, make it impossible to sound RTDS. */
-    if(get_shutdown() == true) {
+    if(is_shutdown_active() == true) {
         return; // Return early. Never ever have RTDS be high when shutdown is active.
     }
 

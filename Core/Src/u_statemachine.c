@@ -54,7 +54,7 @@ void send_carstate_msg(void)
 		get_nero_state().home_mode,
 		get_nero_state().nero_index,
 		dti_get_mph(),
-		get_shutdown(),
+		is_shutdown_active(),
 		pedals_getTorqueLimitPercentage(),
 		(cerberus_state.functional != F_REVERSE),
 		pedals_getRegenLimit(),
@@ -68,7 +68,7 @@ void update_shutdown(bool new_shutdown) {
 	shutdown = new_shutdown;
 }
 
-bool get_shutdown(void) {
+bool is_shutdown_active(void) {
 	return shutdown;
 }
 
@@ -136,7 +136,7 @@ static int transition_functional_state(func_state_t new_state)
 
 		brake_state = pedals_getBrakeState();
 #ifdef TSMS_OVERRIDE
-		if (get_shutdown() && (!brake_state || cerberus_state.functional == FAULTED)) { // only enforce brake / fault if tsms is actually on
+		if (!is_shutdown_active() && (!brake_state || cerberus_state.functional == FAULTED)) { // only enforce brake / fault if tsms is actually on
 			return 3;
 		}
 		printf("Ignoring tsms\n\n");
@@ -151,13 +151,13 @@ static int transition_functional_state(func_state_t new_state)
 			return 3;
 		}
 
-		/* Only turn on motor if brakes engaged and tsms is on */
-		if (!brake_state || !get_shutdown()) {
+		/* Only turn on motor if brakes engaged and no shutdown active */
+		if (!brake_state || is_shutdown_active()) {
 			return 3;
 		}
 #endif
 
-		if (get_shutdown()) {
+		if (!is_shutdown_active()) {
 			rtds_soundRTDS();
 		}
 
@@ -200,7 +200,7 @@ static int transition_nero_state(nero_state_t new_state)
 		/* TSMS OFF and MPH = 0 to enter games */
 		if (new_state.nero_index == GAMES) {
 #ifndef TSMS_OVERRIDE
-			if (get_shutdown() || dti_get_mph() >= 1) {
+			if (!is_shutdown_active() || dti_get_mph() >= 1) {
 				return 1;
 			}
 #endif
@@ -330,21 +330,21 @@ void statemachine_process(state_req_t new_state_req) {
 		else if(new_state_req.id == FUNCTIONAL) { transition_functional_state(new_state_req.state.functional); }
 	}
 
-	if (!is_ts_rising && get_shutdown()) {
+	if (!is_ts_rising && !is_shutdown_active()) {
 		is_ts_rising = true;
 
 		/* Restart TS Rising timer. */
 		int status = timer_restart(&ts_rising_timer);
 		if(status != U_SUCCESS) {
-			PRINTLN_ERROR("Failed to restart TS Rising timer (in !ts_rising && get_shutdown()) (Status: %d).", status);
+			PRINTLN_ERROR("Failed to restart TS Rising timer (in !ts_rising && !is_shutdown_active()) (Status: %d).", status);
 			return;
 		}
 
-	} else if (!get_shutdown()) {
+	} else if (is_shutdown_active()) {
 		/* Stop the TS Rising timer. */
     	int status = timer_stop(&ts_rising_timer);
     	if(status != U_SUCCESS) {
-        	PRINTLN_ERROR("Failed to stop TS Rising timer (in !get_shutdown()) (Status: %d).", status);
+        	PRINTLN_ERROR("Failed to stop TS Rising timer (in is_shutdown_active()) (Status: %d).", status);
         	return;
     	}
 		is_ts_rising = false;
