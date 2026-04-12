@@ -234,6 +234,11 @@ void can_inbox(can_msg_t *message) {
         shutdown_as_read_by_bms_t bms = { 0 };
         receive_shutdown_as_read_by_bms(message, &bms);
         update_shutdown(bms.shutdown);
+
+        /* If shutdown is active, cancel the RTDS sound if it's active. */
+        if(bms.shutdown == true) {
+            rtds_cancelRTDS();
+        }
         break;
     default:
         PRINTLN_WARNING("Unknown CAN Message Recieved (Message ID: 0x%X).", message->id);

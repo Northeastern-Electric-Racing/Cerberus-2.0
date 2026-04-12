@@ -3,6 +3,7 @@
 #include "u_tx_timers.h"
 #include "u_rtds.h"
 #include "u_queues.h"
+#include "u_statemachine.h"
 #include "u_faults.h"
 #include "u_tx_debug.h"
 
@@ -30,6 +31,11 @@ static timer_t reverse_sound_timer = {
 
 /* Sets (i.e. turns on) the RTDS pin. */
 static void _set_rtds_pin(void) {
+    /* If shutdown is active, make it impossible to sound RTDS. */
+    if(get_shutdown() == true) {
+        return; // Return early. Never ever have RTDS be high when shutdown is active.
+    }
+
     HAL_GPIO_WritePin(RTDS_GPIO_GPIO_Port, RTDS_GPIO_Pin, GPIO_PIN_SET); // Turn on RTDS pin.
     PRINTLN_INFO("Turned on RTDS pin.");
 }
