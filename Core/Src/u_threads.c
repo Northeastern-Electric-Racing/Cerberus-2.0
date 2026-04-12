@@ -45,10 +45,9 @@
 
 
 
-// callback for when either bms or imd indicates a fault
+// callback for when either bms or imd indicates a fault - sets flag via arg
 static void _lightning_board_status_callback(void *arg) {
-    send_lightning_board_light_status(LIGHT_RED);
-    // the light status update (red or green) happens in the main loop after debounce
+    *(bool *)arg = true;
 }
 
 /* Test Thread */
@@ -357,6 +356,7 @@ static thread_t shutdown_thread = {
 void vShutdown(ULONG thread_input) {
     /* Debounce Timer */
     static nertimer_t lightning_status_timer;
+    static bool lightning_is_red = false;
 
     while(1) {
 
@@ -375,13 +375,15 @@ void vShutdown(ULONG thread_input) {
         //lightning status with debounce
         bool lightning_fault = bms_gpio || imd_gpio;
 
-
-        //lightning status after debounce
-        if (lightning_fault) {
-            debounce(lightning_fault, &lightning_status_timer, LIGHTNING_BOARD_DEBOUNCE, &_lightning_board_status_callback, NULL); //used same constant (BRAKE_FAULT_DEBOUNCE) which was used in u_pedals.c//not anymore
-        }
-        else {
-            send_lightning_board_status(LIGHT_GREEN); //no fault, set to green
+        // Always call debounce so the cancel path runs when the fault clears.
+        // The callback sets lightning_is_red=true via arg; we track it separately
+        // so RED is sent every loop iteration (not just once per debounce cycle).
+        debounce(lightning_fault, &lightning_status_timer, LIGHTNING_BOARD_DEBOUNCE, &_lightning_board_status_callback, &lightning_is_red);
+        if (!lightning_fault) {
+            lightning_is_red = false;
+            send_lightning_board_status(LIGHT_GREEN);
+        } else if (lightning_is_red) {
+            send_lightning_board_status(LIGHT_RED);
         }
 
         /* Send Shutdown Pins CAN message. */
