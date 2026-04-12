@@ -28,7 +28,6 @@ __attribute__((aligned(32))) static UCHAR s_trace_buffer[TRACE_BUFFER_SIZE];
 
 void HAL_GPIO_EXTI_Falling_Callback(uint16_t GPIO_Pin)
 {
-    printf("GPIO EXTI Falling Callback: Pin %u-------------------\n", GPIO_Pin);
 	if (GPIO_Pin == TRACEOUT_TRIGGER_PIN) {
 		traceout_start_from_isr();
 	}

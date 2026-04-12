@@ -60,6 +60,7 @@ void GPDMA1_Channel0_IRQHandler(void);
 void GPDMA1_Channel4_IRQHandler(void);
 void GPDMA1_Channel5_IRQHandler(void);
 void TIM1_UP_IRQHandler(void);
+void UART7_IRQHandler(void);
 void ETH_IRQHandler(void);
 void ETH_WKUP_IRQHandler(void);
 void FDCAN2_IT0_IRQHandler(void);
