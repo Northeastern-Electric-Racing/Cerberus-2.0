@@ -261,8 +261,8 @@ lvread_adc_t adc_getLVData_2(void) {
     data.raw = _mux_buffer[SEL4_LOW];
 
     /* Convert the raw ADC reading directly to the full LV Voltage. */
-    // Based on a linear fit computed via experimental data from VCU 001, we have: f(x) = 0.008888x + -0.06740 V, where f(x) is the full LV Voltage and x is the raw ADC reading.
-    data.voltage = (data.raw*0.008888) - 0.06740;
+    // Based on a linear fit computed via experimental data from VCU 001, we have: f(x) = 0.008988x - 0.89151  V, where f(x) is the full LV Voltage and x is the raw ADC reading.
+    data.voltage = (data.raw*0.008988) - 0.89151;
     
     return data;
 }
