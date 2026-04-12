@@ -71,10 +71,9 @@ FDCAN_HandleTypeDef hfdcan2;
 
 I2C_HandleTypeDef hi2c2;
 
-IWDG_HandleTypeDef hiwdg;
-
 UART_HandleTypeDef hlpuart1;
 UART_HandleTypeDef huart7;
+DMA_HandleTypeDef handle_GPDMA1_Channel0;
 
 SPI_HandleTypeDef hspi2;
 
@@ -96,7 +95,6 @@ static void MX_LPUART1_UART_Init(void);
 static void MX_SPI2_Init(void);
 static void MX_UART7_Init(void);
 static void MX_DCACHE1_Init(void);
-static void MX_IWDG_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -191,7 +189,6 @@ int main(void)
   MX_SPI2_Init();
   MX_UART7_Init();
   MX_DCACHE1_Init();
-  MX_IWDG_Init();
   /* USER CODE BEGIN 2 */
 
   /* Init CAN */
@@ -233,9 +230,8 @@ void SystemClock_Config(void)
   /** Initializes the RCC Oscillators according to the specified parameters
   * in the RCC_OscInitTypeDef structure.
   */
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_LSI|RCC_OSCILLATORTYPE_HSE;
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
   RCC_OscInitStruct.HSEState = RCC_HSE_ON;
-  RCC_OscInitStruct.LSIState = RCC_LSI_ON;
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
   RCC_OscInitStruct.PLL.PLLSource = RCC_PLL1_SOURCE_HSE;
   RCC_OscInitStruct.PLL.PLLM = 2;
@@ -620,6 +616,8 @@ static void MX_GPDMA1_Init(void)
   __HAL_RCC_GPDMA1_CLK_ENABLE();
 
   /* GPDMA1 interrupt Init */
+    HAL_NVIC_SetPriority(GPDMA1_Channel0_IRQn, 0, 0);
+    HAL_NVIC_EnableIRQ(GPDMA1_Channel0_IRQn);
     HAL_NVIC_SetPriority(GPDMA1_Channel4_IRQn, 0, 0);
     HAL_NVIC_EnableIRQ(GPDMA1_Channel4_IRQn);
     HAL_NVIC_SetPriority(GPDMA1_Channel5_IRQn, 0, 0);
@@ -715,36 +713,6 @@ static void MX_ICACHE_Init(void)
 }
 
 /**
-  * @brief IWDG Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_IWDG_Init(void)
-{
-
-  /* USER CODE BEGIN IWDG_Init 0 */
-
-  /* USER CODE END IWDG_Init 0 */
-
-  /* USER CODE BEGIN IWDG_Init 1 */
-
-  /* USER CODE END IWDG_Init 1 */
-  hiwdg.Instance = IWDG;
-  hiwdg.Init.Prescaler = IWDG_PRESCALER_4;
-  hiwdg.Init.Window = 4095;
-  hiwdg.Init.Reload = 4095;
-  hiwdg.Init.EWI = 0;
-  if (HAL_IWDG_Init(&hiwdg) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN IWDG_Init 2 */
-
-  /* USER CODE END IWDG_Init 2 */
-
-}
-
-/**
   * @brief LPUART1 Initialization Function
   * @param None
   * @retval None
@@ -807,7 +775,7 @@ static void MX_UART7_Init(void)
 
   /* USER CODE END UART7_Init 1 */
   huart7.Instance = UART7;
-  huart7.Init.BaudRate = 115200;
+  huart7.Init.BaudRate = 230400;
   huart7.Init.WordLength = UART_WORDLENGTH_8B;
   huart7.Init.StopBits = UART_STOPBITS_1;
   huart7.Init.Parity = UART_PARITY_NONE;
@@ -931,11 +899,11 @@ static void MX_GPIO_Init(void)
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(IMU_CS_GPIO_Port, IMU_CS_Pin, GPIO_PIN_SET);
 
-  /*Configure GPIO pin : USER_BUTTON_Pin */
-  GPIO_InitStruct.Pin = USER_BUTTON_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
+  /*Configure GPIO pins : USER_BUTTON_Pin PHY_IRQ_Pin */
+  GPIO_InitStruct.Pin = USER_BUTTON_Pin|PHY_IRQ_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(USER_BUTTON_GPIO_Port, &GPIO_InitStruct);
+  HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
 
   /*Configure GPIO pins : RED_LED_Pin GREEN_LED_Pin PHY_RESET_Pin */
   GPIO_InitStruct.Pin = RED_LED_Pin|GREEN_LED_Pin|PHY_RESET_Pin;
@@ -964,12 +932,6 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOF, &GPIO_InitStruct);
-
-  /*Configure GPIO pin : PHY_IRQ_Pin */
-  GPIO_InitStruct.Pin = PHY_IRQ_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(PHY_IRQ_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pins : PHY_GPIO_Pin IMD_GPIO_Pin */
   GPIO_InitStruct.Pin = PHY_GPIO_Pin|IMD_GPIO_Pin;

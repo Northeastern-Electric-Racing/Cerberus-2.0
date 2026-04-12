@@ -23,6 +23,7 @@
 #include "u_nx_debug.h"
 #include "timer.h"
 #include "debounce.h"
+#include "u_traceout_app.h"
 
 /* Thread Priority Macros. */
 /* (please keep these organized in increasing order) */
@@ -126,11 +127,22 @@ void vDefault(ULONG thread_input) {
 
     PRINTLN_INFO("Starting default thread...");
 
+    int count = 0;
+    bool triggered = false;
+
     while(1) {
 
         /* Kick the watchdogs (sad) )*/
-        HAL_IWDG_Refresh(&hiwdg); // Internal Watchdog
+        // HAL_IWDG_Refresh(&hiwdg); // Internal Watchdog
         HAL_GPIO_TogglePin(WATCHDOG_GPIO_Port, WATCHDOG_Pin); // External Watchdog
+
+        PRINTLN_INFO("Default thread is alive! Count: %d", count);
+        if (!triggered && count > 50) {
+            traceout_start_from_isr();
+            triggered = true;
+        }
+
+        count++;
 
         /* Sleep Thread for specified number of ticks. */
         tx_thread_sleep(default_thread.sleep);
@@ -1000,7 +1012,7 @@ uint8_t threads_init(TX_BYTE_POOL *byte_pool) {
     CATCH_ERROR(create_thread(byte_pool, &peripherals_thread), U_SUCCESS);       // Create Peripherals thread.
     CATCH_ERROR(create_thread(byte_pool, &ethernet_incoming_thread), U_SUCCESS); // Create Incoming Ethernet thread.
     CATCH_ERROR(create_thread(byte_pool, &ethernet_outgoing_thread), U_SUCCESS); // Create Outgoing Ethernet thread.
-    CATCH_ERROR(create_thread(byte_pool, &test_thread), U_SUCCESS);                // Create Test thread.
+    // CATCH_ERROR(create_thread(byte_pool, &test_thread), U_SUCCESS);                // Create Test thread.
     CATCH_ERROR(create_thread(byte_pool, &rtds_telemetry_thread), U_SUCCESS);      // Create RTDS Telemetry thread.
 
     // add more threads here if need

@@ -63,6 +63,7 @@ extern DMA_QListTypeDef List_GPDMA1_Channel4;
 extern DMA_HandleTypeDef handle_GPDMA1_Channel4;
 extern ETH_HandleTypeDef heth;
 extern FDCAN_HandleTypeDef hfdcan2;
+extern DMA_HandleTypeDef handle_GPDMA1_Channel0;
 extern TIM_HandleTypeDef htim1;
 
 /* USER CODE BEGIN EV */
@@ -221,6 +222,20 @@ void EXTI11_IRQHandler(void)
   /* USER CODE BEGIN EXTI11_IRQn 1 */
 
   /* USER CODE END EXTI11_IRQn 1 */
+}
+
+/**
+  * @brief This function handles GPDMA1 Channel 0 global interrupt.
+  */
+void GPDMA1_Channel0_IRQHandler(void)
+{
+  /* USER CODE BEGIN GPDMA1_Channel0_IRQn 0 */
+
+  /* USER CODE END GPDMA1_Channel0_IRQn 0 */
+  HAL_DMA_IRQHandler(&handle_GPDMA1_Channel0);
+  /* USER CODE BEGIN GPDMA1_Channel0_IRQn 1 */
+
+  /* USER CODE END GPDMA1_Channel0_IRQn 1 */
 }
 
 /**
