@@ -23,25 +23,26 @@
 #include "u_nx_debug.h"
 #include "timer.h"
 #include "debounce.h"
+#include "u_traceout_app.h"
 
 /* Thread Priority Macros. */
 /* (please keep these organized in increasing order) */
 #define PRIO_vDefault          0
-#define PRIO_vFaultsQueue      0
-#define PRIO_vEthernetIncoming 0
-#define PRIO_vEthernetOutgoing 0
-#define PRIO_vCANIncoming      0
-#define PRIO_vCANOutgoing      0
-#define PRIO_vStatemachine     0
-#define PRIO_vFaults           1
-#define PRIO_vPedals           1
-#define PRIO_vTSMS             1
-#define PRIO_vShutdown         1
-#define PRIO_vEFuses           2
-#define PRIO_vMux              2
-#define PRIO_vRTDS             2
-#define PRIO_vTest             2
-#define PRIO_vPeripherals      2
+#define PRIO_vFaultsQueue      1
+#define PRIO_vEthernetIncoming 1
+#define PRIO_vEthernetOutgoing 1
+#define PRIO_vCANIncoming      1
+#define PRIO_vCANOutgoing      1
+#define PRIO_vStatemachine     2
+#define PRIO_vFaults           2
+#define PRIO_vPedals           2
+#define PRIO_vTSMS             2
+#define PRIO_vShutdown         2
+#define PRIO_vEFuses           3
+#define PRIO_vMux              3
+#define PRIO_vRTDS             3
+#define PRIO_vTest             3
+#define PRIO_vPeripherals      3
 
 
 
@@ -1002,7 +1003,7 @@ uint8_t threads_init(TX_BYTE_POOL *byte_pool) {
     CATCH_ERROR(create_thread(byte_pool, &peripherals_thread), U_SUCCESS);       // Create Peripherals thread.
     CATCH_ERROR(create_thread(byte_pool, &ethernet_incoming_thread), U_SUCCESS); // Create Incoming Ethernet thread.
     CATCH_ERROR(create_thread(byte_pool, &ethernet_outgoing_thread), U_SUCCESS); // Create Outgoing Ethernet thread.
-    CATCH_ERROR(create_thread(byte_pool, &test_thread), U_SUCCESS);                // Create Test thread.
+    // CATCH_ERROR(create_thread(byte_pool, &test_thread), U_SUCCESS);                // Create Test thread.
     CATCH_ERROR(create_thread(byte_pool, &rtds_telemetry_thread), U_SUCCESS);      // Create RTDS Telemetry thread.
 
     // add more threads here if need

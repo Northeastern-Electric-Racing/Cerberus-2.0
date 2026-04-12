@@ -37,6 +37,8 @@
 #include "u_threads.h"
 #include "u_statemachine.h"
 #include "u_efuses.h"
+#include "u_traceout_app.h"
+#include "tracex.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -74,6 +76,12 @@ UINT App_ThreadX_Init(VOID *memory_ptr)
   UINT ret = TX_SUCCESS;
   /* USER CODE BEGIN App_ThreadX_MEM_POOL */
   TX_BYTE_POOL *byte_pool = (TX_BYTE_POOL *)memory_ptr;
+
+  #if (ENABLE_TRACEX)
+    TraceOut_AppInit();
+    tracex_enable_cycle_counter();
+    tracex_start();
+  #endif
 
   /* Init user-written code that uses ThreadX stuff here. */
   CATCH_ERROR(queues_init(byte_pool), U_SUCCESS);

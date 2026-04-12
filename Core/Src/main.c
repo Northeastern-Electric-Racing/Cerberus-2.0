@@ -75,6 +75,7 @@ IWDG_HandleTypeDef hiwdg;
 
 UART_HandleTypeDef hlpuart1;
 UART_HandleTypeDef huart7;
+DMA_HandleTypeDef handle_GPDMA1_Channel0;
 
 SPI_HandleTypeDef hspi2;
 
@@ -620,6 +621,8 @@ static void MX_GPDMA1_Init(void)
   __HAL_RCC_GPDMA1_CLK_ENABLE();
 
   /* GPDMA1 interrupt Init */
+    HAL_NVIC_SetPriority(GPDMA1_Channel0_IRQn, 0, 0);
+    HAL_NVIC_EnableIRQ(GPDMA1_Channel0_IRQn);
     HAL_NVIC_SetPriority(GPDMA1_Channel4_IRQn, 0, 0);
     HAL_NVIC_EnableIRQ(GPDMA1_Channel4_IRQn);
     HAL_NVIC_SetPriority(GPDMA1_Channel5_IRQn, 0, 0);
@@ -730,7 +733,7 @@ static void MX_IWDG_Init(void)
 
   /* USER CODE END IWDG_Init 1 */
   hiwdg.Instance = IWDG;
-  hiwdg.Init.Prescaler = IWDG_PRESCALER_4;
+  hiwdg.Init.Prescaler = IWDG_PRESCALER_32;
   hiwdg.Init.Window = 4095;
   hiwdg.Init.Reload = 4095;
   hiwdg.Init.EWI = 0;
@@ -807,11 +810,11 @@ static void MX_UART7_Init(void)
 
   /* USER CODE END UART7_Init 1 */
   huart7.Instance = UART7;
-  huart7.Init.BaudRate = 115200;
+  huart7.Init.BaudRate = 230400;
   huart7.Init.WordLength = UART_WORDLENGTH_8B;
   huart7.Init.StopBits = UART_STOPBITS_1;
   huart7.Init.Parity = UART_PARITY_NONE;
-  huart7.Init.Mode = UART_MODE_TX_RX;
+  huart7.Init.Mode = UART_MODE_TX;
   huart7.Init.HwFlowCtl = UART_HWCONTROL_NONE;
   huart7.Init.OverSampling = UART_OVERSAMPLING_16;
   huart7.Init.OneBitSampling = UART_ONE_BIT_SAMPLE_DISABLE;
@@ -933,8 +936,8 @@ static void MX_GPIO_Init(void)
 
   /*Configure GPIO pin : USER_BUTTON_Pin */
   GPIO_InitStruct.Pin = USER_BUTTON_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(USER_BUTTON_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pins : RED_LED_Pin GREEN_LED_Pin PHY_RESET_Pin */

@@ -148,6 +148,9 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     "./Core/Src/u_debug.c"
     "./Core/Src/u_ethernet.c"
     "./Core/Src/u_tc.c"
+    "./Core/Src/u_traceout_app.c"
+    "./Drivers/Embedded-Base/traceX/src/tracex.c"
+    "./Drivers/Embedded-Base/traceX/src/traceout.c"
 )
 
 add_tire_curve(${CMAKE_PROJECT_NAME} "daytona_600" "tm_600.o")
@@ -179,6 +182,7 @@ target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
     "./Drivers/Embedded-Base/middleware/include/"
     "./Drivers/Embedded-Base/platforms/stm32h563/include/"
     "./Drivers/Embedded-Base/threadX/inc/"
+    "./Drivers/Embedded-Base/traceX/inc"
     "./Drivers/Embedded-Base/NetX/inc/"
     "./NetXDuo"
     "./Core/Inc/"
