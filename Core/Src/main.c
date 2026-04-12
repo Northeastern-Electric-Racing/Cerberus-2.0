@@ -107,7 +107,7 @@ static void MX_IWDG_Init(void);
 /* Make printf() use LPUART1 */
 int _write(int file, char *ptr, int len)
 {
-    HAL_UART_Transmit(&huart7, (uint8_t*)ptr, len, HAL_MAX_DELAY); // change this back to &hlpuart1
+    HAL_UART_Transmit(&hlpuart1, (uint8_t*)ptr, len, HAL_MAX_DELAY);
     return len;
 }
 
@@ -196,7 +196,6 @@ int main(void)
 
   /* Init CAN */
   can1_init(&hfdcan2);
-  printf("thing\n");
 
   /* USER CODE END 2 */
 
@@ -730,7 +729,7 @@ static void MX_IWDG_Init(void)
 
   /* USER CODE END IWDG_Init 1 */
   hiwdg.Instance = IWDG;
-  hiwdg.Init.Prescaler = IWDG_PRESCALER_4;
+  hiwdg.Init.Prescaler = IWDG_PRESCALER_64;
   hiwdg.Init.Window = 4095;
   hiwdg.Init.Reload = 4095;
   hiwdg.Init.EWI = 0;
