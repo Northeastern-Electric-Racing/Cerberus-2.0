@@ -27,21 +27,21 @@
 /* Thread Priority Macros. */
 /* (please keep these organized in increasing order) */
 #define PRIO_vDefault          0
-#define PRIO_vFaultsQueue      0
-#define PRIO_vEthernetIncoming 0
-#define PRIO_vEthernetOutgoing 0
-#define PRIO_vCANIncoming      0
-#define PRIO_vCANOutgoing      0
-#define PRIO_vStatemachine     0
-#define PRIO_vFaults           1
-#define PRIO_vPedals           1
-#define PRIO_vTSMS             1
-#define PRIO_vShutdown         1
-#define PRIO_vEFuses           2
-#define PRIO_vMux              2
-#define PRIO_vRTDS             2
-#define PRIO_vTest             2
-#define PRIO_vPeripherals      2
+#define PRIO_vFaultsQueue      1
+#define PRIO_vEthernetIncoming 1
+#define PRIO_vEthernetOutgoing 1
+#define PRIO_vCANIncoming      1
+#define PRIO_vCANOutgoing      1
+#define PRIO_vStatemachine     1
+#define PRIO_vFaults           2
+#define PRIO_vPedals           2
+#define PRIO_vTSMS             2
+#define PRIO_vShutdown         2
+#define PRIO_vEFuses           3
+#define PRIO_vMux              3
+#define PRIO_vRTDS             3
+#define PRIO_vTest             3
+#define PRIO_vPeripherals      3
 
 
 

@@ -107,7 +107,7 @@ static void MX_IWDG_Init(void);
 /* Make printf() use LPUART1 */
 int _write(int file, char *ptr, int len)
 {
-    HAL_UART_Transmit(&hlpuart1, (uint8_t*)ptr, len, HAL_MAX_DELAY);
+    HAL_UART_Transmit(&huart7, (uint8_t*)ptr, len, HAL_MAX_DELAY); // change this back to &hlpuart1
     return len;
 }
 
