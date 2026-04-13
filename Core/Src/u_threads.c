@@ -64,16 +64,6 @@ void vTest(ULONG thread_input) {
         PRINTLN_ERROR("Failed to call ethernet1_init() (Status: %d/%s).", status, nx_status_toString(status));
     }
 
-    efuse_disable(EFUSE_DASHBOARD);
-    efuse_disable(EFUSE_BRAKE);
-    efuse_disable(EFUSE_SHUTDOWN);
-    efuse_disable(EFUSE_LV);
-    efuse_disable(EFUSE_RADFAN);
-    efuse_enable(EFUSE_FANBATT);
-    efuse_disable(EFUSE_PUMP1);
-    efuse_disable(EFUSE_PUMP2);
-    efuse_disable(EFUSE_BATTBOX);
-    efuse_disable(EFUSE_MC);
     HAL_GPIO_WritePin(EF_SPARE_EN_GPIO_Port, EF_SPARE_EN_Pin, GPIO_PIN_RESET);
 
     //tx_thread_sleep(5000);
@@ -119,6 +109,18 @@ static thread_t default_thread = {
 void vDefault(ULONG thread_input) {
 
     PRINTLN_INFO("Starting default thread...");
+
+    efuse_disable(EFUSE_DASHBOARD);
+    efuse_disable(EFUSE_BRAKE);
+    efuse_disable(EFUSE_SHUTDOWN);
+    efuse_disable(EFUSE_LV);
+    efuse_disable(EFUSE_RADFAN);
+    efuse_disable(EFUSE_FANBATT);
+    efuse_disable(EFUSE_PUMP1);
+    efuse_disable(EFUSE_PUMP2);
+    efuse_disable(EFUSE_BATTBOX);
+    efuse_disable(EFUSE_MC);
+    efuse_disable(EFUSE_SPARE);
 
     while(1) {
 
@@ -940,7 +942,7 @@ uint8_t threads_init(TX_BYTE_POOL *byte_pool) {
     CATCH_ERROR(create_thread(byte_pool, &shutdown_thread), U_SUCCESS);          // Create Shutdown thread.
     CATCH_ERROR(create_thread(byte_pool, &statemachine_thread), U_SUCCESS);      // Create State Machine thread.
     //CATCH_ERROR(create_thread(byte_pool, &pedals_thread), U_SUCCESS);            // Create Pedals thread.
-    CATCH_ERROR(create_thread(byte_pool, &efuses_thread), U_SUCCESS);              // Create eFuses thread.
+    //CATCH_ERROR(create_thread(byte_pool, &efuses_thread), U_SUCCESS);              // Create eFuses thread.
     CATCH_ERROR(create_thread(byte_pool, &mux_thread), U_SUCCESS);               // Create Mux thread.
     CATCH_ERROR(create_thread(byte_pool, &peripherals_thread), U_SUCCESS);       // Create Peripherals thread.
     CATCH_ERROR(create_thread(byte_pool, &ethernet_incoming_thread), U_SUCCESS); // Create Incoming Ethernet thread.
