@@ -6,6 +6,7 @@
 #include "u_statemachine.h"
 #include "u_faults.h"
 #include "u_tx_debug.h"
+#include "u_shutdown.h"
 
 /* Timer for RTDS. */
 static void _timer_callback(ULONG args); // Forward declaration for callback function.

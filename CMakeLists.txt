@@ -146,6 +146,7 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     "./Core/Src/u_buttons.c"
     "./Core/Src/u_lightning.c"
     "./Core/Src/u_debug.c"
+    "./Core/Src/u_shutdown.c"
     "./Core/Src/u_ethernet.c"
     "./Core/Src/u_tc.c"
     "./Core/Src/u_traceout_app.c"

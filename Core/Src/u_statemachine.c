@@ -19,6 +19,7 @@
 #include "u_pedals.h"
 #include "u_tc.h"
 #include "serial.h"
+#include "u_shutdown.h"
 
 #define STATE_TRANS_QUEUE_SIZE 4
 
@@ -62,14 +63,6 @@ void send_carstate_msg(void)
 		cerberus_state.functional,
 		tc_isEnabled()
 	);
-}
-
-void update_shutdown(bool new_shutdown) {
-	shutdown = new_shutdown;
-}
-
-bool is_shutdown_active(void) {
-	return shutdown;
 }
 
 int init_statemachine(void) {
