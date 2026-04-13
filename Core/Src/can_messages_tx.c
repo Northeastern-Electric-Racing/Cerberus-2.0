@@ -632,7 +632,7 @@ uint8_t send_shutdown_pins
 }
 
 uint8_t send_car_state
-(bool home_mode,uint8_t nero_index,int32_t car_speed,bool tsms,uint32_t torque_limit_percentage,bool reverse,uint16_t regen_limit,bool launch_control,uint8_t functional_state,bool traction_control)
+(bool home_mode,uint8_t nero_index,float car_speed,bool tsms,float torque_limit_percentage,bool reverse,uint16_t regen_limit,bool launch_control,uint8_t functional_state,bool traction_control)
 {
     can_msg_t msg;
     msg.id = 0x501;
@@ -1262,6 +1262,25 @@ uint8_t send_lv_box_fan_pwm
                         if(fan_pwm_percentage_i > 255ULL) {fan_pwm_percentage_i = 255;
                         }
                         data |= ((fan_pwm_percentage_i) & 0xFFULL) << 0;
+            
+            msg.data[0] = data;
+
+    return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
+}
+
+uint8_t send_bms_shutdown_status_as_reported_by_vcu
+(bool bms_shutdown_as_reported_by_vcu)
+{
+    can_msg_t msg;
+    msg.id = 0xEB;
+    msg.id_is_extended = false;
+    
+            uint8_t data = 0;
+            msg.len = 1;
+                        uint32_t bms_shutdown_as_reported_by_vcu_i = (uint32_t)(bms_shutdown_as_reported_by_vcu);
+                        if(bms_shutdown_as_reported_by_vcu_i > 255ULL) {bms_shutdown_as_reported_by_vcu_i = 255;
+                        }
+                        data |= ((bms_shutdown_as_reported_by_vcu_i) & 0xFFULL) << 0;
             
             msg.data[0] = data;
 
