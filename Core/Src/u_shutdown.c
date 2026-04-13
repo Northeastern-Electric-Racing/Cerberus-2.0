@@ -7,6 +7,7 @@
 #include "u_faults.h"
 #include "u_lightning.h"
 #include "debounce.h"
+#include "can_messages_tx.h"
 
 /* Bool to track the BMS shutdown state. */
 static _Atomic bool bms_shutdown = false;
