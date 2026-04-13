@@ -10,6 +10,7 @@
 #include "u_statemachine.h"
 #include "u_dti.h"
 #include "u_efuses.h"
+#include "u_shutdown.h"
 #include "can_messages_tx.h"
 #include "can_messages_rx.h"
 
@@ -233,7 +234,7 @@ void can_inbox(can_msg_t *message) {
     case CANID_SHUTDOWN:
         shutdown_as_read_by_bms_t bms = { 0 };
         receive_shutdown_as_read_by_bms(message, &bms);
-        update_shutdown(bms.shutdown);
+        update_bms_shutdown(bms.shutdown);
 
         /* If shutdown is active, cancel the RTDS sound if it's active. */
         if(bms.shutdown == true) {
