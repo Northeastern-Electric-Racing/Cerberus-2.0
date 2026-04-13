@@ -191,7 +191,7 @@ uint8_t send_shutdown_pins
 * VCU/CarState/traction_control - Whether or not traction control is enabled.
 */
 uint8_t send_car_state
-(bool home_mode,uint8_t nero_index,int32_t car_speed,bool tsms,uint32_t torque_limit_percentage,bool reverse,uint16_t regen_limit,bool launch_control,uint8_t functional_state,bool traction_control);
+(bool home_mode,uint8_t nero_index,float car_speed,bool tsms,float torque_limit_percentage,bool reverse,uint16_t regen_limit,bool launch_control,uint8_t functional_state,bool traction_control);
 
 /**
 * Contents of this message:
@@ -355,4 +355,11 @@ uint8_t send_second_vcu_test_message
 */
 uint8_t send_lv_box_fan_pwm
 (uint8_t fan_pwm_percentage);
+
+/**
+* Contents of this message:
+* VCU/Echo/BMS_Shutdown_From_VCU - BMS Shutdown Status, as tracked and reported by VCU.
+*/
+uint8_t send_bms_shutdown_status_as_reported_by_vcu
+(bool bms_shutdown_as_reported_by_vcu);
 #endif
