@@ -342,15 +342,11 @@ static thread_t shutdown_thread = {
         .threshold  = 0,                  /* Preemption Threshold */
         .time_slice = TX_NO_TIME_SLICE,   /* Time Slice */
         .auto_start = TX_AUTO_START,      /* Auto Start */
-        .sleep      = 500,                /* Sleep (in ticks) */
+        .sleep      = 100,                /* Sleep (in ticks) */
         .function   = vShutdown           /* Thread Function */
 };
 
 void vShutdown(ULONG thread_input) {
-    /* Debounce Timer */
-    static nertimer_t lightning_status_timer;
-    static bool lightning_is_red = false;
-
     while(1) {
 
         /* Process shutdown. */

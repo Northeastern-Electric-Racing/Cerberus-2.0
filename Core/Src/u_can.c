@@ -10,6 +10,7 @@
 #include "u_statemachine.h"
 #include "u_dti.h"
 #include "u_efuses.h"
+#include "u_shutdown.h"
 #include "can_messages_tx.h"
 #include "can_messages_rx.h"
 

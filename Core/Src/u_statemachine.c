@@ -32,7 +32,6 @@
 static state_t cerberus_state;
 static bool is_ts_rising = false;
 static bool enter_drive_enabled = false;
-static _Atomic bool shutdown = false;
 
 /* Rising TS Callback and Timer */
 static void _rising_ts_cb(ULONG input) {
