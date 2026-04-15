@@ -14,6 +14,7 @@
 #include "u_tx_debug.h"
 #include "u_efuses.h"
 #include "u_dti.h"
+#include "serial.h"
 #include "u_statemachine.h"
 #include "u_adc.h"
 #include "u_tc.h"
@@ -94,12 +95,12 @@ static pedal_data_t pedal_data = { 0 };
 
 /* Set a drive lock, remember to unset when the fault condition disappears*/
 static void drive_lock_set(drive_lock_t lock) {
-    PRINTLN_INFO("Drive Lock %d set", lock);
+    //PRINTLN_INFO("Drive Lock %d set", lock);
     NER_SET_BIT(drive_lock_map, lock);
 }
 /* Unset drive lock */
 static void drive_lock_unset(drive_lock_t lock) {
-    PRINTLN_INFO("Drive Lock %d unset", lock);
+    //PRINTLN_INFO("Drive Lock %d unset", lock);
     NER_CLEAR_BIT(drive_lock_map, lock);
 }
 
@@ -208,7 +209,7 @@ static void _calculate_accel_faults(float voltage_accel1, float voltage_accel2, 
 
     /* Pedal Difference Fault */
     /* Detects if the two accelerator pedal sensors give readings that differ by more than PEDAL_DIFF_THRESH. */
-    bool pedal_difference_fault = fabs(percentage_accel1 - percentage_accel2) > PEDAL_DIFF_THRESH;
+    bool pedal_difference_fault = fabsf(percentage_accel1 - percentage_accel2) > PEDAL_DIFF_THRESH;
     debounce(pedal_difference_fault, &pedal_difference_timer, PEDAL_FAULT_DEBOUNCE, &_pedal_difference_fault_callback, NULL);
     if (!pedal_difference_fault) {
         drive_lock_unset(ACCEL_DIFF);
@@ -620,6 +621,9 @@ void pedals_process(void) {
     float accel2_percentage = _get_pedal_percent_pressed(pedal_data.voltage_accel2, MIN_APPS2_VOLTS, MAX_APPS2_VOLTS); // For sensor 2...
     pedal_data.percentage_accel = (accel1_percentage + accel2_percentage) / 2; /* Record the averaged percentage. */
     _calculate_accel_faults(pedal_data.voltage_accel1, pedal_data.voltage_accel2, accel1_percentage, accel2_percentage); // Check for faults.
+
+	serial_monitor("pedals", "raw accel1", "%d", raw.data[PEDAL_ACCEL1]);
+	serial_monitor("pedals", "raw accel2", "%d", raw.data[PEDAL_ACCEL2]);
 
     /* Calculate brake pedal percentage pressed. */
     // u_TODO - this is slightly different to how its done in Cerberus (1.0). I changed it to match how acceleration pedal percentages are calculated, but maybe brake percentage isn't supposed to be calculated this way?
