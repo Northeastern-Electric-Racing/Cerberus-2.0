@@ -923,7 +923,7 @@ static void MX_GPIO_Init(void)
                           |EF_DASH_EN_Pin|RTDS_GPIO_Pin|EF_LV_EN_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOG, EF_RADFAN_EN_Pin|EF_SHUTDOWN_EN_Pin|EF_SPARE_EN_Pin|WATCHDOG_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOG, EF_RADFAN_EN_Pin|EF_SPARE_EN_Pin|WATCHDOG_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOC, MUX_SEL1_Pin|MUX_SEL2_Pin|MUX_SEL3_Pin|MUX_SEL4_Pin, GPIO_PIN_RESET);
@@ -1009,17 +1009,15 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOG, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : EF_RADFAN_EN_Pin EF_SHUTDOWN_EN_Pin EF_SPARE_EN_Pin WATCHDOG_Pin
-                           FAULT_MCU_Pin */
-  GPIO_InitStruct.Pin = EF_RADFAN_EN_Pin|EF_SHUTDOWN_EN_Pin|EF_SPARE_EN_Pin|WATCHDOG_Pin
-                          |FAULT_MCU_Pin;
+  /*Configure GPIO pins : EF_RADFAN_EN_Pin EF_SPARE_EN_Pin WATCHDOG_Pin FAULT_MCU_Pin */
+  GPIO_InitStruct.Pin = EF_RADFAN_EN_Pin|EF_SPARE_EN_Pin|WATCHDOG_Pin|FAULT_MCU_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOG, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : EF_RADFAN_ER_Pin EF_SHUTDOWN_ER_Pin EF_SPARE_ER_Pin */
-  GPIO_InitStruct.Pin = EF_RADFAN_ER_Pin|EF_SHUTDOWN_ER_Pin|EF_SPARE_ER_Pin;
+  /*Configure GPIO pins : EF_RADFAN_ER_Pin EF_SHUTDOWN_EN_Pin EF_SHUTDOWN_ER_Pin EF_SPARE_ER_Pin */
+  GPIO_InitStruct.Pin = EF_RADFAN_ER_Pin|EF_SHUTDOWN_EN_Pin|EF_SHUTDOWN_ER_Pin|EF_SPARE_ER_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(GPIOG, &GPIO_InitStruct);
