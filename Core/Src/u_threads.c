@@ -492,8 +492,7 @@ void vEFuses(ULONG thread_input) {
             default: efuse_enable(EFUSE_BRAKE); break;
         }
 
-        /* Determine shutdown eFuse state. */
-        efuse_enable(EFUSE_SHUTDOWN); // Shutdown eFuse should always be enabled
+        /* Shutdown eFuse should never be enabled/disabled here. */
 
         /* Determine LV eFuse state. */
         switch(data.control_state[EFUSE_LV]) {
@@ -923,7 +922,7 @@ uint8_t threads_init(TX_BYTE_POOL *byte_pool) {
     CATCH_ERROR(create_thread(byte_pool, &faults_thread), U_SUCCESS);            // Create Faults thread.
     CATCH_ERROR(create_thread(byte_pool, &shutdown_thread), U_SUCCESS);          // Create Shutdown thread.
     CATCH_ERROR(create_thread(byte_pool, &statemachine_thread), U_SUCCESS);      // Create State Machine thread.
-    //CATCH_ERROR(create_thread(byte_pool, &pedals_thread), U_SUCCESS);            // Create Pedals thread.
+    CATCH_ERROR(create_thread(byte_pool, &pedals_thread), U_SUCCESS);            // Create Pedals thread.
     CATCH_ERROR(create_thread(byte_pool, &efuses_thread), U_SUCCESS);              // Create eFuses thread.
     CATCH_ERROR(create_thread(byte_pool, &mux_thread), U_SUCCESS);               // Create Mux thread.
     CATCH_ERROR(create_thread(byte_pool, &peripherals_thread), U_SUCCESS);       // Create Peripherals thread.
