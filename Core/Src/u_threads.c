@@ -64,18 +64,6 @@ void vTest(ULONG thread_input) {
         PRINTLN_ERROR("Failed to call ethernet1_init() (Status: %d/%s).", status, nx_status_toString(status));
     }
 
-    efuse_disable(EFUSE_DASHBOARD);
-    efuse_disable(EFUSE_BRAKE);
-    efuse_disable(EFUSE_SHUTDOWN);
-    efuse_disable(EFUSE_LV);
-    efuse_disable(EFUSE_RADFAN);
-    efuse_enable(EFUSE_FANBATT);
-    efuse_disable(EFUSE_PUMP1);
-    efuse_disable(EFUSE_PUMP2);
-    efuse_disable(EFUSE_BATTBOX);
-    efuse_disable(EFUSE_MC);
-    HAL_GPIO_WritePin(EF_SPARE_EN_GPIO_Port, EF_SPARE_EN_Pin, GPIO_PIN_RESET);
-
     //tx_thread_sleep(5000);
 
     while(1) {
@@ -505,11 +493,7 @@ void vEFuses(ULONG thread_input) {
         }
 
         /* Determine shutdown eFuse state. */
-        switch(data.control_state[EFUSE_SHUTDOWN]) {
-            case EF_ON: efuse_enable(EFUSE_SHUTDOWN); break;
-            case EF_OFF: efuse_disable(EFUSE_SHUTDOWN); break;
-            default: efuse_enable(EFUSE_SHUTDOWN); break;
-        }
+        efuse_enable(EFUSE_SHUTDOWN); // Shutdown eFuse should always be enabled
 
         /* Determine LV eFuse state. */
         switch(data.control_state[EFUSE_LV]) {
