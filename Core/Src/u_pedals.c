@@ -45,6 +45,7 @@ typedef struct {
 	float voltage_brake2;
 	float percentage_accel;
 	float percentage_brake;
+	float psi_brake;
 } pedal_data_t;
 static pedal_data_t pedal_data = { 0 };
 
@@ -146,7 +147,8 @@ static void _send_pedal_data(ULONG args) {
 	/* Send Pedals Percent Pressed Message. */
 	send_pedal_percent_pressed_values(
 		pedal_data.percentage_accel,
-		pedal_data.percentage_brake
+		pedal_data.percentage_brake,
+		pedal_data.psi_brake
 	);
 }
 
@@ -627,6 +629,10 @@ void pedals_process(void) {
     float brake2_percentage = _get_pedal_percent_pressed(pedal_data.voltage_brake2, 0, MAX_VOLTS_UNSCALED); // For sensor 2...
     pedal_data.percentage_brake = (brake1_percentage + brake2_percentage) / 2; /* Record the averaged percentage. */
     _calculate_brake_faults(pedal_data.voltage_brake1, pedal_data.voltage_brake2); // Check for faults.
+
+	/* Calculate brake in PSI. */
+	float avg_brake_voltage = (pedal_data.voltage_brake1 + pedal_data.voltage_brake2) / 2;
+	pedal_data.psi_brake = (1250*avg_brake_voltage)-625; // // scaling function: f(x) = 1,250x - 625
 
     /* Set brake state, and turn brakelight on/off. */
     if(pedal_data.percentage_brake > PEDAL_BRAKE_THRESH) {
