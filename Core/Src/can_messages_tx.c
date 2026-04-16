@@ -716,10 +716,11 @@ uint8_t send_pedal_percent_pressed_values
                         }
                         data |= ((brake_norm_i) & 0xFFFFULL) << 32;
             
-                        uint32_t brake_psi_i = (uint32_t)(brake_psi*10);
-                        if(brake_psi_i > 65535ULL) {brake_psi_i = 65535;
+                        int32_t brake_psi_i = (int32_t)(brake_psi*10);
+                        if(brake_psi_i > 32767) {brake_psi_i = 32767;
+                        } else if(brake_psi_i < -32768) {brake_psi_i = -32768;
                         }
-                        data |= ((brake_psi_i) & 0xFFFFULL) << 16;
+                        data |= ((uint32_t)(brake_psi_i) & 0xFFFFULL) << 16;
             
             uint64_t data_bigendian = __builtin_bswap64(data);
             memcpy(msg.data, &data_bigendian, 8);
