@@ -94,41 +94,46 @@ static pedal_data_t pedal_data = { 0 };
 
 
 /* Set a drive lock, remember to unset when the fault condition disappears*/
-static void drive_lock_set(drive_lock_t lock) {
+static void _drive_lock_set(drive_lock_t lock) {
     PRINTLN_INFO("Drive Lock %d set", lock);
     NER_SET_BIT(drive_lock_map, lock);
 }
 /* Unset drive lock */
-static void drive_lock_unset(drive_lock_t lock) {
+static void _drive_lock_unset(drive_lock_t lock) {
     PRINTLN_INFO("Drive Lock %d unset", lock);
     NER_CLEAR_BIT(drive_lock_map, lock);
 }
 
-/* Unset drive lock */
-static bool is_drive_locked(void) {
+/* Checks if driving is currently locked by one of the drive locks.  */
+static bool _is_drive_locked(void) {
     return drive_lock_map > 0;
+}
+
+/* Checks if a specific drive lock is active or not. `true` means that specific lock is active, while `false` means that specific lock is inactive. */
+static bool _get_drive_lock_state(drive_lock_t lock) {
+	return NER_GET_BIT(drive_lock_map, lock);
 }
 
 
 static void _onboard_brake_open_circuit_fault_callback(void *arg) {
     queue_send(&faults, &(fault_t){ONBOARD_BRAKE_OPEN_CIRCUIT_FAULT}, TX_NO_WAIT);
-    drive_lock_set(BRAKE_OC);
+    _drive_lock_set(BRAKE_OC);
 } // Queues the Brake Open Circuit Fault.
 static void _onboard_brake_short_circuit_fault_callback(void *arg) {
     queue_send(&faults, &(fault_t){ONBOARD_BRAKE_SHORT_CIRCUIT_FAULT}, TX_NO_WAIT);
-    drive_lock_set(BRAKE_SC);
+    _drive_lock_set(BRAKE_SC);
 } // Queues the Brake Short Circuit Fault.
 static void _onboard_accel_open_circuit_fault_callback(void *arg) {
     queue_send(&faults, &(fault_t){ONBOARD_ACCEL_OPEN_CIRCUIT_FAULT}, TX_NO_WAIT);
-    drive_lock_set(ACCEL_OC);
+    _drive_lock_set(ACCEL_OC);
 } // Queues the Accel Open Circuit Fault.
 static void _onboard_accel_short_circuit_fault_callback(void *arg) {
     queue_send(&faults, &(fault_t){ONBOARD_ACCEL_SHORT_CIRCUIT_FAULT}, TX_NO_WAIT);
-    drive_lock_set(ACCEL_SC);
+    _drive_lock_set(ACCEL_SC);
 } // Queues the Accel Short Circuit Fault.
 static void _pedal_difference_fault_callback(void *arg) {
     queue_send(&faults, &(fault_t){ONBOARD_PEDAL_DIFFERENCE_FAULT}, TX_NO_WAIT);
-    drive_lock_set(ACCEL_DIFF);
+    _drive_lock_set(ACCEL_DIFF);
 } // Queues the Pedal Difference Fault.
 
 
@@ -149,6 +154,16 @@ static void _send_pedal_data(ULONG args) {
 		pedal_data.percentage_accel,
 		pedal_data.percentage_brake,
 		pedal_data.psi_brake
+	);
+
+	/* Send drive lock state info. */
+	send_drive_lock_states(
+		_get_drive_lock_state(BRAKE_OC),
+		_get_drive_lock_state(BRAKE_SC),
+		_get_drive_lock_state(ACCEL_OC),
+		_get_drive_lock_state(ACCEL_SC),
+		_get_drive_lock_state(ACCEL_DIFF),
+		_get_drive_lock_state(BSPD_PREF)
 	);
 }
 
@@ -174,14 +189,14 @@ static void _calculate_brake_faults(float voltage_brake1, float voltage_brake2) 
     bool open_circuit_fault = (voltage_brake1 > BRAKE_SENSOR_IRREGULAR_HIGH + BRAKE_THRESHOLD_TOLERANCE) || (voltage_brake2 > BRAKE_SENSOR_IRREGULAR_HIGH + BRAKE_THRESHOLD_TOLERANCE);
     debounce(open_circuit_fault, &open_circuit_timer, BRAKE_FAULT_DEBOUNCE, &_onboard_brake_open_circuit_fault_callback, NULL);
     if (!open_circuit_fault) {
-        drive_lock_unset(BRAKE_OC);
+        _drive_lock_unset(BRAKE_OC);
     }
 
     /* Short Circuit Fault */
     bool short_circuit_fault = (voltage_brake1 < BRAKE_SENSOR_IRREGULAR_LOW - BRAKE_THRESHOLD_TOLERANCE) || (voltage_brake2 < BRAKE_SENSOR_IRREGULAR_LOW - BRAKE_THRESHOLD_TOLERANCE);
     debounce(short_circuit_fault, &short_circuit_timer, BRAKE_FAULT_DEBOUNCE, &_onboard_brake_short_circuit_fault_callback, NULL);
     if (!short_circuit_fault) {
-        drive_lock_unset(BRAKE_SC);
+        _drive_lock_unset(BRAKE_SC);
     }
 }
 
@@ -198,14 +213,14 @@ static void _calculate_accel_faults(float voltage_accel1, float voltage_accel2, 
     bool open_circuit_fault = (voltage_accel1 > MAX_VOLTS_UNSCALED - APPS_THRESHOLD_TOLERANCE) || (voltage_accel2 > MAX_VOLTS_UNSCALED - APPS_THRESHOLD_TOLERANCE);
     debounce(open_circuit_fault, &open_circuit_timer, PEDAL_FAULT_DEBOUNCE, &_onboard_accel_open_circuit_fault_callback, NULL);
     if (!open_circuit_fault) {
-        drive_lock_unset(ACCEL_OC);
+        _drive_lock_unset(ACCEL_OC);
     }
 
     /* Short Circuit Fault */
     bool short_circuit_fault = (voltage_accel1 < MIN_APPS1_VOLTS - APPS_THRESHOLD_TOLERANCE) || (voltage_accel2 < MIN_APPS2_VOLTS - APPS_THRESHOLD_TOLERANCE);
     debounce(short_circuit_fault, &short_circuit_timer, PEDAL_FAULT_DEBOUNCE, &_onboard_accel_short_circuit_fault_callback, NULL);
     if (!short_circuit_fault) {
-        drive_lock_unset(ACCEL_SC);
+        _drive_lock_unset(ACCEL_SC);
     }
 
     /* Pedal Difference Fault */
@@ -213,7 +228,7 @@ static void _calculate_accel_faults(float voltage_accel1, float voltage_accel2, 
     bool pedal_difference_fault = fabs(percentage_accel1 - percentage_accel2) > PEDAL_DIFF_THRESH;
     debounce(pedal_difference_fault, &pedal_difference_timer, PEDAL_FAULT_DEBOUNCE, &_pedal_difference_fault_callback, NULL);
     if (!pedal_difference_fault) {
-        drive_lock_unset(ACCEL_DIFF);
+        _drive_lock_unset(ACCEL_DIFF);
     }
 }
 
@@ -653,13 +668,14 @@ void pedals_process(void) {
 
 	if (_calc_bspd_prefault(pedal_data.percentage_accel, pedal_data.percentage_brake, dc_current)) {
 		/* Prefault triggered */
-		drive_lock_set(BSPD_PREF);
+		_drive_lock_set(BSPD_PREF);
     } else {
-        drive_lock_unset(BSPD_PREF);
+        _drive_lock_unset(BSPD_PREF);
     }
 
 	// if we have a drive lock condition, set torque to zero and bail
-	if (is_drive_locked()) {
+	if (_is_drive_locked()) {
+		PRINTLN_WARNING("Drive is locked, so setting torque to zero and skipping pedals processing.");
         dti_set_torque(0);
 	    return;
 	}

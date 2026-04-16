@@ -58,8 +58,7 @@ void shutdown_process(void) {
         imd_gpio,
         ckpt_gpio,
         inertia_sw_gpio,
-        tsms_gpio,
-        0
+        tsms_gpio
     );
 
     /* Report BMS Shutdown as reported by VCU. */
