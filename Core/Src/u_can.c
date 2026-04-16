@@ -199,7 +199,7 @@ void can_inbox(can_msg_t *message) {
         efuse_update_state(EFUSE_MC, (efuse_control_state_t)mc.state);
         break;
     case CANID_SHEPHERD_PRECHARGE: 
-        bms_setPrecharge(message->data[0]); //first byte of the can mssg data
+        bms_receivePrechargeState(message->data[0]); //first byte of the can mssg data
         break;
     case CANID_CALYPSO_EFCTRL_SPARE:
         spare_efuse_state_t spare = { 0 };
