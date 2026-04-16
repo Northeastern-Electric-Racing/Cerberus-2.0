@@ -116,14 +116,6 @@ uint8_t can1_init(FDCAN_HandleTypeDef *hcan) {
         return U_ERROR;
     }
 
-     /* Add fitlers for extended IDs */
-    uint32_t extended7[] = {CANID_CALYPSO_EFCTRL_SPARE, CANID_CALYPSO_RTDS_STATE};
-    status = can_add_filter_extended(&can1, extended6);
-    if (status != HAL_OK) {
-        PRINTLN_ERROR("Failed to add extended filter to can1 (Status: %d/%s, ID1: %ld, ID2: %ld).", status, hal_status_toString(status), extended6[0], extended6[1]);
-        return U_ERROR;
-    }
-
     PRINTLN_INFO("Ran can1_init().");
 
     return U_SUCCESS;
