@@ -698,26 +698,32 @@ uint8_t send_car_state
 }
 
 uint8_t send_pedal_percent_pressed_values
-(float accel_norm,float brake_norm)
+(float accel_norm,float brake_norm,float brake_psi)
 {
     can_msg_t msg;
     msg.id = 0x505;
     msg.id_is_extended = false;
     
-            uint32_t data = 0;
-            msg.len = 4;
+            uint64_t data = 0;
+            msg.len = 8;
                         uint32_t accel_norm_i = (uint32_t)(accel_norm*100);
                         if(accel_norm_i > 65535ULL) {accel_norm_i = 65535;
                         }
-                        data |= ((accel_norm_i) & 0xFFFFULL) << 16;
+                        data |= ((accel_norm_i) & 0xFFFFULL) << 48;
             
                         uint32_t brake_norm_i = (uint32_t)(brake_norm*100);
                         if(brake_norm_i > 65535ULL) {brake_norm_i = 65535;
                         }
-                        data |= ((brake_norm_i) & 0xFFFFULL) << 0;
+                        data |= ((brake_norm_i) & 0xFFFFULL) << 32;
             
-            uint32_t data_bigendian = __builtin_bswap32(data);
-            memcpy(msg.data, &data_bigendian, 4);
+                        int32_t brake_psi_i = (int32_t)(brake_psi*10);
+                        if(brake_psi_i > 32767) {brake_psi_i = 32767;
+                        } else if(brake_psi_i < -32768) {brake_psi_i = -32768;
+                        }
+                        data |= ((uint32_t)(brake_psi_i) & 0xFFFFULL) << 16;
+            
+            uint64_t data_bigendian = __builtin_bswap64(data);
+            memcpy(msg.data, &data_bigendian, 8);
 
     return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
 }
