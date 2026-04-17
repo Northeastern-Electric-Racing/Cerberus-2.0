@@ -562,7 +562,7 @@ uint8_t send_spare_efuse
 }
 
 uint8_t send_shutdown_pins
-(bool bms_gpio,bool bots_gpio,bool spare_gpio,bool bspd_gpio,bool hv_c,bool hvd_gpio,bool imd_gpio,bool ckpt_gpio,bool inertia_sw_gpio,bool tsms_gpio,uint8_t UNUSED)
+(bool bms_gpio,bool bots_gpio,bool spare_gpio,bool bspd_gpio,bool hv_c,bool hvd_gpio,bool imd_gpio,bool ckpt_gpio,bool inertia_sw_gpio,bool tsms_gpio)
 {
     can_msg_t msg;
     msg.id = 0x123;
@@ -620,10 +620,6 @@ uint8_t send_shutdown_pins
                         }
                         data |= ((tsms_gpio_i) & 0x1ULL) << 6;
             
-                        uint32_t UNUSED_i = (uint32_t)(UNUSED);
-                        if(UNUSED_i > 63ULL) {UNUSED_i = 63;
-                        }
-                        data |= ((UNUSED_i) & 0x3FULL) << 0;
             
             uint16_t data_bigendian = __builtin_bswap16(data);
             memcpy(msg.data, &data_bigendian, 2);
@@ -1287,6 +1283,51 @@ uint8_t send_bms_shutdown_status_as_reported_by_vcu
                         if(bms_shutdown_as_reported_by_vcu_i > 255ULL) {bms_shutdown_as_reported_by_vcu_i = 255;
                         }
                         data |= ((bms_shutdown_as_reported_by_vcu_i) & 0xFFULL) << 0;
+            
+            msg.data[0] = data;
+
+    return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
+}
+
+uint8_t send_drive_lock_states
+(bool BRAKE_OC,bool BRAKE_SC,bool ACCEL_OC,bool ACCEL_SC,bool ACCEL_DIFF,bool BSPD_PREF)
+{
+    can_msg_t msg;
+    msg.id = 0x503;
+    msg.id_is_extended = false;
+    
+            uint8_t data = 0;
+            msg.len = 1;
+                        uint32_t BRAKE_OC_i = (uint32_t)(BRAKE_OC);
+                        if(BRAKE_OC_i > 1ULL) {BRAKE_OC_i = 1;
+                        }
+                        data |= ((BRAKE_OC_i) & 0x1ULL) << 7;
+            
+                        uint32_t BRAKE_SC_i = (uint32_t)(BRAKE_SC);
+                        if(BRAKE_SC_i > 1ULL) {BRAKE_SC_i = 1;
+                        }
+                        data |= ((BRAKE_SC_i) & 0x1ULL) << 6;
+            
+                        uint32_t ACCEL_OC_i = (uint32_t)(ACCEL_OC);
+                        if(ACCEL_OC_i > 1ULL) {ACCEL_OC_i = 1;
+                        }
+                        data |= ((ACCEL_OC_i) & 0x1ULL) << 5;
+            
+                        uint32_t ACCEL_SC_i = (uint32_t)(ACCEL_SC);
+                        if(ACCEL_SC_i > 1ULL) {ACCEL_SC_i = 1;
+                        }
+                        data |= ((ACCEL_SC_i) & 0x1ULL) << 4;
+            
+                        uint32_t ACCEL_DIFF_i = (uint32_t)(ACCEL_DIFF);
+                        if(ACCEL_DIFF_i > 1ULL) {ACCEL_DIFF_i = 1;
+                        }
+                        data |= ((ACCEL_DIFF_i) & 0x1ULL) << 3;
+            
+                        uint32_t BSPD_PREF_i = (uint32_t)(BSPD_PREF);
+                        if(BSPD_PREF_i > 1ULL) {BSPD_PREF_i = 1;
+                        }
+                        data |= ((BSPD_PREF_i) & 0x1ULL) << 2;
+            
             
             msg.data[0] = data;
 
