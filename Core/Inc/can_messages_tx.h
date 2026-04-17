@@ -197,10 +197,11 @@ uint8_t send_car_state
 * Contents of this message:
 * VCU/Pedals/Percentages/acceleration_pedal - How far the acceleration pedal is pressed, ranging from 0 to 1.
 * VCU/Pedals/Percentages/brake_pedal - How far the brake pedal is pressed, ranging from 0 to 1.
-* VCU/Pedals/brake_psi - Brake Pedal, as PSI
+* VCU/Pedals/PSI/Brake_Front - Front Brake Sensor (BRAKE1) as PSI.
+* VCU/Pedals/PSI/Brake_Back - Back Brake Sensor (BRAKE2) as PSI.
 */
 uint8_t send_pedal_percent_pressed_values
-(float accel_norm,float brake_norm,float brake_psi);
+(float accel_norm,float brake_norm,float brake_psi_brake1,float brake_psi_brake2);
 
 /**
 * Contents of this message:
