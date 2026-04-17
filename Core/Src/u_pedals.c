@@ -648,9 +648,9 @@ void pedals_process(void) {
     _calculate_brake_faults(pedal_data.voltage_brake1, pedal_data.voltage_brake2); // Check for faults.
 
 	/* Calculate brake in PSI. */
-	pedal_data.psi_brake1 = (1250*pedal_data.psi_brake1)-625;
-	pedal_data.psi_brake2 = (1250*pedal_data.psi_brake2)-625;
-	// scaling function: f(x) = 1,250x - 625
+	pedal_data.psi_brake1 = (1250*pedal_data.voltage_brake1)-625;
+	pedal_data.psi_brake2 = (1250*pedal_data.voltage_brake2)-625;
+	// scaling function: f(x) = 1,250x - 625, where f(x) is PSI and x is voltage.
 
     /* Set brake state, and turn brakelight on/off. */
     if(pedal_data.percentage_brake > PEDAL_BRAKE_THRESH) {
