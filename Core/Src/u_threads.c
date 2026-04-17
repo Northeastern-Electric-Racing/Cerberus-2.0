@@ -353,7 +353,7 @@ static thread_t pedals_thread = {
         .threshold  = 0,                      /* Preemption Threshold */
         .time_slice = TX_NO_TIME_SLICE,       /* Time Slice */
         .auto_start = TX_AUTO_START,          /* Auto Start */
-        .sleep      = 1,                      /* Sleep (in ticks) */
+        .sleep      = 10,                      /* Sleep (in ticks) */
         .function   = vPedals                 /* Thread Function */
     };
 void vPedals(ULONG thread_input) {
@@ -922,7 +922,7 @@ uint8_t threads_init(TX_BYTE_POOL *byte_pool) {
     CATCH_ERROR(create_thread(byte_pool, &faults_thread), U_SUCCESS);            // Create Faults thread.
     CATCH_ERROR(create_thread(byte_pool, &shutdown_thread), U_SUCCESS);          // Create Shutdown thread.
     CATCH_ERROR(create_thread(byte_pool, &statemachine_thread), U_SUCCESS);      // Create State Machine thread.
-    //CATCH_ERROR(create_thread(byte_pool, &pedals_thread), U_SUCCESS);            // Create Pedals thread.
+    CATCH_ERROR(create_thread(byte_pool, &pedals_thread), U_SUCCESS);            // Create Pedals thread.
     CATCH_ERROR(create_thread(byte_pool, &efuses_thread), U_SUCCESS);              // Create eFuses thread.
     CATCH_ERROR(create_thread(byte_pool, &mux_thread), U_SUCCESS);               // Create Mux thread.
     CATCH_ERROR(create_thread(byte_pool, &peripherals_thread), U_SUCCESS);       // Create Peripherals thread.
