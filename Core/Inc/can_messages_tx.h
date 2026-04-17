@@ -175,7 +175,7 @@ uint8_t send_spare_efuse
 * VCU/Shutdown/TSMS_GPIO - 
 */
 uint8_t send_shutdown_pins
-(bool bms_gpio,bool bots_gpio,bool spare_gpio,bool bspd_gpio,bool hv_c,bool hvd_gpio,bool imd_gpio,bool ckpt_gpio,bool inertia_sw_gpio,bool tsms_gpio,uint8_t UNUSED);
+(bool bms_gpio,bool bots_gpio,bool spare_gpio,bool bspd_gpio,bool hv_c,bool hvd_gpio,bool imd_gpio,bool ckpt_gpio,bool inertia_sw_gpio,bool tsms_gpio);
 
 /**
 * Contents of this message:
@@ -363,4 +363,16 @@ uint8_t send_lv_box_fan_pwm
 */
 uint8_t send_bms_shutdown_status_as_reported_by_vcu
 (bool bms_shutdown_as_reported_by_vcu);
+
+/**
+* Contents of this message:
+* VCU/Pedals/Drive_Locks/BRAKE_OC - 
+* VCU/Pedals/Drive_Locks/BRAKE_SC - 
+* VCU/Pedals/Drive_Locks/ACCEL_OC - 
+* VCU/Pedals/Drive_Locks/ACCEL_SC - 
+* VCU/Pedals/Drive_Locks/ACCEL_DIFF - 
+* VCU/Pedals/Drive_Locks/BSPD_PREF - 
+*/
+uint8_t send_drive_lock_states
+(bool BRAKE_OC,bool BRAKE_SC,bool ACCEL_OC,bool ACCEL_SC,bool ACCEL_DIFF,bool BSPD_PREF);
 #endif
