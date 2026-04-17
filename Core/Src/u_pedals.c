@@ -679,7 +679,7 @@ void pedals_process(void) {
 
 	// if we have a drive lock condition, set torque to zero and bail
 	if (_is_drive_locked()) {
-		PRINTLN_WARNING("Drive is locked, so setting torque to zero and skipping pedals processing.");
+		//PRINTLN_WARNING("Drive is locked, so setting torque to zero and skipping pedals processing.");
         dti_set_torque(0);
 	    return;
 	}
