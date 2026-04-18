@@ -10,6 +10,7 @@
 #include "u_statemachine.h"
 #include "u_dti.h"
 #include "u_efuses.h"
+#include "serial.h"
 #include "u_shutdown.h"
 #include "can_messages_tx.h"
 #include "can_messages_rx.h"
@@ -123,6 +124,9 @@ uint8_t can1_init(FDCAN_HandleTypeDef *hcan) {
 
 /* Processes received CAN messages. */
 void can_inbox(can_msg_t *message) {
+    static int incoming_count = 1;
+    serial_monitor("can", "incoming count", "%d", incoming_count);
+    incoming_count++;
     switch (message->id) {
     case CANID_BMS_DCL_MSG:
         bms_handleDclMessage();
@@ -133,6 +137,9 @@ void can_inbox(can_msg_t *message) {
         bms_setBattboxTemp(temps.avg_val); // "BMS/Cells/Temp_Avg_Value"
         break;
     case IMU_CAN_MSG_ID:
+    static int lightning_incoming_count = 1;
+        serial_monitor("can", "incoming count - lightning", "%d", lightning_incoming_count);
+        lightning_incoming_count++;
         lightning_handleIMUMessage();
         break;
     case CANID_F_RPM:
