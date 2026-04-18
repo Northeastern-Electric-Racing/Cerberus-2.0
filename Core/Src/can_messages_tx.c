@@ -694,7 +694,7 @@ uint8_t send_car_state
 }
 
 uint8_t send_pedal_percent_pressed_values
-(float accel_norm,float brake_norm,float brake_psi)
+(float accel_norm,float brake_norm,float brake_psi_brake1,float brake_psi_brake2)
 {
     can_msg_t msg;
     msg.id = 0x505;
@@ -712,11 +712,17 @@ uint8_t send_pedal_percent_pressed_values
                         }
                         data |= ((brake_norm_i) & 0xFFFFULL) << 32;
             
-                        int32_t brake_psi_i = (int32_t)(brake_psi*10);
-                        if(brake_psi_i > 32767) {brake_psi_i = 32767;
-                        } else if(brake_psi_i < -32768) {brake_psi_i = -32768;
+                        int32_t brake_psi_brake1_i = (int32_t)(brake_psi_brake1*10);
+                        if(brake_psi_brake1_i > 32767) {brake_psi_brake1_i = 32767;
+                        } else if(brake_psi_brake1_i < -32768) {brake_psi_brake1_i = -32768;
                         }
-                        data |= ((uint32_t)(brake_psi_i) & 0xFFFFULL) << 16;
+                        data |= ((uint32_t)(brake_psi_brake1_i) & 0xFFFFULL) << 16;
+            
+                        int32_t brake_psi_brake2_i = (int32_t)(brake_psi_brake2*10);
+                        if(brake_psi_brake2_i > 32767) {brake_psi_brake2_i = 32767;
+                        } else if(brake_psi_brake2_i < -32768) {brake_psi_brake2_i = -32768;
+                        }
+                        data |= ((uint32_t)(brake_psi_brake2_i) & 0xFFFFULL) << 0;
             
             uint64_t data_bigendian = __builtin_bswap64(data);
             memcpy(msg.data, &data_bigendian, 8);
