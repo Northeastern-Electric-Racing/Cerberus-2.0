@@ -641,10 +641,10 @@ void pedals_process(void) {
     pedal_data.percentage_accel = (accel1_percentage + accel2_percentage) / 2; /* Record the averaged percentage. */
     _calculate_accel_faults(pedal_data.voltage_accel1, pedal_data.voltage_accel2, accel1_percentage, accel2_percentage); // Check for faults.
 
-	serial_monitor("pedals", "raw accel1", "%d", raw.data[PEDAL_ACCEL1]);
-	serial_monitor("pedals", "raw accel2", "%d", raw.data[PEDAL_ACCEL2]);
-	serial_monitor("pedals", "volt accel1", "%f", pedal_data.voltage_accel1);
-	serial_monitor("pedals", "volt accel2", "%f", pedal_data.voltage_accel2);
+	// serial_monitor("pedals", "raw accel1", "%d", raw.data[PEDAL_ACCEL1]);
+	// serial_monitor("pedals", "raw accel2", "%d", raw.data[PEDAL_ACCEL2]);
+	// serial_monitor("pedals", "volt accel1", "%f", pedal_data.voltage_accel1);
+	// serial_monitor("pedals", "volt accel2", "%f", pedal_data.voltage_accel2);
 
     /* Calculate brake pedal percentage pressed. */
     // u_TODO - this is slightly different to how its done in Cerberus (1.0). I changed it to match how acceleration pedal percentages are calculated, but maybe brake percentage isn't supposed to be calculated this way?
@@ -658,12 +658,12 @@ void pedals_process(void) {
 	pedal_data.psi_brake2 = (1250.0f*pedal_data.voltage_brake2)-625.0f;
 	// scaling function: f(x) = 1,250x - 625, where f(x) is PSI and x is voltage.
 
-	serial_monitor("pedals", "raw brake1", "%d", raw.data[PEDAL_BRAKE1]);
-	serial_monitor("pedals", "raw brake2", "%d", raw.data[PEDAL_BRAKE2]);
-	serial_monitor("pedals", "volt brake1", "%f", pedal_data.voltage_brake1);
-	serial_monitor("pedals", "volt brake2", "%f", pedal_data.voltage_brake2);
-	serial_monitor("pedals", "avg volt brake", "%f", avg_brake_voltage);
-	serial_monitor("pedals", "psi brake", "%f", pedal_data.psi_brake);
+	// serial_monitor("pedals", "raw brake1", "%d", raw.data[PEDAL_BRAKE1]);
+	// serial_monitor("pedals", "raw brake2", "%d", raw.data[PEDAL_BRAKE2]);
+	// serial_monitor("pedals", "volt brake1", "%f", pedal_data.voltage_brake1);
+	// serial_monitor("pedals", "volt brake2", "%f", pedal_data.voltage_brake2);
+	// serial_monitor("pedals", "psi brake1", "%f", pedal_data.psi_brake1);
+	// serial_monitor("pedals", "psi brake2", "%f", pedal_data.psi_brake2);
 
     /* Set brake state, and turn brakelight on/off. */
     if(pedal_data.percentage_brake > PEDAL_BRAKE_THRESH) {
