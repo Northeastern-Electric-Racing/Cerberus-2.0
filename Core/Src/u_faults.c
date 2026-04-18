@@ -45,11 +45,6 @@ static timer_t timers[NUM_FAULTS];         // Array of fault timers. One timer p
 static _Atomic uint32_t severity_mask = 0; // Mask that stores the severity configuration for each fault (0=NON_CRITICAL, 1=CRITICAL).
 static _Atomic uint32_t fault_flags = 0;   // Each bit is a separate fault (0=Not Faulted, 1=Faulted).
 
-/* Getter function. Returns ALL faults. */
-uint32_t get_faults(void) {
-    return fault_flags;
-}
-
 /* Returns whether or not a specific fault is active. */
 bool get_fault(fault_t fault) {
     return (fault_flags & (1 << fault)) != 0;

@@ -353,7 +353,7 @@ static thread_t pedals_thread = {
         .threshold  = 0,                      /* Preemption Threshold */
         .time_slice = TX_NO_TIME_SLICE,       /* Time Slice */
         .auto_start = TX_AUTO_START,          /* Auto Start */
-        .sleep      = 1,                      /* Sleep (in ticks) */
+        .sleep      = 10,                      /* Sleep (in ticks) */
         .function   = vPedals                 /* Thread Function */
     };
 void vPedals(ULONG thread_input) {
@@ -375,7 +375,7 @@ static thread_t efuses_thread = {
         .threshold  = 0,                      /* Preemption Threshold */
         .time_slice = TX_NO_TIME_SLICE,       /* Time Slice */
         .auto_start = TX_AUTO_START,          /* Auto Start */
-        .sleep      = 1000,                   /* Sleep (in ticks) */
+        .sleep      = 100,                    /* Sleep (in ticks) */
         .function   = vEFuses                 /* Thread Function */
     };
 void vEFuses(ULONG thread_input) {
