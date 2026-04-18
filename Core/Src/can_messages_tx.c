@@ -852,19 +852,19 @@ uint8_t send_imu_gyro
     
             uint64_t data = 0;
             msg.len = 8;
-                        int32_t imu_gyro_x_i = (int32_t)(imu_gyro_x*100);
+                        int32_t imu_gyro_x_i = (int32_t)(imu_gyro_x*4);
                         if(imu_gyro_x_i > 32767) {imu_gyro_x_i = 32767;
                         } else if(imu_gyro_x_i < -32768) {imu_gyro_x_i = -32768;
                         }
                         data |= ((uint32_t)(imu_gyro_x_i) & 0xFFFFULL) << 48;
             
-                        int32_t imu_gyro_y_i = (int32_t)(imu_gyro_y*100);
+                        int32_t imu_gyro_y_i = (int32_t)(imu_gyro_y*4);
                         if(imu_gyro_y_i > 32767) {imu_gyro_y_i = 32767;
                         } else if(imu_gyro_y_i < -32768) {imu_gyro_y_i = -32768;
                         }
                         data |= ((uint32_t)(imu_gyro_y_i) & 0xFFFFULL) << 32;
             
-                        int32_t imu_gyro_z_i = (int32_t)(imu_gyro_z*100);
+                        int32_t imu_gyro_z_i = (int32_t)(imu_gyro_z*4);
                         if(imu_gyro_z_i > 32767) {imu_gyro_z_i = 32767;
                         } else if(imu_gyro_z_i < -32768) {imu_gyro_z_i = -32768;
                         }
