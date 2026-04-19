@@ -112,7 +112,7 @@ void vDefault(ULONG thread_input) {
 
         /* Kick the watchdogs (sad) )*/
         HAL_IWDG_Refresh(&hiwdg); // Internal Watchdog
-        //HAL_GPIO_TogglePin(WATCHDOG_GPIO_Port, WATCHDOG_Pin); // External Watchdog
+        HAL_GPIO_TogglePin(WATCHDOG_GPIO_Port, WATCHDOG_Pin); // External Watchdog
 
         /* Sleep Thread for specified number of ticks. */
         tx_thread_sleep(default_thread.sleep);

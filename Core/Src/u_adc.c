@@ -204,6 +204,13 @@ lfiu_adc_t adc_getLfiuData(void) {
     sensors.raw[LFIU_1] = _mux_buffer[SEL2_HIGH];
     sensors.raw[LFIU_2] = _mux_buffer[SEL2_LOW];
 
+    serial_monitor("lfiu", "adc1_inp15", "%d", _adc1_buffer[ADC1_CHANNEL15]);
+    serial_monitor("lfiu", "_mux_buffer[SEL2_HIGH]", "%d", _mux_buffer[SEL2_HIGH]);
+    serial_monitor("lfiu", "_mux_buffer[SEL2_LOW]", "%d", _mux_buffer[SEL2_LOW]);
+    serial_monitor("lfiu", "sensors.raw[LFIU_1]", "%d", sensors.raw[LFIU_1]);
+    serial_monitor("lfiu", "sensors.raw[LFIU_2]", "%d", sensors.raw[LFIU_2]);
+    serial_monitor("lfiu", "mux_state (0=HIGH, 1=LOW)", "%d", mux_state_debug);
+
     /* Calculate the ADC voltage. */
     const float V_REF = 3.3f;
     sensors.voltage[LFIU_1] = (sensors.raw[LFIU_1] / 4095.0) * V_REF;
