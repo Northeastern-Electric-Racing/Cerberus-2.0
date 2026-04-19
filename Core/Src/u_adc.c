@@ -210,20 +210,20 @@ lfiu_adc_t adc_getLfiuData(void) {
     sensors.voltage[LFIU_2] = (sensors.raw[LFIU_2] / 4095.0) * V_REF;
 
     /* Calculate the LFIU_1 current. */
-    sensors.current[LFIU_1] = ((13.333f * sensors.voltage[LFIU_1]) - 20.0f);
-    // This conversion is based on the linear fit function: f(x) = 13.333x - 20
+    sensors.current[LFIU_1] = ((20.83f * sensors.voltage[LFIU_1]) - 31.25f);
+    // This conversion is based on the linear fit function: f(x) = 20.83x - 31.25
     // This fit was created from these three datapoints provided by the electrical team:
-    // 0.0V : -20A
+    // 0.3V : -25A
     // 1.5V : 0A
-    // 3.0V : 20A
+    // 2.7V : 25A
 
     /* Calculate the LFIU_2 current. */
-    sensors.current[LFIU_2] = ((133.333f * sensors.voltage[LFIU_2]) - 200.0f);
-    // This conversion is based on the linear fit function: f(x) = 133.333x - 200
+    sensors.current[LFIU_2] = ((166.7f * sensors.voltage[LFIU_2]) - 250.0f);
+    // This conversion is based on the linear fit function: f(x) = 166.7x - 250
     // This fit was created from these three datapoints provided by the electrical team:
-    // 0.0V : -200A
+    // 0.3V : -200A
     // 1.5V : 0A
-    // 3.0V : 200A
+    // 2.7V : 200A
 
     return sensors;
 }
