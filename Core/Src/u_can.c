@@ -36,7 +36,7 @@ uint8_t can1_init(FDCAN_HandleTypeDef *hcan) {
     }
 
     /* Add filters for standard IDs */
-    uint16_t standard2[] = {IMU_CAN_MSG_ID, DTI_CANID_TEMPS_FAULT};
+    uint16_t standard2[] = {0x00, DTI_CANID_TEMPS_FAULT};
     status = can_add_filter_standard(&can1, standard2);
     if (status != HAL_OK) {
         PRINTLN_ERROR("Failed to add standard filter to can1 (Status: %d/%s, ID1: 0x%X, ID2: 0x%X).", status, hal_status_toString(status), standard2[0], standard2[1]);
@@ -117,6 +117,14 @@ uint8_t can1_init(FDCAN_HandleTypeDef *hcan) {
         return U_ERROR;
     }
 
+    /* Add fitlers for extended IDs */
+    uint32_t extended7[] = {CANID_LIGHTNING_PULSE, 0x00};
+    status = can_add_filter_extended(&can1, extended7);
+    if (status != HAL_OK) {
+        PRINTLN_ERROR("Failed to add extended filter to can1 (Status: %d/%s, ID1: %ld, ID2: %ld).", status, hal_status_toString(status), extended7[0], extended7[1]);
+        return U_ERROR;
+    }
+
     PRINTLN_INFO("Ran can1_init().");
 
     return U_SUCCESS;
@@ -124,9 +132,6 @@ uint8_t can1_init(FDCAN_HandleTypeDef *hcan) {
 
 /* Processes received CAN messages. */
 void can_inbox(can_msg_t *message) {
-    static int incoming_count = 1;
-    serial_monitor("can", "incoming count", "%d", incoming_count);
-    incoming_count++;
     switch (message->id) {
     case CANID_BMS_DCL_MSG:
         bms_handleDclMessage();
@@ -136,10 +141,8 @@ void can_inbox(can_msg_t *message) {
         receive_cell_temperatures(message, &temps);
         bms_setBattboxTemp(temps.avg_val); // "BMS/Cells/Temp_Avg_Value"
         break;
-    case IMU_CAN_MSG_ID:
-    static int lightning_incoming_count = 1;
-        serial_monitor("can", "incoming count - lightning", "%d", lightning_incoming_count);
-        lightning_incoming_count++;
+    case CANID_LIGHTNING_PULSE:
+        PRINTLN_INFO("lightning - received the IMU message");
         lightning_handleIMUMessage();
         break;
     case CANID_F_RPM:
@@ -156,7 +159,6 @@ void can_inbox(can_msg_t *message) {
         break;
     case CANID_CALYPSO_EFCTRL_DASHBOARD:
         dashboard_efuse_state_t dashboard = { 0 };
-        PRINTLN_INFO("New dashboard state");
         receive_dashboard_efuse_state(message, &dashboard);
         efuse_update_state(EFUSE_DASHBOARD, (efuse_control_state_t)dashboard.state);
         break;
@@ -233,7 +235,6 @@ void can_inbox(can_msg_t *message) {
         }
         break;
     case CANID_WHEEL_BUTTONS:
-        PRINTLN_INFO("recieved wheel message");
         wheel_buttons_t wheel_buttons = { 0 };
         receive_wheel_buttons(message, &wheel_buttons);
         buttons_process((button_t)wheel_buttons.button_id);

@@ -3,6 +3,7 @@
 #include "can_messages_tx.h"
 #include "u_faults.h"
 #include "u_queues.h"
+#include "serial.h"
 #include "u_tx_timers.h"
 #include "tx_api.h"
 
