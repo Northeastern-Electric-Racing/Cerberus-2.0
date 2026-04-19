@@ -932,7 +932,7 @@ static void MX_GPIO_Init(void)
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOD, EF_BREAK_EN_Pin|EF_FANBATT_EN_Pin|EF_PUMP1_EN_Pin|EF_PUMP2_EN_Pin
-                          |EF_DASH_EN_Pin|RTDS_GPIO_Pin|EF_LV_EN_Pin, GPIO_PIN_RESET);
+                          |EF_DASH_EN_Pin|RTDS_GPIO_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOG, EF_RADFAN_EN_Pin|EF_SPARE_EN_Pin|WATCHDOG_Pin, GPIO_PIN_RESET);
@@ -999,18 +999,18 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_Init(ETH_MII_RX_ER_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pins : EF_BREAK_EN_Pin EF_FANBATT_EN_Pin EF_PUMP1_EN_Pin EF_PUMP2_EN_Pin
-                           EF_DASH_EN_Pin RTDS_GPIO_Pin EF_LV_EN_Pin */
+                           EF_DASH_EN_Pin RTDS_GPIO_Pin */
   GPIO_InitStruct.Pin = EF_BREAK_EN_Pin|EF_FANBATT_EN_Pin|EF_PUMP1_EN_Pin|EF_PUMP2_EN_Pin
-                          |EF_DASH_EN_Pin|RTDS_GPIO_Pin|EF_LV_EN_Pin;
+                          |EF_DASH_EN_Pin|RTDS_GPIO_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
 
   /*Configure GPIO pins : EF_BREAK_ER_Pin EF_FANBATT_ER_Pin EF_PUMP1_ER_Pin EF_PUMP2_ER_Pin
-                           EF_DASH_ER_Pin EF_LV_ER_Pin */
+                           EF_DASH_ER_Pin EF_LV_EN_Pin EF_LV_ER_Pin */
   GPIO_InitStruct.Pin = EF_BREAK_ER_Pin|EF_FANBATT_ER_Pin|EF_PUMP1_ER_Pin|EF_PUMP2_ER_Pin
-                          |EF_DASH_ER_Pin|EF_LV_ER_Pin;
+                          |EF_DASH_ER_Pin|EF_LV_EN_Pin|EF_LV_ER_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
