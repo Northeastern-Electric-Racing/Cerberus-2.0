@@ -255,6 +255,16 @@ void receive_lightning_board_magnometer_sensor_information(const can_msg_t *mess
     lightning_board_magnometer_sensor_information->mag_z = (float)(mag_z_raw / 1000);
 }
 
+void receive_lightning_pulse_message(const can_msg_t *message, lightning_pulse_message_t *lightning_pulse_message) {
+    
+    uint32_t data_bigendian;
+    memcpy(&data_bigendian, message->data, 4);
+    uint32_t data = __builtin_bswap32(data_bigendian);
+    uint64_t count_mask = (1ULL << 32) - 1ULL;
+    uint64_t count_raw = (data >> 0) & count_mask;
+    lightning_pulse_message->count = (uint32_t)count_raw;
+}
+
 void receive_front_msb_env(const can_msg_t *message, front_msb_env_t *front_msb_env) {
     
     uint32_t data_bigendian;
@@ -343,11 +353,15 @@ void receive_front_shockpot(const can_msg_t *message, front_shockpot_t *front_sh
 
     
     
+    
     front_shockpot->shock1 = (float)bitstream_data.shock1;
     
     
     
+    
+    
     front_shockpot->shock1_raw = (uint16_t)bitstream_data.shock1_raw;
+    
     
     
 }
@@ -488,11 +502,15 @@ void receive_back_shockpot(const can_msg_t *message, back_shockpot_t *back_shock
 
     
     
+    
     back_shockpot->shock1 = (float)bitstream_data.shock1;
     
     
     
+    
+    
     back_shockpot->shock1_raw = (uint16_t)bitstream_data.shock1_raw;
+    
     
     
 }
@@ -572,7 +590,10 @@ void receive_imd_general_information(const can_msg_t *message, imd_general_infor
 
     
     
+    
     imd_general_information->R_iso_corrected = (uint16_t)bitstream_data.R_iso_corrected;
+    
+    
     
     
     
@@ -580,7 +601,11 @@ void receive_imd_general_information(const can_msg_t *message, imd_general_infor
     
     
     
+    
+    
     imd_general_information->Iso_measurement_counter = (uint8_t)bitstream_data.Iso_measurement_counter;
+    
+    
     
     
     
@@ -588,7 +613,11 @@ void receive_imd_general_information(const can_msg_t *message, imd_general_infor
     
     
     
+    
+    
     imd_general_information->HV_pos_conn_fail = (bool)bitstream_data.HV_pos_conn_fail;
+    
+    
     
     
     
@@ -596,7 +625,11 @@ void receive_imd_general_information(const can_msg_t *message, imd_general_infor
     
     
     
+    
+    
     imd_general_information->Earth_conn_fail = (bool)bitstream_data.Earth_conn_fail;
+    
+    
     
     
     
@@ -604,7 +637,11 @@ void receive_imd_general_information(const can_msg_t *message, imd_general_infor
     
     
     
+    
+    
     imd_general_information->iso_warning = (bool)bitstream_data.iso_warning;
+    
+    
     
     
     
@@ -612,7 +649,11 @@ void receive_imd_general_information(const can_msg_t *message, imd_general_infor
     
     
     
+    
+    
     imd_general_information->Unbalance_alarm = (bool)bitstream_data.Unbalance_alarm;
+    
+    
     
     
     
@@ -620,23 +661,14 @@ void receive_imd_general_information(const can_msg_t *message, imd_general_infor
     
     
     
+    
+    
     imd_general_information->Unsafe_to_start = (bool)bitstream_data.Unsafe_to_start;
     
     
     
-    imd_general_information->Earthlift_Open = (bool)bitstream_data.Earthlift_Open;
     
     
-    
-    imd_general_information->warnings_and_alarms_unused_bits = (uint8_t)bitstream_data.warnings_and_alarms_unused_bits;
-    
-    
-    
-    imd_general_information->Device_Activity = (uint8_t)bitstream_data.Device_Activity;
-    
-    
-    
-    imd_general_information->Not_Applicable = (uint8_t)bitstream_data.Not_Applicable;
     
     
 }
@@ -1404,9 +1436,21 @@ void receive_pack_soc_status(const can_msg_t *message, pack_soc_status_t *pack_s
 void receive_shutdown_as_read_by_bms(const can_msg_t *message, shutdown_as_read_by_bms_t *shutdown_as_read_by_bms) {
     
     uint8_t data = message->data[0];
-    uint64_t shutdown_mask = (1ULL << 8) - 1ULL;
-    uint64_t shutdown_raw = (data >> 0) & shutdown_mask;
-    shutdown_as_read_by_bms->shutdown = (bool)shutdown_raw;
+    uint64_t shutdown_state_mask = (1ULL << 1) - 1ULL;
+    uint64_t shutdown_state_raw = (data >> 7) & shutdown_state_mask;
+    shutdown_as_read_by_bms->shutdown_state = (bool)shutdown_state_raw;
+    uint64_t shutdown_ts_minus_sense_mask = (1ULL << 1) - 1ULL;
+    uint64_t shutdown_ts_minus_sense_raw = (data >> 6) & shutdown_ts_minus_sense_mask;
+    shutdown_as_read_by_bms->shutdown_ts_minus_sense = (bool)shutdown_ts_minus_sense_raw;
+    uint64_t shutdown_ts_plus_sense_mask = (1ULL << 1) - 1ULL;
+    uint64_t shutdown_ts_plus_sense_raw = (data >> 5) & shutdown_ts_plus_sense_mask;
+    shutdown_as_read_by_bms->shutdown_ts_plus_sense = (bool)shutdown_ts_plus_sense_raw;
+    uint64_t shutdown_acc_sense_mask = (1ULL << 1) - 1ULL;
+    uint64_t shutdown_acc_sense_raw = (data >> 4) & shutdown_acc_sense_mask;
+    shutdown_as_read_by_bms->shutdown_acc_sense = (bool)shutdown_acc_sense_raw;
+    uint64_t shutdown_tsip_sense_mask = (1ULL << 1) - 1ULL;
+    uint64_t shutdown_tsip_sense_raw = (data >> 3) & shutdown_tsip_sense_mask;
+    shutdown_as_read_by_bms->shutdown_tsip_sense = (bool)shutdown_tsip_sense_raw;
 }
 
 void receive_hv_plate_isospi_communication_status(const can_msg_t *message, hv_plate_isospi_communication_status_t *hv_plate_isospi_communication_status) {

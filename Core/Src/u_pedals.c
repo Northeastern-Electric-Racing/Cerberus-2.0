@@ -14,6 +14,7 @@
 #include "u_tx_debug.h"
 #include "u_efuses.h"
 #include "u_dti.h"
+#include "serial.h"
 #include "u_statemachine.h"
 #include "u_adc.h"
 #include "u_tc.h"
@@ -45,7 +46,8 @@ typedef struct {
 	float voltage_brake2;
 	float percentage_accel;
 	float percentage_brake;
-	float psi_brake;
+	float psi_brake1;
+	float psi_brake2;
 } pedal_data_t;
 static pedal_data_t pedal_data = { 0 };
 
@@ -66,10 +68,10 @@ static pedal_data_t pedal_data = { 0 };
 #define MAX_VOLTS_UNSCALED 5.0  // (Volts). Actual sensor voltage before voltage divider scaling.
 
 /* Pedal Tuning */
-#define MAX_APPS1_VOLTS		    3.03 // (Volts). Upper bound on APPS1 voltage range.
-#define MIN_APPS1_VOLTS		    1.81 // (Volts). Lower bound on APPS1 voltage range.
-#define MAX_APPS2_VOLTS		    2.28 // (Volts). Upper bound on APPS2 voltage range.
-#define MIN_APPS2_VOLTS		    1.07 // (Volts). Lower bound on APPS2 voltage range.
+#define MAX_APPS1_VOLTS		    3.50 // (Volts). Upper bound on APPS1 voltage range.
+#define MIN_APPS1_VOLTS		    2.00 // (Volts). Lower bound on APPS1 voltage range.
+#define MAX_APPS2_VOLTS		    2.50 // (Volts). Upper bound on APPS2 voltage range.
+#define MIN_APPS2_VOLTS		    1.00 // (Volts). Lower bound on APPS2 voltage range.
 #define PEDAL_BRAKE_THRESH	    0.20 // (Percantage). Pedal position above which the system registers the brake pedal as "pressed".
 #define PEDAL_HARD_BRAKE_THRESH 0.50 // (Percentage). Pedal position above which a "hard brake" is detected.
 
@@ -89,46 +91,51 @@ static pedal_data_t pedal_data = { 0 };
 #define PEDAL_DIFF_THRESH           0.20 // (Percentage). Maximum allowed difference between the two accelerator sensors.
 #define PEDAL_FAULT_DEBOUNCE        95   // (ms). Debounce time for pedal faults.
 #define BRAKE_FAULT_DEBOUNCE        300  // (ms). Debounce time for brake faults.
-#define APPS_THRESHOLD_TOLERANCE    0.45 // (Volts). Tolerance margin around the accelerator pedal.
+#define APPS_THRESHOLD_TOLERANCE    0.20 // (Volts). Tolerance margin around the accelerator pedal.
 #define BRAKE_THRESHOLD_TOLERANCE   0.25 // (Volts). Tolerance margin around the brake pedal.
 
 
 /* Set a drive lock, remember to unset when the fault condition disappears*/
-static void drive_lock_set(drive_lock_t lock) {
-    PRINTLN_INFO("Drive Lock %d set", lock);
+static void _drive_lock_set(drive_lock_t lock) {
+    //PRINTLN_INFO("Drive Lock %d set", lock);
     NER_SET_BIT(drive_lock_map, lock);
 }
 /* Unset drive lock */
-static void drive_lock_unset(drive_lock_t lock) {
-    PRINTLN_INFO("Drive Lock %d unset", lock);
+static void _drive_lock_unset(drive_lock_t lock) {
+    //PRINTLN_INFO("Drive Lock %d unset", lock);
     NER_CLEAR_BIT(drive_lock_map, lock);
 }
 
-/* Unset drive lock */
-static bool is_drive_locked(void) {
+/* Checks if driving is currently locked by one of the drive locks.  */
+static bool _is_drive_locked(void) {
     return drive_lock_map > 0;
+}
+
+/* Checks if a specific drive lock is active or not. `true` means that specific lock is active, while `false` means that specific lock is inactive. */
+static bool _get_drive_lock_state(drive_lock_t lock) {
+	return NER_GET_BIT(drive_lock_map, lock);
 }
 
 
 static void _onboard_brake_open_circuit_fault_callback(void *arg) {
     queue_send(&faults, &(fault_t){ONBOARD_BRAKE_OPEN_CIRCUIT_FAULT}, TX_NO_WAIT);
-    drive_lock_set(BRAKE_OC);
+    _drive_lock_set(BRAKE_OC);
 } // Queues the Brake Open Circuit Fault.
 static void _onboard_brake_short_circuit_fault_callback(void *arg) {
     queue_send(&faults, &(fault_t){ONBOARD_BRAKE_SHORT_CIRCUIT_FAULT}, TX_NO_WAIT);
-    drive_lock_set(BRAKE_SC);
+    _drive_lock_set(BRAKE_SC);
 } // Queues the Brake Short Circuit Fault.
 static void _onboard_accel_open_circuit_fault_callback(void *arg) {
     queue_send(&faults, &(fault_t){ONBOARD_ACCEL_OPEN_CIRCUIT_FAULT}, TX_NO_WAIT);
-    drive_lock_set(ACCEL_OC);
+    _drive_lock_set(ACCEL_OC);
 } // Queues the Accel Open Circuit Fault.
 static void _onboard_accel_short_circuit_fault_callback(void *arg) {
     queue_send(&faults, &(fault_t){ONBOARD_ACCEL_SHORT_CIRCUIT_FAULT}, TX_NO_WAIT);
-    drive_lock_set(ACCEL_SC);
+    _drive_lock_set(ACCEL_SC);
 } // Queues the Accel Short Circuit Fault.
 static void _pedal_difference_fault_callback(void *arg) {
     queue_send(&faults, &(fault_t){ONBOARD_PEDAL_DIFFERENCE_FAULT}, TX_NO_WAIT);
-    drive_lock_set(ACCEL_DIFF);
+    _drive_lock_set(ACCEL_DIFF);
 } // Queues the Pedal Difference Fault.
 
 
@@ -148,7 +155,18 @@ static void _send_pedal_data(ULONG args) {
 	send_pedal_percent_pressed_values(
 		pedal_data.percentage_accel,
 		pedal_data.percentage_brake,
-		pedal_data.psi_brake
+		pedal_data.psi_brake1,
+		pedal_data.psi_brake2
+	);
+
+	/* Send drive lock state info. */
+	send_drive_lock_states(
+		_get_drive_lock_state(BRAKE_OC),
+		_get_drive_lock_state(BRAKE_SC),
+		_get_drive_lock_state(ACCEL_OC),
+		_get_drive_lock_state(ACCEL_SC),
+		_get_drive_lock_state(ACCEL_DIFF),
+		_get_drive_lock_state(BSPD_PREF)
 	);
 }
 
@@ -174,14 +192,14 @@ static void _calculate_brake_faults(float voltage_brake1, float voltage_brake2) 
     bool open_circuit_fault = (voltage_brake1 > BRAKE_SENSOR_IRREGULAR_HIGH + BRAKE_THRESHOLD_TOLERANCE) || (voltage_brake2 > BRAKE_SENSOR_IRREGULAR_HIGH + BRAKE_THRESHOLD_TOLERANCE);
     debounce(open_circuit_fault, &open_circuit_timer, BRAKE_FAULT_DEBOUNCE, &_onboard_brake_open_circuit_fault_callback, NULL);
     if (!open_circuit_fault) {
-        drive_lock_unset(BRAKE_OC);
+        _drive_lock_unset(BRAKE_OC);
     }
 
     /* Short Circuit Fault */
     bool short_circuit_fault = (voltage_brake1 < BRAKE_SENSOR_IRREGULAR_LOW - BRAKE_THRESHOLD_TOLERANCE) || (voltage_brake2 < BRAKE_SENSOR_IRREGULAR_LOW - BRAKE_THRESHOLD_TOLERANCE);
     debounce(short_circuit_fault, &short_circuit_timer, BRAKE_FAULT_DEBOUNCE, &_onboard_brake_short_circuit_fault_callback, NULL);
     if (!short_circuit_fault) {
-        drive_lock_unset(BRAKE_SC);
+        _drive_lock_unset(BRAKE_SC);
     }
 }
 
@@ -198,22 +216,26 @@ static void _calculate_accel_faults(float voltage_accel1, float voltage_accel2, 
     bool open_circuit_fault = (voltage_accel1 > MAX_VOLTS_UNSCALED - APPS_THRESHOLD_TOLERANCE) || (voltage_accel2 > MAX_VOLTS_UNSCALED - APPS_THRESHOLD_TOLERANCE);
     debounce(open_circuit_fault, &open_circuit_timer, PEDAL_FAULT_DEBOUNCE, &_onboard_accel_open_circuit_fault_callback, NULL);
     if (!open_circuit_fault) {
-        drive_lock_unset(ACCEL_OC);
+        _drive_lock_unset(ACCEL_OC);
     }
 
     /* Short Circuit Fault */
     bool short_circuit_fault = (voltage_accel1 < MIN_APPS1_VOLTS - APPS_THRESHOLD_TOLERANCE) || (voltage_accel2 < MIN_APPS2_VOLTS - APPS_THRESHOLD_TOLERANCE);
     debounce(short_circuit_fault, &short_circuit_timer, PEDAL_FAULT_DEBOUNCE, &_onboard_accel_short_circuit_fault_callback, NULL);
     if (!short_circuit_fault) {
-        drive_lock_unset(ACCEL_SC);
+        _drive_lock_unset(ACCEL_SC);
     }
+
+	serial_monitor("sc", "voltage_accel1", "%f", voltage_accel1);
+	serial_monitor("sc", "voltage_accel2", "%f", voltage_accel2);
+	serial_monitor("sc", "drive lock sc state", "%d", _get_drive_lock_state(ACCEL_SC));
 
     /* Pedal Difference Fault */
     /* Detects if the two accelerator pedal sensors give readings that differ by more than PEDAL_DIFF_THRESH. */
-    bool pedal_difference_fault = fabs(percentage_accel1 - percentage_accel2) > PEDAL_DIFF_THRESH;
+    bool pedal_difference_fault = fabsf(percentage_accel1 - percentage_accel2) > PEDAL_DIFF_THRESH;
     debounce(pedal_difference_fault, &pedal_difference_timer, PEDAL_FAULT_DEBOUNCE, &_pedal_difference_fault_callback, NULL);
     if (!pedal_difference_fault) {
-        drive_lock_unset(ACCEL_DIFF);
+        _drive_lock_unset(ACCEL_DIFF);
     }
 }
 
@@ -623,6 +645,11 @@ void pedals_process(void) {
     pedal_data.percentage_accel = (accel1_percentage + accel2_percentage) / 2; /* Record the averaged percentage. */
     _calculate_accel_faults(pedal_data.voltage_accel1, pedal_data.voltage_accel2, accel1_percentage, accel2_percentage); // Check for faults.
 
+	// serial_monitor("pedals", "raw accel1", "%d", raw.data[PEDAL_ACCEL1]);
+	// serial_monitor("pedals", "raw accel2", "%d", raw.data[PEDAL_ACCEL2]);
+	// serial_monitor("pedals", "volt accel1", "%f", pedal_data.voltage_accel1);
+	// serial_monitor("pedals", "volt accel2", "%f", pedal_data.voltage_accel2);
+
     /* Calculate brake pedal percentage pressed. */
     // u_TODO - this is slightly different to how its done in Cerberus (1.0). I changed it to match how acceleration pedal percentages are calculated, but maybe brake percentage isn't supposed to be calculated this way?
     float brake1_percentage = _get_pedal_percent_pressed(pedal_data.voltage_brake1, 0, MAX_VOLTS_UNSCALED); // For sensor 1...
@@ -631,8 +658,16 @@ void pedals_process(void) {
     _calculate_brake_faults(pedal_data.voltage_brake1, pedal_data.voltage_brake2); // Check for faults.
 
 	/* Calculate brake in PSI. */
-	float avg_brake_voltage = (pedal_data.voltage_brake1 + pedal_data.voltage_brake2) / 2;
-	pedal_data.psi_brake = (1250*avg_brake_voltage)-625; // // scaling function: f(x) = 1,250x - 625
+	pedal_data.psi_brake1 = (1250.0f*pedal_data.voltage_brake1)-625.0f;
+	pedal_data.psi_brake2 = (1250.0f*pedal_data.voltage_brake2)-625.0f;
+	// scaling function: f(x) = 1,250x - 625, where f(x) is PSI and x is voltage.
+
+	// serial_monitor("pedals", "raw brake1", "%d", raw.data[PEDAL_BRAKE1]);
+	// serial_monitor("pedals", "raw brake2", "%d", raw.data[PEDAL_BRAKE2]);
+	// serial_monitor("pedals", "volt brake1", "%f", pedal_data.voltage_brake1);
+	// serial_monitor("pedals", "volt brake2", "%f", pedal_data.voltage_brake2);
+	// serial_monitor("pedals", "psi brake1", "%f", pedal_data.psi_brake1);
+	// serial_monitor("pedals", "psi brake2", "%f", pedal_data.psi_brake2);
 
     /* Set brake state, and turn brakelight on/off. */
     if(pedal_data.percentage_brake > PEDAL_BRAKE_THRESH) {
@@ -653,13 +688,14 @@ void pedals_process(void) {
 
 	if (_calc_bspd_prefault(pedal_data.percentage_accel, pedal_data.percentage_brake, dc_current)) {
 		/* Prefault triggered */
-		drive_lock_set(BSPD_PREF);
+		_drive_lock_set(BSPD_PREF);
     } else {
-        drive_lock_unset(BSPD_PREF);
+        _drive_lock_unset(BSPD_PREF);
     }
 
 	// if we have a drive lock condition, set torque to zero and bail
-	if (is_drive_locked()) {
+	if (_is_drive_locked()) {
+		//PRINTLN_WARNING("Drive is locked, so setting torque to zero and skipping pedals processing.");
         dti_set_torque(0);
 	    return;
 	}

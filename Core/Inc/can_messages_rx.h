@@ -155,6 +155,12 @@ typedef struct {
 void receive_lightning_board_magnometer_sensor_information(const can_msg_t *message, lightning_board_magnometer_sensor_information_t *lightning_board_magnometer_sensor_information);
 
 typedef struct {
+ uint32_t count;
+} lightning_pulse_message_t;
+
+void receive_lightning_pulse_message(const can_msg_t *message, lightning_pulse_message_t *lightning_pulse_message);
+
+typedef struct {
  float temp;
  float humidity;
 } front_msb_env_t;
@@ -282,10 +288,6 @@ typedef struct {
  bool Unbalance_alarm;
  bool Undervoltage_alarm;
  bool Unsafe_to_start;
- bool Earthlift_Open;
- uint8_t warnings_and_alarms_unused_bits;
- uint8_t Device_Activity;
- uint8_t Not_Applicable;
 } imd_general_information_t;
 
 void receive_imd_general_information(const can_msg_t *message, imd_general_information_t *imd_general_information);
@@ -612,7 +614,11 @@ typedef struct {
 void receive_pack_soc_status(const can_msg_t *message, pack_soc_status_t *pack_soc_status);
 
 typedef struct {
- bool shutdown;
+ bool shutdown_state;
+ bool shutdown_ts_minus_sense;
+ bool shutdown_ts_plus_sense;
+ bool shutdown_acc_sense;
+ bool shutdown_tsip_sense;
 } shutdown_as_read_by_bms_t;
 
 void receive_shutdown_as_read_by_bms(const can_msg_t *message, shutdown_as_read_by_bms_t *shutdown_as_read_by_bms);

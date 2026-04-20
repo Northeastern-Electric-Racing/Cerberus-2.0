@@ -175,7 +175,7 @@ uint8_t send_spare_efuse
 * VCU/Shutdown/TSMS_GPIO - 
 */
 uint8_t send_shutdown_pins
-(bool bms_gpio,bool bots_gpio,bool spare_gpio,bool bspd_gpio,bool hv_c,bool hvd_gpio,bool imd_gpio,bool ckpt_gpio,bool inertia_sw_gpio,bool tsms_gpio,uint8_t UNUSED);
+(bool bms_gpio,bool bots_gpio,bool spare_gpio,bool bspd_gpio,bool hv_c,bool hvd_gpio,bool imd_gpio,bool ckpt_gpio,bool inertia_sw_gpio,bool tsms_gpio);
 
 /**
 * Contents of this message:
@@ -197,10 +197,11 @@ uint8_t send_car_state
 * Contents of this message:
 * VCU/Pedals/Percentages/acceleration_pedal - How far the acceleration pedal is pressed, ranging from 0 to 1.
 * VCU/Pedals/Percentages/brake_pedal - How far the brake pedal is pressed, ranging from 0 to 1.
-* VCU/Pedals/brake_psi - Brake Pedal, as PSI
+* VCU/Pedals/PSI/Brake_Front - Front Brake Sensor (BRAKE1) as PSI.
+* VCU/Pedals/PSI/Brake_Back - Back Brake Sensor (BRAKE2) as PSI.
 */
 uint8_t send_pedal_percent_pressed_values
-(float accel_norm,float brake_norm,float brake_psi);
+(float accel_norm,float brake_norm,float brake_psi_brake1,float brake_psi_brake2);
 
 /**
 * Contents of this message:
@@ -364,4 +365,17 @@ uint8_t send_lv_box_fan_pwm
 */
 uint8_t send_bms_shutdown_status_as_reported_by_vcu
 (bool bms_shutdown_as_reported_by_vcu);
+
+/**
+* Contents of this message:
+* VCU/Pedals/Drive_Locks/BRAKE_OC - 
+* VCU/Pedals/Drive_Locks/BRAKE_SC - 
+* VCU/Pedals/Drive_Locks/ACCEL_OC - 
+* VCU/Pedals/Drive_Locks/ACCEL_SC - 
+* VCU/Pedals/Drive_Locks/ACCEL_DIFF - 
+* VCU/Pedals/Drive_Locks/BSPD_PREF - 
+* VCU/Pedals/Drive_Locks/BMS_NOT_PRECHARGED_YET - 
+*/
+uint8_t send_drive_lock_states
+(bool BRAKE_OC,bool BRAKE_SC,bool ACCEL_OC,bool ACCEL_SC,bool ACCEL_DIFF,bool BSPD_PREF,bool BMS_NOT_PRECHARGED_YET);
 #endif
