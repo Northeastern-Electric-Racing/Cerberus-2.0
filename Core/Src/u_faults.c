@@ -25,7 +25,6 @@ static const _metadata faults[] = {
     [CAN_INCOMING_FAULT] = {"CAN_INCOMING_FAULT", CRITICAL, .timeout = 5000},
     [BMS_CAN_MONITOR_FAULT] = {"BMS_CAN_MONITOR_FAULT", CRITICAL, .timeout = 5000},
     [LIGHTNING_CAN_MONITOR_FAULT] = {"LIGHTNING_CAN_MONITOR_FAULT", CRITICAL, .timeout = 5000},
-    [SHUTDOWN_FAULT] = {"SHUTDOWN_FAULT", CRITICAL, .timeout = 5000},
     [PRECHARGE_FLOATING_FAULT] = {"PRECHARGE_FLOATING_FAULT", CRITICAL, .timeout = 5000},
 
     /* Non-critical Faults */

@@ -63,9 +63,4 @@ void shutdown_process(void) {
 
     /* Report BMS Shutdown as reported by VCU. */
     send_bms_shutdown_status_as_reported_by_vcu(bms_shutdown);
-
-    /* Check if shutdown is active. If it is, trigger the fault. */
-    if (is_shutdown_active()) { // if tsms is still on when shutdown is active, trigger fault
-        queue_send(&faults, &(fault_t){SHUTDOWN_FAULT}, TX_NO_WAIT);
-    }
 }
