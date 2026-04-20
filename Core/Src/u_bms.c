@@ -67,21 +67,22 @@ void bms_setBattboxTemp(float temp) {
     battbox_temp = temp;
 }
 
+typedef enum {
+    PRECHARGE_OPEN = 0,
+    PRECHARGE_FLOATING = 1,
+    PRECHARGE_CLOSED = 2,
+} precharge_state_t;
+
 void bms_receivePrechargeState(uint8_t state) {
 
-    // PRECHARGE STATES (open = false, closed = true)
-    // PRECHAGE_OPEN = 0 
-    // PRECHARGE_FLOATING = 1 (treated as open)
-    // PRECHARGE_CLOSED = 2
-
-    if (state == 0) {
+    if (state == PRECHARGE_OPEN) {
         precharge = false;
 
-    } else if (state == 1) {
+    } else if (state == PRECHARGE_FLOATING) {
         precharge = false;
         // queue critical fault if precharge is floating
         queue_send(&faults, &(fault_t){PRECHARGE_FLOATING_FAULT}, TX_NO_WAIT);
-    } else if (state == 2) {
+    } else if (state == PRECHARGE_CLOSED) {
         precharge = true;
     } else {
         PRINTLN_WARNING("Received invalid precharge state from CAN message: %d", state);
