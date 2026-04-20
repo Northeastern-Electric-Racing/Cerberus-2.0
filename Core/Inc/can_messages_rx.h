@@ -622,7 +622,11 @@ typedef struct {
 void receive_pack_soc_status(const can_msg_t *message, pack_soc_status_t *pack_soc_status);
 
 typedef struct {
- bool shutdown;
+ bool shutdown_state;
+ bool shutdown_ts_minus_sense;
+ bool shutdown_ts_plus_sense;
+ bool shutdown_acc_sense;
+ bool shutdown_tsip_sense;
 } shutdown_as_read_by_bms_t;
 
 void receive_shutdown_as_read_by_bms(const can_msg_t *message, shutdown_as_read_by_bms_t *shutdown_as_read_by_bms);
