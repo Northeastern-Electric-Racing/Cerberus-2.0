@@ -4,6 +4,7 @@
 #include <stdint.h>
 
 /* API */
+
 int bms_init(void);                     // Initializes the BMS fault timer.
 int bms_handleDclMessage(void);         // Restarts the BMS Fault Timer.
 float bms_getBattboxTemp(void);      // Returns the battbox temperature.
