@@ -67,13 +67,7 @@ void bms_setBattboxTemp(float temp) {
     battbox_temp = temp;
 }
 
-typedef enum {
-    PRECHARGE_OPEN = 0,
-    PRECHARGE_FLOATING = 1,
-    PRECHARGE_CLOSED = 2,
-} precharge_state_t;
-
-void bms_receivePrechargeState(uint8_t state) {
+void bms_receivePrechargeState(precharge_state_t state) {
 
     if (state == PRECHARGE_OPEN) {
         precharge = false;
