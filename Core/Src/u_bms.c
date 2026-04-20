@@ -11,7 +11,7 @@
 
 /* Globals. */
 static _Atomic float battbox_temp;
-static _Atomic bool precharge;
+static _Atomic bool precharge = false; // Default to false until BMS confirms precharge is complete
 
 static void _bms_fault_callback(ULONG args); // Forward declaration
 
