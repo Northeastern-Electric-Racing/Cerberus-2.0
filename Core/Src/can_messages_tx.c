@@ -1296,7 +1296,7 @@ uint8_t send_bms_shutdown_status_as_reported_by_vcu
 }
 
 uint8_t send_drive_lock_states
-(bool BRAKE_OC,bool BRAKE_SC,bool ACCEL_OC,bool ACCEL_SC,bool ACCEL_DIFF,bool BSPD_PREF)
+(bool BRAKE_OC,bool BRAKE_SC,bool ACCEL_OC,bool ACCEL_SC,bool ACCEL_DIFF,bool BSPD_PREF,bool BMS_NOT_PRECHARGED_YET)
 {
     can_msg_t msg;
     msg.id = 0x503;
@@ -1333,6 +1333,11 @@ uint8_t send_drive_lock_states
                         if(BSPD_PREF_i > 1ULL) {BSPD_PREF_i = 1;
                         }
                         data |= ((BSPD_PREF_i) & 0x1ULL) << 2;
+            
+                        uint32_t BMS_NOT_PRECHARGED_YET_i = (uint32_t)(BMS_NOT_PRECHARGED_YET);
+                        if(BMS_NOT_PRECHARGED_YET_i > 1ULL) {BMS_NOT_PRECHARGED_YET_i = 1;
+                        }
+                        data |= ((BMS_NOT_PRECHARGED_YET_i) & 0x1ULL) << 1;
             
             
             msg.data[0] = data;
