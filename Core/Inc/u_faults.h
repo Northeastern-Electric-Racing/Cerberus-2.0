@@ -10,7 +10,6 @@ typedef enum {
     CAN_INCOMING_FAULT,
     BMS_CAN_MONITOR_FAULT,
     LIGHTNING_CAN_MONITOR_FAULT,
-    SHUTDOWN_FAULT,
     PRECHARGE_FLOATING_FAULT,
 
     /* Non-critical Faults */
