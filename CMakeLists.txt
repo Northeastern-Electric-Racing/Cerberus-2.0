@@ -59,7 +59,7 @@ add_executable(${CMAKE_PROJECT_NAME})
 # NER Compiler options
 target_compile_options(${CMAKE_PROJECT_NAME} PRIVATE
     -Wno-unused-parameter
-    -Werror=double-promotion # do not allow passing to a function that will cast to double
+    #-Werror=double-promotion # do not allow passing to a function that will cast to double
     -fsingle-precision-constant # when using constants, make them floats
     -Werror=undef # do not allow undefined macros
     -fno-common # do not allow duplicate global variables

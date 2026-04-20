@@ -204,26 +204,33 @@ lfiu_adc_t adc_getLfiuData(void) {
     sensors.raw[LFIU_1] = _mux_buffer[SEL2_HIGH];
     sensors.raw[LFIU_2] = _mux_buffer[SEL2_LOW];
 
+    serial_monitor("lfiu", "adc1_inp15", "%d", _adc1_buffer[ADC1_CHANNEL15]);
+    serial_monitor("lfiu", "_mux_buffer[SEL2_HIGH]", "%d", _mux_buffer[SEL2_HIGH]);
+    serial_monitor("lfiu", "_mux_buffer[SEL2_LOW]", "%d", _mux_buffer[SEL2_LOW]);
+    serial_monitor("lfiu", "sensors.raw[LFIU_1]", "%d", sensors.raw[LFIU_1]);
+    serial_monitor("lfiu", "sensors.raw[LFIU_2]", "%d", sensors.raw[LFIU_2]);
+    serial_monitor("lfiu", "mux_state (0=HIGH, 1=LOW)", "%d", mux_state_debug);
+
     /* Calculate the ADC voltage. */
     const float V_REF = 3.3f;
     sensors.voltage[LFIU_1] = (sensors.raw[LFIU_1] / 4095.0) * V_REF;
     sensors.voltage[LFIU_2] = (sensors.raw[LFIU_2] / 4095.0) * V_REF;
 
     /* Calculate the LFIU_1 current. */
-    sensors.current[LFIU_1] = ((13.333f * sensors.voltage[LFIU_1]) - 20.0f);
-    // This conversion is based on the linear fit function: f(x) = 13.333x - 20
+    sensors.current[LFIU_1] = ((20.83f * sensors.voltage[LFIU_1]) - 31.25f);
+    // This conversion is based on the linear fit function: f(x) = 20.83x - 31.25
     // This fit was created from these three datapoints provided by the electrical team:
-    // 0.0V : -20A
+    // 0.3V : -25A
     // 1.5V : 0A
-    // 3.0V : 20A
+    // 2.7V : 25A
 
     /* Calculate the LFIU_2 current. */
-    sensors.current[LFIU_2] = ((133.333f * sensors.voltage[LFIU_2]) - 200.0f);
-    // This conversion is based on the linear fit function: f(x) = 133.333x - 200
+    sensors.current[LFIU_2] = ((166.7f * sensors.voltage[LFIU_2]) - 250.0f);
+    // This conversion is based on the linear fit function: f(x) = 166.7x - 250
     // This fit was created from these three datapoints provided by the electrical team:
-    // 0.0V : -200A
+    // 0.3V : -200A
     // 1.5V : 0A
-    // 3.0V : 200A
+    // 2.7V : 200A
 
     return sensors;
 }

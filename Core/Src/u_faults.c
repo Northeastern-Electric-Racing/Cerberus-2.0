@@ -7,6 +7,7 @@
 #include "u_statemachine.h"
 #include "u_tx_debug.h"
 #include "u_mutexes.h"
+#include "serial.h"
 
 typedef enum { CRITICAL, NON_CRITICAL } _severity;
 
@@ -123,6 +124,8 @@ int trigger_fault(fault_t fault_id) {
     }
 
     PRINTLN_INFO("got past timer restart part");
+
+    //serial_monitor("mcu_fault", "pinstate", "%d", HAL_GPIO_ReadPin(FAULT_MCU_GPIO_Port, FAULT_MCU_Pin));
 
     return U_SUCCESS;
 }

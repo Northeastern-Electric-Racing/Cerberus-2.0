@@ -228,6 +228,47 @@ void vCANOutgoing(ULONG thread_input) {
             if(status != HAL_OK) {
                 PRINTLN_WARNING("Failed to send message (on can1) after removing from outgoing queue (Message ID: %ld, Status: %d/%s).", message.id, status, hal_status_toString(status));
                 queue_send(&faults, &(fault_t){CAN_OUTGOING_FAULT}, TX_NO_WAIT);
+
+                /* get the FDCAN hal errors. */
+                status = HAL_FDCAN_GetError(can1.hcan);
+                printf("can - HAL_FDCAN_GetError() status: %d\n", status);
+
+                FDCAN_ProtocolStatusTypeDef statt = { 0 };
+                status = HAL_FDCAN_GetProtocolStatus(can1.hcan, &statt);
+                printf("can - HAL_FDCAN_GetProtocolStatus() status: %d\n", status);
+
+                /* Big statt */
+                printf("can - HAL_FDCAN_GetProtocolStatus() - LastErrorCode=%ld\n", statt.LastErrorCode);
+                printf("can - HAL_FDCAN_GetProtocolStatus() - DataLastErrorCode=%ld\n", statt.DataLastErrorCode);
+                printf("can - HAL_FDCAN_GetProtocolStatus() - Activity=%ld\n", statt.Activity);
+                printf("can - HAL_FDCAN_GetProtocolStatus() - ErrorPassive=%ld\n", statt.ErrorPassive);
+                printf("can - HAL_FDCAN_GetProtocolStatus() - Warning=%ld\n", statt.Warning);
+                printf("can - HAL_FDCAN_GetProtocolStatus() - BusOff=%ld\n", statt.BusOff);
+                printf("can - HAL_FDCAN_GetProtocolStatus() - RxESIflag=%ld\n", statt.RxESIflag);
+                printf("can - HAL_FDCAN_GetProtocolStatus() - RxBRSflag=%ld\n", statt.RxBRSflag);
+                printf("can - HAL_FDCAN_GetProtocolStatus() - RxFDFflag=%ld\n", statt.RxFDFflag);
+                printf("can - HAL_FDCAN_GetProtocolStatus() - ProtocolException=%ld\n", statt.ProtocolException);
+                printf("can - HAL_FDCAN_GetProtocolStatus() - TDCvalue=%ld\n", statt.TDCvalue);
+
+                FDCAN_ErrorCountersTypeDef statt2 = { 0 };
+                status = HAL_FDCAN_GetErrorCounters(can1.hcan, &statt2);
+                printf("can - HAL_FDCAN_GetErrorCounters() status: %d\n", status);
+                printf("can - HAL_FDCAN_GetErrorCounters() - TxErrorCnt: %ld\n", statt2.TxErrorCnt);
+                printf("can - HAL_FDCAN_GetErrorCounters() - RxErrorCnt: %ld\n", statt2.RxErrorCnt);
+                printf("can - HAL_FDCAN_GetErrorCounters() - RxErrorPassive: %ld\n", statt2.RxErrorPassive);
+                printf("can - HAL_FDCAN_GetErrorCounters() - ErrorLogging: %ld\n", statt2.ErrorLogging);
+
+                // actually we are using ST's implementation of HAL_FDCAN_ErrorStatusCallback(), i guess if that doesnt work then try to test this
+                // /* If failed, try restarting. */
+                // if(can_is_bus_off(&can1)) {
+                //     status = can_recover_bus_off(&can1);
+                //     if(status != HAL_OK) {
+                //         PRINTLN_WARNING("Failed to call can_recover_bus_off() after detecting BusOff (Message ID: %ld, Status: %d/%s)", message.id, status, hal_status_toString(status));
+                //     }
+                // }
+
+
+
             }
             tx_thread_sleep(1); // This is needed, or else the queue will try to send messages too fast and outpace the HAL.
         }
