@@ -14,6 +14,7 @@
 #include "u_tx_debug.h"
 #include "u_efuses.h"
 #include "u_dti.h"
+#include "u_bms.h"
 #include "serial.h"
 #include "u_statemachine.h"
 #include "u_adc.h"
@@ -30,6 +31,7 @@ typedef enum {
     ACCEL_SC,
     ACCEL_DIFF,
     BSPD_PREF,
+	BMS_NOT_PRECHARGED_YET,
     NUM_LOCKS,
 } drive_lock_t; // Add to this enum anything that can lock the drive
 static uint8_t drive_lock_map = 0;
@@ -143,6 +145,13 @@ static void _pedal_difference_fault_callback(void *arg) {
 static void _send_pedal_data(ULONG args) {
     (void)args; // The args parameter is unused for this callback.
 
+	/* Set BMS prechrage drive lock. */
+	if(!bms_getPrecharge()) {
+		_drive_lock_set(BMS_NOT_PRECHARGED_YET);
+	} else {
+		_drive_lock_unset(BMS_NOT_PRECHARGED_YET);
+	}
+
     /* Send Pedal Volts Message. */
 	send_pedal_sensor_voltages(
 		pedal_data.voltage_accel1,
@@ -166,7 +175,8 @@ static void _send_pedal_data(ULONG args) {
 		_get_drive_lock_state(ACCEL_OC),
 		_get_drive_lock_state(ACCEL_SC),
 		_get_drive_lock_state(ACCEL_DIFF),
-		_get_drive_lock_state(BSPD_PREF)
+		_get_drive_lock_state(BSPD_PREF),
+		_get_drive_lock_state(BMS_NOT_PRECHARGED_YET)
 	);
 }
 
