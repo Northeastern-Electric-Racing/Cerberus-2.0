@@ -373,7 +373,8 @@ uint8_t send_bms_shutdown_status_as_reported_by_vcu
 * VCU/Pedals/Drive_Locks/ACCEL_SC - 
 * VCU/Pedals/Drive_Locks/ACCEL_DIFF - 
 * VCU/Pedals/Drive_Locks/BSPD_PREF - 
+* VCU/Pedals/Drive_Locks/BMS_NOT_PRECHARGED_YET - 
 */
 uint8_t send_drive_lock_states
-(bool BRAKE_OC,bool BRAKE_SC,bool ACCEL_OC,bool ACCEL_SC,bool ACCEL_DIFF,bool BSPD_PREF);
+(bool BRAKE_OC,bool BRAKE_SC,bool ACCEL_OC,bool ACCEL_SC,bool ACCEL_DIFF,bool BSPD_PREF,bool BMS_NOT_PRECHARGED_YET);
 #endif

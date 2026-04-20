@@ -1452,9 +1452,21 @@ void receive_pack_soc_status(const can_msg_t *message, pack_soc_status_t *pack_s
 void receive_shutdown_as_read_by_bms(const can_msg_t *message, shutdown_as_read_by_bms_t *shutdown_as_read_by_bms) {
     
     uint8_t data = message->data[0];
-    uint64_t shutdown_mask = (1ULL << 8) - 1ULL;
-    uint64_t shutdown_raw = (data >> 0) & shutdown_mask;
-    shutdown_as_read_by_bms->shutdown = (bool)shutdown_raw;
+    uint64_t shutdown_state_mask = (1ULL << 1) - 1ULL;
+    uint64_t shutdown_state_raw = (data >> 7) & shutdown_state_mask;
+    shutdown_as_read_by_bms->shutdown_state = (bool)shutdown_state_raw;
+    uint64_t shutdown_ts_minus_sense_mask = (1ULL << 1) - 1ULL;
+    uint64_t shutdown_ts_minus_sense_raw = (data >> 6) & shutdown_ts_minus_sense_mask;
+    shutdown_as_read_by_bms->shutdown_ts_minus_sense = (bool)shutdown_ts_minus_sense_raw;
+    uint64_t shutdown_ts_plus_sense_mask = (1ULL << 1) - 1ULL;
+    uint64_t shutdown_ts_plus_sense_raw = (data >> 5) & shutdown_ts_plus_sense_mask;
+    shutdown_as_read_by_bms->shutdown_ts_plus_sense = (bool)shutdown_ts_plus_sense_raw;
+    uint64_t shutdown_acc_sense_mask = (1ULL << 1) - 1ULL;
+    uint64_t shutdown_acc_sense_raw = (data >> 4) & shutdown_acc_sense_mask;
+    shutdown_as_read_by_bms->shutdown_acc_sense = (bool)shutdown_acc_sense_raw;
+    uint64_t shutdown_tsip_sense_mask = (1ULL << 1) - 1ULL;
+    uint64_t shutdown_tsip_sense_raw = (data >> 3) & shutdown_tsip_sense_mask;
+    shutdown_as_read_by_bms->shutdown_tsip_sense = (bool)shutdown_tsip_sense_raw;
 }
 
 void receive_hv_plate_isospi_communication_status(const can_msg_t *message, hv_plate_isospi_communication_status_t *hv_plate_isospi_communication_status) {
