@@ -226,6 +226,10 @@ static void _calculate_accel_faults(float voltage_accel1, float voltage_accel2, 
         _drive_lock_unset(ACCEL_SC);
     }
 
+	serial_monitor("sc", "voltage_accel1", "%f", voltage_accel1);
+	serial_monitor("sc", "voltage_accel2", "%f", voltage_accel2);
+	serial_monitor("sc", "drive lock sc state", "%f", _get_drive_lock_state(ACCEL_SC));
+
     /* Pedal Difference Fault */
     /* Detects if the two accelerator pedal sensors give readings that differ by more than PEDAL_DIFF_THRESH. */
     bool pedal_difference_fault = fabsf(percentage_accel1 - percentage_accel2) > PEDAL_DIFF_THRESH;
