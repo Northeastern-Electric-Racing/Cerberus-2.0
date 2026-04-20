@@ -33,6 +33,7 @@ typedef enum {
 	PERFORMANCE, //AUTOCROSS
 	EFFICIENCY, //ENDURANCE
 	GAMES,
+	THEMES,
 	EXIT,
 	MAX_NERO_STATES
 } nero_menu_t;
