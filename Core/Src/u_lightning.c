@@ -3,16 +3,14 @@
 #include "can_messages_tx.h"
 #include "u_faults.h"
 #include "u_queues.h"
+#include "serial.h"
 #include "u_tx_timers.h"
 #include "tx_api.h"
 
 /* Config */
 #define LIGHTNING_CAN_MONITOR_DELAY 4000
 
-/* Fault callback(s). */
-static void _lightning_fault_callback(ULONG args) {
-    queue_send(&faults, &(fault_t){LIGHTNING_CAN_MONITOR_FAULT}, TX_NO_WAIT);
-}
+static void _lightning_fault_callback(ULONG args); // Forward declaration
 // Queues the Lightning CAN Monitor Fault.
 static timer_t lightning_fault_timer = {
     .name = "Lightning Fault Timer",
@@ -22,6 +20,12 @@ static timer_t lightning_fault_timer = {
     .type = ONESHOT,
     .auto_activate = true
 };
+
+/* Fault callback(s). */
+static void _lightning_fault_callback(ULONG args) {
+    queue_send(&faults, &(fault_t){LIGHTNING_CAN_MONITOR_FAULT}, TX_NO_WAIT);
+    timer_restart(&lightning_fault_timer);
+}
 
 /* Initializes the lightning fault timer. */
 int lightning_init(void) {

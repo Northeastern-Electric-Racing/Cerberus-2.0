@@ -88,11 +88,15 @@ void receive_front_shockpot(const can_msg_t *message, front_shockpot_t *front_sh
 
     
     
+    
     front_shockpot->shock1 = (float)bitstream_data.shock1;
     
     
     
+    
+    
     front_shockpot->shock1_raw = (uint16_t)bitstream_data.shock1_raw;
+    
     
     
 }
@@ -233,11 +237,15 @@ void receive_back_shockpot(const can_msg_t *message, back_shockpot_t *back_shock
 
     
     
+    
     back_shockpot->shock1 = (float)bitstream_data.shock1;
     
     
     
+    
+    
     back_shockpot->shock1_raw = (uint16_t)bitstream_data.shock1_raw;
+    
     
     
 }
@@ -473,7 +481,10 @@ void receive_imd_general_information(const can_msg_t *message, imd_general_infor
 
     
     
+    
     imd_general_information->R_iso_corrected = (uint16_t)bitstream_data.R_iso_corrected;
+    
+    
     
     
     
@@ -481,7 +492,11 @@ void receive_imd_general_information(const can_msg_t *message, imd_general_infor
     
     
     
+    
+    
     imd_general_information->Iso_measurement_counter = (uint8_t)bitstream_data.Iso_measurement_counter;
+    
+    
     
     
     
@@ -489,7 +504,11 @@ void receive_imd_general_information(const can_msg_t *message, imd_general_infor
     
     
     
+    
+    
     imd_general_information->HV_pos_conn_fail = (bool)bitstream_data.HV_pos_conn_fail;
+    
+    
     
     
     
@@ -497,7 +516,11 @@ void receive_imd_general_information(const can_msg_t *message, imd_general_infor
     
     
     
+    
+    
     imd_general_information->Earth_conn_fail = (bool)bitstream_data.Earth_conn_fail;
+    
+    
     
     
     
@@ -505,7 +528,11 @@ void receive_imd_general_information(const can_msg_t *message, imd_general_infor
     
     
     
+    
+    
     imd_general_information->iso_warning = (bool)bitstream_data.iso_warning;
+    
+    
     
     
     
@@ -513,7 +540,11 @@ void receive_imd_general_information(const can_msg_t *message, imd_general_infor
     
     
     
+    
+    
     imd_general_information->Unbalance_alarm = (bool)bitstream_data.Unbalance_alarm;
+    
+    
     
     
     
@@ -521,23 +552,14 @@ void receive_imd_general_information(const can_msg_t *message, imd_general_infor
     
     
     
+    
+    
     imd_general_information->Unsafe_to_start = (bool)bitstream_data.Unsafe_to_start;
     
     
     
-    imd_general_information->Earthlift_Open = (bool)bitstream_data.Earthlift_Open;
     
     
-    
-    imd_general_information->warnings_and_alarms_unused_bits = (uint8_t)bitstream_data.warnings_and_alarms_unused_bits;
-    
-    
-    
-    imd_general_information->Device_Activity = (uint8_t)bitstream_data.Device_Activity;
-    
-    
-    
-    imd_general_information->Not_Applicable = (uint8_t)bitstream_data.Not_Applicable;
     
     
 }
@@ -639,6 +661,16 @@ void receive_lightning_board_magnometer_sensor_information(const can_msg_t *mess
         ? (int64_t)(mag_z_bits | ~mag_z_mask)
         : (int64_t)mag_z_bits;
     lightning_board_magnometer_sensor_information->mag_z = (float)(mag_z_raw / 1000);
+}
+
+void receive_lightning_pulse_message(const can_msg_t *message, lightning_pulse_message_t *lightning_pulse_message) {
+    
+    uint32_t data_bigendian;
+    memcpy(&data_bigendian, message->data, 4);
+    uint32_t data = __builtin_bswap32(data_bigendian);
+    uint64_t count_mask = (1ULL << 32) - 1ULL;
+    uint64_t count_raw = (data >> 0) & count_mask;
+    lightning_pulse_message->count = (uint32_t)count_raw;
 }
 
 void receive_bms_charge_message_send(const can_msg_t *message, bms_charge_message_send_t *bms_charge_message_send) {

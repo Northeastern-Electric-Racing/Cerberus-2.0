@@ -68,10 +68,10 @@ static pedal_data_t pedal_data = { 0 };
 #define MAX_VOLTS_UNSCALED 5.0  // (Volts). Actual sensor voltage before voltage divider scaling.
 
 /* Pedal Tuning */
-#define MAX_APPS1_VOLTS		    2.60 // (Volts). Upper bound on APPS1 voltage range.
-#define MIN_APPS1_VOLTS		    0.95 // (Volts). Lower bound on APPS1 voltage range.
-#define MAX_APPS2_VOLTS		    3.60 // (Volts). Upper bound on APPS2 voltage range.
-#define MIN_APPS2_VOLTS		    1.95 // (Volts). Lower bound on APPS2 voltage range.
+#define MAX_APPS1_VOLTS		    3.50 // (Volts). Upper bound on APPS1 voltage range.
+#define MIN_APPS1_VOLTS		    2.00 // (Volts). Lower bound on APPS1 voltage range.
+#define MAX_APPS2_VOLTS		    2.50 // (Volts). Upper bound on APPS2 voltage range.
+#define MIN_APPS2_VOLTS		    1.00 // (Volts). Lower bound on APPS2 voltage range.
 #define PEDAL_BRAKE_THRESH	    0.20 // (Percantage). Pedal position above which the system registers the brake pedal as "pressed".
 #define PEDAL_HARD_BRAKE_THRESH 0.50 // (Percentage). Pedal position above which a "hard brake" is detected.
 
@@ -91,7 +91,7 @@ static pedal_data_t pedal_data = { 0 };
 #define PEDAL_DIFF_THRESH           0.20 // (Percentage). Maximum allowed difference between the two accelerator sensors.
 #define PEDAL_FAULT_DEBOUNCE        95   // (ms). Debounce time for pedal faults.
 #define BRAKE_FAULT_DEBOUNCE        300  // (ms). Debounce time for brake faults.
-#define APPS_THRESHOLD_TOLERANCE    0.45 // (Volts). Tolerance margin around the accelerator pedal.
+#define APPS_THRESHOLD_TOLERANCE    0.20 // (Volts). Tolerance margin around the accelerator pedal.
 #define BRAKE_THRESHOLD_TOLERANCE   0.25 // (Volts). Tolerance margin around the brake pedal.
 
 
@@ -225,6 +225,10 @@ static void _calculate_accel_faults(float voltage_accel1, float voltage_accel2, 
     if (!short_circuit_fault) {
         _drive_lock_unset(ACCEL_SC);
     }
+
+	serial_monitor("sc", "voltage_accel1", "%f", voltage_accel1);
+	serial_monitor("sc", "voltage_accel2", "%f", voltage_accel2);
+	serial_monitor("sc", "drive lock sc state", "%d", _get_drive_lock_state(ACCEL_SC));
 
     /* Pedal Difference Fault */
     /* Detects if the two accelerator pedal sensors give readings that differ by more than PEDAL_DIFF_THRESH. */
