@@ -535,19 +535,9 @@ void vEFuses(ULONG thread_input) {
 
         /* Shutdown eFuse should never be enabled/disabled here. */
 
-        /* Determine LV eFuse state. */
-        switch(data.control_state[EFUSE_LV]) {
-            case EF_ON: efuse_enable(EFUSE_LV); break;
-            case EF_OFF: efuse_disable(EFUSE_LV); break;
-            default: efuse_enable(EFUSE_LV); break;
-        }
+        /* LV eFuse should never be enabled/disabled here. */
 
-        /* Determine battbox eFuse state. */
-        switch(data.control_state[EFUSE_BATTBOX]) {
-            case EF_ON: efuse_enable(EFUSE_BATTBOX); break;
-            case EF_OFF: efuse_disable(EFUSE_BATTBOX); break;
-            default: efuse_enable(EFUSE_BATTBOX); break;
-        }
+        /* Battbox eFuse should never be enabled/disabled here. */
 
         /* Determine MC eFuse state. */
         switch(data.control_state[EFUSE_MC]) {

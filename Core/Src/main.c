@@ -928,7 +928,7 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_WritePin(GPIOE, RED_LED_Pin|GREEN_LED_Pin|PHY_RESET_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOF, EF_BATTBOX_EN_Pin|EF_MC_EN_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(EF_MC_EN_GPIO_Port, EF_MC_EN_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOD, EF_BREAK_EN_Pin|EF_FANBATT_EN_Pin|EF_PUMP1_EN_Pin|EF_PUMP2_EN_Pin
@@ -959,18 +959,18 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : EF_BATTBOX_EN_Pin EF_MC_EN_Pin */
-  GPIO_InitStruct.Pin = EF_BATTBOX_EN_Pin|EF_MC_EN_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(GPIOF, &GPIO_InitStruct);
-
-  /*Configure GPIO pins : EF_BATTBOX_ER_Pin EF_MC_ER_Pin */
-  GPIO_InitStruct.Pin = EF_BATTBOX_ER_Pin|EF_MC_ER_Pin;
+  /*Configure GPIO pins : EF_BATTBOX_EN_Pin EF_BATTBOX_ER_Pin EF_MC_ER_Pin */
+  GPIO_InitStruct.Pin = EF_BATTBOX_EN_Pin|EF_BATTBOX_ER_Pin|EF_MC_ER_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(GPIOF, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : EF_MC_EN_Pin */
+  GPIO_InitStruct.Pin = EF_MC_EN_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(EF_MC_EN_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pins : BMS_GPIO_Pin BOTS_GPIO_Pin SPARE_GPIO_Pin BSPD_GPIO_Pin
                            HV_C_GPIO_Pin HVD_GPIO_Pin */
