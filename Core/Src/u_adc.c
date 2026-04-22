@@ -204,12 +204,12 @@ lfiu_adc_t adc_getLfiuData(void) {
     sensors.raw[LFIU_1] = _mux_buffer[SEL2_HIGH];
     sensors.raw[LFIU_2] = _mux_buffer[SEL2_LOW];
 
-    serial_monitor("lfiu", "adc1_inp15", "%d", _adc1_buffer[ADC1_CHANNEL15]);
-    serial_monitor("lfiu", "_mux_buffer[SEL2_HIGH]", "%d", _mux_buffer[SEL2_HIGH]);
-    serial_monitor("lfiu", "_mux_buffer[SEL2_LOW]", "%d", _mux_buffer[SEL2_LOW]);
-    serial_monitor("lfiu", "sensors.raw[LFIU_1]", "%d", sensors.raw[LFIU_1]);
-    serial_monitor("lfiu", "sensors.raw[LFIU_2]", "%d", sensors.raw[LFIU_2]);
-    serial_monitor("lfiu", "mux_state (0=HIGH, 1=LOW)", "%d", mux_state_debug);
+    // serial_monitor("lfiu", "adc1_inp15", "%d", _adc1_buffer[ADC1_CHANNEL15]);
+    // serial_monitor("lfiu", "_mux_buffer[SEL2_HIGH]", "%d", _mux_buffer[SEL2_HIGH]);
+    // serial_monitor("lfiu", "_mux_buffer[SEL2_LOW]", "%d", _mux_buffer[SEL2_LOW]);
+    // serial_monitor("lfiu", "sensors.raw[LFIU_1]", "%d", sensors.raw[LFIU_1]);
+    // serial_monitor("lfiu", "sensors.raw[LFIU_2]", "%d", sensors.raw[LFIU_2]);
+    // serial_monitor("lfiu", "mux_state (0=HIGH, 1=LOW)", "%d", mux_state_debug);
 
     /* Calculate the ADC voltage. */
     const float V_REF = 3.3f;
@@ -270,6 +270,6 @@ lvread_adc_t adc_getLVData_2(void) {
     /* Convert the raw ADC reading directly to the full LV Voltage. */
     // Based on a linear fit computed via experimental data from VCU 001, we have: f(x) = 0.008988x - 0.89151  V, where f(x) is the full LV Voltage and x is the raw ADC reading.
     data.voltage = (data.raw*0.008988) - 0.89151;
-    
+
     return data;
 }

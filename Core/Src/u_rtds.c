@@ -33,9 +33,9 @@ static timer_t reverse_sound_timer = {
 /* Sets (i.e. turns on) the RTDS pin. */
 static void _set_rtds_pin(void) {
     /* If shutdown is active, make it impossible to sound RTDS. */
-    if(is_shutdown_active() == true) {
-        return; // Return early. Never ever have RTDS be high when shutdown is active.
-    }
+    // if(is_shutdown_active() == true) {
+    //     return; // Return early. Never ever have RTDS be high when shutdown is active.
+    // }
 
     HAL_GPIO_WritePin(RTDS_GPIO_GPIO_Port, RTDS_GPIO_Pin, GPIO_PIN_SET); // Turn on RTDS pin.
     PRINTLN_INFO("Turned on RTDS pin.");
@@ -135,7 +135,7 @@ int rtds_cancelRTDS(void) {
 int rtds_startReverseSound(void) {
     /* Stop the Reverse Sound if it's already active. */
     rtds_stopReverseSound();
-    
+
     /* Activate the reverse sound timer to start periodic beeping */
     int status = timer_start(&reverse_sound_timer);
     if(status != U_SUCCESS) {
@@ -143,7 +143,7 @@ int rtds_startReverseSound(void) {
         queue_send(&faults, &(fault_t){RTDS_FAULT}, TX_NO_WAIT);
         return U_ERROR;
     }
-    
+
     PRINTLN_INFO("Started reverse sound.");
     return U_SUCCESS;
 }
@@ -152,7 +152,7 @@ int rtds_startReverseSound(void) {
 int rtds_stopReverseSound(void) {
     /* Turn off the RTDS sound */
     _clear_rtds_pin();
-    
+
     /* Deactivate the reverse sound timer */
     int status = timer_stop(&reverse_sound_timer);
     if(status != U_SUCCESS) {
@@ -160,7 +160,7 @@ int rtds_stopReverseSound(void) {
         queue_send(&faults, &(fault_t){RTDS_FAULT}, TX_NO_WAIT);
         return U_ERROR;
     }
-    
+
     PRINTLN_INFO("Stopped reverse sound.");
     return U_SUCCESS;
 }
