@@ -87,19 +87,11 @@ efuse_data_t efuse_getData(void) {
 
 /* Enables an eFuse. */
 void efuse_enable(efuse_t efuse) {
-    if(efuse == EFUSE_SHUTDOWN || efuse == EFUSE_BATTBOX || efuse == EFUSE_LV) {
-        PRINTLN_WARNING("This eFuse is set up is a pulled-up GPIO_INPUT, so it's always enabled and calling efuse_enable() won't do anything (eFuse: %d).", efuse);
-        return;
-    }
     HAL_GPIO_WritePin(efuses[efuse].en_port, efuses[efuse].en_pin, GPIO_PIN_SET);
 }
 
 /* Disables an eFuse. */
 void efuse_disable(efuse_t efuse) {
-     if(efuse == EFUSE_SHUTDOWN || efuse == EFUSE_BATTBOX || efuse == EFUSE_LV) {
-        PRINTLN_WARNING("This eFuse is set up is a pulled-up GPIO_INPUT, so it's always enabled and calling efuse_disable() won't do anything (eFuse: %d).", efuse);
-        return;
-    }
     HAL_GPIO_WritePin(efuses[efuse].en_port, efuses[efuse].en_pin, GPIO_PIN_RESET);
 }
 
