@@ -10,7 +10,7 @@
 #include "can_messages_tx.h"
 
 /* Bool to track the BMS shutdown state. */
-static _Atomic bool bms_shutdown = false; // We should assume that we are shutdown is open until BMS confirms that shutdown is active.
+static _Atomic bool bms_shutdown = false; // We should assume that we are shutdown is open (`false`) until BMS confirms that shutdown is open (`true`).
 // BMS periodically sends out a CAN message reporting the shutdown state. That state is tracked here.
 // When this bool is `false`, BMS is indicating that shutdown is open, which is bad.
 // When this bool is `true`, BMS is indicating that shutdown is closed, meaning that we are in normal operation and everything is good
@@ -25,8 +25,11 @@ void update_bms_shutdown(bool new_state) {
     bms_shutdown = new_state;
 }
 
-/* Indicates if shutdown is active. */
-bool is_shutdown_active(void) {
+/* Indicates if shutdown is closed or not.
+ * When shutdown is closed, this function returns `true`. Otherwise, this function returns `false`.
+ * Shutdown has to be closed for us to drive. When shutdown isn't closed, we are not allowed to drive.
+*/
+bool is_shutdown_closed(void) {
     return bms_shutdown;
 }
 
