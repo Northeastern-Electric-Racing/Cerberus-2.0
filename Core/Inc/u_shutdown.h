@@ -14,7 +14,7 @@ void update_bms_shutdown(bool new_state);
 void shutdown_process(void);
 
 /**
- * @brief  Indicates if shutdown is active or not.
- * @return The current shutdown state. `false` means that shutdown is NOT active, indicating normal operation. `true` means that shutdown IS active, which is bad.
+ * @brief  Indicates if shutdown is closed or not.
+ * @return `true` if shutdown is closed, or `false` if otherwise. Shutdown has to be closed for us to drive.
  */
-bool is_shutdown_active(void);
+bool is_shutdown_closed(void);
