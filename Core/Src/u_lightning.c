@@ -72,4 +72,3 @@ void update_lightning_board_status(bool bms_gpio, bool imd_gpio) {
         }
         send_lightning_board_status(status);
 }
-
