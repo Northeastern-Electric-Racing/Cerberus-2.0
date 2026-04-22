@@ -10,10 +10,10 @@
 #include "can_messages_tx.h"
 
 /* Bool to track the BMS shutdown state. */
-static _Atomic bool bms_shutdown = true; // We should assume that we are shut down until BMS confirms that we aren't shut down.
+static _Atomic bool bms_shutdown = false; // We should assume that we are shutdown is open until BMS confirms that shutdown is active.
 // BMS periodically sends out a CAN message reporting the shutdown state. That state is tracked here.
-// When this bool is `false`, BMS is indicating that shutdown is NOT active, meaning that we are in normal operation and everything is good.
-// When this bool is `true`, BMS is indicating that shutdown IS active, which is bad.get_shutdown
+// When this bool is `false`, BMS is indicating that shutdown is open, which is bad.
+// When this bool is `true`, BMS is indicating that shutdown is closed, meaning that we are in normal operation and everything is good
 
 // callback for when either bms or imd indicates a fault - sets flag via arg
 static void _lightning_board_status_callback(void *arg) {
