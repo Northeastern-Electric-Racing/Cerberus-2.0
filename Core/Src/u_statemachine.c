@@ -143,13 +143,13 @@ static int transition_functional_state(func_state_t new_state)
 			return 3;
 		}
 
-		/* Only turn on motor if brakes engaged and no shutdown active */
-		if (!brake_state || is_shutdown_active()) {
+		/* Only turn on motor if brakes engaged and shutdown active */
+		if (!brake_state || !is_shutdown_active()) {
 			return 3;
 		}
 #endif
 
-		if (!is_shutdown_active()) {
+		if (is_shutdown_active()) {
 			rtds_soundRTDS();
 		}
 
@@ -192,7 +192,7 @@ static int transition_nero_state(nero_state_t new_state)
 		/* TSMS OFF and MPH = 0 to enter games */
 		if (new_state.nero_index == GAMES) {
 #ifndef TSMS_OVERRIDE
-			if (!is_shutdown_active() || dti_get_mph() >= 1) {
+			if (is_shutdown_active() || dti_get_mph() >= 1) {
 				return 1;
 			}
 #endif
@@ -322,7 +322,7 @@ void statemachine_process(state_req_t new_state_req) {
 		else if(new_state_req.id == FUNCTIONAL) { transition_functional_state(new_state_req.state.functional); }
 	}
 
-	if (!is_ts_rising && !is_shutdown_active()) {
+	if (!is_ts_rising && is_shutdown_active()) {
 		is_ts_rising = true;
 
 		/* Restart TS Rising timer. */
@@ -332,7 +332,7 @@ void statemachine_process(state_req_t new_state_req) {
 			return;
 		}
 
-	} else if (is_shutdown_active()) {
+	} else if (!is_shutdown_active()) {
 		/* Stop the TS Rising timer. */
     	int status = timer_stop(&ts_rising_timer);
     	if(status != U_SUCCESS) {

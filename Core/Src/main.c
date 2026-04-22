@@ -32,6 +32,7 @@
 #include "u_queues.h"
 #include "u_debug.h"
 #include "u_lightning.h"
+#include "u_tx_debug.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -85,6 +86,7 @@ SPI_HandleTypeDef hspi2;
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
+void PeriphCommonClock_Config(void);
 static void MX_GPDMA1_Init(void);
 static void MX_GPIO_Init(void);
 static void MX_ICACHE_Init(void);
@@ -158,7 +160,36 @@ void HAL_FDCAN_ErrorStatusCallback(FDCAN_HandleTypeDef *hfdcan, uint32_t ErrorSt
 
     if (protocol_status.BusOff != 0)  // If Bus-Off error occurred
     {
+        PRINTLN_ERROR("CAN ENCOUNTERED BUS OFF STATE");
         CLEAR_BIT(hfdcan->Instance->CCCR, FDCAN_CCCR_INIT);  // Clear INIT bit to recover from Bus-Off
+        /* get the FDCAN hal errors. */
+        uint8_t status = HAL_FDCAN_GetError(can1.hcan);
+        printf("can - HAL_FDCAN_GetError() status: %d\n", status);
+
+        FDCAN_ProtocolStatusTypeDef statt = { 0 };
+        status = HAL_FDCAN_GetProtocolStatus(can1.hcan, &statt);
+        printf("can - HAL_FDCAN_GetProtocolStatus() status: %d\n", status);
+
+        /* Big statt */
+        printf("can - HAL_FDCAN_GetProtocolStatus() - LastErrorCode=%ld\n", statt.LastErrorCode);
+        printf("can - HAL_FDCAN_GetProtocolStatus() - DataLastErrorCode=%ld\n", statt.DataLastErrorCode);
+        printf("can - HAL_FDCAN_GetProtocolStatus() - Activity=%ld\n", statt.Activity);
+        printf("can - HAL_FDCAN_GetProtocolStatus() - ErrorPassive=%ld\n", statt.ErrorPassive);
+        printf("can - HAL_FDCAN_GetProtocolStatus() - Warning=%ld\n", statt.Warning);
+        printf("can - HAL_FDCAN_GetProtocolStatus() - BusOff=%ld\n", statt.BusOff);
+        printf("can - HAL_FDCAN_GetProtocolStatus() - RxESIflag=%ld\n", statt.RxESIflag);
+        printf("can - HAL_FDCAN_GetProtocolStatus() - RxBRSflag=%ld\n", statt.RxBRSflag);
+        printf("can - HAL_FDCAN_GetProtocolStatus() - RxFDFflag=%ld\n", statt.RxFDFflag);
+        printf("can - HAL_FDCAN_GetProtocolStatus() - ProtocolException=%ld\n", statt.ProtocolException);
+        printf("can - HAL_FDCAN_GetProtocolStatus() - TDCvalue=%ld\n", statt.TDCvalue);
+
+        FDCAN_ErrorCountersTypeDef statt2 = { 0 };
+        status = HAL_FDCAN_GetErrorCounters(can1.hcan, &statt2);
+        printf("can - HAL_FDCAN_GetErrorCounters() status: %d\n", status);
+        printf("can - HAL_FDCAN_GetErrorCounters() - TxErrorCnt: %ld\n", statt2.TxErrorCnt);
+        printf("can - HAL_FDCAN_GetErrorCounters() - RxErrorCnt: %ld\n", statt2.RxErrorCnt);
+        printf("can - HAL_FDCAN_GetErrorCounters() - RxErrorPassive: %ld\n", statt2.RxErrorPassive);
+        printf("can - HAL_FDCAN_GetErrorCounters() - ErrorLogging: %ld\n", statt2.ErrorLogging);
     }
 }
 
@@ -186,6 +217,9 @@ int main(void)
 
   /* Configure the system clock */
   SystemClock_Config();
+
+  /* Configure the peripherals common clocks */
+  PeriphCommonClock_Config();
 
   /* USER CODE BEGIN SysInit */
   //HAL_Delay(10000);
@@ -283,6 +317,36 @@ void SystemClock_Config(void)
   /** Configure the programming delay
   */
   __HAL_FLASH_SET_PROGRAM_DELAY(FLASH_PROGRAMMING_DELAY_2);
+}
+
+/**
+  * @brief Peripherals Common Clock Configuration
+  * @retval None
+  */
+void PeriphCommonClock_Config(void)
+{
+  RCC_PeriphCLKInitTypeDef PeriphClkInitStruct = {0};
+
+  /** Initializes the peripherals clock
+  */
+  PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_ADCDAC|RCC_PERIPHCLK_FDCAN
+                              |RCC_PERIPHCLK_SPI2;
+  PeriphClkInitStruct.PLL2.PLL2Source = RCC_PLL2_SOURCE_HSE;
+  PeriphClkInitStruct.PLL2.PLL2M = 5;
+  PeriphClkInitStruct.PLL2.PLL2N = 64;
+  PeriphClkInitStruct.PLL2.PLL2P = 5;
+  PeriphClkInitStruct.PLL2.PLL2Q = 5;
+  PeriphClkInitStruct.PLL2.PLL2R = 2;
+  PeriphClkInitStruct.PLL2.PLL2RGE = RCC_PLL2_VCIRANGE_2;
+  PeriphClkInitStruct.PLL2.PLL2VCOSEL = RCC_PLL2_VCORANGE_WIDE;
+  PeriphClkInitStruct.PLL2.PLL2FRACN = 0;
+  PeriphClkInitStruct.PLL2.PLL2ClockOut = RCC_PLL2_DIVP|RCC_PLL2_DIVQ;
+  PeriphClkInitStruct.FdcanClockSelection = RCC_FDCANCLKSOURCE_PLL2Q;
+  PeriphClkInitStruct.Spi2ClockSelection = RCC_SPI2CLKSOURCE_PLL2P;
+  if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK)
+  {
+    Error_Handler();
+  }
 }
 
 /**
@@ -596,10 +660,10 @@ static void MX_FDCAN2_Init(void)
   hfdcan2.Init.AutoRetransmission = DISABLE;
   hfdcan2.Init.TransmitPause = DISABLE;
   hfdcan2.Init.ProtocolException = DISABLE;
-  hfdcan2.Init.NominalPrescaler = 5;
+  hfdcan2.Init.NominalPrescaler = 8;
   hfdcan2.Init.NominalSyncJumpWidth = 1;
-  hfdcan2.Init.NominalTimeSeg1 = 1;
-  hfdcan2.Init.NominalTimeSeg2 = 8;
+  hfdcan2.Init.NominalTimeSeg1 = 11;
+  hfdcan2.Init.NominalTimeSeg2 = 4;
   hfdcan2.Init.DataPrescaler = 1;
   hfdcan2.Init.DataSyncJumpWidth = 1;
   hfdcan2.Init.DataTimeSeg1 = 1;
