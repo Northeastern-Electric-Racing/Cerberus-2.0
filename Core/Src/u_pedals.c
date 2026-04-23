@@ -37,6 +37,7 @@ typedef enum {
 static uint8_t drive_lock_map = 0;
 
 static _Atomic bool brake_pressed = false;
+static _Atomic bool accel_pressed = false;
 static _Atomic bool launch_control_enabled = false;
 static float torque_limit_percentage = 1.0f;
 
@@ -71,15 +72,15 @@ static pedal_data_t pedal_data = { 0 };
 
 /* Pedal Tuning */
 #define MAX_APPS1_VOLTS		    3.50 // (Volts). Upper bound on APPS1 voltage range.
-#define MIN_APPS1_VOLTS		    2.00 // (Volts). Lower bound on APPS1 voltage range.
+#define MIN_APPS1_VOLTS		    2.15 // (Volts). Lower bound on APPS1 voltage range.
 #define MAX_APPS2_VOLTS		    2.50 // (Volts). Upper bound on APPS2 voltage range.
-#define MIN_APPS2_VOLTS		    1.00 // (Volts). Lower bound on APPS2 voltage range.
-#define PEDAL_BRAKE_THRESH	    0.20 // (Percantage). Pedal position above which the system registers the brake pedal as "pressed".
-#define PEDAL_HARD_BRAKE_THRESH 0.50 // (Percentage). Pedal position above which a "hard brake" is detected.
+#define MIN_APPS2_VOLTS		    1.15 // (Volts). Lower bound on APPS2 voltage range.
+#define PEDAL_BRAKE_THRESH	    0.15 // (Percantage). Pedal position above which the system registers the brake pedal as "pressed".
+#define PEDAL_HARD_BRAKE_THRESH 0.22 // (Percentage). Pedal position above which a "hard brake" is detected.
 
 /* Performance Limits */
 #define PIT_MAX_SPEED           5.0 // (mph). Speed limit in pit mode.
-#define MAX_TORQUE              220 // (Nm). Maximum torque output
+#define MAX_TORQUE              40 // (Nm). Maximum torque output
 #define TORQUE_ACCUMULATOR_SIZE 10  // (Number). Size of the moving average filter for torque stuff.
 #define MAX_REGEN_CURRENT       250 // (AC Amps). Maximum regenerative braking current.
 
@@ -539,9 +540,11 @@ int pedals_init(void) {
 /* Returns the brake state (true=brake pressed, false=brake not pressed). */
 bool pedals_getBrakeState(void) {
     return brake_pressed;
+}
 
-	/* TEMPORARY OVERRIDE FOR TSMS! should be commented out normally! */
-	//return true;
+/* Returns the accel state (true=accel pressed, false= accel not pressed)*/
+bool pedals_getAccelState(void) {
+	return accel_pressed;
 }
 
 /* Returns the torque limit percentgae. */
@@ -692,6 +695,12 @@ void pedals_process(void) {
 			efuse_disable(EFUSE_BRAKE);
 		}
     }
+
+	if (pedal_data.percentage_accel >= 0.05) {
+		accel_pressed = true;
+	} else {
+		accel_pressed = false;
+	}
 
 	uint16_t dc_current = dti_get_dc_current();
     float mph = dti_get_mph();

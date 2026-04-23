@@ -104,6 +104,11 @@ static int transition_functional_state(func_state_t new_state)
 		printf("FAULTED\r\n");
 	}
 
+	if (pedals_getAccelState()) {
+		PRINTLN_WARNING("Accelerator should not be pressed when entering a state");
+		return;
+	}
+
 	/* Make sure wheels are not spinning before changing modes */
 	bool brake_state;
 	rtds_stopReverseSound();

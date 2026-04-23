@@ -273,11 +273,15 @@ static thread_t statemachine_thread = {
     };
 void vStatemachine(ULONG thread_input) {
 
+    const uint32_t telem_timeout = 50;
+
     while(1) {
         state_req_t new_state_req;
-        while(queue_receive(&state_transition_queue, &new_state_req, TX_WAIT_FOREVER) == U_SUCCESS) {
+        while(queue_receive(&state_transition_queue, &new_state_req, telem_timeout) == U_SUCCESS) {
             statemachine_process(new_state_req);
 	    }
+
+        send_carstate_msg();
 
         /* No sleep. Thread timing is controlled completely by the queue timeout. */
     }
