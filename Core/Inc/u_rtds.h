@@ -4,7 +4,7 @@
 #include <stdbool.h>
 
 /* Config: */
-#define RTDS_DURATION 5000 /* RTDS duration (in ticks). */
+#define RTDS_DURATION 1500 /* RTDS duration (in ticks). */
 
 /* API */
 int rtds_init(void);                // Initializes the RTDS timer.
