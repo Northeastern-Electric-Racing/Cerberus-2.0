@@ -44,7 +44,7 @@ int lightning_init(void) {
 
 /* Restarts the lightning fault timer. */
 int lightning_handleIMUMessage(void) {
-    
+
     int status = timer_restart(&lightning_fault_timer);
     if (status != U_SUCCESS) {
         PRINTLN_ERROR("Failed to restart lightning Fault timer (Status: %d).", status);
@@ -68,8 +68,7 @@ void update_lightning_board_status(bool bms_gpio, bool imd_gpio) {
         }
         else
         {
-            status = LIGHT_GREEN; 
+            status = LIGHT_GREEN;
         }
         send_lightning_board_status(status);
 }
-

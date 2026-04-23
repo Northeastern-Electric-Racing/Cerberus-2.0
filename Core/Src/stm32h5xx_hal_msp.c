@@ -592,22 +592,11 @@ void HAL_ETH_MspDeInit(ETH_HandleTypeDef* heth)
 void HAL_FDCAN_MspInit(FDCAN_HandleTypeDef* hfdcan)
 {
   GPIO_InitTypeDef GPIO_InitStruct = {0};
-  RCC_PeriphCLKInitTypeDef PeriphClkInitStruct = {0};
   if(hfdcan->Instance==FDCAN2)
   {
     /* USER CODE BEGIN FDCAN2_MspInit 0 */
 
     /* USER CODE END FDCAN2_MspInit 0 */
-
-  /** Initializes the peripherals clock
-  */
-    PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_FDCAN;
-    PeriphClkInitStruct.FdcanClockSelection = RCC_FDCANCLKSOURCE_HSE;
-    if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK)
-    {
-      Error_Handler();
-    }
-
     /* Peripheral clock enable */
     __HAL_RCC_FDCAN_CLK_ENABLE();
 
@@ -919,32 +908,11 @@ void HAL_UART_MspDeInit(UART_HandleTypeDef* huart)
 void HAL_SPI_MspInit(SPI_HandleTypeDef* hspi)
 {
   GPIO_InitTypeDef GPIO_InitStruct = {0};
-  RCC_PeriphCLKInitTypeDef PeriphClkInitStruct = {0};
   if(hspi->Instance==SPI2)
   {
     /* USER CODE BEGIN SPI2_MspInit 0 */
 
     /* USER CODE END SPI2_MspInit 0 */
-
-  /** Initializes the peripherals clock
-  */
-    PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_SPI2;
-    PeriphClkInitStruct.PLL2.PLL2Source = RCC_PLL2_SOURCE_HSE;
-    PeriphClkInitStruct.PLL2.PLL2M = 5;
-    PeriphClkInitStruct.PLL2.PLL2N = 64;
-    PeriphClkInitStruct.PLL2.PLL2P = 5;
-    PeriphClkInitStruct.PLL2.PLL2Q = 5;
-    PeriphClkInitStruct.PLL2.PLL2R = 2;
-    PeriphClkInitStruct.PLL2.PLL2RGE = RCC_PLL2_VCIRANGE_2;
-    PeriphClkInitStruct.PLL2.PLL2VCOSEL = RCC_PLL2_VCORANGE_WIDE;
-    PeriphClkInitStruct.PLL2.PLL2FRACN = 0;
-    PeriphClkInitStruct.PLL2.PLL2ClockOut = RCC_PLL2_DIVP;
-    PeriphClkInitStruct.Spi2ClockSelection = RCC_SPI2CLKSOURCE_PLL2P;
-    if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK)
-    {
-      Error_Handler();
-    }
-
     /* Peripheral clock enable */
     __HAL_RCC_SPI2_CLK_ENABLE();
 

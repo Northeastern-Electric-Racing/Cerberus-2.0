@@ -134,10 +134,6 @@ int fault();
  */
 void send_carstate_msg(void);
 
-/* BMS-Reported Shutdown! */
-void update_shutdown(bool new_shutdown);
-bool is_shutdown_active(void);
-
 /* Process the state machine */
 void statemachine_process(state_req_t new_state_req);
 int init_statemachine(void);

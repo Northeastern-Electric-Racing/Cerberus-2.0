@@ -47,14 +47,14 @@ queue_t state_transition_queue = {
     .capacity = 10                         /* Number of messages the queue can hold. */
 };
 
-/* Initializes all ThreadX queues. 
+/* Initializes all ThreadX queues.
 *  Calls to _create_queue() should go in here
 */
 uint8_t queues_init(TX_BYTE_POOL *byte_pool) {
 
     /* Create Queues */
-    CATCH_ERROR(create_queue(byte_pool, &eth_incoming), U_SUCCESS); // Create Incoming Ethernet Queue
-    CATCH_ERROR(create_queue(byte_pool, &eth_outgoing), U_SUCCESS); // Create Outgoing Ethernet Queue
+    // CATCH_ERROR(create_queue(byte_pool, &eth_incoming), U_SUCCESS); // Create Incoming Ethernet Queue
+    // CATCH_ERROR(create_queue(byte_pool, &eth_outgoing), U_SUCCESS); // Create Outgoing Ethernet Queue
     CATCH_ERROR(create_queue(byte_pool, &can_incoming), U_SUCCESS); // Create Incoming CAN Queue
     CATCH_ERROR(create_queue(byte_pool, &can_outgoing), U_SUCCESS); // Create Outgoing CAN Queue
     CATCH_ERROR(create_queue(byte_pool, &faults), U_SUCCESS);       // Create Faults Queue
