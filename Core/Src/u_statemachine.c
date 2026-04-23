@@ -106,7 +106,7 @@ static int transition_functional_state(func_state_t new_state)
 
 	if (pedals_getAccelState()) {
 		PRINTLN_WARNING("Accelerator should not be pressed when entering a state");
-		return;
+		return 3;
 	}
 
 	/* Make sure wheels are not spinning before changing modes */
