@@ -41,7 +41,7 @@
 #define PRIO_vShutdown         2
 #define PRIO_vEFuses           3
 #define PRIO_vMux              3
-#define PRIO_vRTDS             3
+#define PRIO_vTelemetry        3
 #define PRIO_vTest             3
 #define PRIO_vPeripherals      3
 
@@ -273,15 +273,11 @@ static thread_t statemachine_thread = {
     };
 void vStatemachine(ULONG thread_input) {
 
-    const uint32_t telem_timeout = 50;
-
     while(1) {
         state_req_t new_state_req;
-        while(queue_receive(&state_transition_queue, &new_state_req, telem_timeout) == U_SUCCESS) {
+        while(queue_receive(&state_transition_queue, &new_state_req, TX_WAIT_FOREVER) == U_SUCCESS) {
             statemachine_process(new_state_req);
 	    }
-
-        send_carstate_msg();
 
         /* No sleep. Thread timing is controlled completely by the queue timeout. */
     }
@@ -879,24 +875,23 @@ void vPeripherals(ULONG thread_input) {
     }
 }
 
-/* RTDS Telemetry Thread.
-   This thread is for RTDS telemetry. The actual state of the RTDS is managed by the statemachine. */
-static thread_t rtds_telemetry_thread = {
-        .name       = "RTDS Telemetry Thread", /* Name */
+/* Misc. Telemetry Thread.
+   This thread periodically reports the RTDS and statemachine state data. The actual states of these things are managed by the statemachine thread. This is specifically for telemetry. */
+static thread_t misc_telemetry_thread = {
+        .name       = "Misc Telemetry Thread", /* Name */
         .size       = 2048,                    /* Stack Size (in bytes) */
-        .priority   = PRIO_vRTDS,              /* Priority */
+        .priority   = PRIO_vTelemetry,         /* Priority */
         .threshold  = 0,                       /* Preemption Threshold */
         .time_slice = TX_NO_TIME_SLICE,        /* Time Slice */
         .auto_start = TX_AUTO_START,           /* Auto Start */
         .sleep      = 100,                     /* Sleep (in ticks) */
-        .function   = vRTDS                    /* Thread Function */
+        .function   = vTelemetry               /* Thread Function */
     };
-void vRTDS(ULONG thread_input) {
+void vTelemetry(ULONG thread_input) {
 
     while(1) {
 
-        PRINTLN_INFO("thread ran");
-
+        /* Send RTDS State Telemetry. */
         bool rtds_pin_state = rtds_readRTDS();
         bool rtds_sounding_state = false;
         bool rtds_reverse_state = false;
@@ -914,8 +909,11 @@ void vRTDS(ULONG thread_input) {
 
         send_rtds_state_message(rtds_pin_state, rtds_sounding_state, rtds_reverse_state, error_state);
 
+        /* Send Carstate message. */
+        send_carstate_msg();
+
         /* Sleep Thread for specified number of ticks. */
-        tx_thread_sleep(rtds_telemetry_thread.sleep);
+        tx_thread_sleep(misc_telemetry_thread.sleep);
     }
 }
 
