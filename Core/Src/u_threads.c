@@ -41,7 +41,7 @@
 #define PRIO_vShutdown         2
 #define PRIO_vEFuses           3
 #define PRIO_vMux              3
-#define PRIO_vTelemetry        3
+#define PRIO_vRTDS             3
 #define PRIO_vTest             3
 #define PRIO_vPeripherals      3
 
@@ -268,18 +268,20 @@ static thread_t statemachine_thread = {
         .threshold  = 0,                      /* Preemption Threshold */
         .time_slice = TX_NO_TIME_SLICE,       /* Time Slice */
         .auto_start = TX_AUTO_START,          /* Auto Start */
-        .sleep      = 0,                      /* Sleep (in ticks) */
+        .sleep      = 200,                    /* Sleep (in ticks) */
         .function   = vStatemachine           /* Thread Function */
     };
 void vStatemachine(ULONG thread_input) {
 
     while(1) {
         state_req_t new_state_req;
-        while(queue_receive(&state_transition_queue, &new_state_req, TX_WAIT_FOREVER) == U_SUCCESS) {
-            statemachine_process(new_state_req);
-	    }
-
-        /* No sleep. Thread timing is controlled completely by the queue timeout. */
+        
+        // check if there is a transition in the queue, if not skip processing
+        UINT status = queue_receive(&state_transition_queue, &new_state_req, statemachine_thread.sleep);
+        if (status == U_SUCCESS) statemachine_process(new_state_req);
+        
+        // send state periodically whether receiving a transition or not
+        send_carstate_msg();
     }
 }
 
@@ -768,8 +770,6 @@ void vPeripherals(ULONG thread_input) {
                 break; // Break from SECTION 1. We don't want to send the CAN message if reading the data failed.
             }
 
-            PRINTLN_INFO("SHT30 Temp: %f", temperature);
-
             // serial_monitor("peripherals", "sht30 temp", "%f", temperature);
 
             /* Send the temp sensor message. */
@@ -875,19 +875,21 @@ void vPeripherals(ULONG thread_input) {
     }
 }
 
+
+
 /* Misc. Telemetry Thread.
    This thread periodically reports the RTDS and statemachine state data. The actual states of these things are managed by the statemachine thread. This is specifically for telemetry. */
-static thread_t misc_telemetry_thread = {
-        .name       = "Misc Telemetry Thread", /* Name */
+static thread_t rtds_thread = {
+        .name       = "RTDS Thread", /* Name */
         .size       = 2048,                    /* Stack Size (in bytes) */
-        .priority   = PRIO_vTelemetry,         /* Priority */
+        .priority   = PRIO_vRTDS,         /* Priority */
         .threshold  = 0,                       /* Preemption Threshold */
         .time_slice = TX_NO_TIME_SLICE,        /* Time Slice */
         .auto_start = TX_AUTO_START,           /* Auto Start */
         .sleep      = 100,                     /* Sleep (in ticks) */
-        .function   = vTelemetry               /* Thread Function */
+        .function   = vRTDS               /* Thread Function */
     };
-void vTelemetry(ULONG thread_input) {
+void vRTDS(ULONG thread_input) {
 
     while(1) {
 
@@ -909,11 +911,8 @@ void vTelemetry(ULONG thread_input) {
 
         send_rtds_state_message(rtds_pin_state, rtds_sounding_state, rtds_reverse_state, error_state);
 
-        /* Send Carstate message. */
-        send_carstate_msg();
-
         /* Sleep Thread for specified number of ticks. */
-        tx_thread_sleep(misc_telemetry_thread.sleep);
+        tx_thread_sleep(rtds_thread.sleep);
     }
 }
 
@@ -934,8 +933,7 @@ uint8_t threads_init(TX_BYTE_POOL *byte_pool) {
     CATCH_ERROR(create_thread(byte_pool, &efuses_thread), U_SUCCESS);              // Create eFuses thread.
     CATCH_ERROR(create_thread(byte_pool, &mux_thread), U_SUCCESS);               // Create Mux thread.
     CATCH_ERROR(create_thread(byte_pool, &peripherals_thread), U_SUCCESS);       // Create Peripherals thread.
-    // CATCH_ERROR(create_thread(byte_pool, &test_thread), U_SUCCESS);                // Create Test thread.
-    CATCH_ERROR(create_thread(byte_pool, &misc_telemetry_thread), U_SUCCESS);      // Create RTDS Telemetry thread.
+    CATCH_ERROR(create_thread(byte_pool, &rtds_thread), U_SUCCESS);              // Create RTDS thread.
 
     // add more threads here if need
 

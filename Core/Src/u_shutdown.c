@@ -8,6 +8,7 @@
 #include "u_lightning.h"
 #include "debounce.h"
 #include "can_messages_tx.h"
+#include "u_statemachine.h"
 
 /* Bool to track the BMS shutdown state. */
 static _Atomic bool bms_shutdown = false; // We should assume that we are shutdown is open (`false`) until BMS confirms that shutdown is open (`true`).
@@ -30,6 +31,9 @@ void update_bms_shutdown(bool new_state) {
  * Shutdown has to be closed for us to drive. When shutdown isn't closed, we are not allowed to drive.
 */
 bool is_shutdown_closed(void) {
+#ifdef TSMS_OVERRIDE
+    return true;
+#endif
     return bms_shutdown;
 }
 
