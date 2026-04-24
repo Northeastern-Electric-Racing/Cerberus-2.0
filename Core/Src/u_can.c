@@ -251,7 +251,6 @@ void can_inbox(can_msg_t *message) {
             rtds_cancelRTDS();
             rtds_stopReverseSound();
             set_home_mode();
-            fault();
         }
         break;
     default:
