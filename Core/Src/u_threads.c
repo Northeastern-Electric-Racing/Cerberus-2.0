@@ -770,8 +770,6 @@ void vPeripherals(ULONG thread_input) {
                 break; // Break from SECTION 1. We don't want to send the CAN message if reading the data failed.
             }
 
-            PRINTLN_INFO("SHT30 Temp: %f", temperature);
-
             // serial_monitor("peripherals", "sht30 temp", "%f", temperature);
 
             /* Send the temp sensor message. */
@@ -935,6 +933,7 @@ uint8_t threads_init(TX_BYTE_POOL *byte_pool) {
     CATCH_ERROR(create_thread(byte_pool, &efuses_thread), U_SUCCESS);              // Create eFuses thread.
     CATCH_ERROR(create_thread(byte_pool, &mux_thread), U_SUCCESS);               // Create Mux thread.
     CATCH_ERROR(create_thread(byte_pool, &peripherals_thread), U_SUCCESS);       // Create Peripherals thread.
+    CATCH_ERROR(create_thread(byte_pool, &rtds_thread), U_SUCCESS);              // Create RTDS thread.
 
     // add more threads here if need
 
