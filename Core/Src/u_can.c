@@ -217,25 +217,6 @@ void can_inbox(can_msg_t *message) {
         receive_spare_efuse_state(message, &spare);
         efuse_update_state(EFUSE_SPARE, (efuse_control_state_t)spare.state);
         break;
-    case CANID_CALYPSO_RTDS_STATE:
-        /* 0 = Sound RTDS. 1 = Cancel RTDS. 2 = Start Reverse, 3 = Stop Reverse */
-        enum {
-            SOUND_RTDS = 0,
-            CANCEL_RTDS = 1,
-            START_REVERSE = 2,
-            STOP_REVERSE = 3
-        };
-
-        rtds_command_message_t commands = { 0 };
-        receive_rtds_command_message(message, &commands);
-        switch(commands.command) {
-            case SOUND_RTDS: rtds_soundRTDS(); break;
-            case CANCEL_RTDS: rtds_cancelRTDS(); break;
-            case START_REVERSE: rtds_startReverseSound(); break;
-            case STOP_REVERSE: rtds_stopReverseSound(); break;
-            default: break;
-        }
-        break;
     case CANID_WHEEL_BUTTONS:
         wheel_buttons_t wheel_buttons = { 0 };
         receive_wheel_buttons(message, &wheel_buttons);

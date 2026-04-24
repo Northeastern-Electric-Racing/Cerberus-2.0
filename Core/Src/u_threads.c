@@ -41,7 +41,7 @@
 #define PRIO_vShutdown         2
 #define PRIO_vEFuses           3
 #define PRIO_vMux              3
-#define PRIO_vTelemetry        3
+#define PRIO_vRTDS             3
 #define PRIO_vTest             3
 #define PRIO_vPeripherals      3
 
@@ -877,19 +877,21 @@ void vPeripherals(ULONG thread_input) {
     }
 }
 
+
+
 /* Misc. Telemetry Thread.
    This thread periodically reports the RTDS and statemachine state data. The actual states of these things are managed by the statemachine thread. This is specifically for telemetry. */
-static thread_t misc_telemetry_thread = {
-        .name       = "Misc Telemetry Thread", /* Name */
+static thread_t rtds_thread = {
+        .name       = "RTDS Thread", /* Name */
         .size       = 2048,                    /* Stack Size (in bytes) */
-        .priority   = PRIO_vTelemetry,         /* Priority */
+        .priority   = PRIO_vRTDS,         /* Priority */
         .threshold  = 0,                       /* Preemption Threshold */
         .time_slice = TX_NO_TIME_SLICE,        /* Time Slice */
         .auto_start = TX_AUTO_START,           /* Auto Start */
         .sleep      = 100,                     /* Sleep (in ticks) */
-        .function   = vTelemetry               /* Thread Function */
+        .function   = vRTDS               /* Thread Function */
     };
-void vTelemetry(ULONG thread_input) {
+void vRTDS(ULONG thread_input) {
 
     while(1) {
 
@@ -911,11 +913,8 @@ void vTelemetry(ULONG thread_input) {
 
         send_rtds_state_message(rtds_pin_state, rtds_sounding_state, rtds_reverse_state, error_state);
 
-        /* Send Carstate message. */
-        send_carstate_msg();
-
         /* Sleep Thread for specified number of ticks. */
-        tx_thread_sleep(misc_telemetry_thread.sleep);
+        tx_thread_sleep(rtds_thread.sleep);
     }
 }
 
