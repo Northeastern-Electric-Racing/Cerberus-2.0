@@ -250,10 +250,7 @@ void can_inbox(can_msg_t *message) {
         if(bms.shutdown_state == false) {
             rtds_cancelRTDS();
             rtds_stopReverseSound();
-            nero_state_t new_nero_state = get_nero_state();
-            new_nero_state.home_mode = true;
-            state_req_t new = { .id = NERO, .state.nero = new_nero_state };
-            queue_state_transition(new);
+            set_home_mode();
             fault();
         }
         break;

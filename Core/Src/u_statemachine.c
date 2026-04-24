@@ -218,7 +218,7 @@ static int check_state_change(state_req_t new_state)
 	return 1;
 }
 
-int queue_state_transition(state_req_t new_state)
+static int queue_state_transition(state_req_t new_state)
 {
 	PRINTLN_INFO("Inside queue_state_transition()");
 	int status = queue_send(&state_transition_queue, &new_state, TX_NO_WAIT);
