@@ -20,6 +20,7 @@
 #include "c_utils.h"
 #include "u_bms.h"
 #include "u_can.h"
+#include "serial.h"
 #include "u_emrax.h"
 #include "u_queues.h"
 #include "u_mutexes.h"
@@ -122,9 +123,15 @@ void dti_set_regen(uint16_t current_target)
 
 void dti_set_current(int16_t current)
 {
-	if (!bms_getPrecharge()) {
-		return;
-	}
+	static uint32_t count = 0;
+	serial_monitor("dti_current", "current", "%d", current);
+	serial_monitor("dti_current", "count", "%ld", count);
+	count++;
+
+	// u_TODO - uncomment this when done testing
+	// if (!bms_getPrecharge()) {
+	// 	return;
+	// }
 	can_msg_t msg = { .id = 0x036, .len = 2, .data = { 0 } };
 
 #ifdef TSMS_OVERRIDE

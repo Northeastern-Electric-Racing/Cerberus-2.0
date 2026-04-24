@@ -230,6 +230,13 @@ void vCANOutgoing(ULONG thread_input) {
                 queue_send(&faults, &(fault_t){CAN_OUTGOING_FAULT}, TX_NO_WAIT);
 
             }
+
+            // u_TODO - when done testing, comment this out
+            if(message.id == 0x036) {
+                static uint32_t count = 0;
+                serial_monitor("dti_current", "sent_count", "%ld", count);
+                count++;
+            }
             tx_thread_sleep(1); // This is needed, or else the queue will try to send messages too fast and outpace the HAL.
         }
     }
@@ -929,7 +936,7 @@ uint8_t threads_init(TX_BYTE_POOL *byte_pool) {
     CATCH_ERROR(create_thread(byte_pool, &faults_queue_thread), U_SUCCESS);      // Create Faults Queue thread.
     CATCH_ERROR(create_thread(byte_pool, &faults_thread), U_SUCCESS);            // Create Faults thread.
     CATCH_ERROR(create_thread(byte_pool, &shutdown_thread), U_SUCCESS);          // Create Shutdown thread.
-    CATCH_ERROR(create_thread(byte_pool, &statemachine_thread), U_SUCCESS);      // Create State Machine thread.
+    //CATCH_ERROR(create_thread(byte_pool, &statemachine_thread), U_SUCCESS);      // Create State Machine thread.
     CATCH_ERROR(create_thread(byte_pool, &pedals_thread), U_SUCCESS);            // Create Pedals thread.
     CATCH_ERROR(create_thread(byte_pool, &efuses_thread), U_SUCCESS);              // Create eFuses thread.
     CATCH_ERROR(create_thread(byte_pool, &mux_thread), U_SUCCESS);               // Create Mux thread.

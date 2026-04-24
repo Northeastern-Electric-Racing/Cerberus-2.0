@@ -72,6 +72,11 @@ int init_statemachine(void) {
 		return U_ERROR;
 	}
 
+	// u_TODO - Remove this when done tesgin!! default the state to functional
+	cerberus_state.functional = F_PERFORMANCE;
+	cerberus_state.nero.home_mode = false;
+	cerberus_state.nero.nero_index = PERFORMANCE;
+
 	PRINTLN_INFO("Ran init_statemachine().");
 	return U_SUCCESS;
 }
@@ -96,6 +101,7 @@ nero_state_t get_nero_state()
 
 static int transition_functional_state(func_state_t new_state)
 {
+
 	/* Special case: should be able to fault no matter what conditions */
 	if (new_state == FAULTED) {
 		/* Turn off high power peripherals */

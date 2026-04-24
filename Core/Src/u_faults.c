@@ -102,6 +102,8 @@ int faults_init(void) {
 /* Triggers a fault. */
 /* If the fault is already triggered, this just resets the fault's timer. */
 int trigger_fault(fault_t fault_id) {
+    return U_SUCCESS; // u_TODO - remove this once testing done!!!
+
     /* Set the relevant fault bit in the fault flags list. */
     atomic_fetch_or(&fault_flags, (uint32_t)(1 << fault_id)); // This is the _Atomic version of: fault_flags |= (uint32_t)(1 << fault_id);
 
