@@ -111,7 +111,11 @@ static int transition_functional_state(func_state_t new_state)
 
 	/* Make sure wheels are not spinning before changing modes */
 	bool brake_state;
-	rtds_stopReverseSound();
+	
+	/* If we're actively in the reverse state, stop the reverse sound before doing any state changes. */
+	if(cerberus_state.functional == F_REVERSE) {
+		rtds_stopReverseSound();
+	}
 
 	/* Catching state transitions */
 	switch (new_state) {
