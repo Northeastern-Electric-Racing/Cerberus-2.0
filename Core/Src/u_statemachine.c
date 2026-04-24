@@ -54,7 +54,7 @@ void send_carstate_msg(void)
 		get_nero_state().home_mode,
 		get_nero_state().nero_index,
 		dti_get_mph(),
-		is_shutdown_closed(),
+			(),
 		pedals_getTorqueLimitPercentage(),
 		(cerberus_state.functional != F_REVERSE),
 		pedals_getRegenLimit(),
@@ -331,25 +331,5 @@ void statemachine_process(state_req_t new_state_req) {
 		else if(new_state_req.id == FUNCTIONAL) { transition_functional_state(new_state_req.state.functional); }
 	}
 
-	if (!is_ts_rising && is_shutdown_closed()) {
-		is_ts_rising = true;
-
-		/* Restart TS Rising timer. */
-		int status = timer_restart(&ts_rising_timer);
-		if(status != U_SUCCESS) {
-			PRINTLN_ERROR("Failed to restart TS Rising timer in `if (!ts_rising && !is_shutdown_closed())` (Status: %d).", status);
-			return;
-		}
-
-	} else if (!is_shutdown_closed()) {
-		/* Stop the TS Rising timer. */
-    	int status = timer_stop(&ts_rising_timer);
-    	if(status != U_SUCCESS) {
-        	PRINTLN_ERROR("Failed to stop TS Rising timer in `else if (!is_shutdown_closed())` (Status: %d).", status);
-        	return;
-    	}
-		is_ts_rising = false;
-		enter_drive_enabled = false;
-	}
 	send_carstate_msg();
 }

@@ -268,18 +268,20 @@ static thread_t statemachine_thread = {
         .threshold  = 0,                      /* Preemption Threshold */
         .time_slice = TX_NO_TIME_SLICE,       /* Time Slice */
         .auto_start = TX_AUTO_START,          /* Auto Start */
-        .sleep      = 0,                      /* Sleep (in ticks) */
+        .sleep      = 200,                    /* Sleep (in ticks) */
         .function   = vStatemachine           /* Thread Function */
     };
 void vStatemachine(ULONG thread_input) {
 
     while(1) {
         state_req_t new_state_req;
-        while(queue_receive(&state_transition_queue, &new_state_req, TX_WAIT_FOREVER) == U_SUCCESS) {
-            statemachine_process(new_state_req);
-	    }
-
-        /* No sleep. Thread timing is controlled completely by the queue timeout. */
+        
+        // check if there is a transition in the queue, if not skip processing
+        UINT status = queue_receive(&state_transition_queue, &new_state_req, statemachine_thread.sleep);
+        if (status == U_SUCCESS) statemachine_process(new_state_req);
+        
+        // send state periodically whether receiving a transition or not
+        send_carstate_msg();
     }
 }
 
@@ -934,8 +936,6 @@ uint8_t threads_init(TX_BYTE_POOL *byte_pool) {
     CATCH_ERROR(create_thread(byte_pool, &efuses_thread), U_SUCCESS);              // Create eFuses thread.
     CATCH_ERROR(create_thread(byte_pool, &mux_thread), U_SUCCESS);               // Create Mux thread.
     CATCH_ERROR(create_thread(byte_pool, &peripherals_thread), U_SUCCESS);       // Create Peripherals thread.
-    // CATCH_ERROR(create_thread(byte_pool, &test_thread), U_SUCCESS);                // Create Test thread.
-    CATCH_ERROR(create_thread(byte_pool, &misc_telemetry_thread), U_SUCCESS);      // Create RTDS Telemetry thread.
 
     // add more threads here if need
 
