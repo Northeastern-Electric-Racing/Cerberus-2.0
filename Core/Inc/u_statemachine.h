@@ -137,5 +137,6 @@ void send_carstate_msg(void);
 /* Process the state machine */
 void statemachine_process(state_req_t new_state_req);
 int init_statemachine(void);
+int queue_state_transition(state_req_t new_state);
 
 #endif
