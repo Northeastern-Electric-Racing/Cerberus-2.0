@@ -449,9 +449,9 @@ void vEFuses(ULONG thread_input) {
             case EF_ON: efuse_enable(EFUSE_PUMP1); break;
             case EF_OFF: efuse_disable(EFUSE_PUMP1); break;
             case EF_AUTO:
-                if(motor_temp >= PUMP1_UPPERBOUND) {
+                if(controller_temp >= PUMP1_UPPERBOUND) {
                     efuse_enable(EFUSE_PUMP1);
-                } else if (motor_temp <= PUMP1_LOWERBOUND) {
+                } else if (controller_temp <= PUMP1_LOWERBOUND) {
                     efuse_disable(EFUSE_PUMP1);
                 }
                 break;
@@ -465,9 +465,9 @@ void vEFuses(ULONG thread_input) {
             case EF_ON: efuse_enable(EFUSE_PUMP2); break;
             case EF_OFF: efuse_disable(EFUSE_PUMP2); break;
             case EF_AUTO:
-                if(controller_temp >= PUMP2_UPPERBOUND) {
+                if(motor_temp >= PUMP2_UPPERBOUND) {
                     efuse_enable(EFUSE_PUMP2);
-                } else if (controller_temp <= PUMP2_LOWERBOUND) {
+                } else if (motor_temp <= PUMP2_LOWERBOUND) {
                     efuse_disable(EFUSE_PUMP2);
                 }
                 break;
