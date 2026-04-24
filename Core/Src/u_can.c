@@ -246,10 +246,15 @@ void can_inbox(can_msg_t *message) {
         receive_shutdown_as_read_by_bms(message, &bms);
         update_bms_shutdown(bms.shutdown_state);
 
-        /* If shutdown is active, cancel the RTDS sound if it's active. */
-        if(bms.shutdown_state == true) {
+        /* If shutdown is open, cancel RTDS. */
+        if(bms.shutdown_state == false) {
             rtds_cancelRTDS();
             rtds_stopReverseSound();
+            nero_state_t new_nero_state = get_nero_state();
+            new_nero_state.home_mode = true;
+            state_req_t new = { .id = NERO, .state.nero = new_nero_state };
+            queue_state_transition(new);
+            fault();
         }
         break;
     default:
