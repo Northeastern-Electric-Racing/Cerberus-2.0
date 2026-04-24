@@ -49,6 +49,7 @@ static void _clear_rtds_pin(void) {
 
 /* Callback for RTDS. Turns off the RTDS after the timer expires. */
 static void _timer_callback(ULONG args) {
+    printf("CLEARING RTDS ---------------");
     _clear_rtds_pin();
 }
 

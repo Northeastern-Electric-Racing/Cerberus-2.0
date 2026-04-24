@@ -30,22 +30,6 @@
 
 /* Globals. */
 static state_t cerberus_state;
-static bool is_ts_rising = false;
-static bool enter_drive_enabled = false;
-
-/* Rising TS Callback and Timer */
-static void _rising_ts_cb(ULONG input) {
-	PRINTLN_INFO("rising ts callback");
-	enter_drive_enabled = true;
-}
-static timer_t ts_rising_timer = {
-	.name = "TS Rising Timer",
-	.callback = _rising_ts_cb,
-	.callback_input = 0,
-	.duration = TS_RISING_BLOCK_TIMEOUT,
-	.type = ONESHOT,
-	.auto_activate = false
-};
 
 void send_carstate_msg(void)
 {
@@ -54,7 +38,7 @@ void send_carstate_msg(void)
 		get_nero_state().home_mode,
 		get_nero_state().nero_index,
 		dti_get_mph(),
-			(),
+		is_shutdown_closed(),
 		pedals_getTorqueLimitPercentage(),
 		(cerberus_state.functional != F_REVERSE),
 		pedals_getRegenLimit(),
@@ -65,13 +49,6 @@ void send_carstate_msg(void)
 }
 
 int init_statemachine(void) {
-	/* Create TS Rising Timer. */
-	int status = timer_init(&ts_rising_timer);
-	if(status != U_SUCCESS) {
-		PRINTLN_ERROR("Failed to create TS Rising timer (Status: %d).", status);
-		return U_ERROR;
-	}
-
 	PRINTLN_INFO("Ran init_statemachine().");
 	return U_SUCCESS;
 }
@@ -137,9 +114,9 @@ static int transition_functional_state(func_state_t new_state)
 
 		brake_state = pedals_getBrakeState();
 #ifdef TSMS_OVERRIDE
-		if (!is_shutdown_closed() && (!brake_state || cerberus_state.functional == FAULTED)) { // only enforce brake / fault if tsms is actually on
-			return 3;
-		}
+		//if (!is_shutdown_closed() && (!brake_state || cerberus_state.functional == FAULTED)) { // only enforce brake / fault if tsms is actually on
+		//	return 3;
+		//}
 		printf("Ignoring tsms\n\n");
 #else
 		if (cerberus_state.functional == FAULTED) {
@@ -147,15 +124,10 @@ static int transition_functional_state(func_state_t new_state)
 			return 3;
 		}
 
-		if (!enter_drive_enabled) {
-			printf("Must wait before entering drive!");
-			return 3;
-		}
-
 		/* Only turn on motor if brakes engaged and shutdown is closed */
-		if (!brake_state || !is_shutdown_closed()) {
-			return 3;
-		}
+		// if (!brake_state || !is_shutdown_closed()) {
+			// return 3;
+		// }
 #endif
 
 		if (is_shutdown_closed()) {

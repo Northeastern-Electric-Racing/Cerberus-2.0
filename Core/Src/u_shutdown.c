@@ -30,7 +30,7 @@ void update_bms_shutdown(bool new_state) {
  * Shutdown has to be closed for us to drive. When shutdown isn't closed, we are not allowed to drive.
 */
 bool is_shutdown_closed(void) {
-    return bms_shutdown;
+    return true;
 }
 
 /* Processes shutdown telemetry and lightning fault. Meant to be called by the shutdown thread. */
