@@ -50,6 +50,7 @@ void send_carstate_msg(void)
 
 int init_statemachine(void) {
 	PRINTLN_INFO("Ran init_statemachine().");
+	cerberus_state.nero.home_mode = true;
 	return U_SUCCESS;
 }
 
@@ -125,9 +126,9 @@ static int transition_functional_state(func_state_t new_state)
 		}
 
 		/* Only turn on motor if brakes engaged and shutdown is closed */
-		// if (!brake_state || !is_shutdown_closed()) {
-			// return 3;
-		// }
+		if (!brake_state || !is_shutdown_closed()) {
+			return 3;
+		}
 #endif
 
 		if (is_shutdown_closed()) {
