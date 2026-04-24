@@ -114,26 +114,24 @@ static int transition_functional_state(func_state_t new_state)
 	case F_EFFICIENCY:
 
 		brake_state = pedals_getBrakeState();
-#ifdef TSMS_OVERRIDE
-		//if (!is_shutdown_closed() && (!brake_state || cerberus_state.functional == FAULTED)) { // only enforce brake / fault if tsms is actually on
-		//	return 3;
-		//}
-		printf("Ignoring tsms\n\n");
-#else
+
 		if (cerberus_state.functional == FAULTED) {
 			printf("Cannot drive from a fault!\n");
 			return 3;
 		}
 
 		/* Only turn on motor if brakes engaged and shutdown is closed */
-		if (!brake_state || !is_shutdown_closed()) {
+		if (!brake_state) {
+			printf("Must press brake to enter drive mode!\n");
+			return 3;
+		} 
+		
+		if (!is_shutdown_closed()) {
+			printf("Shutdown must be closed to enter drive mode!\n");
 			return 3;
 		}
-#endif
-
-		if (is_shutdown_closed()) {
-			rtds_soundRTDS();
-		}
+		
+		rtds_soundRTDS();
 
 		printf("ACTIVE STATE\r\n");
 		break;
@@ -173,11 +171,11 @@ static int transition_nero_state(nero_state_t new_state)
 
 		/* Shutdown = Open and MPH = 0 to enter games */
 		if (new_state.nero_index == GAMES) {
-#ifndef TSMS_OVERRIDE
+
 			if (is_shutdown_closed() || dti_get_mph() >= 1) {
 				return 1;
 			}
-#endif
+
 			new_state.home_mode = false;
 		}
 	}
