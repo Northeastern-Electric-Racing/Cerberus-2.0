@@ -80,7 +80,7 @@ static pedal_data_t pedal_data = { 0 };
 
 /* Performance Limits */
 #define PIT_MAX_SPEED           5.0 // (mph). Speed limit in pit mode.
-#define MAX_TORQUE              40 // (Nm). Maximum torque output
+#define MAX_TORQUE              160 // (Nm). Maximum torque output
 #define TORQUE_ACCUMULATOR_SIZE 10  // (Number). Size of the moving average filter for torque stuff.
 #define MAX_REGEN_CURRENT       250 // (AC Amps). Maximum regenerative braking current.
 
@@ -683,18 +683,20 @@ void pedals_process(void) {
 	// serial_monitor("pedals", "psi brake2", "%f", pedal_data.psi_brake2);
 
     /* Set brake state, and turn brakelight on/off. */
+	const float PEDAL_BRAKE_TURNOFF_TRESH = 0.004f; // Amount below PEDAL_BRAKE_TRESH to register the brake as 'off'. This is needed so the state doesn't flicker super quickly.
     if(pedal_data.percentage_brake > PEDAL_BRAKE_THRESH) {
         brake_pressed = true;
 		if(efuse_get_state(EFUSE_BRAKE) == EF_AUTO) {
 			efuse_enable(EFUSE_BRAKE);
 		}
     }
-    else {
+    else if(pedal_data.percentage_brake < (PEDAL_BRAKE_THRESH - PEDAL_BRAKE_TURNOFF_TRESH)){
         brake_pressed = false;
 		if(efuse_get_state(EFUSE_BRAKE) == EF_AUTO) {
 			efuse_disable(EFUSE_BRAKE);
 		}
     }
+	// The brakelight was turning on and off super fast, so there's now a 0.05f lower threshold. This way, the brake's turn off point is lower than the turn on point, so the pedal needs to travel lower to turn off than it did to turn on.
 
 	if (pedal_data.percentage_accel >= 0.05) {
 		accel_pressed = true;
