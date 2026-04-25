@@ -700,6 +700,7 @@ void vEFuses(ULONG thread_input) {
     }
 }
 
+
 /* Mux Thread (for the ADC multiplexer). */
 static thread_t mux_thread = {
         .name       = "Mux Thread",           /* Name */
