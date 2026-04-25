@@ -695,6 +695,7 @@ void pedals_process(void) {
 			efuse_disable(EFUSE_BRAKE);
 		}
     }
+	// The brakelight was turning on and off super fast, so there's now a 0.05f lower threshold. This way, the brake's turn off point is lower than the turn on point, so the pedal needs to travel lower to turn off than it did to turn on.
 
 	if (pedal_data.percentage_accel >= 0.05) {
 		accel_pressed = true;
