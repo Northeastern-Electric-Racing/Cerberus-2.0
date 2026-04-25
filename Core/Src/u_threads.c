@@ -453,14 +453,14 @@ void vEFuses(ULONG thread_input) {
             case EF_AUTO:
                 if(controller_temp >= PUMP1_UPPERBOUND) {
                     /* If timer is still active, break early. */
-                    if(is_timer_active(&pump1_switching_timer) && !is_timer_expired(&pump1_switching_timer)) { break; }
+                    if(!is_timer_expired(&pump1_switching_timer) && is_timer_active(&pump1_switching_timer)) { break; }
 
                     /* Otherwise, make the state change but restart the timer. */
                     efuse_enable(EFUSE_PUMP1);
                     start_timer(&pump1_switching_timer, PUMP1_SWITCHING_TIMEOUT);
                 } else if (controller_temp <= PUMP1_LOWERBOUND) {
                     /* If timer is still active, break early. */
-                    if(is_timer_active(&pump1_switching_timer) && !is_timer_expired(&pump1_switching_timer)) { break; }
+                    if(!is_timer_expired(&pump1_switching_timer) && is_timer_active(&pump1_switching_timer)) { break; }
 
                     /* Otherwise, make the state change but restart the timer. */
                     efuse_disable(EFUSE_PUMP1);
@@ -481,14 +481,14 @@ void vEFuses(ULONG thread_input) {
             case EF_AUTO:
                 if(motor_temp >= PUMP2_UPPERBOUND) {
                     /* If timer is still active, break early. */
-                    if(is_timer_active(&pump2_switching_timer) && !is_timer_expired(&pump2_switching_timer)) { break; }
+                    if(!is_timer_expired(&pump2_switching_timer) && is_timer_active(&pump2_switching_timer)) { break; }
                     
                     /* Otherwise, make the state change but restart the timer. */
                     efuse_enable(EFUSE_PUMP2);
                     start_timer(&pump2_switching_timer, PUMP2_SWITCHING_TIMEOUT);
                 } else if (motor_temp <= PUMP2_LOWERBOUND) {
                     /* If timer is still active, break early. */
-                    if(is_timer_active(&pump2_switching_timer) && !is_timer_expired(&pump2_switching_timer)) { break; }
+                    if(!is_timer_expired(&pump2_switching_timer) && is_timer_active(&pump2_switching_timer)) { break; }
                     
                     /* Otherwise, make the state change but restart the timer. */
                     efuse_disable(EFUSE_PUMP2);
