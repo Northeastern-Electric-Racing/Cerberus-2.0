@@ -445,14 +445,26 @@ void vEFuses(ULONG thread_input) {
         /* Determine pump1 eFuse state. */
         static const uint16_t PUMP1_UPPERBOUND = 45;
         static const uint16_t PUMP1_LOWERBOUND = 35;
+        static const int PUMP1_SWITCHING_TIMEOUT = 5000;
+        static nertimer_t pump1_switching_timer = { 0 };
         switch(data.control_state[EFUSE_PUMP1]) {
             case EF_ON: efuse_enable(EFUSE_PUMP1); break;
             case EF_OFF: efuse_disable(EFUSE_PUMP1); break;
             case EF_AUTO:
                 if(controller_temp >= PUMP1_UPPERBOUND) {
+                    /* If timer is still active, break early. */
+                    if(is_timer_active(&pump1_switching_timer) && !is_timer_expired(&pump1_switching_timer)) { break; }
+
+                    /* Otherwise, make the state change but restart the timer. */
                     efuse_enable(EFUSE_PUMP1);
+                    start_timer(&pump1_switching_timer, PUMP1_SWITCHING_TIMEOUT);
                 } else if (controller_temp <= PUMP1_LOWERBOUND) {
+                    /* If timer is still active, break early. */
+                    if(is_timer_active(&pump1_switching_timer) && !is_timer_expired(&pump1_switching_timer)) { break; }
+
+                    /* Otherwise, make the state change but restart the timer. */
                     efuse_disable(EFUSE_PUMP1);
+                    start_timer(&pump1_switching_timer, PUMP1_SWITCHING_TIMEOUT);
                 }
                 break;
             default: efuse_enable(EFUSE_PUMP1); break;
@@ -461,13 +473,25 @@ void vEFuses(ULONG thread_input) {
         /* Determine pump2 eFuse state. */
         static const uint16_t PUMP2_UPPERBOUND = 45;
         static const uint16_t PUMP2_LOWERBOUND = 35;
+        static const int PUMP2_SWITCHING_TIMEOUT = 5000;
+        static nertimer_t pump2_switching_timer = { 0 };
         switch(data.control_state[EFUSE_PUMP2]) {
             case EF_ON: efuse_enable(EFUSE_PUMP2); break;
             case EF_OFF: efuse_disable(EFUSE_PUMP2); break;
             case EF_AUTO:
                 if(motor_temp >= PUMP2_UPPERBOUND) {
+                    /* If timer is still active, break early. */
+                    if(is_timer_active(&pump2_switching_timer) && !is_timer_expired(&pump2_switching_timer)) { break; }
+                    
+                    /* Otherwise, make the state change but restart the timer. */
                     efuse_enable(EFUSE_PUMP2);
+                    start_timer(&pump2_switching_timer, PUMP2_SWITCHING_TIMEOUT);
                 } else if (motor_temp <= PUMP2_LOWERBOUND) {
+                    /* If timer is still active, break early. */
+                    if(is_timer_active(&pump2_switching_timer) && !is_timer_expired(&pump2_switching_timer)) { break; }
+                    
+                    /* Otherwise, make the state change but restart the timer. */
+                    start_timer(&pump2_switching_timer, PUMP2_SWITCHING_TIMEOUT);
                     efuse_disable(EFUSE_PUMP2);
                 }
                 break;

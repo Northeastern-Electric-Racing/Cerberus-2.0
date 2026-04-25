@@ -689,7 +689,7 @@ void pedals_process(void) {
 			efuse_enable(EFUSE_BRAKE);
 		}
     }
-    else {
+    else if(pedal_data.percentage_brake < (PEDAL_BRAKE_THRESH - 0.05f)){
         brake_pressed = false;
 		if(efuse_get_state(EFUSE_BRAKE) == EF_AUTO) {
 			efuse_disable(EFUSE_BRAKE);
