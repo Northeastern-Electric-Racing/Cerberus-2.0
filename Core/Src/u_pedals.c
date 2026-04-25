@@ -683,13 +683,14 @@ void pedals_process(void) {
 	// serial_monitor("pedals", "psi brake2", "%f", pedal_data.psi_brake2);
 
     /* Set brake state, and turn brakelight on/off. */
+	const float PEDAL_BRAKE_TURNOFF_TRESH = 0.05f; // Amount below PEDAL_BRAKE_TRESH to register the brake as 'off'. This is needed so the state doesn't flicker super quickly.
     if(pedal_data.percentage_brake > PEDAL_BRAKE_THRESH) {
         brake_pressed = true;
 		if(efuse_get_state(EFUSE_BRAKE) == EF_AUTO) {
 			efuse_enable(EFUSE_BRAKE);
 		}
     }
-    else if(pedal_data.percentage_brake < (PEDAL_BRAKE_THRESH - 0.05f)){
+    else if(pedal_data.percentage_brake < (PEDAL_BRAKE_THRESH - PEDAL_BRAKE_TURNOFF_TRESH)){
         brake_pressed = false;
 		if(efuse_get_state(EFUSE_BRAKE) == EF_AUTO) {
 			efuse_disable(EFUSE_BRAKE);

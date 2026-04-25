@@ -491,8 +491,8 @@ void vEFuses(ULONG thread_input) {
                     if(is_timer_active(&pump2_switching_timer) && !is_timer_expired(&pump2_switching_timer)) { break; }
                     
                     /* Otherwise, make the state change but restart the timer. */
-                    start_timer(&pump2_switching_timer, PUMP2_SWITCHING_TIMEOUT);
                     efuse_disable(EFUSE_PUMP2);
+                    start_timer(&pump2_switching_timer, PUMP2_SWITCHING_TIMEOUT);
                 }
                 break;
             default: efuse_enable(EFUSE_PUMP2); break;
