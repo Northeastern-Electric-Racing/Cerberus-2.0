@@ -2,7 +2,6 @@
 #include "u_efuses.h"
 #include "u_tx_debug.h"
 #include "u_adc.h"
-#include "u_tx_timers.h"
 
 /* TPS1663x (eFuse) datasheet: https://www.ti.com/lit/ds/symlink/tps1663.pdf?ts=1756438634613 */
 
