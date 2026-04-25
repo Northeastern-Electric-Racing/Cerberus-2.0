@@ -80,7 +80,7 @@ static pedal_data_t pedal_data = { 0 };
 
 /* Performance Limits */
 #define PIT_MAX_SPEED           5.0 // (mph). Speed limit in pit mode.
-#define MAX_TORQUE              40 // (Nm). Maximum torque output
+#define MAX_TORQUE              160 // (Nm). Maximum torque output
 #define TORQUE_ACCUMULATOR_SIZE 10  // (Number). Size of the moving average filter for torque stuff.
 #define MAX_REGEN_CURRENT       250 // (AC Amps). Maximum regenerative braking current.
 

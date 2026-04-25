@@ -250,7 +250,9 @@ void can_inbox(can_msg_t *message) {
         if(bms.shutdown_state == false) {
             rtds_cancelRTDS();
             rtds_stopReverseSound();
-            set_home_mode();
+            if(get_active()) {
+                set_home_mode();
+            }
         }
         break;
     default:
