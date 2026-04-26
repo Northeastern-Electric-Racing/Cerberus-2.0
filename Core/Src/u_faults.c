@@ -39,6 +39,7 @@ static const _metadata faults[] = {
     [ONBOARD_PEDAL_DIFFERENCE_FAULT] = {"ONBOARD_PEDAL_DIFFERENCE_FAULT", NON_CRITICAL, .timeout = 5000},
     [RTDS_FAULT] = {"RTDS_FAULT", NON_CRITICAL, .timeout = 5000},
     [LV_LOW_VOLTAGE_FAULT] = {"LV_LOW_VOLTS_FAULT", NON_CRITICAL, .timeout = 5000},
+    [MOTOR_TEMP_SENSOR_FAULT] = {"MOTOR_TEMP_SENSOR_FAULT", NON_CRITICAL, .timeout = 5000},
 };
 
 /* Fault Globals*/
