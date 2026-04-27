@@ -10,27 +10,6 @@
 
 /**
 * Contents of this message:
-* VCU/Commands/AC_Current_Target - This command sets the target motor AC current (peak, not RMS)
-*/
-uint8_t send_ac_current_command
-(float current_target_ac);
-
-/**
-* Contents of this message:
-* VCU/Commands/Brake_Current_Target - Targets the brake current of the motor
-*/
-uint8_t send_brake_current_command
-(float brake_ac_current);
-
-/**
-* Contents of this message:
-* VCU/Commands/Drive_Enable_Target - Drive allowed
-*/
-uint8_t send_drive_enable_command
-(uint8_t drive_enable);
-
-/**
-* Contents of this message:
 * VCU/eFuses/Dashboard/ADC - Raw ADC Value.
 * VCU/eFuses/Dashboard/Voltage - Dashboard eFuse Voltage
 * VCU/eFuses/Dashboard/Current - Dashboard eFuse Current.
@@ -260,9 +239,10 @@ uint8_t send_imu_gyro
 * VCU/Faults/Non-Critical/RTDS_FAULT - 
 * VCU/Faults/Non-Critical/LV_LOW_VOLTAGE_FAULT - 
 * VCU/Faults/Critical/PRECHARGE_FLOATING_FAULT - If TS Volts is stuck under the Batt Volts Threshold
+* VCU/Faults/Critical/LATCHING_ACTIVE_FAULT - 
 */
 uint8_t send_faults
-(bool CAN_OUTGOING_FAULT,bool CAN_INCOMING_FAULT,bool BMS_CAN_MONITOR_FAULT,bool LIGHTNING_CAN_MONITOR_FAULT,bool ONBOARD_TEMP_FAULT,bool IMU_ACCEL_FAULT,bool IMU_GYRO_FAULT,bool BSPD_PREFAULT,bool ONBOARD_BRAKE_OPEN_CIRCUIT_FAULT,bool ONBOARD_ACCEL_OPEN_CIRCUIT_FAULT,bool ONBOARD_BRAKE_SHORT_CIRCUIT_FAULT,bool ONBOARD_ACCEL_SHORT_CIRCUIT_FAULT,bool ONBOARD_PEDAL_DIFFERENCE_FAULT,bool RTDS_FAULT,bool LV_LOW_VOLTAGE_FAULT,bool PRECHARGE_FLOATING_FAULT);
+(bool CAN_OUTGOING_FAULT,bool CAN_INCOMING_FAULT,bool BMS_CAN_MONITOR_FAULT,bool LIGHTNING_CAN_MONITOR_FAULT,bool ONBOARD_TEMP_FAULT,bool IMU_ACCEL_FAULT,bool IMU_GYRO_FAULT,bool BSPD_PREFAULT,bool ONBOARD_BRAKE_OPEN_CIRCUIT_FAULT,bool ONBOARD_ACCEL_OPEN_CIRCUIT_FAULT,bool ONBOARD_BRAKE_SHORT_CIRCUIT_FAULT,bool ONBOARD_ACCEL_SHORT_CIRCUIT_FAULT,bool ONBOARD_PEDAL_DIFFERENCE_FAULT,bool RTDS_FAULT,bool LV_LOW_VOLTAGE_FAULT,bool PRECHARGE_FLOATING_FAULT,bool LATCHING_ACTIVE_FAULT);
 
 /**
 * Contents of this message:
@@ -377,4 +357,25 @@ uint8_t send_bms_shutdown_status_as_reported_by_vcu
 */
 uint8_t send_drive_lock_states
 (bool BRAKE_OC,bool BRAKE_SC,bool ACCEL_OC,bool ACCEL_SC,bool ACCEL_DIFF,bool BSPD_PREF,bool BMS_NOT_PRECHARGED_YET);
+
+/**
+* Contents of this message:
+* VCU/Commands/AC_Current_Target - This command sets the target motor AC current (peak, not RMS)
+*/
+uint8_t send_ac_current_command
+(float current_target_ac);
+
+/**
+* Contents of this message:
+* VCU/Commands/Brake_Current_Target - Targets the brake current of the motor
+*/
+uint8_t send_brake_current_command
+(float brake_ac_current);
+
+/**
+* Contents of this message:
+* VCU/Commands/Drive_Enable_Target - Drive allowed
+*/
+uint8_t send_drive_enable_command
+(uint8_t drive_enable);
 #endif

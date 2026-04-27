@@ -1,55 +1,27 @@
 #include "can_messages_rx.h"
 
-void receive_max_ac_current_command(const can_msg_t *message, max_ac_current_command_t *max_ac_current_command) {
+void receive_wheel_buttons(const can_msg_t *message, wheel_buttons_t *wheel_buttons) {
+    
+    uint8_t data = message->data[0];
+    uint64_t button_id_mask = (1ULL << 8) - 1ULL;
+    uint64_t button_id_raw = (data >> 0) & button_id_mask;
+    wheel_buttons->button_id = (uint8_t)button_id_raw;
+}
+
+void receive_bms_charge_message_send(const can_msg_t *message, bms_charge_message_send_t *bms_charge_message_send) {
     
     uint64_t data_bigendian;
     memcpy(&data_bigendian, message->data, 8);
     uint64_t data = __builtin_bswap64(data_bigendian);
-    uint64_t max_current_ac_target_mask = (1ULL << 16) - 1ULL;
-    uint64_t max_current_ac_target_bits = (data >> 48) & max_current_ac_target_mask;
-    int64_t max_current_ac_target_raw = (max_current_ac_target_bits & (1ULL << (16 - 1)))
-        ? (int64_t)(max_current_ac_target_bits | ~max_current_ac_target_mask)
-        : (int64_t)max_current_ac_target_bits;
-    max_ac_current_command->max_current_ac_target = (float)(max_current_ac_target_raw / 10);
-}
-
-void receive_max_ac_brake_current_command(const can_msg_t *message, max_ac_brake_current_command_t *max_ac_brake_current_command) {
-    
-    uint64_t data_bigendian;
-    memcpy(&data_bigendian, message->data, 8);
-    uint64_t data = __builtin_bswap64(data_bigendian);
-    uint64_t max_ac_brake_current_target_mask = (1ULL << 16) - 1ULL;
-    uint64_t max_ac_brake_current_target_bits = (data >> 48) & max_ac_brake_current_target_mask;
-    int64_t max_ac_brake_current_target_raw = (max_ac_brake_current_target_bits & (1ULL << (16 - 1)))
-        ? (int64_t)(max_ac_brake_current_target_bits | ~max_ac_brake_current_target_mask)
-        : (int64_t)max_ac_brake_current_target_bits;
-    max_ac_brake_current_command->max_ac_brake_current_target = (float)(max_ac_brake_current_target_raw / 10);
-}
-
-void receive_max_dc_current_command(const can_msg_t *message, max_dc_current_command_t *max_dc_current_command) {
-    
-    uint16_t data_bigendian;
-    memcpy(&data_bigendian, message->data, 2);
-    uint16_t data = __builtin_bswap16(data_bigendian);
-    uint64_t max_dc_current_target_mask = (1ULL << 16) - 1ULL;
-    uint64_t max_dc_current_target_bits = (data >> 0) & max_dc_current_target_mask;
-    int64_t max_dc_current_target_raw = (max_dc_current_target_bits & (1ULL << (16 - 1)))
-        ? (int64_t)(max_dc_current_target_bits | ~max_dc_current_target_mask)
-        : (int64_t)max_dc_current_target_bits;
-    max_dc_current_command->max_dc_current_target = (float)(max_dc_current_target_raw / 10);
-}
-
-void receive_max_dc_brake_current_command(const can_msg_t *message, max_dc_brake_current_command_t *max_dc_brake_current_command) {
-    
-    uint16_t data_bigendian;
-    memcpy(&data_bigendian, message->data, 2);
-    uint16_t data = __builtin_bswap16(data_bigendian);
-    uint64_t max_dc_brake_current_target_mask = (1ULL << 16) - 1ULL;
-    uint64_t max_dc_brake_current_target_bits = (data >> 0) & max_dc_brake_current_target_mask;
-    int64_t max_dc_brake_current_target_raw = (max_dc_brake_current_target_bits & (1ULL << (16 - 1)))
-        ? (int64_t)(max_dc_brake_current_target_bits | ~max_dc_brake_current_target_mask)
-        : (int64_t)max_dc_brake_current_target_bits;
-    max_dc_brake_current_command->max_dc_brake_current_target = (float)(max_dc_brake_current_target_raw / 10);
+    uint64_t charge_volts_mask = (1ULL << 16) - 1ULL;
+    uint64_t charge_volts_raw = (data >> 48) & charge_volts_mask;
+    bms_charge_message_send->charge_volts = (float)(charge_volts_raw / 10);
+    uint64_t charge_current_mask = (1ULL << 16) - 1ULL;
+    uint64_t charge_current_raw = (data >> 32) & charge_current_mask;
+    bms_charge_message_send->charge_current = (float)(charge_current_raw / 10);
+    uint64_t enable_charging_mask = (1ULL << 8) - 1ULL;
+    uint64_t enable_charging_raw = (data >> 24) & enable_charging_mask;
+    bms_charge_message_send->enable_charging = (uint8_t)enable_charging_raw;
 }
 
 void receive_shepherd_bms_fan_percent(const can_msg_t *message, shepherd_bms_fan_percent_t *shepherd_bms_fan_percent) {
@@ -156,411 +128,56 @@ void receive_rtds_command_message(const can_msg_t *message, rtds_command_message
     rtds_command_message->command = (uint8_t)command_raw;
 }
 
-void receive_wheel_buttons(const can_msg_t *message, wheel_buttons_t *wheel_buttons) {
-    
-    uint8_t data = message->data[0];
-    uint64_t button_id_mask = (1ULL << 8) - 1ULL;
-    uint64_t button_id_raw = (data >> 0) & button_id_mask;
-    wheel_buttons->button_id = (uint8_t)button_id_raw;
-}
-
-void receive_lightning_board_imu_acceleration_data(const can_msg_t *message, lightning_board_imu_acceleration_data_t *lightning_board_imu_acceleration_data) {
+void receive_max_ac_current_command(const can_msg_t *message, max_ac_current_command_t *max_ac_current_command) {
     
     uint64_t data_bigendian;
     memcpy(&data_bigendian, message->data, 8);
     uint64_t data = __builtin_bswap64(data_bigendian);
-    uint64_t accel_x_mask = (1ULL << 16) - 1ULL;
-    uint64_t accel_x_bits = (data >> 48) & accel_x_mask;
-    int64_t accel_x_raw = (accel_x_bits & (1ULL << (16 - 1)))
-        ? (int64_t)(accel_x_bits | ~accel_x_mask)
-        : (int64_t)accel_x_bits;
-    lightning_board_imu_acceleration_data->accel_x = (float)(accel_x_raw / 1000);
-    uint64_t accel_y_mask = (1ULL << 16) - 1ULL;
-    uint64_t accel_y_bits = (data >> 32) & accel_y_mask;
-    int64_t accel_y_raw = (accel_y_bits & (1ULL << (16 - 1)))
-        ? (int64_t)(accel_y_bits | ~accel_y_mask)
-        : (int64_t)accel_y_bits;
-    lightning_board_imu_acceleration_data->accel_y = (float)(accel_y_raw / 1000);
-    uint64_t accel_z_mask = (1ULL << 16) - 1ULL;
-    uint64_t accel_z_bits = (data >> 16) & accel_z_mask;
-    int64_t accel_z_raw = (accel_z_bits & (1ULL << (16 - 1)))
-        ? (int64_t)(accel_z_bits | ~accel_z_mask)
-        : (int64_t)accel_z_bits;
-    lightning_board_imu_acceleration_data->accel_z = (float)(accel_z_raw / 1000);
+    uint64_t max_current_ac_target_mask = (1ULL << 16) - 1ULL;
+    uint64_t max_current_ac_target_bits = (data >> 48) & max_current_ac_target_mask;
+    int64_t max_current_ac_target_raw = (max_current_ac_target_bits & (1ULL << (16 - 1)))
+        ? (int64_t)(max_current_ac_target_bits | ~max_current_ac_target_mask)
+        : (int64_t)max_current_ac_target_bits;
+    max_ac_current_command->max_current_ac_target = (float)(max_current_ac_target_raw / 10);
 }
 
-void receive_lightning_board_imu_gyro_data(const can_msg_t *message, lightning_board_imu_gyro_data_t *lightning_board_imu_gyro_data) {
+void receive_max_ac_brake_current_command(const can_msg_t *message, max_ac_brake_current_command_t *max_ac_brake_current_command) {
     
     uint64_t data_bigendian;
     memcpy(&data_bigendian, message->data, 8);
     uint64_t data = __builtin_bswap64(data_bigendian);
-    uint64_t gyro_x_mask = (1ULL << 16) - 1ULL;
-    uint64_t gyro_x_bits = (data >> 48) & gyro_x_mask;
-    int64_t gyro_x_raw = (gyro_x_bits & (1ULL << (16 - 1)))
-        ? (int64_t)(gyro_x_bits | ~gyro_x_mask)
-        : (int64_t)gyro_x_bits;
-    lightning_board_imu_gyro_data->gyro_x = (float)(gyro_x_raw / 1000);
-    uint64_t gyro_y_mask = (1ULL << 16) - 1ULL;
-    uint64_t gyro_y_bits = (data >> 32) & gyro_y_mask;
-    int64_t gyro_y_raw = (gyro_y_bits & (1ULL << (16 - 1)))
-        ? (int64_t)(gyro_y_bits | ~gyro_y_mask)
-        : (int64_t)gyro_y_bits;
-    lightning_board_imu_gyro_data->gyro_y = (float)(gyro_y_raw / 1000);
-    uint64_t gyro_z_mask = (1ULL << 16) - 1ULL;
-    uint64_t gyro_z_bits = (data >> 16) & gyro_z_mask;
-    int64_t gyro_z_raw = (gyro_z_bits & (1ULL << (16 - 1)))
-        ? (int64_t)(gyro_z_bits | ~gyro_z_mask)
-        : (int64_t)gyro_z_bits;
-    lightning_board_imu_gyro_data->gyro_z = (float)(gyro_z_raw / 1000);
+    uint64_t max_ac_brake_current_target_mask = (1ULL << 16) - 1ULL;
+    uint64_t max_ac_brake_current_target_bits = (data >> 48) & max_ac_brake_current_target_mask;
+    int64_t max_ac_brake_current_target_raw = (max_ac_brake_current_target_bits & (1ULL << (16 - 1)))
+        ? (int64_t)(max_ac_brake_current_target_bits | ~max_ac_brake_current_target_mask)
+        : (int64_t)max_ac_brake_current_target_bits;
+    max_ac_brake_current_command->max_ac_brake_current_target = (float)(max_ac_brake_current_target_raw / 10);
 }
 
-void receive_lightning_board_lightning_sensor_information(const can_msg_t *message, lightning_board_lightning_sensor_information_t *lightning_board_lightning_sensor_information) {
-    
-    uint64_t data_bigendian;
-    memcpy(&data_bigendian, message->data, 8);
-    uint64_t data = __builtin_bswap64(data_bigendian);
-    uint64_t interrupt_mask = (1ULL << 8) - 1ULL;
-    uint64_t interrupt_raw = (data >> 56) & interrupt_mask;
-    lightning_board_lightning_sensor_information->interrupt = (uint8_t)interrupt_raw;
-    uint64_t distance_mask = (1ULL << 8) - 1ULL;
-    uint64_t distance_raw = (data >> 48) & distance_mask;
-    lightning_board_lightning_sensor_information->distance = (uint8_t)distance_raw;
-    uint64_t energy_mask = (1ULL << 32) - 1ULL;
-    uint64_t energy_raw = (data >> 16) & energy_mask;
-    lightning_board_lightning_sensor_information->energy = (uint32_t)energy_raw;
-}
-
-void receive_lightning_board_magnometer_sensor_information(const can_msg_t *message, lightning_board_magnometer_sensor_information_t *lightning_board_magnometer_sensor_information) {
-    
-    uint64_t data_bigendian;
-    memcpy(&data_bigendian, message->data, 8);
-    uint64_t data = __builtin_bswap64(data_bigendian);
-    uint64_t mag_x_mask = (1ULL << 16) - 1ULL;
-    uint64_t mag_x_bits = (data >> 48) & mag_x_mask;
-    int64_t mag_x_raw = (mag_x_bits & (1ULL << (16 - 1)))
-        ? (int64_t)(mag_x_bits | ~mag_x_mask)
-        : (int64_t)mag_x_bits;
-    lightning_board_magnometer_sensor_information->mag_x = (float)(mag_x_raw / 1000);
-    uint64_t mag_y_mask = (1ULL << 16) - 1ULL;
-    uint64_t mag_y_bits = (data >> 32) & mag_y_mask;
-    int64_t mag_y_raw = (mag_y_bits & (1ULL << (16 - 1)))
-        ? (int64_t)(mag_y_bits | ~mag_y_mask)
-        : (int64_t)mag_y_bits;
-    lightning_board_magnometer_sensor_information->mag_y = (float)(mag_y_raw / 1000);
-    uint64_t mag_z_mask = (1ULL << 16) - 1ULL;
-    uint64_t mag_z_bits = (data >> 16) & mag_z_mask;
-    int64_t mag_z_raw = (mag_z_bits & (1ULL << (16 - 1)))
-        ? (int64_t)(mag_z_bits | ~mag_z_mask)
-        : (int64_t)mag_z_bits;
-    lightning_board_magnometer_sensor_information->mag_z = (float)(mag_z_raw / 1000);
-}
-
-void receive_lightning_pulse_message(const can_msg_t *message, lightning_pulse_message_t *lightning_pulse_message) {
-    
-    uint32_t data_bigendian;
-    memcpy(&data_bigendian, message->data, 4);
-    uint32_t data = __builtin_bswap32(data_bigendian);
-    uint64_t count_mask = (1ULL << 32) - 1ULL;
-    uint64_t count_raw = (data >> 0) & count_mask;
-    lightning_pulse_message->count = (uint32_t)count_raw;
-}
-
-void receive_front_msb_env(const can_msg_t *message, front_msb_env_t *front_msb_env) {
-    
-    uint32_t data_bigendian;
-    memcpy(&data_bigendian, message->data, 4);
-    uint32_t data = __builtin_bswap32(data_bigendian);
-    uint64_t temp_mask = (1ULL << 16) - 1ULL;
-    uint64_t temp_raw = (data >> 16) & temp_mask;
-    front_msb_env->temp = (float)(temp_raw / 10);
-    uint64_t humidity_mask = (1ULL << 16) - 1ULL;
-    uint64_t humidity_raw = (data >> 0) & humidity_mask;
-    front_msb_env->humidity = (float)(humidity_raw / 10);
-}
-
-void receive_front_msb_accel(const can_msg_t *message, front_msb_accel_t *front_msb_accel) {
-    
-    uint64_t data_bigendian;
-    memcpy(&data_bigendian, message->data, 8);
-    uint64_t data = __builtin_bswap64(data_bigendian);
-    uint64_t x_force_mask = (1ULL << 16) - 1ULL;
-    uint64_t x_force_bits = (data >> 48) & x_force_mask;
-    int64_t x_force_raw = (x_force_bits & (1ULL << (16 - 1)))
-        ? (int64_t)(x_force_bits | ~x_force_mask)
-        : (int64_t)x_force_bits;
-    front_msb_accel->x_force = (float)x_force_raw;
-    uint64_t y_force_mask = (1ULL << 16) - 1ULL;
-    uint64_t y_force_bits = (data >> 32) & y_force_mask;
-    int64_t y_force_raw = (y_force_bits & (1ULL << (16 - 1)))
-        ? (int64_t)(y_force_bits | ~y_force_mask)
-        : (int64_t)y_force_bits;
-    front_msb_accel->y_force = (float)y_force_raw;
-    uint64_t z_force_mask = (1ULL << 16) - 1ULL;
-    uint64_t z_force_bits = (data >> 16) & z_force_mask;
-    int64_t z_force_raw = (z_force_bits & (1ULL << (16 - 1)))
-        ? (int64_t)(z_force_bits | ~z_force_mask)
-        : (int64_t)z_force_bits;
-    front_msb_accel->z_force = (float)z_force_raw;
-}
-
-void receive_front_msb_gyro(const can_msg_t *message, front_msb_gyro_t *front_msb_gyro) {
-    
-    uint64_t data_bigendian;
-    memcpy(&data_bigendian, message->data, 8);
-    uint64_t data = __builtin_bswap64(data_bigendian);
-    uint64_t x_deg_mask = (1ULL << 16) - 1ULL;
-    uint64_t x_deg_bits = (data >> 48) & x_deg_mask;
-    int64_t x_deg_raw = (x_deg_bits & (1ULL << (16 - 1)))
-        ? (int64_t)(x_deg_bits | ~x_deg_mask)
-        : (int64_t)x_deg_bits;
-    front_msb_gyro->x_deg = (float)x_deg_raw;
-    uint64_t y_deg_mask = (1ULL << 16) - 1ULL;
-    uint64_t y_deg_bits = (data >> 32) & y_deg_mask;
-    int64_t y_deg_raw = (y_deg_bits & (1ULL << (16 - 1)))
-        ? (int64_t)(y_deg_bits | ~y_deg_mask)
-        : (int64_t)y_deg_bits;
-    front_msb_gyro->y_deg = (float)y_deg_raw;
-    uint64_t z_deg_mask = (1ULL << 16) - 1ULL;
-    uint64_t z_deg_bits = (data >> 16) & z_deg_mask;
-    int64_t z_deg_raw = (z_deg_bits & (1ULL << (16 - 1)))
-        ? (int64_t)(z_deg_bits | ~z_deg_mask)
-        : (int64_t)z_deg_bits;
-    front_msb_gyro->z_deg = (float)z_deg_raw;
-}
-
-void receive_front_msb_strain(const can_msg_t *message, front_msb_strain_t *front_msb_strain) {
-    
-    uint64_t data_bigendian;
-    memcpy(&data_bigendian, message->data, 8);
-    uint64_t data = __builtin_bswap64(data_bigendian);
-    uint64_t strain1_mask = (1ULL << 32) - 1ULL;
-    uint64_t strain1_raw = (data >> 32) & strain1_mask;
-    front_msb_strain->strain1 = (uint32_t)strain1_raw;
-    uint64_t strain2_mask = (1ULL << 32) - 1ULL;
-    uint64_t strain2_raw = (data >> 0) & strain2_mask;
-    front_msb_strain->strain2 = (uint32_t)strain2_raw;
-}
-
-void receive_front_shockpot(const can_msg_t *message, front_shockpot_t *front_shockpot) {
-    
-    struct __attribute__((__packed__)) {
-        uint32_t shock1;
-        uint16_t shock1_raw;
-        
-    } bitstream_data;
-
-    memcpy(&bitstream_data, message->data, sizeof(bitstream_data));
-
-    
-    
-    
-    front_shockpot->shock1 = (float)bitstream_data.shock1;
-    
-    
-    
-    
-    
-    front_shockpot->shock1_raw = (uint16_t)bitstream_data.shock1_raw;
-    
-    
-    
-}
-
-void receive_front_ride_height(const can_msg_t *message, front_ride_height_t *front_ride_height) {
+void receive_max_dc_current_command(const can_msg_t *message, max_dc_current_command_t *max_dc_current_command) {
     
     uint16_t data_bigendian;
     memcpy(&data_bigendian, message->data, 2);
     uint16_t data = __builtin_bswap16(data_bigendian);
-    uint64_t rh_mask = (1ULL << 16) - 1ULL;
-    uint64_t rh_bits = (data >> 0) & rh_mask;
-    int64_t rh_raw = (rh_bits & (1ULL << (16 - 1)))
-        ? (int64_t)(rh_bits | ~rh_mask)
-        : (int64_t)rh_bits;
-    front_ride_height->rh = (float)rh_raw;
+    uint64_t max_dc_current_target_mask = (1ULL << 16) - 1ULL;
+    uint64_t max_dc_current_target_bits = (data >> 0) & max_dc_current_target_mask;
+    int64_t max_dc_current_target_raw = (max_dc_current_target_bits & (1ULL << (16 - 1)))
+        ? (int64_t)(max_dc_current_target_bits | ~max_dc_current_target_mask)
+        : (int64_t)max_dc_current_target_bits;
+    max_dc_current_command->max_dc_current_target = (float)(max_dc_current_target_raw / 10);
 }
 
-void receive_front_wheel_temp(const can_msg_t *message, front_wheel_temp_t *front_wheel_temp) {
+void receive_max_dc_brake_current_command(const can_msg_t *message, max_dc_brake_current_command_t *max_dc_brake_current_command) {
     
     uint16_t data_bigendian;
     memcpy(&data_bigendian, message->data, 2);
     uint16_t data = __builtin_bswap16(data_bigendian);
-    uint64_t wheel_temp_mask = (1ULL << 16) - 1ULL;
-    uint64_t wheel_temp_raw = (data >> 0) & wheel_temp_mask;
-    front_wheel_temp->wheel_temp = (float)wheel_temp_raw;
-}
-
-void receive_front_msb_orientation(const can_msg_t *message, front_msb_orientation_t *front_msb_orientation) {
-    
-    uint64_t data_bigendian;
-    memcpy(&data_bigendian, message->data, 8);
-    uint64_t data = __builtin_bswap64(data_bigendian);
-    uint64_t x_fdeg_mask = (1ULL << 16) - 1ULL;
-    uint64_t x_fdeg_bits = (data >> 48) & x_fdeg_mask;
-    int64_t x_fdeg_raw = (x_fdeg_bits & (1ULL << (16 - 1)))
-        ? (int64_t)(x_fdeg_bits | ~x_fdeg_mask)
-        : (int64_t)x_fdeg_bits;
-    front_msb_orientation->x_fdeg = (float)x_fdeg_raw;
-    uint64_t y_fdeg_mask = (1ULL << 16) - 1ULL;
-    uint64_t y_fdeg_bits = (data >> 32) & y_fdeg_mask;
-    int64_t y_fdeg_raw = (y_fdeg_bits & (1ULL << (16 - 1)))
-        ? (int64_t)(y_fdeg_bits | ~y_fdeg_mask)
-        : (int64_t)y_fdeg_bits;
-    front_msb_orientation->y_fdeg = (float)y_fdeg_raw;
-    uint64_t z_fdeg_mask = (1ULL << 16) - 1ULL;
-    uint64_t z_fdeg_bits = (data >> 16) & z_fdeg_mask;
-    int64_t z_fdeg_raw = (z_fdeg_bits & (1ULL << (16 - 1)))
-        ? (int64_t)(z_fdeg_bits | ~z_fdeg_mask)
-        : (int64_t)z_fdeg_bits;
-    front_msb_orientation->z_fdeg = (float)z_fdeg_raw;
-}
-
-void receive_back_msb_env(const can_msg_t *message, back_msb_env_t *back_msb_env) {
-    
-    uint32_t data_bigendian;
-    memcpy(&data_bigendian, message->data, 4);
-    uint32_t data = __builtin_bswap32(data_bigendian);
-    uint64_t temp_mask = (1ULL << 16) - 1ULL;
-    uint64_t temp_raw = (data >> 16) & temp_mask;
-    back_msb_env->temp = (float)(temp_raw / 10);
-    uint64_t humidity_mask = (1ULL << 16) - 1ULL;
-    uint64_t humidity_raw = (data >> 0) & humidity_mask;
-    back_msb_env->humidity = (float)(humidity_raw / 10);
-}
-
-void receive_back_msb_accel(const can_msg_t *message, back_msb_accel_t *back_msb_accel) {
-    
-    uint64_t data_bigendian;
-    memcpy(&data_bigendian, message->data, 8);
-    uint64_t data = __builtin_bswap64(data_bigendian);
-    uint64_t x_force_mask = (1ULL << 16) - 1ULL;
-    uint64_t x_force_bits = (data >> 48) & x_force_mask;
-    int64_t x_force_raw = (x_force_bits & (1ULL << (16 - 1)))
-        ? (int64_t)(x_force_bits | ~x_force_mask)
-        : (int64_t)x_force_bits;
-    back_msb_accel->x_force = (float)x_force_raw;
-    uint64_t y_force_mask = (1ULL << 16) - 1ULL;
-    uint64_t y_force_bits = (data >> 32) & y_force_mask;
-    int64_t y_force_raw = (y_force_bits & (1ULL << (16 - 1)))
-        ? (int64_t)(y_force_bits | ~y_force_mask)
-        : (int64_t)y_force_bits;
-    back_msb_accel->y_force = (float)y_force_raw;
-    uint64_t z_force_mask = (1ULL << 16) - 1ULL;
-    uint64_t z_force_bits = (data >> 16) & z_force_mask;
-    int64_t z_force_raw = (z_force_bits & (1ULL << (16 - 1)))
-        ? (int64_t)(z_force_bits | ~z_force_mask)
-        : (int64_t)z_force_bits;
-    back_msb_accel->z_force = (float)z_force_raw;
-}
-
-void receive_back_msb_gyro(const can_msg_t *message, back_msb_gyro_t *back_msb_gyro) {
-    
-    uint64_t data_bigendian;
-    memcpy(&data_bigendian, message->data, 8);
-    uint64_t data = __builtin_bswap64(data_bigendian);
-    uint64_t x_deg_mask = (1ULL << 16) - 1ULL;
-    uint64_t x_deg_bits = (data >> 48) & x_deg_mask;
-    int64_t x_deg_raw = (x_deg_bits & (1ULL << (16 - 1)))
-        ? (int64_t)(x_deg_bits | ~x_deg_mask)
-        : (int64_t)x_deg_bits;
-    back_msb_gyro->x_deg = (float)x_deg_raw;
-    uint64_t y_deg_mask = (1ULL << 16) - 1ULL;
-    uint64_t y_deg_bits = (data >> 32) & y_deg_mask;
-    int64_t y_deg_raw = (y_deg_bits & (1ULL << (16 - 1)))
-        ? (int64_t)(y_deg_bits | ~y_deg_mask)
-        : (int64_t)y_deg_bits;
-    back_msb_gyro->y_deg = (float)y_deg_raw;
-    uint64_t z_deg_mask = (1ULL << 16) - 1ULL;
-    uint64_t z_deg_bits = (data >> 16) & z_deg_mask;
-    int64_t z_deg_raw = (z_deg_bits & (1ULL << (16 - 1)))
-        ? (int64_t)(z_deg_bits | ~z_deg_mask)
-        : (int64_t)z_deg_bits;
-    back_msb_gyro->z_deg = (float)z_deg_raw;
-}
-
-void receive_back_msb_strain(const can_msg_t *message, back_msb_strain_t *back_msb_strain) {
-    
-    uint64_t data_bigendian;
-    memcpy(&data_bigendian, message->data, 8);
-    uint64_t data = __builtin_bswap64(data_bigendian);
-    uint64_t strain1_mask = (1ULL << 32) - 1ULL;
-    uint64_t strain1_raw = (data >> 32) & strain1_mask;
-    back_msb_strain->strain1 = (uint32_t)strain1_raw;
-    uint64_t strain2_mask = (1ULL << 32) - 1ULL;
-    uint64_t strain2_raw = (data >> 0) & strain2_mask;
-    back_msb_strain->strain2 = (uint32_t)strain2_raw;
-}
-
-void receive_back_shockpot(const can_msg_t *message, back_shockpot_t *back_shockpot) {
-    
-    struct __attribute__((__packed__)) {
-        uint32_t shock1;
-        uint16_t shock1_raw;
-        
-    } bitstream_data;
-
-    memcpy(&bitstream_data, message->data, sizeof(bitstream_data));
-
-    
-    
-    
-    back_shockpot->shock1 = (float)bitstream_data.shock1;
-    
-    
-    
-    
-    
-    back_shockpot->shock1_raw = (uint16_t)bitstream_data.shock1_raw;
-    
-    
-    
-}
-
-void receive_back_ride_height(const can_msg_t *message, back_ride_height_t *back_ride_height) {
-    
-    uint16_t data_bigendian;
-    memcpy(&data_bigendian, message->data, 2);
-    uint16_t data = __builtin_bswap16(data_bigendian);
-    uint64_t rh_mask = (1ULL << 16) - 1ULL;
-    uint64_t rh_bits = (data >> 0) & rh_mask;
-    int64_t rh_raw = (rh_bits & (1ULL << (16 - 1)))
-        ? (int64_t)(rh_bits | ~rh_mask)
-        : (int64_t)rh_bits;
-    back_ride_height->rh = (float)rh_raw;
-}
-
-void receive_back_wheel_temp(const can_msg_t *message, back_wheel_temp_t *back_wheel_temp) {
-    
-    uint16_t data_bigendian;
-    memcpy(&data_bigendian, message->data, 2);
-    uint16_t data = __builtin_bswap16(data_bigendian);
-    uint64_t wheel_temp_mask = (1ULL << 16) - 1ULL;
-    uint64_t wheel_temp_raw = (data >> 0) & wheel_temp_mask;
-    back_wheel_temp->wheel_temp = (float)wheel_temp_raw;
-}
-
-void receive_back_msb_orientation(const can_msg_t *message, back_msb_orientation_t *back_msb_orientation) {
-    
-    uint64_t data_bigendian;
-    memcpy(&data_bigendian, message->data, 8);
-    uint64_t data = __builtin_bswap64(data_bigendian);
-    uint64_t x_fdeg_mask = (1ULL << 16) - 1ULL;
-    uint64_t x_fdeg_bits = (data >> 48) & x_fdeg_mask;
-    int64_t x_fdeg_raw = (x_fdeg_bits & (1ULL << (16 - 1)))
-        ? (int64_t)(x_fdeg_bits | ~x_fdeg_mask)
-        : (int64_t)x_fdeg_bits;
-    back_msb_orientation->x_fdeg = (float)x_fdeg_raw;
-    uint64_t y_fdeg_mask = (1ULL << 16) - 1ULL;
-    uint64_t y_fdeg_bits = (data >> 32) & y_fdeg_mask;
-    int64_t y_fdeg_raw = (y_fdeg_bits & (1ULL << (16 - 1)))
-        ? (int64_t)(y_fdeg_bits | ~y_fdeg_mask)
-        : (int64_t)y_fdeg_bits;
-    back_msb_orientation->y_fdeg = (float)y_fdeg_raw;
-    uint64_t z_fdeg_mask = (1ULL << 16) - 1ULL;
-    uint64_t z_fdeg_bits = (data >> 16) & z_fdeg_mask;
-    int64_t z_fdeg_raw = (z_fdeg_bits & (1ULL << (16 - 1)))
-        ? (int64_t)(z_fdeg_bits | ~z_fdeg_mask)
-        : (int64_t)z_fdeg_bits;
-    back_msb_orientation->z_fdeg = (float)z_fdeg_raw;
+    uint64_t max_dc_brake_current_target_mask = (1ULL << 16) - 1ULL;
+    uint64_t max_dc_brake_current_target_bits = (data >> 0) & max_dc_brake_current_target_mask;
+    int64_t max_dc_brake_current_target_raw = (max_dc_brake_current_target_bits & (1ULL << (16 - 1)))
+        ? (int64_t)(max_dc_brake_current_target_bits | ~max_dc_brake_current_target_mask)
+        : (int64_t)max_dc_brake_current_target_bits;
+    max_dc_brake_current_command->max_dc_brake_current_target = (float)(max_dc_brake_current_target_raw / 10);
 }
 
 void receive_imd_general_information(const can_msg_t *message, imd_general_information_t *imd_general_information) {
@@ -671,6 +288,107 @@ void receive_imd_general_information(const can_msg_t *message, imd_general_infor
     
     
     
+}
+
+void receive_lightning_board_imu_acceleration_data(const can_msg_t *message, lightning_board_imu_acceleration_data_t *lightning_board_imu_acceleration_data) {
+    
+    uint64_t data_bigendian;
+    memcpy(&data_bigendian, message->data, 8);
+    uint64_t data = __builtin_bswap64(data_bigendian);
+    uint64_t accel_x_mask = (1ULL << 16) - 1ULL;
+    uint64_t accel_x_bits = (data >> 48) & accel_x_mask;
+    int64_t accel_x_raw = (accel_x_bits & (1ULL << (16 - 1)))
+        ? (int64_t)(accel_x_bits | ~accel_x_mask)
+        : (int64_t)accel_x_bits;
+    lightning_board_imu_acceleration_data->accel_x = (float)(accel_x_raw / 1000);
+    uint64_t accel_y_mask = (1ULL << 16) - 1ULL;
+    uint64_t accel_y_bits = (data >> 32) & accel_y_mask;
+    int64_t accel_y_raw = (accel_y_bits & (1ULL << (16 - 1)))
+        ? (int64_t)(accel_y_bits | ~accel_y_mask)
+        : (int64_t)accel_y_bits;
+    lightning_board_imu_acceleration_data->accel_y = (float)(accel_y_raw / 1000);
+    uint64_t accel_z_mask = (1ULL << 16) - 1ULL;
+    uint64_t accel_z_bits = (data >> 16) & accel_z_mask;
+    int64_t accel_z_raw = (accel_z_bits & (1ULL << (16 - 1)))
+        ? (int64_t)(accel_z_bits | ~accel_z_mask)
+        : (int64_t)accel_z_bits;
+    lightning_board_imu_acceleration_data->accel_z = (float)(accel_z_raw / 1000);
+}
+
+void receive_lightning_board_imu_gyro_data(const can_msg_t *message, lightning_board_imu_gyro_data_t *lightning_board_imu_gyro_data) {
+    
+    uint64_t data_bigendian;
+    memcpy(&data_bigendian, message->data, 8);
+    uint64_t data = __builtin_bswap64(data_bigendian);
+    uint64_t gyro_x_mask = (1ULL << 16) - 1ULL;
+    uint64_t gyro_x_bits = (data >> 48) & gyro_x_mask;
+    int64_t gyro_x_raw = (gyro_x_bits & (1ULL << (16 - 1)))
+        ? (int64_t)(gyro_x_bits | ~gyro_x_mask)
+        : (int64_t)gyro_x_bits;
+    lightning_board_imu_gyro_data->gyro_x = (float)(gyro_x_raw / 1000);
+    uint64_t gyro_y_mask = (1ULL << 16) - 1ULL;
+    uint64_t gyro_y_bits = (data >> 32) & gyro_y_mask;
+    int64_t gyro_y_raw = (gyro_y_bits & (1ULL << (16 - 1)))
+        ? (int64_t)(gyro_y_bits | ~gyro_y_mask)
+        : (int64_t)gyro_y_bits;
+    lightning_board_imu_gyro_data->gyro_y = (float)(gyro_y_raw / 1000);
+    uint64_t gyro_z_mask = (1ULL << 16) - 1ULL;
+    uint64_t gyro_z_bits = (data >> 16) & gyro_z_mask;
+    int64_t gyro_z_raw = (gyro_z_bits & (1ULL << (16 - 1)))
+        ? (int64_t)(gyro_z_bits | ~gyro_z_mask)
+        : (int64_t)gyro_z_bits;
+    lightning_board_imu_gyro_data->gyro_z = (float)(gyro_z_raw / 1000);
+}
+
+void receive_lightning_board_lightning_sensor_information(const can_msg_t *message, lightning_board_lightning_sensor_information_t *lightning_board_lightning_sensor_information) {
+    
+    uint64_t data_bigendian;
+    memcpy(&data_bigendian, message->data, 8);
+    uint64_t data = __builtin_bswap64(data_bigendian);
+    uint64_t interrupt_mask = (1ULL << 8) - 1ULL;
+    uint64_t interrupt_raw = (data >> 56) & interrupt_mask;
+    lightning_board_lightning_sensor_information->interrupt = (uint8_t)interrupt_raw;
+    uint64_t distance_mask = (1ULL << 8) - 1ULL;
+    uint64_t distance_raw = (data >> 48) & distance_mask;
+    lightning_board_lightning_sensor_information->distance = (uint8_t)distance_raw;
+    uint64_t energy_mask = (1ULL << 32) - 1ULL;
+    uint64_t energy_raw = (data >> 16) & energy_mask;
+    lightning_board_lightning_sensor_information->energy = (uint32_t)energy_raw;
+}
+
+void receive_lightning_board_magnometer_sensor_information(const can_msg_t *message, lightning_board_magnometer_sensor_information_t *lightning_board_magnometer_sensor_information) {
+    
+    uint64_t data_bigendian;
+    memcpy(&data_bigendian, message->data, 8);
+    uint64_t data = __builtin_bswap64(data_bigendian);
+    uint64_t mag_x_mask = (1ULL << 16) - 1ULL;
+    uint64_t mag_x_bits = (data >> 48) & mag_x_mask;
+    int64_t mag_x_raw = (mag_x_bits & (1ULL << (16 - 1)))
+        ? (int64_t)(mag_x_bits | ~mag_x_mask)
+        : (int64_t)mag_x_bits;
+    lightning_board_magnometer_sensor_information->mag_x = (float)(mag_x_raw / 1000);
+    uint64_t mag_y_mask = (1ULL << 16) - 1ULL;
+    uint64_t mag_y_bits = (data >> 32) & mag_y_mask;
+    int64_t mag_y_raw = (mag_y_bits & (1ULL << (16 - 1)))
+        ? (int64_t)(mag_y_bits | ~mag_y_mask)
+        : (int64_t)mag_y_bits;
+    lightning_board_magnometer_sensor_information->mag_y = (float)(mag_y_raw / 1000);
+    uint64_t mag_z_mask = (1ULL << 16) - 1ULL;
+    uint64_t mag_z_bits = (data >> 16) & mag_z_mask;
+    int64_t mag_z_raw = (mag_z_bits & (1ULL << (16 - 1)))
+        ? (int64_t)(mag_z_bits | ~mag_z_mask)
+        : (int64_t)mag_z_bits;
+    lightning_board_magnometer_sensor_information->mag_z = (float)(mag_z_raw / 1000);
+}
+
+void receive_lightning_pulse_message(const can_msg_t *message, lightning_pulse_message_t *lightning_pulse_message) {
+    
+    uint32_t data_bigendian;
+    memcpy(&data_bigendian, message->data, 4);
+    uint32_t data = __builtin_bswap32(data_bigendian);
+    uint64_t count_mask = (1ULL << 32) - 1ULL;
+    uint64_t count_raw = (data >> 0) & count_mask;
+    lightning_pulse_message->count = (uint32_t)count_raw;
 }
 
 void receive_bms_status(const can_msg_t *message, bms_status_t *bms_status) {
@@ -1259,35 +977,23 @@ void receive_precharge_status(const can_msg_t *message, precharge_status_t *prec
     precharge_status->precharge_status = (uint8_t)precharge_status_raw;
 }
 
-void receive_hv_plate_data(const can_msg_t *message, hv_plate_data_t *hv_plate_data) {
+void receive_hv_plate_voltages(const can_msg_t *message, hv_plate_voltages_t *hv_plate_voltages) {
     
     uint64_t data_bigendian;
     memcpy(&data_bigendian, message->data, 8);
     uint64_t data = __builtin_bswap64(data_bigendian);
-    uint64_t batt_voltage_mask = (1ULL << 16) - 1ULL;
-    uint64_t batt_voltage_bits = (data >> 48) & batt_voltage_mask;
-    int64_t batt_voltage_raw = (batt_voltage_bits & (1ULL << (16 - 1)))
+    uint64_t batt_voltage_mask = (1ULL << 32) - 1ULL;
+    uint64_t batt_voltage_bits = (data >> 32) & batt_voltage_mask;
+    int64_t batt_voltage_raw = (batt_voltage_bits & (1ULL << (32 - 1)))
         ? (int64_t)(batt_voltage_bits | ~batt_voltage_mask)
         : (int64_t)batt_voltage_bits;
-    hv_plate_data->batt_voltage = (float)(batt_voltage_raw / 100);
-    uint64_t ts_voltage_mask = (1ULL << 16) - 1ULL;
-    uint64_t ts_voltage_bits = (data >> 32) & ts_voltage_mask;
-    int64_t ts_voltage_raw = (ts_voltage_bits & (1ULL << (16 - 1)))
+    hv_plate_voltages->batt_voltage = (float)(batt_voltage_raw / 100);
+    uint64_t ts_voltage_mask = (1ULL << 32) - 1ULL;
+    uint64_t ts_voltage_bits = (data >> 0) & ts_voltage_mask;
+    int64_t ts_voltage_raw = (ts_voltage_bits & (1ULL << (32 - 1)))
         ? (int64_t)(ts_voltage_bits | ~ts_voltage_mask)
         : (int64_t)ts_voltage_bits;
-    hv_plate_data->ts_voltage = (float)(ts_voltage_raw / 100);
-    uint64_t shunt_temp_mask = (1ULL << 16) - 1ULL;
-    uint64_t shunt_temp_bits = (data >> 16) & shunt_temp_mask;
-    int64_t shunt_temp_raw = (shunt_temp_bits & (1ULL << (16 - 1)))
-        ? (int64_t)(shunt_temp_bits | ~shunt_temp_mask)
-        : (int64_t)shunt_temp_bits;
-    hv_plate_data->shunt_temp = (float)(shunt_temp_raw / 100);
-    uint64_t pack_current_mask = (1ULL << 16) - 1ULL;
-    uint64_t pack_current_bits = (data >> 0) & pack_current_mask;
-    int64_t pack_current_raw = (pack_current_bits & (1ULL << (16 - 1)))
-        ? (int64_t)(pack_current_bits | ~pack_current_mask)
-        : (int64_t)pack_current_bits;
-    hv_plate_data->pack_current = (float)(pack_current_raw / 100);
+    hv_plate_voltages->ts_voltage = (float)(ts_voltage_raw / 100);
 }
 
 void receive_segment_pec_errors(const can_msg_t *message, segment_pec_errors_t *segment_pec_errors) {
@@ -1477,19 +1183,336 @@ void receive_bms_critically_faulted(const can_msg_t *message, bms_critically_fau
     bms_critically_faulted->critically_faulted = (bool)critically_faulted_raw;
 }
 
-void receive_bms_charge_message_send(const can_msg_t *message, bms_charge_message_send_t *bms_charge_message_send) {
+void receive_pack_current_and_shunt_temp(const can_msg_t *message, pack_current_and_shunt_temp_t *pack_current_and_shunt_temp) {
     
     uint64_t data_bigendian;
     memcpy(&data_bigendian, message->data, 8);
     uint64_t data = __builtin_bswap64(data_bigendian);
-    uint64_t charge_volts_mask = (1ULL << 16) - 1ULL;
-    uint64_t charge_volts_raw = (data >> 48) & charge_volts_mask;
-    bms_charge_message_send->charge_volts = (float)(charge_volts_raw / 10);
-    uint64_t charge_current_mask = (1ULL << 16) - 1ULL;
-    uint64_t charge_current_raw = (data >> 32) & charge_current_mask;
-    bms_charge_message_send->charge_current = (float)(charge_current_raw / 10);
-    uint64_t enable_charging_mask = (1ULL << 8) - 1ULL;
-    uint64_t enable_charging_raw = (data >> 24) & enable_charging_mask;
-    bms_charge_message_send->enable_charging = (uint8_t)enable_charging_raw;
+    uint64_t pack_current_mask = (1ULL << 32) - 1ULL;
+    uint64_t pack_current_bits = (data >> 32) & pack_current_mask;
+    int64_t pack_current_raw = (pack_current_bits & (1ULL << (32 - 1)))
+        ? (int64_t)(pack_current_bits | ~pack_current_mask)
+        : (int64_t)pack_current_bits;
+    pack_current_and_shunt_temp->pack_current = (float)(pack_current_raw / 100);
+    uint64_t shunt_temp_mask = (1ULL << 32) - 1ULL;
+    uint64_t shunt_temp_raw = (data >> 0) & shunt_temp_mask;
+    pack_current_and_shunt_temp->shunt_temp = (float)(shunt_temp_raw / 100);
+}
+
+void receive_hv_plate_voltages_adbms(const can_msg_t *message, hv_plate_voltages_adbms_t *hv_plate_voltages_adbms) {
+    
+    uint64_t data_bigendian;
+    memcpy(&data_bigendian, message->data, 8);
+    uint64_t data = __builtin_bswap64(data_bigendian);
+    uint64_t batt_volts_mask = (1ULL << 32) - 1ULL;
+    uint64_t batt_volts_bits = (data >> 32) & batt_volts_mask;
+    int64_t batt_volts_raw = (batt_volts_bits & (1ULL << (32 - 1)))
+        ? (int64_t)(batt_volts_bits | ~batt_volts_mask)
+        : (int64_t)batt_volts_bits;
+    hv_plate_voltages_adbms->batt_volts = (float)(batt_volts_raw / 100);
+    uint64_t ts_volts_mask = (1ULL << 32) - 1ULL;
+    uint64_t ts_volts_bits = (data >> 0) & ts_volts_mask;
+    int64_t ts_volts_raw = (ts_volts_bits & (1ULL << (32 - 1)))
+        ? (int64_t)(ts_volts_bits | ~ts_volts_mask)
+        : (int64_t)ts_volts_bits;
+    hv_plate_voltages_adbms->ts_volts = (float)(ts_volts_raw / 100);
+}
+
+void receive_front_msb_env(const can_msg_t *message, front_msb_env_t *front_msb_env) {
+    
+    uint32_t data_bigendian;
+    memcpy(&data_bigendian, message->data, 4);
+    uint32_t data = __builtin_bswap32(data_bigendian);
+    uint64_t temp_mask = (1ULL << 16) - 1ULL;
+    uint64_t temp_raw = (data >> 16) & temp_mask;
+    front_msb_env->temp = (float)(temp_raw / 10);
+    uint64_t humidity_mask = (1ULL << 16) - 1ULL;
+    uint64_t humidity_raw = (data >> 0) & humidity_mask;
+    front_msb_env->humidity = (float)(humidity_raw / 10);
+}
+
+void receive_front_msb_accel(const can_msg_t *message, front_msb_accel_t *front_msb_accel) {
+    
+    uint64_t data_bigendian;
+    memcpy(&data_bigendian, message->data, 8);
+    uint64_t data = __builtin_bswap64(data_bigendian);
+    uint64_t x_force_mask = (1ULL << 16) - 1ULL;
+    uint64_t x_force_bits = (data >> 48) & x_force_mask;
+    int64_t x_force_raw = (x_force_bits & (1ULL << (16 - 1)))
+        ? (int64_t)(x_force_bits | ~x_force_mask)
+        : (int64_t)x_force_bits;
+    front_msb_accel->x_force = (float)x_force_raw;
+    uint64_t y_force_mask = (1ULL << 16) - 1ULL;
+    uint64_t y_force_bits = (data >> 32) & y_force_mask;
+    int64_t y_force_raw = (y_force_bits & (1ULL << (16 - 1)))
+        ? (int64_t)(y_force_bits | ~y_force_mask)
+        : (int64_t)y_force_bits;
+    front_msb_accel->y_force = (float)y_force_raw;
+    uint64_t z_force_mask = (1ULL << 16) - 1ULL;
+    uint64_t z_force_bits = (data >> 16) & z_force_mask;
+    int64_t z_force_raw = (z_force_bits & (1ULL << (16 - 1)))
+        ? (int64_t)(z_force_bits | ~z_force_mask)
+        : (int64_t)z_force_bits;
+    front_msb_accel->z_force = (float)z_force_raw;
+}
+
+void receive_front_msb_gyro(const can_msg_t *message, front_msb_gyro_t *front_msb_gyro) {
+    
+    uint64_t data_bigendian;
+    memcpy(&data_bigendian, message->data, 8);
+    uint64_t data = __builtin_bswap64(data_bigendian);
+    uint64_t x_deg_mask = (1ULL << 16) - 1ULL;
+    uint64_t x_deg_bits = (data >> 48) & x_deg_mask;
+    int64_t x_deg_raw = (x_deg_bits & (1ULL << (16 - 1)))
+        ? (int64_t)(x_deg_bits | ~x_deg_mask)
+        : (int64_t)x_deg_bits;
+    front_msb_gyro->x_deg = (float)x_deg_raw;
+    uint64_t y_deg_mask = (1ULL << 16) - 1ULL;
+    uint64_t y_deg_bits = (data >> 32) & y_deg_mask;
+    int64_t y_deg_raw = (y_deg_bits & (1ULL << (16 - 1)))
+        ? (int64_t)(y_deg_bits | ~y_deg_mask)
+        : (int64_t)y_deg_bits;
+    front_msb_gyro->y_deg = (float)y_deg_raw;
+    uint64_t z_deg_mask = (1ULL << 16) - 1ULL;
+    uint64_t z_deg_bits = (data >> 16) & z_deg_mask;
+    int64_t z_deg_raw = (z_deg_bits & (1ULL << (16 - 1)))
+        ? (int64_t)(z_deg_bits | ~z_deg_mask)
+        : (int64_t)z_deg_bits;
+    front_msb_gyro->z_deg = (float)z_deg_raw;
+}
+
+void receive_front_msb_strain(const can_msg_t *message, front_msb_strain_t *front_msb_strain) {
+    
+    uint64_t data_bigendian;
+    memcpy(&data_bigendian, message->data, 8);
+    uint64_t data = __builtin_bswap64(data_bigendian);
+    uint64_t strain1_mask = (1ULL << 32) - 1ULL;
+    uint64_t strain1_raw = (data >> 32) & strain1_mask;
+    front_msb_strain->strain1 = (uint32_t)strain1_raw;
+    uint64_t strain2_mask = (1ULL << 32) - 1ULL;
+    uint64_t strain2_raw = (data >> 0) & strain2_mask;
+    front_msb_strain->strain2 = (uint32_t)strain2_raw;
+}
+
+void receive_front_shockpot(const can_msg_t *message, front_shockpot_t *front_shockpot) {
+    
+    struct __attribute__((__packed__)) {
+        uint32_t shock1;
+        uint16_t shock1_raw;
+        
+    } bitstream_data;
+
+    memcpy(&bitstream_data, message->data, sizeof(bitstream_data));
+
+    
+    
+    
+    front_shockpot->shock1 = (float)bitstream_data.shock1;
+    
+    
+    
+    
+    
+    front_shockpot->shock1_raw = (uint16_t)bitstream_data.shock1_raw;
+    
+    
+    
+}
+
+void receive_front_ride_height(const can_msg_t *message, front_ride_height_t *front_ride_height) {
+    
+    uint16_t data_bigendian;
+    memcpy(&data_bigendian, message->data, 2);
+    uint16_t data = __builtin_bswap16(data_bigendian);
+    uint64_t rh_mask = (1ULL << 16) - 1ULL;
+    uint64_t rh_bits = (data >> 0) & rh_mask;
+    int64_t rh_raw = (rh_bits & (1ULL << (16 - 1)))
+        ? (int64_t)(rh_bits | ~rh_mask)
+        : (int64_t)rh_bits;
+    front_ride_height->rh = (float)rh_raw;
+}
+
+void receive_front_wheel_temp(const can_msg_t *message, front_wheel_temp_t *front_wheel_temp) {
+    
+    uint16_t data_bigendian;
+    memcpy(&data_bigendian, message->data, 2);
+    uint16_t data = __builtin_bswap16(data_bigendian);
+    uint64_t wheel_temp_mask = (1ULL << 16) - 1ULL;
+    uint64_t wheel_temp_raw = (data >> 0) & wheel_temp_mask;
+    front_wheel_temp->wheel_temp = (float)wheel_temp_raw;
+}
+
+void receive_front_msb_orientation(const can_msg_t *message, front_msb_orientation_t *front_msb_orientation) {
+    
+    uint64_t data_bigendian;
+    memcpy(&data_bigendian, message->data, 8);
+    uint64_t data = __builtin_bswap64(data_bigendian);
+    uint64_t x_fdeg_mask = (1ULL << 16) - 1ULL;
+    uint64_t x_fdeg_bits = (data >> 48) & x_fdeg_mask;
+    int64_t x_fdeg_raw = (x_fdeg_bits & (1ULL << (16 - 1)))
+        ? (int64_t)(x_fdeg_bits | ~x_fdeg_mask)
+        : (int64_t)x_fdeg_bits;
+    front_msb_orientation->x_fdeg = (float)x_fdeg_raw;
+    uint64_t y_fdeg_mask = (1ULL << 16) - 1ULL;
+    uint64_t y_fdeg_bits = (data >> 32) & y_fdeg_mask;
+    int64_t y_fdeg_raw = (y_fdeg_bits & (1ULL << (16 - 1)))
+        ? (int64_t)(y_fdeg_bits | ~y_fdeg_mask)
+        : (int64_t)y_fdeg_bits;
+    front_msb_orientation->y_fdeg = (float)y_fdeg_raw;
+    uint64_t z_fdeg_mask = (1ULL << 16) - 1ULL;
+    uint64_t z_fdeg_bits = (data >> 16) & z_fdeg_mask;
+    int64_t z_fdeg_raw = (z_fdeg_bits & (1ULL << (16 - 1)))
+        ? (int64_t)(z_fdeg_bits | ~z_fdeg_mask)
+        : (int64_t)z_fdeg_bits;
+    front_msb_orientation->z_fdeg = (float)z_fdeg_raw;
+}
+
+void receive_back_msb_env(const can_msg_t *message, back_msb_env_t *back_msb_env) {
+    
+    uint32_t data_bigendian;
+    memcpy(&data_bigendian, message->data, 4);
+    uint32_t data = __builtin_bswap32(data_bigendian);
+    uint64_t temp_mask = (1ULL << 16) - 1ULL;
+    uint64_t temp_raw = (data >> 16) & temp_mask;
+    back_msb_env->temp = (float)(temp_raw / 10);
+    uint64_t humidity_mask = (1ULL << 16) - 1ULL;
+    uint64_t humidity_raw = (data >> 0) & humidity_mask;
+    back_msb_env->humidity = (float)(humidity_raw / 10);
+}
+
+void receive_back_msb_accel(const can_msg_t *message, back_msb_accel_t *back_msb_accel) {
+    
+    uint64_t data_bigendian;
+    memcpy(&data_bigendian, message->data, 8);
+    uint64_t data = __builtin_bswap64(data_bigendian);
+    uint64_t x_force_mask = (1ULL << 16) - 1ULL;
+    uint64_t x_force_bits = (data >> 48) & x_force_mask;
+    int64_t x_force_raw = (x_force_bits & (1ULL << (16 - 1)))
+        ? (int64_t)(x_force_bits | ~x_force_mask)
+        : (int64_t)x_force_bits;
+    back_msb_accel->x_force = (float)x_force_raw;
+    uint64_t y_force_mask = (1ULL << 16) - 1ULL;
+    uint64_t y_force_bits = (data >> 32) & y_force_mask;
+    int64_t y_force_raw = (y_force_bits & (1ULL << (16 - 1)))
+        ? (int64_t)(y_force_bits | ~y_force_mask)
+        : (int64_t)y_force_bits;
+    back_msb_accel->y_force = (float)y_force_raw;
+    uint64_t z_force_mask = (1ULL << 16) - 1ULL;
+    uint64_t z_force_bits = (data >> 16) & z_force_mask;
+    int64_t z_force_raw = (z_force_bits & (1ULL << (16 - 1)))
+        ? (int64_t)(z_force_bits | ~z_force_mask)
+        : (int64_t)z_force_bits;
+    back_msb_accel->z_force = (float)z_force_raw;
+}
+
+void receive_back_msb_gyro(const can_msg_t *message, back_msb_gyro_t *back_msb_gyro) {
+    
+    uint64_t data_bigendian;
+    memcpy(&data_bigendian, message->data, 8);
+    uint64_t data = __builtin_bswap64(data_bigendian);
+    uint64_t x_deg_mask = (1ULL << 16) - 1ULL;
+    uint64_t x_deg_bits = (data >> 48) & x_deg_mask;
+    int64_t x_deg_raw = (x_deg_bits & (1ULL << (16 - 1)))
+        ? (int64_t)(x_deg_bits | ~x_deg_mask)
+        : (int64_t)x_deg_bits;
+    back_msb_gyro->x_deg = (float)x_deg_raw;
+    uint64_t y_deg_mask = (1ULL << 16) - 1ULL;
+    uint64_t y_deg_bits = (data >> 32) & y_deg_mask;
+    int64_t y_deg_raw = (y_deg_bits & (1ULL << (16 - 1)))
+        ? (int64_t)(y_deg_bits | ~y_deg_mask)
+        : (int64_t)y_deg_bits;
+    back_msb_gyro->y_deg = (float)y_deg_raw;
+    uint64_t z_deg_mask = (1ULL << 16) - 1ULL;
+    uint64_t z_deg_bits = (data >> 16) & z_deg_mask;
+    int64_t z_deg_raw = (z_deg_bits & (1ULL << (16 - 1)))
+        ? (int64_t)(z_deg_bits | ~z_deg_mask)
+        : (int64_t)z_deg_bits;
+    back_msb_gyro->z_deg = (float)z_deg_raw;
+}
+
+void receive_back_msb_strain(const can_msg_t *message, back_msb_strain_t *back_msb_strain) {
+    
+    uint64_t data_bigendian;
+    memcpy(&data_bigendian, message->data, 8);
+    uint64_t data = __builtin_bswap64(data_bigendian);
+    uint64_t strain1_mask = (1ULL << 32) - 1ULL;
+    uint64_t strain1_raw = (data >> 32) & strain1_mask;
+    back_msb_strain->strain1 = (uint32_t)strain1_raw;
+    uint64_t strain2_mask = (1ULL << 32) - 1ULL;
+    uint64_t strain2_raw = (data >> 0) & strain2_mask;
+    back_msb_strain->strain2 = (uint32_t)strain2_raw;
+}
+
+void receive_back_shockpot(const can_msg_t *message, back_shockpot_t *back_shockpot) {
+    
+    struct __attribute__((__packed__)) {
+        uint32_t shock1;
+        uint16_t shock1_raw;
+        
+    } bitstream_data;
+
+    memcpy(&bitstream_data, message->data, sizeof(bitstream_data));
+
+    
+    
+    
+    back_shockpot->shock1 = (float)bitstream_data.shock1;
+    
+    
+    
+    
+    
+    back_shockpot->shock1_raw = (uint16_t)bitstream_data.shock1_raw;
+    
+    
+    
+}
+
+void receive_back_ride_height(const can_msg_t *message, back_ride_height_t *back_ride_height) {
+    
+    uint16_t data_bigendian;
+    memcpy(&data_bigendian, message->data, 2);
+    uint16_t data = __builtin_bswap16(data_bigendian);
+    uint64_t rh_mask = (1ULL << 16) - 1ULL;
+    uint64_t rh_bits = (data >> 0) & rh_mask;
+    int64_t rh_raw = (rh_bits & (1ULL << (16 - 1)))
+        ? (int64_t)(rh_bits | ~rh_mask)
+        : (int64_t)rh_bits;
+    back_ride_height->rh = (float)rh_raw;
+}
+
+void receive_back_wheel_temp(const can_msg_t *message, back_wheel_temp_t *back_wheel_temp) {
+    
+    uint16_t data_bigendian;
+    memcpy(&data_bigendian, message->data, 2);
+    uint16_t data = __builtin_bswap16(data_bigendian);
+    uint64_t wheel_temp_mask = (1ULL << 16) - 1ULL;
+    uint64_t wheel_temp_raw = (data >> 0) & wheel_temp_mask;
+    back_wheel_temp->wheel_temp = (float)wheel_temp_raw;
+}
+
+void receive_back_msb_orientation(const can_msg_t *message, back_msb_orientation_t *back_msb_orientation) {
+    
+    uint64_t data_bigendian;
+    memcpy(&data_bigendian, message->data, 8);
+    uint64_t data = __builtin_bswap64(data_bigendian);
+    uint64_t x_fdeg_mask = (1ULL << 16) - 1ULL;
+    uint64_t x_fdeg_bits = (data >> 48) & x_fdeg_mask;
+    int64_t x_fdeg_raw = (x_fdeg_bits & (1ULL << (16 - 1)))
+        ? (int64_t)(x_fdeg_bits | ~x_fdeg_mask)
+        : (int64_t)x_fdeg_bits;
+    back_msb_orientation->x_fdeg = (float)x_fdeg_raw;
+    uint64_t y_fdeg_mask = (1ULL << 16) - 1ULL;
+    uint64_t y_fdeg_bits = (data >> 32) & y_fdeg_mask;
+    int64_t y_fdeg_raw = (y_fdeg_bits & (1ULL << (16 - 1)))
+        ? (int64_t)(y_fdeg_bits | ~y_fdeg_mask)
+        : (int64_t)y_fdeg_bits;
+    back_msb_orientation->y_fdeg = (float)y_fdeg_raw;
+    uint64_t z_fdeg_mask = (1ULL << 16) - 1ULL;
+    uint64_t z_fdeg_bits = (data >> 16) & z_fdeg_mask;
+    int64_t z_fdeg_raw = (z_fdeg_bits & (1ULL << (16 - 1)))
+        ? (int64_t)(z_fdeg_bits | ~z_fdeg_mask)
+        : (int64_t)z_fdeg_bits;
+    back_msb_orientation->z_fdeg = (float)z_fdeg_raw;
 }
 

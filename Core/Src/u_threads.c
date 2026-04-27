@@ -317,7 +317,8 @@ void vFaults(ULONG thread_input) {
             get_fault(ONBOARD_PEDAL_DIFFERENCE_FAULT),
             get_fault(RTDS_FAULT),
             get_fault(LV_LOW_VOLTAGE_FAULT),
-            get_fault(PRECHARGE_FLOATING_FAULT)
+            get_fault(PRECHARGE_FLOATING_FAULT),
+            get_fault(LATCHING_ACTIVE_FAULT)
         );
 
         /* Sleep Thread for specified number of ticks. */
