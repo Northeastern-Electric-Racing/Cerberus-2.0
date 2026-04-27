@@ -60,14 +60,20 @@ uint8_t can1_init(FDCAN_HandleTypeDef *hcan) {
     }
 
     /* Add filters for standard IDs */
-    uint16_t standard5[] = {CANID_SHUTDOWN, 0x00};
+    uint16_t standard5[] = {CANID_SHUTDOWN, IMD_GENERAL_MSG_ID};
     status = can_add_filter_standard(&can1, standard5);
     if (status != HAL_OK) {
         PRINTLN_ERROR("Failed to add standard filter to can1 (Status: %d/%s, ID1: 0x%X, ID2: 0x%X).", status, hal_status_toString(status), standard5[0], standard5[1]);
         return U_ERROR;
     }
 
-
+    /* Add filters for standard IDs */
+    uint16_t standard6[] = {BMS_LIGHTNING_OKAY_MSG_ID, 0x0};
+    status = can_add_filter_standard(&can1, standard6);
+    if (status != HAL_OK) {
+        PRINTLN_ERROR("Failed to add standard filter to can1 (Status: %d/%s, ID1: 0x%X, ID2: 0x%X).", status, hal_status_toString(status), standard6[0], standard6[1]);
+        return U_ERROR;
+    }
 
     /* Add fitlers for extended IDs */
     uint32_t extended1[] = {CANID_CALYPSO_EFCTRL_DASHBOARD, CANID_CALYPSO_EFCTRL_BRAKE};
@@ -254,6 +260,12 @@ void can_inbox(can_msg_t *message) {
                 set_home_mode();
             }
         }
+        break;
+    case IMD_GENERAL_MSG_ID:
+        imd_handleImdFaultMessage(message);
+        break;
+    case BMS_LIGHTNING_OKAY_MSG_ID:
+        bms_handleBmsFaultMessage(message);
         break;
     default:
         PRINTLN_WARNING("Unknown CAN Message Recieved (Message ID: 0x%X).", message->id);

@@ -2,6 +2,7 @@
 #define __U_BMS_H
 
 #include <stdint.h>
+#include "can_messages_rx.h"    
 
 /* API */
 
@@ -19,4 +20,9 @@ void bms_setBattboxTemp(float temp); // Sets the battbox temperature. The "temp"
 
 void bms_receivePrechargeState(precharge_state_t precharge); 
 bool bms_getPrecharge(void); 
+
+int bms_handleBmsFaultMessage(can_msg_t *message); // CAN faults upon receiving a latching fault message from BMS
+int imd_handleImdFaultMessage(can_msg_t *message); // CAN faults upon receiving a latctching fault message from IMD
+
+
 #endif /* u_bms.h */

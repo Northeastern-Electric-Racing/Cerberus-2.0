@@ -69,4 +69,8 @@ extern can_t can1;
 #define CANID_F_RPM       0xDB0
 #define CANID_R_RPM       0xDB1
 
+/* Latching Fault CAN IDs */
+#define IMD_GENERAL_MSG_ID        0x37
+#define BMS_LIGHTNING_OKAY_MSG_ID 0x01E
+
 #endif /* u_can.h */
