@@ -71,11 +71,11 @@ static pedal_data_t pedal_data = { 0 };
 #define MAX_VOLTS_UNSCALED 5.0  // (Volts). Actual sensor voltage before voltage divider scaling.
 
 /* Pedal Tuning */
-#define MAX_APPS1_VOLTS		    3.12 // (Volts). Upper bound on APPS1 voltage range.
-#define MIN_APPS1_VOLTS		    2.15 // (Volts). Lower bound on APPS1 voltage range.
-#define MAX_APPS2_VOLTS		    2.01 // (Volts). Upper bound on APPS2 voltage range.
-#define MIN_APPS2_VOLTS		    1.15 // (Volts). Lower bound on APPS2 voltage range.
-#define PEDAL_BRAKE_THRESH	    0.12 // (Percantage). Pedal position above which the system registers the brake pedal as "pressed".
+#define MAX_APPS1_VOLTS		    3.3 // (Volts). Upper bound on APPS1 voltage range.
+#define MIN_APPS1_VOLTS		    2.1 // (Volts). Lower bound on APPS1 voltage range.
+#define MAX_APPS2_VOLTS		    2.2 // (Volts). Upper bound on APPS2 voltage range.
+#define MIN_APPS2_VOLTS		    1.1 // (Volts). Lower bound on APPS2 voltage range.
+#define PEDAL_BRAKE_THRESH	    0.15 // (Percantage). Pedal position above which the system registers the brake pedal as "pressed".
 #define PEDAL_HARD_BRAKE_THRESH 0.22 // (Percentage). Pedal position above which a "hard brake" is detected.
 
 /* Performance Limits */
