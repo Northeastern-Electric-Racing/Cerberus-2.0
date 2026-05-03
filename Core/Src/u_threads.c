@@ -410,6 +410,13 @@ void vEFuses(ULONG thread_input) {
         send_dti_controller_temp_as_reported_by_vcu(controller_temp);
         send_brake_state_as_reported_by_vcu(brake_state);
 
+
+        /*sanity-check to detect disconnected motor temperature sensor*/
+        static const uint16_t MOTOR_TEMP_SENSOR_MAX = 125;
+        if (motor_temp >= MOTOR_TEMP_SENSOR_MAX) {
+            trigger_fault(MOTOR_TEMP_SENSOR_FAULT);
+        }
+
         /* Determine radfan eFuse state. */
         static const uint16_t RADFAN_UPPERBOUND = 65;
         static const uint16_t RADFAN_LOWERBOUND = 35;
@@ -417,7 +424,7 @@ void vEFuses(ULONG thread_input) {
             case EF_ON: efuse_enable(EFUSE_RADFAN); break;
             case EF_OFF: efuse_disable(EFUSE_RADFAN); break;
             case EF_AUTO:
-                if(motor_temp >= RADFAN_UPPERBOUND) {
+                if(!get_fault(MOTOR_TEMP_SENSOR_FAULT) && motor_temp >= RADFAN_UPPERBOUND) {
                     efuse_enable(EFUSE_RADFAN);
                 } else if (motor_temp <= RADFAN_LOWERBOUND) {
                     efuse_disable(EFUSE_RADFAN);
@@ -479,7 +486,7 @@ void vEFuses(ULONG thread_input) {
             case EF_ON: efuse_enable(EFUSE_PUMP2); break;
             case EF_OFF: efuse_disable(EFUSE_PUMP2); break;
             case EF_AUTO:
-                if(motor_temp >= PUMP2_UPPERBOUND) {
+                if(!get_fault(MOTOR_TEMP_SENSOR_FAULT) && motor_temp >= PUMP2_UPPERBOUND) {
                     /* If timer is still active, break early. */
                     if(!is_timer_expired(&pump2_switching_timer) && is_timer_active(&pump2_switching_timer)) { break; }
                     
