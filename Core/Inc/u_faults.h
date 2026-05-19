@@ -11,6 +11,7 @@ typedef enum {
     BMS_CAN_MONITOR_FAULT,
     LIGHTNING_CAN_MONITOR_FAULT,
     PRECHARGE_FLOATING_FAULT,
+    MOTOR_TEMP_SENSOR_FAULT,
 
     /* Non-critical Faults */
     ONBOARD_TEMP_FAULT,
@@ -24,7 +25,6 @@ typedef enum {
     ONBOARD_PEDAL_DIFFERENCE_FAULT,
     RTDS_FAULT,
     LV_LOW_VOLTAGE_FAULT,
-    MOTOR_TEMP_SENSOR_FAULT,
 
     /* Total number of faults (cannot exceed 32.) */
     /* (always keep this at the end) */
