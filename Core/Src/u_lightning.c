@@ -6,6 +6,7 @@
 #include "serial.h"
 #include "u_tx_timers.h"
 #include "tx_api.h"
+#include "main.h"
 
 /* Config */
 #define LIGHTNING_CAN_MONITOR_DELAY 4000

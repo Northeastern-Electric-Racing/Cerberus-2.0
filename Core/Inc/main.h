@@ -80,8 +80,9 @@ void Error_Handler(void);
 #define BMS_GPIO_GPIO_Port GPIOF
 #define BOTS_GPIO_Pin GPIO_PIN_7
 #define BOTS_GPIO_GPIO_Port GPIOF
-#define SPARE_GPIO_Pin GPIO_PIN_8
-#define SPARE_GPIO_GPIO_Port GPIOF
+#define FAULT_RESET_Pin GPIO_PIN_8
+#define FAULT_RESET_GPIO_Port GPIOF
+#define FAULT_RESET_EXTI_IRQn EXTI8_IRQn
 #define BSPD_GPIO_Pin GPIO_PIN_9
 #define BSPD_GPIO_GPIO_Port GPIOF
 #define HV_C_GPIO_Pin GPIO_PIN_10
@@ -165,9 +166,6 @@ void Error_Handler(void);
 #define MUX_SEL3_GPIO_Port GPIOC
 #define MUX_SEL4_Pin GPIO_PIN_9
 #define MUX_SEL4_GPIO_Port GPIOC
-#define IMU_INT1_Pin GPIO_PIN_8
-#define IMU_INT1_GPIO_Port GPIOA
-#define IMU_INT1_EXTI_IRQn EXTI8_IRQn
 #define IMU_INT2_Pin GPIO_PIN_11
 #define IMU_INT2_GPIO_Port GPIOA
 #define IMU_INT2_EXTI_IRQn EXTI11_IRQn

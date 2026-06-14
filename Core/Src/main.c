@@ -33,6 +33,8 @@
 #include "u_debug.h"
 #include "u_lightning.h"
 #include "u_tx_debug.h"
+#include "traceout.h"
+#include "can_messages_tx.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -191,6 +193,18 @@ void HAL_FDCAN_ErrorStatusCallback(FDCAN_HandleTypeDef *hfdcan, uint32_t ErrorSt
         printf("can - HAL_FDCAN_GetErrorCounters() - RxErrorPassive: %ld\n", statt2.RxErrorPassive);
         printf("can - HAL_FDCAN_GetErrorCounters() - ErrorLogging: %ld\n", statt2.ErrorLogging);
     }
+}
+
+
+void HAL_GPIO_EXTI_Falling_Callback(uint16_t GPIO_Pin)
+{
+	if (GPIO_Pin == USER_BUTTON_Pin) {
+		traceout_start_from_isr();
+	}
+
+  if (GPIO_Pin == FAULT_RESET_Pin) {
+    send_reset_latching_fault(true);
+  }
 }
 
 /* USER CODE END 0 */
@@ -1049,13 +1063,19 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(EF_MC_EN_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : BMS_GPIO_Pin BOTS_GPIO_Pin SPARE_GPIO_Pin BSPD_GPIO_Pin
-                           HV_C_GPIO_Pin HVD_GPIO_Pin */
-  GPIO_InitStruct.Pin = BMS_GPIO_Pin|BOTS_GPIO_Pin|SPARE_GPIO_Pin|BSPD_GPIO_Pin
-                          |HV_C_GPIO_Pin|HVD_GPIO_Pin;
+  /*Configure GPIO pins : BMS_GPIO_Pin BOTS_GPIO_Pin BSPD_GPIO_Pin HV_C_GPIO_Pin
+                           HVD_GPIO_Pin */
+  GPIO_InitStruct.Pin = BMS_GPIO_Pin|BOTS_GPIO_Pin|BSPD_GPIO_Pin|HV_C_GPIO_Pin
+                          |HVD_GPIO_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOF, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : FAULT_RESET_Pin */
+  GPIO_InitStruct.Pin = FAULT_RESET_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(FAULT_RESET_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pin : PHY_IRQ_Pin */
   GPIO_InitStruct.Pin = PHY_IRQ_Pin;
@@ -1125,11 +1145,11 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : IMU_INT1_Pin IMU_INT2_Pin */
-  GPIO_InitStruct.Pin = IMU_INT1_Pin|IMU_INT2_Pin;
+  /*Configure GPIO pin : IMU_INT2_Pin */
+  GPIO_InitStruct.Pin = IMU_INT2_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+  HAL_GPIO_Init(IMU_INT2_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pin : EF_LV_EN_Pin */
   GPIO_InitStruct.Pin = EF_LV_EN_Pin;
