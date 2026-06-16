@@ -519,6 +519,11 @@ static float _get_pedal_percent_pressed(float voltage, float offset, float max)
 	if (ret > 1.0) {
 	    return 1.0;
 	}
+
+	if (ret < 0.05) {
+		return 0;
+	}
+	
 	return ret;
 }
 
