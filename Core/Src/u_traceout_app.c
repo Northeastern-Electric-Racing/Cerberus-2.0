@@ -15,7 +15,6 @@
 /*************** Configuration ***************/
 
 #define TRACE_BUFFER_SIZE    (256U * TRACEOUT_CHUNK_BYTES)
-#define TRACEOUT_TRIGGER_PIN USER_BUTTON_Pin
 
 extern UART_HandleTypeDef huart7;
 
@@ -25,13 +24,6 @@ extern UART_HandleTypeDef huart7;
 __attribute__((aligned(32))) static UCHAR s_trace_buffer[TRACE_BUFFER_SIZE];
 
 /*************** HAL Callbacks ***************/
-
-void HAL_GPIO_EXTI_Falling_Callback(uint16_t GPIO_Pin)
-{
-	if (GPIO_Pin == TRACEOUT_TRIGGER_PIN) {
-		traceout_start_from_isr();
-	}
-}
 
 void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
 {

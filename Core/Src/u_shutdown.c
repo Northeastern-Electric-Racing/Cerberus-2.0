@@ -45,7 +45,6 @@ void shutdown_process(void) {
     /* Read all of the shutdown pins. */
     bool bms_gpio = (HAL_GPIO_ReadPin(BMS_GPIO_GPIO_Port, BMS_GPIO_Pin) == GPIO_PIN_SET);
     bool bots_gpio = (HAL_GPIO_ReadPin(BOTS_GPIO_GPIO_Port, BOTS_GPIO_Pin) == GPIO_PIN_SET);
-    bool spare_gpio = (HAL_GPIO_ReadPin(SPARE_GPIO_GPIO_Port, SPARE_GPIO_Pin) == GPIO_PIN_SET);
     bool bspd_gpio = (HAL_GPIO_ReadPin(BSPD_GPIO_GPIO_Port, BSPD_GPIO_Pin) == GPIO_PIN_SET);
     bool hv_c = (HAL_GPIO_ReadPin(HV_C_GPIO_GPIO_Port, HV_C_GPIO_Pin) == GPIO_PIN_SET);
     bool hvd_gpio = (HAL_GPIO_ReadPin(HVD_GPIO_GPIO_Port, HVD_GPIO_Pin) == GPIO_PIN_SET);
@@ -58,7 +57,6 @@ void shutdown_process(void) {
     send_shutdown_pins(
         bms_gpio,
         bots_gpio,
-        spare_gpio,
         bspd_gpio,
         hv_c,
         hvd_gpio,

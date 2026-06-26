@@ -76,11 +76,11 @@ static pedal_data_t pedal_data = { 0 };
 #define MAX_APPS2_VOLTS		    2.2 // (Volts). Upper bound on APPS2 voltage range.
 #define MIN_APPS2_VOLTS		    1.1 // (Volts). Lower bound on APPS2 voltage range.
 #define PEDAL_BRAKE_THRESH	    0.15 // (Percantage). Pedal position above which the system registers the brake pedal as "pressed".
-#define PEDAL_HARD_BRAKE_THRESH 0.22 // (Percentage). Pedal position above which a "hard brake" is detected.
+#define PEDAL_HARD_BRAKE_THRESH 0.20 // (Percentage). Pedal position above which a "hard brake" is detected.
 
 /* Performance Limits */
 #define PIT_MAX_SPEED           5.0 // (mph). Speed limit in pit mode.
-#define MAX_TORQUE              220 // (Nm). Maximum torque output
+#define MAX_TORQUE              160 // (Nm). Maximum torque output
 #define TORQUE_ACCUMULATOR_SIZE 10  // (Number). Size of the moving average filter for torque stuff.
 #define MAX_REGEN_CURRENT       250 // (AC Amps). Maximum regenerative braking current.
 
@@ -275,7 +275,7 @@ static bool _calc_bspd_prefault(float percentage_accel, float percentage_brake, 
 	}
 
 	if (motor_disabled) {
-		if (percentage_accel < 0.05) {
+		if (percentage_accel < 0.05 && percentage_brake < PEDAL_HARD_BRAKE_THRESH) {
 			motor_disabled = false;
 		}
 	}
@@ -519,6 +519,11 @@ static float _get_pedal_percent_pressed(float voltage, float offset, float max)
 	if (ret > 1.0) {
 	    return 1.0;
 	}
+
+	if (ret < 0.05) {
+		return 0;
+	}
+	
 	return ret;
 }
 

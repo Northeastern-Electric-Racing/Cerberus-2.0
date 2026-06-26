@@ -217,20 +217,18 @@ lfiu_adc_t adc_getLfiuData(void) {
     sensors.voltage[LFIU_2] = (sensors.raw[LFIU_2] / 4095.0) * V_REF;
 
     /* Calculate the LFIU_1 current. */
-    sensors.current[LFIU_1] = ((20.83f * sensors.voltage[LFIU_1]) - 31.25f);
-    // This conversion is based on the linear fit function: f(x) = 20.83x - 31.25
-    // This fit was created from these three datapoints provided by the electrical team:
-    // 0.3V : -25A
-    // 1.5V : 0A
-    // 2.7V : 25A
+    // CALUBRATED 6/13 center voltage
+    const float CENTER_VOLTAGE_LOW = 1.559f;
+
+    const float RATIO_LOW = 0.08f * 0.6;
+    sensors.current[LFIU_1] = ((sensors.voltage[LFIU_1] - CENTER_VOLTAGE_LOW) / RATIO_LOW);
 
     /* Calculate the LFIU_2 current. */
-    sensors.current[LFIU_2] = ((166.7f * sensors.voltage[LFIU_2]) - 250.0f);
-    // This conversion is based on the linear fit function: f(x) = 166.7x - 250
-    // This fit was created from these three datapoints provided by the electrical team:
-    // 0.3V : -200A
-    // 1.5V : 0A
-    // 2.7V : 200A
+    // CALUBRATED 6/13 center voltage
+     const float CENTER_VOLTAGE_HIGH = 1.573;
+
+     const float RATIO_HIGH = 0.01f * 0.6;
+    sensors.current[LFIU_2] = ((sensors.voltage[LFIU_2] - CENTER_VOLTAGE_HIGH)  / RATIO_HIGH);
 
     return sensors;
 }
