@@ -35,6 +35,8 @@ extern DMA_QListTypeDef List_GPDMA1_Channel4;
 
 extern DMA_HandleTypeDef handle_GPDMA1_Channel4;
 
+extern DMA_HandleTypeDef handle_GPDMA1_Channel0;
+
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN TD */
 
@@ -590,22 +592,11 @@ void HAL_ETH_MspDeInit(ETH_HandleTypeDef* heth)
 void HAL_FDCAN_MspInit(FDCAN_HandleTypeDef* hfdcan)
 {
   GPIO_InitTypeDef GPIO_InitStruct = {0};
-  RCC_PeriphCLKInitTypeDef PeriphClkInitStruct = {0};
   if(hfdcan->Instance==FDCAN2)
   {
     /* USER CODE BEGIN FDCAN2_MspInit 0 */
 
     /* USER CODE END FDCAN2_MspInit 0 */
-
-  /** Initializes the peripherals clock
-  */
-    PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_FDCAN;
-    PeriphClkInitStruct.FdcanClockSelection = RCC_FDCANCLKSOURCE_HSE;
-    if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK)
-    {
-      Error_Handler();
-    }
-
     /* Peripheral clock enable */
     __HAL_RCC_FDCAN_CLK_ENABLE();
 
@@ -818,6 +809,37 @@ void HAL_UART_MspInit(UART_HandleTypeDef* huart)
     GPIO_InitStruct.Alternate = GPIO_AF7_UART7;
     HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
 
+    /* UART7 DMA Init */
+    /* GPDMA1_REQUEST_UART7_TX Init */
+    handle_GPDMA1_Channel0.Instance = GPDMA1_Channel0;
+    handle_GPDMA1_Channel0.Init.Request = GPDMA1_REQUEST_UART7_TX;
+    handle_GPDMA1_Channel0.Init.BlkHWRequest = DMA_BREQ_SINGLE_BURST;
+    handle_GPDMA1_Channel0.Init.Direction = DMA_MEMORY_TO_PERIPH;
+    handle_GPDMA1_Channel0.Init.SrcInc = DMA_SINC_INCREMENTED;
+    handle_GPDMA1_Channel0.Init.DestInc = DMA_DINC_FIXED;
+    handle_GPDMA1_Channel0.Init.SrcDataWidth = DMA_SRC_DATAWIDTH_BYTE;
+    handle_GPDMA1_Channel0.Init.DestDataWidth = DMA_DEST_DATAWIDTH_BYTE;
+    handle_GPDMA1_Channel0.Init.Priority = DMA_LOW_PRIORITY_MID_WEIGHT;
+    handle_GPDMA1_Channel0.Init.SrcBurstLength = 1;
+    handle_GPDMA1_Channel0.Init.DestBurstLength = 1;
+    handle_GPDMA1_Channel0.Init.TransferAllocatedPort = DMA_SRC_ALLOCATED_PORT0|DMA_DEST_ALLOCATED_PORT0;
+    handle_GPDMA1_Channel0.Init.TransferEventMode = DMA_TCEM_BLOCK_TRANSFER;
+    handle_GPDMA1_Channel0.Init.Mode = DMA_NORMAL;
+    if (HAL_DMA_Init(&handle_GPDMA1_Channel0) != HAL_OK)
+    {
+      Error_Handler();
+    }
+
+    __HAL_LINKDMA(huart, hdmatx, handle_GPDMA1_Channel0);
+
+    if (HAL_DMA_ConfigChannelAttributes(&handle_GPDMA1_Channel0, DMA_CHANNEL_NPRIV) != HAL_OK)
+    {
+      Error_Handler();
+    }
+
+    /* UART7 interrupt Init */
+    HAL_NVIC_SetPriority(UART7_IRQn, 0, 0);
+    HAL_NVIC_EnableIRQ(UART7_IRQn);
     /* USER CODE BEGIN UART7_MspInit 1 */
 
     /* USER CODE END UART7_MspInit 1 */
@@ -865,6 +887,11 @@ void HAL_UART_MspDeInit(UART_HandleTypeDef* huart)
     */
     HAL_GPIO_DeInit(GPIOE, GPIO_PIN_7|GPIO_PIN_8);
 
+    /* UART7 DMA DeInit */
+    HAL_DMA_DeInit(huart->hdmatx);
+
+    /* UART7 interrupt DeInit */
+    HAL_NVIC_DisableIRQ(UART7_IRQn);
     /* USER CODE BEGIN UART7_MspDeInit 1 */
 
     /* USER CODE END UART7_MspDeInit 1 */
@@ -881,32 +908,11 @@ void HAL_UART_MspDeInit(UART_HandleTypeDef* huart)
 void HAL_SPI_MspInit(SPI_HandleTypeDef* hspi)
 {
   GPIO_InitTypeDef GPIO_InitStruct = {0};
-  RCC_PeriphCLKInitTypeDef PeriphClkInitStruct = {0};
   if(hspi->Instance==SPI2)
   {
     /* USER CODE BEGIN SPI2_MspInit 0 */
 
     /* USER CODE END SPI2_MspInit 0 */
-
-  /** Initializes the peripherals clock
-  */
-    PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_SPI2;
-    PeriphClkInitStruct.PLL2.PLL2Source = RCC_PLL2_SOURCE_HSE;
-    PeriphClkInitStruct.PLL2.PLL2M = 5;
-    PeriphClkInitStruct.PLL2.PLL2N = 64;
-    PeriphClkInitStruct.PLL2.PLL2P = 5;
-    PeriphClkInitStruct.PLL2.PLL2Q = 5;
-    PeriphClkInitStruct.PLL2.PLL2R = 2;
-    PeriphClkInitStruct.PLL2.PLL2RGE = RCC_PLL2_VCIRANGE_2;
-    PeriphClkInitStruct.PLL2.PLL2VCOSEL = RCC_PLL2_VCORANGE_WIDE;
-    PeriphClkInitStruct.PLL2.PLL2FRACN = 0;
-    PeriphClkInitStruct.PLL2.PLL2ClockOut = RCC_PLL2_DIVP;
-    PeriphClkInitStruct.Spi2ClockSelection = RCC_SPI2CLKSOURCE_PLL2P;
-    if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK)
-    {
-      Error_Handler();
-    }
-
     /* Peripheral clock enable */
     __HAL_RCC_SPI2_CLK_ENABLE();
 

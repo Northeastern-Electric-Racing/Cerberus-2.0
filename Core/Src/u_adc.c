@@ -48,7 +48,7 @@ typedef enum {
     /* SEL2 */
     SEL2_HIGH,  // LFIU_CURRENT_1
     SEL2_LOW,   // LFIU_CURRENT_2
-    
+
     /* SEL3 */
     SEL3_HIGH,  // LV_ADC
     SEL3_LOW,   // SHUTDOWN_ADC
@@ -115,14 +115,14 @@ int adc_switchMuxState(void) {
 /* Start ADC DMA. */
 int adc_init(void) {
     /* Start DMA for ADC1. */
-    int status = HAL_ADC_Start_DMA(&hadc1, _adc1_buffer, ADC1_SIZE);
+    int status = HAL_ADC_Start_DMA(&hadc1, (uint32_t *) _adc1_buffer, ADC1_SIZE);
     if(status != HAL_OK) {
         PRINTLN_ERROR("Failed to start ADC DMA for ADC1 (Status: %d/%s).", status, hal_status_toString(status));
         return U_ERROR;
     }
 
     /* Start DMA for ADC2. */
-    status = HAL_ADC_Start_DMA(&hadc2, _adc2_buffer, ADC2_SIZE);
+    status = HAL_ADC_Start_DMA(&hadc2, (uint32_t *) _adc2_buffer, ADC2_SIZE);
     if(status != HAL_OK) {
         PRINTLN_ERROR("Failed to start ADC DMA for ADC2 (Status: %d/%s).", status, hal_status_toString(status));
         return U_ERROR;
@@ -151,14 +151,35 @@ raw_efuse_adc_t adc_getEFuseData(void) {
     // serial_monitor("efuse_fanbatt", "_adc1_buffer[ADC1_CHANNEL6]=", "%d", _adc1_buffer[ADC1_CHANNEL6]);
 
     // serial_monitor("adc1", "ADC1_CHANNEL3", "%d", _adc1_buffer[ADC1_CHANNEL3]);
-    // serial_monitor("adc1", "ADC1_CHANNEL0", "%d", _adc1_buffer[ADC1_CHANNEL0]);
-    // serial_monitor("adc1", "ADC1_CHANNEL5", "%d", _adc1_buffer[ADC1_CHANNEL5]);
-    // serial_monitor("adc1", "ADC1_CHANNEL9", "%d", _adc1_buffer[ADC1_CHANNEL9]);
+    // serial_monitor("adc1", "ADC1_CHANNEL0 (mux)", "%d", _adc1_buffer[ADC1_CHANNEL0]);
+    // serial_monitor("adc1", "ADC1_CHANNEL5 (mux)", "%d", _adc1_buffer[ADC1_CHANNEL5]);
+    // serial_monitor("adc1", "ADC1_CHANNEL9 (mux)", "%d", _adc1_buffer[ADC1_CHANNEL9]);
     // serial_monitor("adc1", "ADC1_CHANNEL6", "%d", _adc1_buffer[ADC1_CHANNEL6]);
     // serial_monitor("adc1", "ADC1_CHANNEL2", "%d", _adc1_buffer[ADC1_CHANNEL2]);
     // serial_monitor("adc1", "ADC1_CHANNEL13", "%d", _adc1_buffer[ADC1_CHANNEL13]);
     // serial_monitor("adc1", "ADC1_CHANNEL18", "%d", _adc1_buffer[ADC1_CHANNEL18]);
-    // serial_monitor("adc1", "ADC1_CHANNEL15", "%d", _adc1_buffer[ADC1_CHANNEL15]);
+    // serial_monitor("adc1", "ADC1_CHANNEL15 (mux)", "%d", _adc1_buffer[ADC1_CHANNEL15]);
+    // serial_monitor("adc1", "mux_state (0=HIGH, 1=LOW)", "%d", mux_state_debug);
+
+    // serial_monitor("mux_debug", "SEL1_LOW", "%d", _mux_buffer[SEL1_LOW]);
+    // serial_monitor("mux_debug", "SEL1_HIGH", "%d", _mux_buffer[SEL1_HIGH]);
+    // serial_monitor("mux_debug", "SEL2_LOW", "%d", _mux_buffer[SEL2_LOW]);
+    // serial_monitor("mux_debug", "SEL2_HIGH", "%d", _mux_buffer[SEL2_HIGH]);
+    // serial_monitor("mux_debug", "SEL3_LOW", "%d", _mux_buffer[SEL3_LOW]);
+    // serial_monitor("mux_debug", "SEL3_HIGH", "%d", _mux_buffer[SEL3_HIGH]);
+    // serial_monitor("mux_debug", "SEL4_LOW", "%d", _mux_buffer[SEL4_LOW]);
+    // serial_monitor("mux_debug", "SEL4_HIGH", "%d", _mux_buffer[SEL4_HIGH]);
+
+    // serial_monitor("raw_efuse", "EFUSE_DASHBOARD", "%d", efuses.data[EFUSE_DASHBOARD]);
+    // serial_monitor("raw_efuse", "EFUSE_BRAKE", "%d", efuses.data[EFUSE_BRAKE]);
+    // serial_monitor("raw_efuse", "EFUSE_SHUTDOWN", "%d", efuses.data[EFUSE_SHUTDOWN]);
+    // serial_monitor("raw_efuse", "EFUSE_LV", "%d", efuses.data[EFUSE_LV]);
+    // serial_monitor("raw_efuse", "EFUSE_RADFAN", "%d", efuses.data[EFUSE_RADFAN]);
+    // serial_monitor("raw_efuse", "EFUSE_FANBATT", "%d", efuses.data[EFUSE_FANBATT]);
+    // serial_monitor("raw_efuse", "EFUSE_PUMP1", "%d", efuses.data[EFUSE_PUMP1]);
+    // serial_monitor("raw_efuse", "EFUSE_PUMP2", "%d", efuses.data[EFUSE_PUMP2]);
+    // serial_monitor("raw_efuse", "EFUSE_BATTBOX", "%d", efuses.data[EFUSE_BATTBOX]);
+    // serial_monitor("raw_efuse", "EFUSE_MC", "%d", efuses.data[EFUSE_MC]);
 
     return efuses;
 }
@@ -183,26 +204,31 @@ lfiu_adc_t adc_getLfiuData(void) {
     sensors.raw[LFIU_1] = _mux_buffer[SEL2_HIGH];
     sensors.raw[LFIU_2] = _mux_buffer[SEL2_LOW];
 
+    // serial_monitor("lfiu", "adc1_inp15", "%d", _adc1_buffer[ADC1_CHANNEL15]);
+    // serial_monitor("lfiu", "_mux_buffer[SEL2_HIGH]", "%d", _mux_buffer[SEL2_HIGH]);
+    // serial_monitor("lfiu", "_mux_buffer[SEL2_LOW]", "%d", _mux_buffer[SEL2_LOW]);
+    // serial_monitor("lfiu", "sensors.raw[LFIU_1]", "%d", sensors.raw[LFIU_1]);
+    // serial_monitor("lfiu", "sensors.raw[LFIU_2]", "%d", sensors.raw[LFIU_2]);
+    // serial_monitor("lfiu", "mux_state (0=HIGH, 1=LOW)", "%d", mux_state_debug);
+
     /* Calculate the ADC voltage. */
     const float V_REF = 3.3f;
     sensors.voltage[LFIU_1] = (sensors.raw[LFIU_1] / 4095.0) * V_REF;
     sensors.voltage[LFIU_2] = (sensors.raw[LFIU_2] / 4095.0) * V_REF;
 
     /* Calculate the LFIU_1 current. */
-    sensors.current[LFIU_1] = ((13.333f * sensors.voltage[LFIU_1]) - 20.0f);
-    // This conversion is based on the linear fit function: f(x) = 13.333x - 20
-    // This fit was created from these three datapoints provided by the electrical team:
-    // 0.0V : -20A
-    // 1.5V : 0A
-    // 3.0V : 20A
+    // CALUBRATED 6/13 center voltage
+    const float CENTER_VOLTAGE_LOW = 1.559f;
+
+    const float RATIO_LOW = 0.08f * 0.6;
+    sensors.current[LFIU_1] = ((sensors.voltage[LFIU_1] - CENTER_VOLTAGE_LOW) / RATIO_LOW);
 
     /* Calculate the LFIU_2 current. */
-    sensors.current[LFIU_2] = ((133.333f * sensors.voltage[LFIU_2]) - 200.0f);
-    // This conversion is based on the linear fit function: f(x) = 133.333x - 200
-    // This fit was created from these three datapoints provided by the electrical team:
-    // 0.0V : -200A
-    // 1.5V : 0A
-    // 3.0V : 200A
+    // CALUBRATED 6/13 center voltage
+     const float CENTER_VOLTAGE_HIGH = 1.573;
+
+     const float RATIO_HIGH = 0.01f * 0.6;
+    sensors.current[LFIU_2] = ((sensors.voltage[LFIU_2] - CENTER_VOLTAGE_HIGH)  / RATIO_HIGH);
 
     return sensors;
 }
@@ -228,6 +254,20 @@ lvread_adc_t adc_getLVData(void) {
     // double x = adc_voltage;
     // float actual_voltage = -39.079629 + 98.844514 * x - 66.973026 * x * x + 17.188363 * x * x * x;
     // data.voltage = actual_voltage;
+
+    return data;
+}
+
+/* Gets LV_BATT Voltage ADC data, and does all conversions based on a f(x) found experimentally based on readings from VCU 001. Should result in more accurate conversions. */
+lvread_adc_t adc_getLVData_2(void) {
+    lvread_adc_t data = { 0 };
+
+    /* Get the raw ADC reading. */
+    data.raw = _mux_buffer[SEL4_LOW];
+
+    /* Convert the raw ADC reading directly to the full LV Voltage. */
+    // Based on a linear fit computed via experimental data from VCU 001, we have: f(x) = 0.008988x - 0.89151  V, where f(x) is the full LV Voltage and x is the raw ADC reading.
+    data.voltage = (data.raw*0.008988) - 0.89151;
 
     return data;
 }

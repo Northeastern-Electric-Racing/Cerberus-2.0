@@ -3,8 +3,10 @@
 #include "u_tx_timers.h"
 #include "u_rtds.h"
 #include "u_queues.h"
+#include "u_statemachine.h"
 #include "u_faults.h"
 #include "u_tx_debug.h"
+#include "u_shutdown.h"
 
 /* Timer for RTDS. */
 static void _timer_callback(ULONG args); // Forward declaration for callback function.
@@ -30,6 +32,11 @@ static timer_t reverse_sound_timer = {
 
 /* Sets (i.e. turns on) the RTDS pin. */
 static void _set_rtds_pin(void) {
+    /* If shutdown isn't closed, we can't drive. So, make it impossible to sound RTDS. */
+    if(!is_shutdown_closed()) {
+        return; // Return early so RTDS doesn't sound.
+    }
+
     HAL_GPIO_WritePin(RTDS_GPIO_GPIO_Port, RTDS_GPIO_Pin, GPIO_PIN_SET); // Turn on RTDS pin.
     PRINTLN_INFO("Turned on RTDS pin.");
 }
@@ -88,26 +95,6 @@ int rtds_init(void) {
         return U_SUCCESS;
 }
 
-/* Sounds the RTDS (Ready-to-drive sound). */
-int rtds_soundRTDS(void) {
-
-    /* Stop the reverse sound if active. */
-    rtds_stopReverseSound();
-
-    /* Trigger the RTDS sound. */
-    _set_rtds_pin();
-
-    /* Restart RTDS timer. */
-    int status = timer_restart(&rtds_timer);
-    if(status != U_SUCCESS) {
-        PRINTLN_ERROR("Failed to restart RTDS timer (Status: %d).", status);
-        queue_send(&faults, &(fault_t){RTDS_FAULT}, TX_NO_WAIT);
-        return U_ERROR;
-    }
-
-    return U_SUCCESS;
-}
-
 /* Cancels the RTDS sound. The RTDS sound already stops automatically once it's over, but this function lets you cancel it prematurely. */
 int rtds_cancelRTDS(void) {
     /* Stop the RTDS sound. */
@@ -128,7 +115,7 @@ int rtds_cancelRTDS(void) {
 int rtds_startReverseSound(void) {
     /* Stop the Reverse Sound if it's already active. */
     rtds_stopReverseSound();
-    
+
     /* Activate the reverse sound timer to start periodic beeping */
     int status = timer_start(&reverse_sound_timer);
     if(status != U_SUCCESS) {
@@ -136,25 +123,8 @@ int rtds_startReverseSound(void) {
         queue_send(&faults, &(fault_t){RTDS_FAULT}, TX_NO_WAIT);
         return U_ERROR;
     }
-    
-    PRINTLN_INFO("Started reverse sound.");
-    return U_SUCCESS;
-}
 
-/* Stops the reverse sound. */
-int rtds_stopReverseSound(void) {
-    /* Turn off the RTDS sound */
-    _clear_rtds_pin();
-    
-    /* Deactivate the reverse sound timer */
-    int status = timer_stop(&reverse_sound_timer);
-    if(status != U_SUCCESS) {
-        PRINTLN_ERROR("Failed to deactivate reverse sound timer (Status: %d).", status);
-        queue_send(&faults, &(fault_t){RTDS_FAULT}, TX_NO_WAIT);
-        return U_ERROR;
-    }
-    
-    PRINTLN_INFO("Stopped reverse sound.");
+    PRINTLN_INFO("Started reverse sound.");
     return U_SUCCESS;
 }
 
@@ -201,6 +171,44 @@ int rtds_isInSounding(bool* state) {
         *state = true;
     } else {
         *state = false;
+    }
+
+    return U_SUCCESS;
+}
+
+/* Stops the reverse sound. */
+int rtds_stopReverseSound(void) {
+
+    /* Turn off the RTDS sound */
+    _clear_rtds_pin();
+
+    /* Deactivate the reverse sound timer */
+    int status = timer_stop(&reverse_sound_timer);
+    if(status != U_SUCCESS) {
+        PRINTLN_ERROR("Failed to deactivate reverse sound timer (Status: %d).", status);
+        queue_send(&faults, &(fault_t){RTDS_FAULT}, TX_NO_WAIT);
+        return U_ERROR;
+    }
+
+    PRINTLN_INFO("Stopped reverse sound.");
+    return U_SUCCESS;
+}
+
+/* Sounds the RTDS (Ready-to-drive sound). */
+int rtds_soundRTDS(void) {
+
+    /* Stop the reverse sound if active. */
+    rtds_stopReverseSound();
+
+    /* Trigger the RTDS sound. */
+    _set_rtds_pin();
+
+    /* Restart RTDS timer. */
+    int status = timer_restart(&rtds_timer);
+    if(status != U_SUCCESS) {
+        PRINTLN_ERROR("Failed to restart RTDS timer (Status: %d).", status);
+        queue_send(&faults, &(fault_t){RTDS_FAULT}, TX_NO_WAIT);
+        return U_ERROR;
     }
 
     return U_SUCCESS;

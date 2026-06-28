@@ -15,6 +15,9 @@ Mocks/
 # Prerequisites
 *.d
 
+# Claude Code Settings
+.claude/
+
 # Object files
 *.o
 *.ko

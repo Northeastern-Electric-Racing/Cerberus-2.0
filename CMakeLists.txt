@@ -21,8 +21,6 @@ endif()
 # Set the project name
 set(CMAKE_PROJECT_NAME Cerberus-2.0)
 
-# NER Include toolchain file
-
 # Enable compile command to ease indexing with e.g. clangd
 set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
 
@@ -57,6 +55,18 @@ enable_language(C ASM)
 
 # Create an executable object type
 add_executable(${CMAKE_PROJECT_NAME})
+
+# NER Compiler options
+target_compile_options(${CMAKE_PROJECT_NAME} PRIVATE
+    -Wno-unused-parameter
+    #-Werror=double-promotion # do not allow passing to a function that will cast to double
+    -fsingle-precision-constant # when using constants, make them floats
+    -Werror=undef # do not allow undefined macros
+    -fno-common # do not allow duplicate global variables
+    -Wformat # check the types going to printf
+    -Wshadow # prevent redefinition of unsassigned global vars
+    -fanalyzer # GCC static analysis
+)
 
 # Add STM32CubeMX generated sources
 add_subdirectory(cmake/stm32cubemx)
@@ -137,8 +147,12 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     "./Core/Src/u_buttons.c"
     "./Core/Src/u_lightning.c"
     "./Core/Src/u_debug.c"
+    "./Core/Src/u_shutdown.c"
     "./Core/Src/u_ethernet.c"
     "./Core/Src/u_tc.c"
+    "./Core/Src/u_traceout_app.c"
+    "./Drivers/Embedded-Base/traceX/src/tracex.c"
+    "./Drivers/Embedded-Base/traceX/src/traceout.c"
 )
 
 add_tire_curve(${CMAKE_PROJECT_NAME} "daytona_600" "tm_600.o")
@@ -170,6 +184,7 @@ target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
     "./Drivers/Embedded-Base/middleware/include/"
     "./Drivers/Embedded-Base/platforms/stm32h563/include/"
     "./Drivers/Embedded-Base/threadX/inc/"
+    "./Drivers/Embedded-Base/traceX/inc"
     "./Drivers/Embedded-Base/NetX/inc/"
     "./NetXDuo"
     "./Core/Inc/"
@@ -178,12 +193,6 @@ target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
 # Add project symbols (macros)
 target_compile_definitions(${CMAKE_PROJECT_NAME} PRIVATE
     # Add user defined symbols
-)
-
-# Compiler options
-target_compile_options(${CMAKE_PROJECT_NAME} PRIVATE
-    -Wno-unused-parameter # u_TODO - this doesn't seem to be working
-    -Werror=implicit-function-declaration
 )
 
 # Add linked libraries

@@ -15,6 +15,12 @@
 #include "bitstream.h"
 
 typedef struct {
+ uint8_t button_id;
+} wheel_buttons_t;
+
+void receive_wheel_buttons(const can_msg_t *message, wheel_buttons_t *wheel_buttons);
+
+typedef struct {
  float temp;
  float humidity;
 } front_msb_env_t;
@@ -129,28 +135,10 @@ typedef struct {
 void receive_back_msb_orientation(const can_msg_t *message, back_msb_orientation_t *back_msb_orientation);
 
 typedef struct {
- float max_current_ac_target;
-} max_ac_current_command_t;
+ uint8_t pwm_duty;
+} shepherd_bms_fan_percent_t;
 
-void receive_max_ac_current_command(const can_msg_t *message, max_ac_current_command_t *max_ac_current_command);
-
-typedef struct {
- float max_ac_brake_current_target;
-} max_ac_brake_current_command_t;
-
-void receive_max_ac_brake_current_command(const can_msg_t *message, max_ac_brake_current_command_t *max_ac_brake_current_command);
-
-typedef struct {
- float max_dc_current_target;
-} max_dc_current_command_t;
-
-void receive_max_dc_current_command(const can_msg_t *message, max_dc_current_command_t *max_dc_current_command);
-
-typedef struct {
- float max_dc_brake_current_target;
-} max_dc_brake_current_command_t;
-
-void receive_max_dc_brake_current_command(const can_msg_t *message, max_dc_brake_current_command_t *max_dc_brake_current_command);
+void receive_shepherd_bms_fan_percent(const can_msg_t *message, shepherd_bms_fan_percent_t *shepherd_bms_fan_percent);
 
 typedef struct {
  uint8_t state;
@@ -225,12 +213,6 @@ typedef struct {
 void receive_rtds_command_message(const can_msg_t *message, rtds_command_message_t *rtds_command_message);
 
 typedef struct {
- uint8_t button_id;
-} wheel_buttons_t;
-
-void receive_wheel_buttons(const can_msg_t *message, wheel_buttons_t *wheel_buttons);
-
-typedef struct {
  float accel_x;
  float accel_y;
  float accel_z;
@@ -261,6 +243,30 @@ typedef struct {
 } lightning_board_magnometer_sensor_information_t;
 
 void receive_lightning_board_magnometer_sensor_information(const can_msg_t *message, lightning_board_magnometer_sensor_information_t *lightning_board_magnometer_sensor_information);
+
+typedef struct {
+ uint32_t count;
+} lightning_pulse_message_t;
+
+void receive_lightning_pulse_message(const can_msg_t *message, lightning_pulse_message_t *lightning_pulse_message);
+
+typedef struct {
+ uint16_t R_iso_corrected;
+ uint8_t R_iso_status;
+ uint8_t Iso_measurement_counter;
+ bool device_error;
+ bool HV_pos_conn_fail;
+ bool HV_neg_conn_fail;
+ bool Earth_conn_fail;
+ bool Iso_alarm;
+ bool iso_warning;
+ bool iso_outdated;
+ bool Unbalance_alarm;
+ bool Undervoltage_alarm;
+ bool Unsafe_to_start;
+} imd_general_information_t;
+
+void receive_imd_general_information(const can_msg_t *message, imd_general_information_t *imd_general_information);
 
 typedef struct {
  float charge_volts;
@@ -451,9 +457,9 @@ typedef struct {
  bool thsd;
  bool tmodchk;
  bool oscchk;
-} chip_a_debug_t;
+} alpha_chip_a_debug_t;
 
-void receive_chip_a_debug(const can_msg_t *message, chip_a_debug_t *chip_a_debug);
+void receive_alpha_chip_a_debug(const can_msg_t *message, alpha_chip_a_debug_t *alpha_chip_a_debug);
 
 typedef struct {
  float vres;
@@ -463,9 +469,41 @@ typedef struct {
  float v_digital;
  bool otp1_med;
  bool opt2_med;
-} chip_b_debug_t;
+} alpha_chip_b_debug_t;
 
-void receive_chip_b_debug(const can_msg_t *message, chip_b_debug_t *chip_b_debug);
+void receive_alpha_chip_b_debug(const can_msg_t *message, alpha_chip_b_debug_t *alpha_chip_b_debug);
+
+typedef struct {
+ uint8_t chip_id;
+ float die_temp;
+ float vpv;
+ float vmv;
+ bool va_ov;
+ bool va_uv;
+ bool vd_ov;
+ bool vd_uv;
+ bool vde;
+ bool vdel;
+ bool spiflt;
+ bool sleep;
+ bool thsd;
+ bool tmodchk;
+ bool oscchk;
+} beta_chip_a_debug_t;
+
+void receive_beta_chip_a_debug(const can_msg_t *message, beta_chip_a_debug_t *beta_chip_a_debug);
+
+typedef struct {
+ float vres;
+ uint8_t chip_id;
+ float vref2;
+ float v_analog;
+ float v_digital;
+ bool otp1_med;
+ bool opt2_med;
+} beta_chip_b_debug_t;
+
+void receive_beta_chip_b_debug(const can_msg_t *message, beta_chip_b_debug_t *beta_chip_b_debug);
 
 typedef struct {
  uint8_t fan_duty_cycle;
@@ -483,7 +521,7 @@ typedef struct {
 void receive_onboard_therm_temperatures(const can_msg_t *message, onboard_therm_temperatures_t *onboard_therm_temperatures);
 
 typedef struct {
- bool precharge_status;
+ uint8_t precharge_status;
 } precharge_status_t;
 
 void receive_precharge_status(const can_msg_t *message, precharge_status_t *precharge_status);
@@ -491,11 +529,9 @@ void receive_precharge_status(const can_msg_t *message, precharge_status_t *prec
 typedef struct {
  float batt_voltage;
  float ts_voltage;
- float shunt_temp;
- float pack_current;
-} hv_plate_data_t;
+} hv_plate_voltages_t;
 
-void receive_hv_plate_data(const can_msg_t *message, hv_plate_data_t *hv_plate_data);
+void receive_hv_plate_voltages(const can_msg_t *message, hv_plate_voltages_t *hv_plate_voltages);
 
 typedef struct {
  uint8_t chip_id;
@@ -560,10 +596,73 @@ typedef struct {
 void receive_pack_soc_status(const can_msg_t *message, pack_soc_status_t *pack_soc_status);
 
 typedef struct {
- bool shutdown;
+ bool shutdown_state;
+ bool shutdown_ts_minus_sense;
+ bool shutdown_ts_plus_sense;
+ bool shutdown_acc_sense;
+ bool shutdown_tsip_sense;
 } shutdown_as_read_by_bms_t;
 
 void receive_shutdown_as_read_by_bms(const can_msg_t *message, shutdown_as_read_by_bms_t *shutdown_as_read_by_bms);
+
+typedef struct {
+ uint8_t state;
+ uint8_t verification_attempts;
+ uint8_t recovery_successful;
+} hv_plate_isospi_communication_status_t;
+
+void receive_hv_plate_isospi_communication_status(const can_msg_t *message, hv_plate_isospi_communication_status_t *hv_plate_isospi_communication_status);
+
+typedef struct {
+ bool critically_faulted;
+} bms_critically_faulted_t;
+
+void receive_bms_critically_faulted(const can_msg_t *message, bms_critically_faulted_t *bms_critically_faulted);
+
+typedef struct {
+ float pack_current;
+ float shunt_temp;
+} pack_current_and_shunt_temp_t;
+
+void receive_pack_current_and_shunt_temp(const can_msg_t *message, pack_current_and_shunt_temp_t *pack_current_and_shunt_temp);
+
+typedef struct {
+ float batt_volts;
+ float ts_volts;
+} hv_plate_voltages_adbms_t;
+
+void receive_hv_plate_voltages_adbms(const can_msg_t *message, hv_plate_voltages_adbms_t *hv_plate_voltages_adbms);
+
+typedef struct {
+ float pack_current;
+ float shunt_temp;
+} pack_current_and_shunt_temp_adbms_t;
+
+void receive_pack_current_and_shunt_temp_adbms(const can_msg_t *message, pack_current_and_shunt_temp_adbms_t *pack_current_and_shunt_temp_adbms);
+
+typedef struct {
+ float max_current_ac_target;
+} max_ac_current_command_t;
+
+void receive_max_ac_current_command(const can_msg_t *message, max_ac_current_command_t *max_ac_current_command);
+
+typedef struct {
+ float max_ac_brake_current_target;
+} max_ac_brake_current_command_t;
+
+void receive_max_ac_brake_current_command(const can_msg_t *message, max_ac_brake_current_command_t *max_ac_brake_current_command);
+
+typedef struct {
+ float max_dc_current_target;
+} max_dc_current_command_t;
+
+void receive_max_dc_current_command(const can_msg_t *message, max_dc_current_command_t *max_dc_current_command);
+
+typedef struct {
+ float max_dc_brake_current_target;
+} max_dc_brake_current_command_t;
+
+void receive_max_dc_brake_current_command(const can_msg_t *message, max_dc_brake_current_command_t *max_dc_brake_current_command);
 
 
 void receive_can(const can_msg_t *msg);

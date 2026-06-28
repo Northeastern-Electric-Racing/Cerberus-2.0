@@ -11,10 +11,10 @@
 
 /* Globals. */
 static _Atomic float battbox_temp;
-static _Atomic bool precharge;
+static _Atomic bool precharge = false; // Default to false until BMS confirms precharge is complete
 
-/* Fault callback(s). */
-static void _bms_fault_callback(ULONG args) {queue_send(&faults, &(fault_t){BMS_CAN_MONITOR_FAULT}, TX_NO_WAIT);}; // Queues the BMS CAN Monitor Fault.
+static void _bms_fault_callback(ULONG args); // Forward declaration
+
 static timer_t bms_fault_timer = {
     .name = "BMS Fault Timer",
     .callback = _bms_fault_callback,
@@ -23,6 +23,12 @@ static timer_t bms_fault_timer = {
     .type = ONESHOT,
     .auto_activate = true
 };
+
+/* Fault callback(s). */
+static void _bms_fault_callback(ULONG args) {
+    queue_send(&faults, &(fault_t){BMS_CAN_MONITOR_FAULT}, TX_NO_WAIT);
+    timer_restart(&bms_fault_timer);
+} // Queues the BMS CAN Monitor Fault.
 
 /* Initializes the BMS fault timer. */
 int bms_init(void) {
@@ -61,8 +67,20 @@ void bms_setBattboxTemp(float temp) {
     battbox_temp = temp;
 }
 
-void bms_setPrecharge(bool state) {
-    precharge = state;
+void bms_receivePrechargeState(precharge_state_t state) {
+
+    if (state == PRECHARGE_OPEN) {
+        precharge = false;
+
+    } else if (state == PRECHARGE_FLOATING) {
+        precharge = false;
+        // queue critical fault if precharge is floating
+        queue_send(&faults, &(fault_t){PRECHARGE_FLOATING_FAULT}, TX_NO_WAIT);
+    } else if (state == PRECHARGE_CLOSED) {
+        precharge = true;
+    } else {
+        PRINTLN_WARNING("Received invalid precharge state from CAN message: %d", state);
+    }
 }
 
 bool bms_getPrecharge(void) {

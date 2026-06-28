@@ -19,6 +19,7 @@
 #include "u_pedals.h"
 #include "u_tc.h"
 #include "serial.h"
+#include "u_shutdown.h"
 
 #define STATE_TRANS_QUEUE_SIZE 4
 
@@ -29,23 +30,6 @@
 
 /* Globals. */
 static state_t cerberus_state;
-static bool is_ts_rising = false;
-static bool enter_drive_enabled = false;
-static _Atomic bool shutdown = false;
-
-/* Rising TS Callback and Timer */
-static void _rising_ts_cb(ULONG input) { 
-	PRINTLN_INFO("rising ts callback");
-	enter_drive_enabled = true; 
-}
-static timer_t ts_rising_timer = {
-	.name = "TS Rising Timer",
-	.callback = _rising_ts_cb,
-	.callback_input = 0,
-	.duration = TS_RISING_BLOCK_TIMEOUT,
-	.type = ONESHOT,
-	.auto_activate = false
-};
 
 void send_carstate_msg(void)
 {
@@ -54,7 +38,7 @@ void send_carstate_msg(void)
 		get_nero_state().home_mode,
 		get_nero_state().nero_index,
 		dti_get_mph(),
-		get_shutdown(),
+		is_shutdown_closed(),
 		pedals_getTorqueLimitPercentage(),
 		(cerberus_state.functional != F_REVERSE),
 		pedals_getRegenLimit(),
@@ -64,23 +48,9 @@ void send_carstate_msg(void)
 	);
 }
 
-void update_shutdown(bool new_shutdown) {
-	shutdown = new_shutdown;
-}
-
-bool get_shutdown(void) {
-	return shutdown;
-}
-
 int init_statemachine(void) {
-	/* Create TS Rising Timer. */
-	int status = timer_init(&ts_rising_timer);
-	if(status != U_SUCCESS) {
-		PRINTLN_ERROR("Failed to create TS Rising timer (Status: %d).", status);
-		return U_ERROR;
-	}
-
 	PRINTLN_INFO("Ran init_statemachine().");
+	cerberus_state.nero.home_mode = true;
 	return U_SUCCESS;
 }
 
@@ -112,9 +82,18 @@ static int transition_functional_state(func_state_t new_state)
 		printf("FAULTED\r\n");
 	}
 
+	if (pedals_getAccelState()) {
+		PRINTLN_WARNING("Accelerator should not be pressed when entering a state");
+		return 3;
+	}
+
 	/* Make sure wheels are not spinning before changing modes */
 	bool brake_state;
-	rtds_stopReverseSound();
+	
+	/* If we're actively in the reverse state, stop the reverse sound before doing any state changes. */
+	if(cerberus_state.functional == F_REVERSE) {
+		rtds_stopReverseSound();
+	}
 
 	/* Catching state transitions */
 	switch (new_state) {
@@ -135,31 +114,24 @@ static int transition_functional_state(func_state_t new_state)
 	case F_EFFICIENCY:
 
 		brake_state = pedals_getBrakeState();
-#ifdef TSMS_OVERRIDE
-		if (get_shutdown() && (!brake_state || cerberus_state.functional == FAULTED)) { // only enforce brake / fault if tsms is actually on
-			return 3;
-		}
-		printf("Ignoring tsms\n\n");
-#else
+
 		if (cerberus_state.functional == FAULTED) {
 			printf("Cannot drive from a fault!\n");
 			return 3;
 		}
 
-		if (!enter_drive_enabled) {
-			printf("Must wait before entering drive!");
+		/* Only turn on motor if brakes engaged and shutdown is closed */
+		if (!brake_state) {
+			printf("Must press brake to enter drive mode!\n");
+			return 3;
+		} 
+		
+		if (!is_shutdown_closed()) {
+			printf("Shutdown must be closed to enter drive mode!\n");
 			return 3;
 		}
-
-		/* Only turn on motor if brakes engaged and tsms is on */
-		if (!brake_state || !get_shutdown()) {
-			return 3;
-		}
-#endif
-
-		if (get_shutdown()) {
-			rtds_soundRTDS();
-		}
+		
+		rtds_soundRTDS();
 
 		printf("ACTIVE STATE\r\n");
 		break;
@@ -197,13 +169,13 @@ static int transition_nero_state(nero_state_t new_state)
 			}
 		}
 
-		/* TSMS OFF and MPH = 0 to enter games */
+		/* Shutdown = Open and MPH = 0 to enter games */
 		if (new_state.nero_index == GAMES) {
-#ifndef TSMS_OVERRIDE
-			if (get_shutdown() || dti_get_mph() >= 1) {
+
+			if (is_shutdown_closed() || dti_get_mph() >= 1) {
 				return 1;
 			}
-#endif
+
 			new_state.home_mode = false;
 		}
 	}
@@ -330,25 +302,5 @@ void statemachine_process(state_req_t new_state_req) {
 		else if(new_state_req.id == FUNCTIONAL) { transition_functional_state(new_state_req.state.functional); }
 	}
 
-	if (!is_ts_rising && get_shutdown()) {
-		is_ts_rising = true;
-
-		/* Restart TS Rising timer. */
-		int status = timer_restart(&ts_rising_timer);
-		if(status != U_SUCCESS) {
-			PRINTLN_ERROR("Failed to restart TS Rising timer (in !ts_rising && get_shutdown()) (Status: %d).", status);
-			return;
-		}
-
-	} else if (!get_shutdown()) {
-		/* Stop the TS Rising timer. */
-    	int status = timer_stop(&ts_rising_timer);
-    	if(status != U_SUCCESS) {
-        	PRINTLN_ERROR("Failed to stop TS Rising timer (in !get_shutdown()) (Status: %d).", status);
-        	return;
-    	}
-		is_ts_rising = false;
-		enter_drive_enabled = false;
-	}
 	send_carstate_msg();
 }
