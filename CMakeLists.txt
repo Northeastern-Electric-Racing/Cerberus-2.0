@@ -112,6 +112,7 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     # Embedded-Base NetX Utils
     "../Drivers/Embedded-Base/NetX/src/u_nx_debug.c"
     "../Drivers/Embedded-Base/NetX/src/u_nx_ethernet.c"
+    "../Drivers/Embedded-Base/NetX/src/u_rtc.c"
     "../Drivers/Embedded-Base/NetX/src/nxd_ptp_client.c"
     "../Drivers/Embedded-Base/NetX/src/u_nx_protobuf.c"
 

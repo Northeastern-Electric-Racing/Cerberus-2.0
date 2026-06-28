@@ -31,8 +31,7 @@
 /* (please keep these organized in increasing order) */
 #define PRIO_vDefault          0
 #define PRIO_vFaultsQueue      1
-#define PRIO_vEthernetIncoming 1
-#define PRIO_vEthernetOutgoing 1
+#define PRIO_vEthernetManager  1
 #define PRIO_vCANIncoming      1
 #define PRIO_vCANOutgoing      1
 #define PRIO_vStatemachine     2
@@ -47,11 +46,7 @@
 #define PRIO_vPeripherals      3
 
 
-// callback for when either bms or imd indicates a fault
-static void _lightning_board_status_callback(void *arg) {
-    send_lightning_board_light_status(LIGHT_RED);
-    // the light status update (red or green) happens in the main loop after debounce
-}
+
 
 /* Test Thread */
 static thread_t test_thread = {
@@ -66,25 +61,19 @@ static thread_t test_thread = {
     };
 void vTest(ULONG thread_input) {
 
-    /* Initialize ethernet (you have to do this in a thread for some reason). */
-    int status = ethernet1_init();
-    if(status != NX_SUCCESS) {
-        PRINTLN_ERROR("Failed to call ethernet1_init() (Status: %d/%s).", status, nx_status_toString(status));
-    }
-
     //tx_thread_sleep(5000);
 
     while(1) {
 
-        float third_one = 23134.31f;
-        ethernet_mqtt_message_t message = nx_protobuf_mqtt_message_create("VCU_Ethernet/A/big_message", "A", 19.2f, 12.1f, third_one, true, -12);
-        queue_send(&eth_manager, &message, TX_NO_WAIT);
-
-        send_vcu_test_message(7, 19.342, 30, 13942, -122);
-        send_second_vcu_test_message(12132, 3, 2, false, 35, 100000);
-
-        /* Send car state message */
-        send_carstate_msg();
+        // float third_one = 23134.31f;
+        // ethernet_mqtt_message_t message = nx_protobuf_mqtt_message_create("VCU_Ethernet/A/big_message", "A", 19.2f, 12.1f, third_one, true, -12);
+        // queue_send(&eth_manager, &message, TX_NO_WAIT);
+        //
+        // send_vcu_test_message(7, 19.342, 30, 13942, -122);
+        // send_second_vcu_test_message(12132, 3, 2, false, 35, 100000);
+        //
+        // /* Send car state message */
+        // send_carstate_msg();
 
         tx_thread_sleep(test_thread.sleep);
     }
@@ -925,8 +914,7 @@ uint8_t threads_init(TX_BYTE_POOL *byte_pool) {
     CATCH_ERROR(create_thread(byte_pool, &mux_thread), U_SUCCESS);               // Create Mux thread.
     CATCH_ERROR(create_thread(byte_pool, &peripherals_thread), U_SUCCESS);       // Create Peripherals thread.
     CATCH_ERROR(create_thread(byte_pool, &ethernet_manager), U_SUCCESS); // Create Outgoing Ethernet thread.
-    CATCH_ERROR(create_thread(byte_pool, &test_thread), U_SUCCESS);                // Create Test thread.
-    CATCH_ERROR(create_thread(byte_pool, &rtds_telemetry_thread), U_SUCCESS);      // Create RTDS Telemetry thread.
+    //CATCH_ERROR(create_thread(byte_pool, &test_thread), U_SUCCESS);                // Create Test thread.
     CATCH_ERROR(create_thread(byte_pool, &rtds_thread), U_SUCCESS);              // Create RTDS thread.
 
     // add more threads here if need

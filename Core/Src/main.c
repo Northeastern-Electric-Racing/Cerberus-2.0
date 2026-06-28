@@ -302,7 +302,7 @@ void SystemClock_Config(void)
   RCC_OscInitStruct.PLL.PLLM = 2;
   RCC_OscInitStruct.PLL.PLLN = 28;
   RCC_OscInitStruct.PLL.PLLP = 2;
-  RCC_OscInitStruct.PLL.PLLQ = 2;
+  RCC_OscInitStruct.PLL.PLLQ = 7;
   RCC_OscInitStruct.PLL.PLLR = 2;
   RCC_OscInitStruct.PLL.PLLRGE = RCC_PLL1_VCIRANGE_3;
   RCC_OscInitStruct.PLL.PLLVCOSEL = RCC_PLL1_VCORANGE_WIDE;
@@ -1171,9 +1171,6 @@ static void MX_GPIO_Init(void)
 
   HAL_NVIC_SetPriority(EXTI8_IRQn, 0, 0);
   HAL_NVIC_EnableIRQ(EXTI8_IRQn);
-
-  HAL_NVIC_SetPriority(EXTI9_IRQn, 0, 0);
-  HAL_NVIC_EnableIRQ(EXTI9_IRQn);
 
   HAL_NVIC_SetPriority(EXTI11_IRQn, 0, 0);
   HAL_NVIC_EnableIRQ(EXTI11_IRQn);
