@@ -75,7 +75,11 @@ efuse_data_t efuse_getData(void) {
         data.enabled[efuse] = (bool)(HAL_GPIO_ReadPin(efuses[efuse].en_port, efuses[efuse].en_pin) == GPIO_PIN_SET);
 
         /* Get the eFuse's current control state (as understood by VCU) from the control state tracking array. */
-        data.control_state[efuse] = _efuse_control_state[efuse];
+        #ifdef EFUSES_OVERRIDE_CALYPSO
+        data.control_state[efuse] = efuses[efuse].default_state; // If VCU is set to override Calypso, use the fuse's static default control state.
+        #else
+        data.control_state[efuse] = _efuse_control_state[efuse]; // In normal operation, source control state from Calypso.
+        #endif
     }
 
     return data;

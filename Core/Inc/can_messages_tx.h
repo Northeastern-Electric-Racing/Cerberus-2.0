@@ -10,27 +10,6 @@
 
 /**
 * Contents of this message:
-* VCU/Commands/AC_Current_Target - This command sets the target motor AC current (peak, not RMS)
-*/
-uint8_t send_ac_current_command
-(float current_target_ac);
-
-/**
-* Contents of this message:
-* VCU/Commands/Brake_Current_Target - Targets the brake current of the motor
-*/
-uint8_t send_brake_current_command
-(float brake_ac_current);
-
-/**
-* Contents of this message:
-* VCU/Commands/Drive_Enable_Target - Drive allowed
-*/
-uint8_t send_drive_enable_command
-(uint8_t drive_enable);
-
-/**
-* Contents of this message:
 * VCU/eFuses/Dashboard/ADC - Raw ADC Value.
 * VCU/eFuses/Dashboard/Voltage - Dashboard eFuse Voltage
 * VCU/eFuses/Dashboard/Current - Dashboard eFuse Current.
@@ -165,7 +144,6 @@ uint8_t send_spare_efuse
 * Contents of this message:
 * VCU/Shutdown/BMS_GPIO - 
 * VCU/Shutdown/BOTS_GPIO - 
-* VCU/Shutdown/SPARE_GPIO - 
 * VCU/Shutdown/BSPD_GPIO - 
 * VCU/Shutdown/HV_C_GPIO - 
 * VCU/Shutdown/HVD_GPIO - 
@@ -175,7 +153,7 @@ uint8_t send_spare_efuse
 * VCU/Shutdown/TSMS_GPIO - 
 */
 uint8_t send_shutdown_pins
-(bool bms_gpio,bool bots_gpio,bool spare_gpio,bool bspd_gpio,bool hv_c,bool hvd_gpio,bool imd_gpio,bool ckpt_gpio,bool inertia_sw_gpio,bool tsms_gpio,uint8_t UNUSED);
+(bool bms_gpio,bool bots_gpio,bool bspd_gpio,bool hv_c,bool hvd_gpio,bool imd_gpio,bool ckpt_gpio,bool inertia_sw_gpio,bool tsms_gpio);
 
 /**
 * Contents of this message:
@@ -191,15 +169,17 @@ uint8_t send_shutdown_pins
 * VCU/CarState/traction_control - Whether or not traction control is enabled.
 */
 uint8_t send_car_state
-(bool home_mode,uint8_t nero_index,int32_t car_speed,bool tsms,uint32_t torque_limit_percentage,bool reverse,uint16_t regen_limit,bool launch_control,uint8_t functional_state,bool traction_control);
+(bool home_mode,uint8_t nero_index,float car_speed,bool tsms,float torque_limit_percentage,bool reverse,uint16_t regen_limit,bool launch_control,uint8_t functional_state,bool traction_control);
 
 /**
 * Contents of this message:
 * VCU/Pedals/Percentages/acceleration_pedal - How far the acceleration pedal is pressed, ranging from 0 to 1.
 * VCU/Pedals/Percentages/brake_pedal - How far the brake pedal is pressed, ranging from 0 to 1.
+* VCU/Pedals/PSI/Brake_Front - Front Brake Sensor (BRAKE1) as PSI.
+* VCU/Pedals/PSI/Brake_Back - Back Brake Sensor (BRAKE2) as PSI.
 */
 uint8_t send_pedal_percent_pressed_values
-(float accel_norm,float brake_norm);
+(float accel_norm,float brake_norm,float brake_psi_brake1,float brake_psi_brake2);
 
 /**
 * Contents of this message:
@@ -246,7 +226,6 @@ uint8_t send_imu_gyro
 * VCU/Faults/Critical/CAN_INCOMING_FAULT - 
 * VCU/Faults/Critical/BMS_CAN_MONITOR_FAULT - 
 * VCU/Faults/Critical/LIGHTNING_CAN_MONITOR_FAULT - 
-* VCU/Faults/Critical/SHUTDOWN_FAULT - 
 * VCU/Faults/Non-Critical/ONBOARD_TEMP_FAULT - 
 * VCU/Faults/Non-Critical/IMU_ACCEL_FAULT - 
 * VCU/Faults/Non-Critical/IMU_GYRO_FAULT - 
@@ -258,9 +237,11 @@ uint8_t send_imu_gyro
 * VCU/Faults/Non-Critical/ONBOARD_PEDAL_DIFFERENCE_FAULT - 
 * VCU/Faults/Non-Critical/RTDS_FAULT - 
 * VCU/Faults/Non-Critical/LV_LOW_VOLTAGE_FAULT - 
+* VCU/Faults/Critical/PRECHARGE_FLOATING_FAULT - If TS Volts is stuck under the Batt Volts Threshold
+* VCU/Faults/Critical/LATCHING_ACTIVE_FAULT - 
 */
 uint8_t send_faults
-(bool CAN_OUTGOING_FAULT,bool CAN_INCOMING_FAULT,bool BMS_CAN_MONITOR_FAULT,bool LIGHTNING_CAN_MONITOR_FAULT,bool SHUTDOWN_FAULT,bool ONBOARD_TEMP_FAULT,bool IMU_ACCEL_FAULT,bool IMU_GYRO_FAULT,bool BSPD_PREFAULT,bool ONBOARD_BRAKE_OPEN_CIRCUIT_FAULT,bool ONBOARD_ACCEL_OPEN_CIRCUIT_FAULT,bool ONBOARD_BRAKE_SHORT_CIRCUIT_FAULT,bool ONBOARD_ACCEL_SHORT_CIRCUIT_FAULT,bool ONBOARD_PEDAL_DIFFERENCE_FAULT,bool RTDS_FAULT,bool LV_LOW_VOLTAGE_FAULT);
+(bool CAN_OUTGOING_FAULT,bool CAN_INCOMING_FAULT,bool BMS_CAN_MONITOR_FAULT,bool LIGHTNING_CAN_MONITOR_FAULT,bool ONBOARD_TEMP_FAULT,bool IMU_ACCEL_FAULT,bool IMU_GYRO_FAULT,bool BSPD_PREFAULT,bool ONBOARD_BRAKE_OPEN_CIRCUIT_FAULT,bool ONBOARD_ACCEL_OPEN_CIRCUIT_FAULT,bool ONBOARD_BRAKE_SHORT_CIRCUIT_FAULT,bool ONBOARD_ACCEL_SHORT_CIRCUIT_FAULT,bool ONBOARD_PEDAL_DIFFERENCE_FAULT,bool RTDS_FAULT,bool LV_LOW_VOLTAGE_FAULT,bool PRECHARGE_FLOATING_FAULT,bool LATCHING_ACTIVE_FAULT);
 
 /**
 * Contents of this message:
@@ -355,4 +336,52 @@ uint8_t send_second_vcu_test_message
 */
 uint8_t send_lv_box_fan_pwm
 (uint8_t fan_pwm_percentage);
+
+/**
+* Contents of this message:
+* VCU/Echo/BMS_Shutdown_From_VCU - BMS Shutdown Status, as tracked and reported by VCU.
+*/
+uint8_t send_bms_shutdown_status_as_reported_by_vcu
+(bool bms_shutdown_as_reported_by_vcu);
+
+/**
+* Contents of this message:
+* VCU/Pedals/Drive_Locks/BRAKE_OC - 
+* VCU/Pedals/Drive_Locks/BRAKE_SC - 
+* VCU/Pedals/Drive_Locks/ACCEL_OC - 
+* VCU/Pedals/Drive_Locks/ACCEL_SC - 
+* VCU/Pedals/Drive_Locks/ACCEL_DIFF - 
+* VCU/Pedals/Drive_Locks/BSPD_PREF - 
+* VCU/Pedals/Drive_Locks/BMS_NOT_PRECHARGED_YET - 
+*/
+uint8_t send_drive_lock_states
+(bool BRAKE_OC,bool BRAKE_SC,bool ACCEL_OC,bool ACCEL_SC,bool ACCEL_DIFF,bool BSPD_PREF,bool BMS_NOT_PRECHARGED_YET);
+
+/**
+* Contents of this message:
+* VCU/Lightning/Reset_Latching_Faults - Tells Lightning to Reset Latching Faults
+*/
+uint8_t send_reset_latching_fault
+(bool reset_latching);
+
+/**
+* Contents of this message:
+* VCU/Commands/AC_Current_Target - This command sets the target motor AC current (peak, not RMS)
+*/
+uint8_t send_ac_current_command
+(float current_target_ac);
+
+/**
+* Contents of this message:
+* VCU/Commands/Brake_Current_Target - Targets the brake current of the motor
+*/
+uint8_t send_brake_current_command
+(float brake_ac_current);
+
+/**
+* Contents of this message:
+* VCU/Commands/Drive_Enable_Target - Drive allowed
+*/
+uint8_t send_drive_enable_command
+(uint8_t drive_enable);
 #endif

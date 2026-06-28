@@ -21,27 +21,30 @@
 #include "serial.h"
 #include "u_lightning.h"
 #include "u_rtds.h"
+#include "u_nx_debug.h"
+#include "u_shutdown.h"
 #include "timer.h"
 #include "debounce.h"
+#include "u_traceout_app.h"
 
 /* Thread Priority Macros. */
 /* (please keep these organized in increasing order) */
 #define PRIO_vDefault          0
-#define PRIO_vFaultsQueue      0
-#define PRIO_vEthernetManager  0
-#define PRIO_vCANIncoming      0
-#define PRIO_vCANOutgoing      0
-#define PRIO_vStatemachine     0
-#define PRIO_vFaults           1
-#define PRIO_vPedals           1
-#define PRIO_vTSMS             1
-#define PRIO_vShutdown         1
-#define PRIO_vEFuses           2
-#define PRIO_vMux              2
-#define PRIO_vRTDS             2
-#define PRIO_vTest             2
-#define PRIO_vPeripherals      2
-
+#define PRIO_vFaultsQueue      1
+#define PRIO_vEthernetIncoming 1
+#define PRIO_vEthernetOutgoing 1
+#define PRIO_vCANIncoming      1
+#define PRIO_vCANOutgoing      1
+#define PRIO_vStatemachine     2
+#define PRIO_vFaults           2
+#define PRIO_vPedals           2
+#define PRIO_vTSMS             2
+#define PRIO_vShutdown         2
+#define PRIO_vEFuses           3
+#define PRIO_vMux              3
+#define PRIO_vRTDS             3
+#define PRIO_vTest             3
+#define PRIO_vPeripherals      3
 
 
 // callback for when either bms or imd indicates a fault
@@ -175,6 +178,7 @@ void vCANOutgoing(ULONG thread_input) {
             if(status != HAL_OK) {
                 PRINTLN_WARNING("Failed to send message (on can1) after removing from outgoing queue (Message ID: %ld, Status: %d/%s).", message.id, status, hal_status_toString(status));
                 queue_send(&faults, &(fault_t){CAN_OUTGOING_FAULT}, TX_NO_WAIT);
+
             }
             tx_thread_sleep(1); // This is needed, or else the queue will try to send messages too fast and outpace the HAL.
         }
@@ -214,18 +218,20 @@ static thread_t statemachine_thread = {
         .threshold  = 0,                      /* Preemption Threshold */
         .time_slice = TX_NO_TIME_SLICE,       /* Time Slice */
         .auto_start = TX_AUTO_START,          /* Auto Start */
-        .sleep      = 0,                      /* Sleep (in ticks) */
+        .sleep      = 200,                    /* Sleep (in ticks) */
         .function   = vStatemachine           /* Thread Function */
     };
 void vStatemachine(ULONG thread_input) {
 
     while(1) {
         state_req_t new_state_req;
-        while(queue_receive(&state_transition_queue, &new_state_req, TX_WAIT_FOREVER) == U_SUCCESS) {
-            statemachine_process(new_state_req);
-	    }
 
-        /* No sleep. Thread timing is controlled completely by the queue timeout. */
+        // check if there is a transition in the queue, if not skip processing
+        UINT status = queue_receive(&state_transition_queue, &new_state_req, statemachine_thread.sleep);
+        if (status == U_SUCCESS) statemachine_process(new_state_req);
+
+        // send state periodically whether receiving a transition or not
+        send_carstate_msg();
     }
 }
 
@@ -250,7 +256,6 @@ void vFaults(ULONG thread_input) {
             get_fault(CAN_INCOMING_FAULT),
             get_fault(BMS_CAN_MONITOR_FAULT),
             get_fault(LIGHTNING_CAN_MONITOR_FAULT),
-            get_fault(SHUTDOWN_FAULT),
             get_fault(ONBOARD_TEMP_FAULT),
             get_fault(IMU_ACCEL_FAULT),
             get_fault(IMU_GYRO_FAULT),
@@ -261,7 +266,9 @@ void vFaults(ULONG thread_input) {
             get_fault(ONBOARD_ACCEL_SHORT_CIRCUIT_FAULT),
             get_fault(ONBOARD_PEDAL_DIFFERENCE_FAULT),
             get_fault(RTDS_FAULT),
-            get_fault(LV_LOW_VOLTAGE_FAULT)
+            get_fault(LV_LOW_VOLTAGE_FAULT),
+            get_fault(PRECHARGE_FLOATING_FAULT),
+            0 // TODO: ADD BACK LATCHING ACTIVE FAULT
         );
 
         /* Sleep Thread for specified number of ticks. */
@@ -277,64 +284,15 @@ static thread_t shutdown_thread = {
         .threshold  = 0,                  /* Preemption Threshold */
         .time_slice = TX_NO_TIME_SLICE,   /* Time Slice */
         .auto_start = TX_AUTO_START,      /* Auto Start */
-        .sleep      = 500,                /* Sleep (in ticks) */
+        .sleep      = 100,                /* Sleep (in ticks) */
         .function   = vShutdown           /* Thread Function */
-    };
-
-#define LIGHTNING_BOARD_DEBOUNCE 500 
+};
 
 void vShutdown(ULONG thread_input) {
-    /* Debounce Timer */
-    static nertimer_t lightning_status_timer; 
-
     while(1) {
 
-        bool bms_gpio = (HAL_GPIO_ReadPin(BMS_GPIO_GPIO_Port, BMS_GPIO_Pin) == GPIO_PIN_SET);
-        bool bots_gpio = (HAL_GPIO_ReadPin(BOTS_GPIO_GPIO_Port, BOTS_GPIO_Pin) == GPIO_PIN_SET);
-        bool spare_gpio = (HAL_GPIO_ReadPin(SPARE_GPIO_GPIO_Port, SPARE_GPIO_Pin) == GPIO_PIN_SET);
-        bool bspd_gpio = (HAL_GPIO_ReadPin(BSPD_GPIO_GPIO_Port, BSPD_GPIO_Pin) == GPIO_PIN_SET);
-        bool hv_c = (HAL_GPIO_ReadPin(HV_C_GPIO_GPIO_Port, HV_C_GPIO_Pin) == GPIO_PIN_SET);
-        bool hvd_gpio = (HAL_GPIO_ReadPin(HVD_GPIO_GPIO_Port, HVD_GPIO_Pin) == GPIO_PIN_SET);
-        bool imd_gpio = (HAL_GPIO_ReadPin(IMD_GPIO_GPIO_Port, IMD_GPIO_Pin) == GPIO_PIN_SET);
-        bool ckpt_gpio = (HAL_GPIO_ReadPin(CKPT_GPIO_GPIO_Port, CKPT_GPIO_Pin) == GPIO_PIN_SET);
-        bool inertia_sw_gpio = (HAL_GPIO_ReadPin(INERTIA_SW_GPIO_GPIO_Port, INERTIA_SW_GPIO_Pin) == GPIO_PIN_SET);
-        bool tsms_gpio = (HAL_GPIO_ReadPin(TSMS_GPIO_GPIO_Port, TSMS_GPIO_Pin) == GPIO_PIN_SET);
-
-            
-        //lightning status with debounce
-        bool lightning_fault = bms_gpio || imd_gpio;
-        
-
-        //lightning status after debounce
-        if (lightning_fault) {
-            debounce(lightning_fault, &lightning_status_timer, LIGHTNING_BOARD_DEBOUNCE, &_lightning_board_status_callback, NULL); //used same constant (BRAKE_FAULT_DEBOUNCE) which was used in u_pedals.c//not anymore
-        }
-        else {
-            send_lightning_board_status(LIGHT_GREEN); //no fault, set to green
-        }
-
-        /* Send Shutdown Pins CAN message. */
-        send_shutdown_pins(
-            bms_gpio,
-            bots_gpio,
-            spare_gpio,
-            bspd_gpio,
-            hv_c,
-            hvd_gpio,
-            imd_gpio,
-            ckpt_gpio,
-            inertia_sw_gpio,
-            tsms_gpio,
-            0
-        );
-
-        bool shutdown_active = bms_gpio || bots_gpio || spare_gpio || bspd_gpio
-                                || hv_c || hvd_gpio || imd_gpio || ckpt_gpio
-                                || inertia_sw_gpio || tsms_gpio;
-
-        if (shutdown_active && get_shutdown() == true) { // if tsms is still on when shutdown is active, trigger fault
-            queue_send(&faults, &(fault_t){SHUTDOWN_FAULT}, TX_NO_WAIT);
-        }
+        /* Process shutdown. */
+        shutdown_process();
 
         /* Sleep Thread for specified number of ticks. */
         tx_thread_sleep(shutdown_thread.sleep);
@@ -349,7 +307,7 @@ static thread_t pedals_thread = {
         .threshold  = 0,                      /* Preemption Threshold */
         .time_slice = TX_NO_TIME_SLICE,       /* Time Slice */
         .auto_start = TX_AUTO_START,          /* Auto Start */
-        .sleep      = 1,                      /* Sleep (in ticks) */
+        .sleep      = 10,                      /* Sleep (in ticks) */
         .function   = vPedals                 /* Thread Function */
     };
 void vPedals(ULONG thread_input) {
@@ -371,7 +329,7 @@ static thread_t efuses_thread = {
         .threshold  = 0,                      /* Preemption Threshold */
         .time_slice = TX_NO_TIME_SLICE,       /* Time Slice */
         .auto_start = TX_AUTO_START,          /* Auto Start */
-        .sleep      = 1000,                   /* Sleep (in ticks) */
+        .sleep      = 100,                    /* Sleep (in ticks) */
         .function   = vEFuses                 /* Thread Function */
     };
 void vEFuses(ULONG thread_input) {
@@ -403,6 +361,13 @@ void vEFuses(ULONG thread_input) {
         send_dti_controller_temp_as_reported_by_vcu(controller_temp);
         send_brake_state_as_reported_by_vcu(brake_state);
 
+
+        /*sanity-check to detect disconnected motor temperature sensor*/
+        static const uint16_t MOTOR_TEMP_SENSOR_MAX = 125;
+        if (motor_temp >= MOTOR_TEMP_SENSOR_MAX) {
+            trigger_fault(MOTOR_TEMP_SENSOR_FAULT);
+        }
+
         /* Determine radfan eFuse state. */
         static const uint16_t RADFAN_UPPERBOUND = 65;
         static const uint16_t RADFAN_LOWERBOUND = 35;
@@ -410,7 +375,7 @@ void vEFuses(ULONG thread_input) {
             case EF_ON: efuse_enable(EFUSE_RADFAN); break;
             case EF_OFF: efuse_disable(EFUSE_RADFAN); break;
             case EF_AUTO:
-                if(motor_temp >= RADFAN_UPPERBOUND) {
+                if(!get_fault(MOTOR_TEMP_SENSOR_FAULT) && motor_temp >= RADFAN_UPPERBOUND) {
                     efuse_enable(EFUSE_RADFAN);
                 } else if (motor_temp <= RADFAN_LOWERBOUND) {
                     efuse_disable(EFUSE_RADFAN);
@@ -438,14 +403,26 @@ void vEFuses(ULONG thread_input) {
         /* Determine pump1 eFuse state. */
         static const uint16_t PUMP1_UPPERBOUND = 45;
         static const uint16_t PUMP1_LOWERBOUND = 35;
+        static const int PUMP1_SWITCHING_TIMEOUT = 5000;
+        static nertimer_t pump1_switching_timer = { 0 };
         switch(data.control_state[EFUSE_PUMP1]) {
             case EF_ON: efuse_enable(EFUSE_PUMP1); break;
             case EF_OFF: efuse_disable(EFUSE_PUMP1); break;
             case EF_AUTO:
-                if(motor_temp >= PUMP1_UPPERBOUND) {
+                if(controller_temp >= PUMP1_UPPERBOUND) {
+                    /* If timer is still active, break early. */
+                    if(!is_timer_expired(&pump1_switching_timer) && is_timer_active(&pump1_switching_timer)) { break; }
+
+                    /* Otherwise, make the state change but restart the timer. */
                     efuse_enable(EFUSE_PUMP1);
-                } else if (motor_temp <= PUMP1_LOWERBOUND) {
+                    start_timer(&pump1_switching_timer, PUMP1_SWITCHING_TIMEOUT);
+                } else if (controller_temp <= PUMP1_LOWERBOUND) {
+                    /* If timer is still active, break early. */
+                    if(!is_timer_expired(&pump1_switching_timer) && is_timer_active(&pump1_switching_timer)) { break; }
+
+                    /* Otherwise, make the state change but restart the timer. */
                     efuse_disable(EFUSE_PUMP1);
+                    start_timer(&pump1_switching_timer, PUMP1_SWITCHING_TIMEOUT);
                 }
                 break;
             default: efuse_enable(EFUSE_PUMP1); break;
@@ -454,14 +431,26 @@ void vEFuses(ULONG thread_input) {
         /* Determine pump2 eFuse state. */
         static const uint16_t PUMP2_UPPERBOUND = 45;
         static const uint16_t PUMP2_LOWERBOUND = 35;
+        static const int PUMP2_SWITCHING_TIMEOUT = 5000;
+        static nertimer_t pump2_switching_timer = { 0 };
         switch(data.control_state[EFUSE_PUMP2]) {
             case EF_ON: efuse_enable(EFUSE_PUMP2); break;
             case EF_OFF: efuse_disable(EFUSE_PUMP2); break;
             case EF_AUTO:
-                if(controller_temp >= PUMP2_UPPERBOUND) {
+                if(!get_fault(MOTOR_TEMP_SENSOR_FAULT) && motor_temp >= PUMP2_UPPERBOUND) {
+                    /* If timer is still active, break early. */
+                    if(!is_timer_expired(&pump2_switching_timer) && is_timer_active(&pump2_switching_timer)) { break; }
+
+                    /* Otherwise, make the state change but restart the timer. */
                     efuse_enable(EFUSE_PUMP2);
-                } else if (controller_temp <= PUMP2_LOWERBOUND) {
+                    start_timer(&pump2_switching_timer, PUMP2_SWITCHING_TIMEOUT);
+                } else if (motor_temp <= PUMP2_LOWERBOUND) {
+                    /* If timer is still active, break early. */
+                    if(!is_timer_expired(&pump2_switching_timer) && is_timer_active(&pump2_switching_timer)) { break; }
+
+                    /* Otherwise, make the state change but restart the timer. */
                     efuse_disable(EFUSE_PUMP2);
+                    start_timer(&pump2_switching_timer, PUMP2_SWITCHING_TIMEOUT);
                 }
                 break;
             default: efuse_enable(EFUSE_PUMP2); break;
@@ -488,7 +477,7 @@ void vEFuses(ULONG thread_input) {
             default: efuse_enable(EFUSE_BRAKE); break;
         }
 
-        /* Determine shutdown eFuse state. */
+        /* Determine Shutdown eFuse state. */
         switch(data.control_state[EFUSE_SHUTDOWN]) {
             case EF_ON: efuse_enable(EFUSE_SHUTDOWN); break;
             case EF_OFF: efuse_disable(EFUSE_SHUTDOWN); break;
@@ -502,7 +491,7 @@ void vEFuses(ULONG thread_input) {
             default: efuse_enable(EFUSE_LV); break;
         }
 
-        /* Determine battbox eFuse state. */
+        /* Determine Battbox eFuse state. */
         switch(data.control_state[EFUSE_BATTBOX]) {
             case EF_ON: efuse_enable(EFUSE_BATTBOX); break;
             case EF_OFF: efuse_disable(EFUSE_BATTBOX); break;
@@ -693,6 +682,7 @@ void vEFuses(ULONG thread_input) {
     }
 }
 
+
 /* Mux Thread (for the ADC multiplexer). */
 static thread_t mux_thread = {
         .name       = "Mux Thread",           /* Name */
@@ -701,7 +691,7 @@ static thread_t mux_thread = {
         .threshold  = 0,                      /* Preemption Threshold */
         .time_slice = TX_NO_TIME_SLICE,       /* Time Slice */
         .auto_start = TX_AUTO_START,          /* Auto Start */
-        .sleep      = 5000,                   /* Sleep (in ticks) */
+        .sleep      = 500,                    /* Sleep (in ticks) */
         .function   = vMux                    /* Thread Function */
     };
 void vMux(ULONG thread_input) {
@@ -762,8 +752,6 @@ void vPeripherals(ULONG thread_input) {
                 queue_send(&faults, &(fault_t){ONBOARD_TEMP_FAULT}, TX_NO_WAIT);
                 break; // Break from SECTION 1. We don't want to send the CAN message if reading the data failed.
             }
-
-            PRINTLN_INFO("SHT30 Temp: %f", temperature);
 
             // serial_monitor("peripherals", "sht30 temp", "%f", temperature);
 
@@ -838,7 +826,7 @@ void vPeripherals(ULONG thread_input) {
 
         /* SECTION 4: Send LV ADC Message. */
         do {
-            lvread_adc_t lv_data = adc_getLVData();
+            lvread_adc_t lv_data = adc_getLVData_2();
 
             /* Send the LV Voltage message. */
             send_lv_voltage(
@@ -878,24 +866,25 @@ void vPeripherals(ULONG thread_input) {
     }
 }
 
-/* RTDS Telemetry Thread. 
-   This thread is for RTDS telemetry. The actual state of the RTDS is managed by the statemachine. */
-static thread_t rtds_telemetry_thread = {
-        .name       = "RTDS Telemetry Thread", /* Name */
+
+
+/* Misc. Telemetry Thread.
+   This thread periodically reports the RTDS and statemachine state data. The actual states of these things are managed by the statemachine thread. This is specifically for telemetry. */
+static thread_t rtds_thread = {
+        .name       = "RTDS Thread", /* Name */
         .size       = 2048,                    /* Stack Size (in bytes) */
-        .priority   = PRIO_vRTDS,              /* Priority */
+        .priority   = PRIO_vRTDS,         /* Priority */
         .threshold  = 0,                       /* Preemption Threshold */
         .time_slice = TX_NO_TIME_SLICE,        /* Time Slice */
         .auto_start = TX_AUTO_START,           /* Auto Start */
         .sleep      = 100,                     /* Sleep (in ticks) */
-        .function   = vRTDS                    /* Thread Function */
+        .function   = vRTDS               /* Thread Function */
     };
 void vRTDS(ULONG thread_input) {
 
     while(1) {
 
-        PRINTLN_INFO("thread ran");
-
+        /* Send RTDS State Telemetry. */
         bool rtds_pin_state = rtds_readRTDS();
         bool rtds_sounding_state = false;
         bool rtds_reverse_state = false;
@@ -914,7 +903,7 @@ void vRTDS(ULONG thread_input) {
         send_rtds_state_message(rtds_pin_state, rtds_sounding_state, rtds_reverse_state, error_state);
 
         /* Sleep Thread for specified number of ticks. */
-        tx_thread_sleep(rtds_telemetry_thread.sleep);
+        tx_thread_sleep(rtds_thread.sleep);
     }
 }
 
@@ -931,13 +920,14 @@ uint8_t threads_init(TX_BYTE_POOL *byte_pool) {
     CATCH_ERROR(create_thread(byte_pool, &faults_thread), U_SUCCESS);            // Create Faults thread.
     CATCH_ERROR(create_thread(byte_pool, &shutdown_thread), U_SUCCESS);          // Create Shutdown thread.
     CATCH_ERROR(create_thread(byte_pool, &statemachine_thread), U_SUCCESS);      // Create State Machine thread.
-    //CATCH_ERROR(create_thread(byte_pool, &pedals_thread), U_SUCCESS);            // Create Pedals thread.
+    CATCH_ERROR(create_thread(byte_pool, &pedals_thread), U_SUCCESS);            // Create Pedals thread.
     CATCH_ERROR(create_thread(byte_pool, &efuses_thread), U_SUCCESS);              // Create eFuses thread.
     CATCH_ERROR(create_thread(byte_pool, &mux_thread), U_SUCCESS);               // Create Mux thread.
     CATCH_ERROR(create_thread(byte_pool, &peripherals_thread), U_SUCCESS);       // Create Peripherals thread.
     CATCH_ERROR(create_thread(byte_pool, &ethernet_manager), U_SUCCESS); // Create Outgoing Ethernet thread.
     CATCH_ERROR(create_thread(byte_pool, &test_thread), U_SUCCESS);                // Create Test thread.
     CATCH_ERROR(create_thread(byte_pool, &rtds_telemetry_thread), U_SUCCESS);      // Create RTDS Telemetry thread.
+    CATCH_ERROR(create_thread(byte_pool, &rtds_thread), U_SUCCESS);              // Create RTDS thread.
 
     // add more threads here if need
 

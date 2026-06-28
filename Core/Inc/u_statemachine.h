@@ -33,6 +33,7 @@ typedef enum {
 	PERFORMANCE, //AUTOCROSS
 	EFFICIENCY, //ENDURANCE
 	GAMES,
+	THEMES,
 	EXIT,
 	MAX_NERO_STATES
 } nero_menu_t;
@@ -132,10 +133,6 @@ int fault();
  * @return void
  */
 void send_carstate_msg(void);
-
-/* BMS-Reported Shutdown! */
-void update_shutdown(bool new_shutdown);
-bool get_shutdown(void);
 
 /* Process the state machine */
 void statemachine_process(state_req_t new_state_req);

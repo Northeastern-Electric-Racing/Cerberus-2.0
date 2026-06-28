@@ -30,6 +30,8 @@ void pedals_process(void); // Pedal Processing Function. Meant to be called by
                            // the pedals thread.
 bool pedals_getBrakeState(void); // Returns the brake state (true=brake pressed,
                                  // false=brake not pressed).
+bool pedals_getAccelState(void); // Returns the accel state (true=accel pressed,
+                                 // false=accel not pressed).
 float pedals_getTorqueLimitPercentage(
     void); // Returns the torque limit percentage.
 void pedals_setTorqueLimitPercentage(

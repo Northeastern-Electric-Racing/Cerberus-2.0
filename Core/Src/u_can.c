@@ -10,6 +10,8 @@
 #include "u_statemachine.h"
 #include "u_dti.h"
 #include "u_efuses.h"
+#include "serial.h"
+#include "u_shutdown.h"
 #include "can_messages_tx.h"
 #include "can_messages_rx.h"
 
@@ -34,7 +36,7 @@ uint8_t can1_init(FDCAN_HandleTypeDef *hcan) {
     }
 
     /* Add filters for standard IDs */
-    uint16_t standard2[] = {IMU_CAN_MSG_ID, DTI_CANID_TEMPS_FAULT};
+    uint16_t standard2[] = {0x00, DTI_CANID_TEMPS_FAULT};
     status = can_add_filter_standard(&can1, standard2);
     if (status != HAL_OK) {
         PRINTLN_ERROR("Failed to add standard filter to can1 (Status: %d/%s, ID1: 0x%X, ID2: 0x%X).", status, hal_status_toString(status), standard2[0], standard2[1]);
@@ -115,6 +117,14 @@ uint8_t can1_init(FDCAN_HandleTypeDef *hcan) {
         return U_ERROR;
     }
 
+    /* Add fitlers for extended IDs */
+    uint32_t extended7[] = {CANID_LIGHTNING_PULSE, 0x00};
+    status = can_add_filter_extended(&can1, extended7);
+    if (status != HAL_OK) {
+        PRINTLN_ERROR("Failed to add extended filter to can1 (Status: %d/%s, ID1: %ld, ID2: %ld).", status, hal_status_toString(status), extended7[0], extended7[1]);
+        return U_ERROR;
+    }
+
     PRINTLN_INFO("Ran can1_init().");
 
     return U_SUCCESS;
@@ -131,7 +141,8 @@ void can_inbox(can_msg_t *message) {
         receive_cell_temperatures(message, &temps);
         bms_setBattboxTemp(temps.avg_val); // "BMS/Cells/Temp_Avg_Value"
         break;
-    case IMU_CAN_MSG_ID:
+    case CANID_LIGHTNING_PULSE:
+        PRINTLN_INFO("lightning - received the IMU message");
         lightning_handleIMUMessage();
         break;
     case CANID_F_RPM:
@@ -148,7 +159,6 @@ void can_inbox(can_msg_t *message) {
         break;
     case CANID_CALYPSO_EFCTRL_DASHBOARD:
         dashboard_efuse_state_t dashboard = { 0 };
-        PRINTLN_INFO("New dashboard state");
         receive_dashboard_efuse_state(message, &dashboard);
         efuse_update_state(EFUSE_DASHBOARD, (efuse_control_state_t)dashboard.state);
         break;
@@ -198,7 +208,9 @@ void can_inbox(can_msg_t *message) {
         efuse_update_state(EFUSE_MC, (efuse_control_state_t)mc.state);
         break;
     case CANID_SHEPHERD_PRECHARGE: 
-        bms_setPrecharge(message->data[0]); //first byte of the can mssg data
+        precharge_status_t precharge_status = { 0 };
+        receive_precharge_status(message, &precharge_status);
+        bms_receivePrechargeState((precharge_state_t)precharge_status.precharge_status);
         break;
     case CANID_CALYPSO_EFCTRL_SPARE:
         spare_efuse_state_t spare = { 0 };
@@ -225,7 +237,6 @@ void can_inbox(can_msg_t *message) {
         }
         break;
     case CANID_WHEEL_BUTTONS:
-        PRINTLN_INFO("recieved wheel message");
         wheel_buttons_t wheel_buttons = { 0 };
         receive_wheel_buttons(message, &wheel_buttons);
         buttons_process((button_t)wheel_buttons.button_id);
@@ -233,7 +244,16 @@ void can_inbox(can_msg_t *message) {
     case CANID_SHUTDOWN:
         shutdown_as_read_by_bms_t bms = { 0 };
         receive_shutdown_as_read_by_bms(message, &bms);
-        update_shutdown(bms.shutdown);
+        update_bms_shutdown(bms.shutdown_state);
+
+        /* If shutdown is open, cancel RTDS. */
+        if(bms.shutdown_state == false) {
+            rtds_cancelRTDS();
+            rtds_stopReverseSound();
+            if(get_active()) {
+                set_home_mode();
+            }
+        }
         break;
     default:
         PRINTLN_WARNING("Unknown CAN Message Recieved (Message ID: 0x%X).", message->id);

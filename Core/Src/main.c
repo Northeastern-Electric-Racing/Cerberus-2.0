@@ -32,11 +32,10 @@
 #include "u_queues.h"
 #include "u_debug.h"
 #include "u_lightning.h"
+#include "u_tx_debug.h"
+#include "traceout.h"
+#include "can_messages_tx.h"
 /* USER CODE END Includes */
-
-
-
-
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
@@ -79,6 +78,7 @@ IWDG_HandleTypeDef hiwdg;
 
 UART_HandleTypeDef hlpuart1;
 UART_HandleTypeDef huart7;
+DMA_HandleTypeDef handle_GPDMA1_Channel0;
 
 SPI_HandleTypeDef hspi2;
 
@@ -88,6 +88,7 @@ SPI_HandleTypeDef hspi2;
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
+void PeriphCommonClock_Config(void);
 static void MX_GPDMA1_Init(void);
 static void MX_GPIO_Init(void);
 static void MX_ICACHE_Init(void);
@@ -130,7 +131,7 @@ void HAL_FDCAN_RxFifo0Callback(FDCAN_HandleTypeDef *hfdcan, uint32_t RxFifo0ITs)
     /* Get the message. */
     HAL_StatusTypeDef status = HAL_FDCAN_GetRxMessage(hfdcan, FDCAN_RX_FIFO0, &rx_header, message.data);
     if(status != HAL_OK) {
-      PRINTLN_ERROR("Failed to call HAL_FDCAN_GetRxMessage() (Status: %ld/%s).", status, hal_status_toString(status));
+      PRINTLN_ERROR("Failed to call HAL_FDCAN_GetRxMessage() (Status: %d/%s).", status, hal_status_toString(status));
       queue_send(&faults, &(fault_t){CAN_INCOMING_FAULT}, TX_NO_WAIT);
       return;
     }
@@ -143,7 +144,7 @@ void HAL_FDCAN_RxFifo0Callback(FDCAN_HandleTypeDef *hfdcan, uint32_t RxFifo0ITs)
 		/* Check message size */
 		if (rx_header.DataLength > 8)
 		{
-			PRINTLN_ERROR("Recieved CAN message is larger than 8 bytes (rx_header.DataLength: %ld, id: 0x%X).", rx_header.DataLength, rx_header.Identifier);
+			PRINTLN_ERROR("Recieved CAN message is larger than 8 bytes (rx_header.DataLength: %ld, id: 0x%lX).", rx_header.DataLength, rx_header.Identifier);
       queue_send(&faults, &(fault_t){CAN_INCOMING_FAULT}, TX_NO_WAIT);
 			return;
 		}
@@ -151,6 +152,59 @@ void HAL_FDCAN_RxFifo0Callback(FDCAN_HandleTypeDef *hfdcan, uint32_t RxFifo0ITs)
 		/* Send message to incoming CAN queue */
     queue_send(&can_incoming, &message, TX_NO_WAIT);
 	}
+}
+
+/* BusOff Error Handling. */
+void HAL_FDCAN_ErrorStatusCallback(FDCAN_HandleTypeDef *hfdcan, uint32_t ErrorStatusITs)
+{
+    FDCAN_ProtocolStatusTypeDef protocol_status;
+    HAL_FDCAN_GetProtocolStatus(hfdcan, &protocol_status);
+
+    if (protocol_status.BusOff != 0)  // If Bus-Off error occurred
+    {
+        PRINTLN_ERROR("CAN ENCOUNTERED BUS OFF STATE");
+        CLEAR_BIT(hfdcan->Instance->CCCR, FDCAN_CCCR_INIT);  // Clear INIT bit to recover from Bus-Off
+        /* get the FDCAN hal errors. */
+        uint8_t status = HAL_FDCAN_GetError(can1.hcan);
+        printf("can - HAL_FDCAN_GetError() status: %d\n", status);
+
+        FDCAN_ProtocolStatusTypeDef statt = { 0 };
+        status = HAL_FDCAN_GetProtocolStatus(can1.hcan, &statt);
+        printf("can - HAL_FDCAN_GetProtocolStatus() status: %d\n", status);
+
+        /* Big statt */
+        printf("can - HAL_FDCAN_GetProtocolStatus() - LastErrorCode=%ld\n", statt.LastErrorCode);
+        printf("can - HAL_FDCAN_GetProtocolStatus() - DataLastErrorCode=%ld\n", statt.DataLastErrorCode);
+        printf("can - HAL_FDCAN_GetProtocolStatus() - Activity=%ld\n", statt.Activity);
+        printf("can - HAL_FDCAN_GetProtocolStatus() - ErrorPassive=%ld\n", statt.ErrorPassive);
+        printf("can - HAL_FDCAN_GetProtocolStatus() - Warning=%ld\n", statt.Warning);
+        printf("can - HAL_FDCAN_GetProtocolStatus() - BusOff=%ld\n", statt.BusOff);
+        printf("can - HAL_FDCAN_GetProtocolStatus() - RxESIflag=%ld\n", statt.RxESIflag);
+        printf("can - HAL_FDCAN_GetProtocolStatus() - RxBRSflag=%ld\n", statt.RxBRSflag);
+        printf("can - HAL_FDCAN_GetProtocolStatus() - RxFDFflag=%ld\n", statt.RxFDFflag);
+        printf("can - HAL_FDCAN_GetProtocolStatus() - ProtocolException=%ld\n", statt.ProtocolException);
+        printf("can - HAL_FDCAN_GetProtocolStatus() - TDCvalue=%ld\n", statt.TDCvalue);
+
+        FDCAN_ErrorCountersTypeDef statt2 = { 0 };
+        status = HAL_FDCAN_GetErrorCounters(can1.hcan, &statt2);
+        printf("can - HAL_FDCAN_GetErrorCounters() status: %d\n", status);
+        printf("can - HAL_FDCAN_GetErrorCounters() - TxErrorCnt: %ld\n", statt2.TxErrorCnt);
+        printf("can - HAL_FDCAN_GetErrorCounters() - RxErrorCnt: %ld\n", statt2.RxErrorCnt);
+        printf("can - HAL_FDCAN_GetErrorCounters() - RxErrorPassive: %ld\n", statt2.RxErrorPassive);
+        printf("can - HAL_FDCAN_GetErrorCounters() - ErrorLogging: %ld\n", statt2.ErrorLogging);
+    }
+}
+
+
+void HAL_GPIO_EXTI_Falling_Callback(uint16_t GPIO_Pin)
+{
+	if (GPIO_Pin == USER_BUTTON_Pin) {
+		traceout_start_from_isr();
+	}
+
+  if (GPIO_Pin == FAULT_RESET_Pin) {
+    send_reset_latching_fault(true);
+  }
 }
 
 /* USER CODE END 0 */
@@ -178,8 +232,11 @@ int main(void)
   /* Configure the system clock */
   SystemClock_Config();
 
-  /* USER CODE BEGIN SysInit */
+  /* Configure the peripherals common clocks */
+  PeriphCommonClock_Config();
 
+  /* USER CODE BEGIN SysInit */
+  //HAL_Delay(10000);
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
@@ -204,12 +261,9 @@ int main(void)
 
   /* USER CODE END 2 */
 
-
   MX_ThreadX_Init();
 
   /* We should never get here as control is now taken by the scheduler */
-
-  
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
@@ -277,6 +331,36 @@ void SystemClock_Config(void)
   /** Configure the programming delay
   */
   __HAL_FLASH_SET_PROGRAM_DELAY(FLASH_PROGRAMMING_DELAY_2);
+}
+
+/**
+  * @brief Peripherals Common Clock Configuration
+  * @retval None
+  */
+void PeriphCommonClock_Config(void)
+{
+  RCC_PeriphCLKInitTypeDef PeriphClkInitStruct = {0};
+
+  /** Initializes the peripherals clock
+  */
+  PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_ADCDAC|RCC_PERIPHCLK_FDCAN
+                              |RCC_PERIPHCLK_SPI2;
+  PeriphClkInitStruct.PLL2.PLL2Source = RCC_PLL2_SOURCE_HSE;
+  PeriphClkInitStruct.PLL2.PLL2M = 5;
+  PeriphClkInitStruct.PLL2.PLL2N = 64;
+  PeriphClkInitStruct.PLL2.PLL2P = 5;
+  PeriphClkInitStruct.PLL2.PLL2Q = 5;
+  PeriphClkInitStruct.PLL2.PLL2R = 2;
+  PeriphClkInitStruct.PLL2.PLL2RGE = RCC_PLL2_VCIRANGE_2;
+  PeriphClkInitStruct.PLL2.PLL2VCOSEL = RCC_PLL2_VCORANGE_WIDE;
+  PeriphClkInitStruct.PLL2.PLL2FRACN = 0;
+  PeriphClkInitStruct.PLL2.PLL2ClockOut = RCC_PLL2_DIVP|RCC_PLL2_DIVQ;
+  PeriphClkInitStruct.FdcanClockSelection = RCC_FDCANCLKSOURCE_PLL2Q;
+  PeriphClkInitStruct.Spi2ClockSelection = RCC_SPI2CLKSOURCE_PLL2P;
+  if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK)
+  {
+    Error_Handler();
+  }
 }
 
 /**
@@ -400,6 +484,7 @@ static void MX_ADC1_Init(void)
   */
   sConfig.Channel = ADC_CHANNEL_15;
   sConfig.Rank = ADC_REGULAR_RANK_9;
+  sConfig.SamplingTime = ADC_SAMPLETIME_247CYCLES_5;
   if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
   {
     Error_Handler();
@@ -589,15 +674,15 @@ static void MX_FDCAN2_Init(void)
   hfdcan2.Init.AutoRetransmission = DISABLE;
   hfdcan2.Init.TransmitPause = DISABLE;
   hfdcan2.Init.ProtocolException = DISABLE;
-  hfdcan2.Init.NominalPrescaler = 5;
+  hfdcan2.Init.NominalPrescaler = 8;
   hfdcan2.Init.NominalSyncJumpWidth = 1;
-  hfdcan2.Init.NominalTimeSeg1 = 1;
-  hfdcan2.Init.NominalTimeSeg2 = 8;
+  hfdcan2.Init.NominalTimeSeg1 = 11;
+  hfdcan2.Init.NominalTimeSeg2 = 4;
   hfdcan2.Init.DataPrescaler = 1;
   hfdcan2.Init.DataSyncJumpWidth = 1;
   hfdcan2.Init.DataTimeSeg1 = 1;
   hfdcan2.Init.DataTimeSeg2 = 1;
-  hfdcan2.Init.StdFiltersNbr = 28;
+  hfdcan2.Init.StdFiltersNbr = 12;
   hfdcan2.Init.ExtFiltersNbr = 8;
   hfdcan2.Init.TxFifoQueueMode = FDCAN_TX_FIFO_OPERATION;
   if (HAL_FDCAN_Init(&hfdcan2) != HAL_OK)
@@ -626,6 +711,8 @@ static void MX_GPDMA1_Init(void)
   __HAL_RCC_GPDMA1_CLK_ENABLE();
 
   /* GPDMA1 interrupt Init */
+    HAL_NVIC_SetPriority(GPDMA1_Channel0_IRQn, 0, 0);
+    HAL_NVIC_EnableIRQ(GPDMA1_Channel0_IRQn);
     HAL_NVIC_SetPriority(GPDMA1_Channel4_IRQn, 0, 0);
     HAL_NVIC_EnableIRQ(GPDMA1_Channel4_IRQn);
     HAL_NVIC_SetPriority(GPDMA1_Channel5_IRQn, 0, 0);
@@ -736,7 +823,7 @@ static void MX_IWDG_Init(void)
 
   /* USER CODE END IWDG_Init 1 */
   hiwdg.Instance = IWDG;
-  hiwdg.Init.Prescaler = IWDG_PRESCALER_16;
+  hiwdg.Init.Prescaler = IWDG_PRESCALER_32;
   hiwdg.Init.Window = 4095;
   hiwdg.Init.Reload = 4095;
   hiwdg.Init.EWI = 0;
@@ -813,11 +900,11 @@ static void MX_UART7_Init(void)
 
   /* USER CODE END UART7_Init 1 */
   huart7.Instance = UART7;
-  huart7.Init.BaudRate = 115200;
+  huart7.Init.BaudRate = 230400;
   huart7.Init.WordLength = UART_WORDLENGTH_8B;
   huart7.Init.StopBits = UART_STOPBITS_1;
   huart7.Init.Parity = UART_PARITY_NONE;
-  huart7.Init.Mode = UART_MODE_TX_RX;
+  huart7.Init.Mode = UART_MODE_TX;
   huart7.Init.HwFlowCtl = UART_HWCONTROL_NONE;
   huart7.Init.OverSampling = UART_OVERSAMPLING_16;
   huart7.Init.OneBitSampling = UART_ONE_BIT_SAMPLE_DISABLE;
@@ -919,28 +1006,34 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_WritePin(GPIOE, RED_LED_Pin|GREEN_LED_Pin|PHY_RESET_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOF, EF_BATTBOX_EN_Pin|EF_MC_EN_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(EF_BATTBOX_EN_GPIO_Port, EF_BATTBOX_EN_Pin, GPIO_PIN_SET);
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(EF_MC_EN_GPIO_Port, EF_MC_EN_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOD, EF_BREAK_EN_Pin|EF_FANBATT_EN_Pin|EF_PUMP1_EN_Pin|EF_PUMP2_EN_Pin
-                          |EF_DASH_EN_Pin|RTDS_GPIO_Pin|EF_LV_EN_Pin, GPIO_PIN_RESET);
+                          |EF_DASH_EN_Pin|RTDS_GPIO_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOG, EF_RADFAN_EN_Pin|EF_SHUTDOWN_EN_Pin|EF_SPARE_EN_Pin|WATCHDOG_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOG, EF_RADFAN_EN_Pin|EF_SPARE_EN_Pin|WATCHDOG_Pin, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIOG, EF_SHUTDOWN_EN_Pin|FAULT_MCU_Pin, GPIO_PIN_SET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOC, MUX_SEL1_Pin|MUX_SEL2_Pin|MUX_SEL3_Pin|MUX_SEL4_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(FAULT_MCU_GPIO_Port, FAULT_MCU_Pin, GPIO_PIN_SET);
+  HAL_GPIO_WritePin(EF_LV_EN_GPIO_Port, EF_LV_EN_Pin, GPIO_PIN_SET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(IMU_CS_GPIO_Port, IMU_CS_Pin, GPIO_PIN_SET);
 
   /*Configure GPIO pin : USER_BUTTON_Pin */
   GPIO_InitStruct.Pin = USER_BUTTON_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(USER_BUTTON_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pins : RED_LED_Pin GREEN_LED_Pin PHY_RESET_Pin */
@@ -950,12 +1043,12 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : EF_BATTBOX_EN_Pin EF_MC_EN_Pin */
-  GPIO_InitStruct.Pin = EF_BATTBOX_EN_Pin|EF_MC_EN_Pin;
+  /*Configure GPIO pin : EF_BATTBOX_EN_Pin */
+  GPIO_InitStruct.Pin = EF_BATTBOX_EN_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(GPIOF, &GPIO_InitStruct);
+  HAL_GPIO_Init(EF_BATTBOX_EN_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pins : EF_BATTBOX_ER_Pin EF_MC_ER_Pin */
   GPIO_InitStruct.Pin = EF_BATTBOX_ER_Pin|EF_MC_ER_Pin;
@@ -963,13 +1056,26 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(GPIOF, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : BMS_GPIO_Pin BOTS_GPIO_Pin SPARE_GPIO_Pin BSPD_GPIO_Pin
-                           HV_C_GPIO_Pin HVD_GPIO_Pin */
-  GPIO_InitStruct.Pin = BMS_GPIO_Pin|BOTS_GPIO_Pin|SPARE_GPIO_Pin|BSPD_GPIO_Pin
-                          |HV_C_GPIO_Pin|HVD_GPIO_Pin;
+  /*Configure GPIO pin : EF_MC_EN_Pin */
+  GPIO_InitStruct.Pin = EF_MC_EN_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(EF_MC_EN_GPIO_Port, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : BMS_GPIO_Pin BOTS_GPIO_Pin BSPD_GPIO_Pin HV_C_GPIO_Pin
+                           HVD_GPIO_Pin */
+  GPIO_InitStruct.Pin = BMS_GPIO_Pin|BOTS_GPIO_Pin|BSPD_GPIO_Pin|HV_C_GPIO_Pin
+                          |HVD_GPIO_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOF, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : FAULT_RESET_Pin */
+  GPIO_InitStruct.Pin = FAULT_RESET_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(FAULT_RESET_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pin : PHY_IRQ_Pin */
   GPIO_InitStruct.Pin = PHY_IRQ_Pin;
@@ -990,9 +1096,9 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_Init(ETH_MII_RX_ER_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pins : EF_BREAK_EN_Pin EF_FANBATT_EN_Pin EF_PUMP1_EN_Pin EF_PUMP2_EN_Pin
-                           EF_DASH_EN_Pin RTDS_GPIO_Pin EF_LV_EN_Pin */
+                           EF_DASH_EN_Pin RTDS_GPIO_Pin */
   GPIO_InitStruct.Pin = EF_BREAK_EN_Pin|EF_FANBATT_EN_Pin|EF_PUMP1_EN_Pin|EF_PUMP2_EN_Pin
-                          |EF_DASH_EN_Pin|RTDS_GPIO_Pin|EF_LV_EN_Pin;
+                          |EF_DASH_EN_Pin|RTDS_GPIO_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
@@ -1012,10 +1118,8 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOG, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : EF_RADFAN_EN_Pin EF_SHUTDOWN_EN_Pin EF_SPARE_EN_Pin WATCHDOG_Pin
-                           FAULT_MCU_Pin */
-  GPIO_InitStruct.Pin = EF_RADFAN_EN_Pin|EF_SHUTDOWN_EN_Pin|EF_SPARE_EN_Pin|WATCHDOG_Pin
-                          |FAULT_MCU_Pin;
+  /*Configure GPIO pins : EF_RADFAN_EN_Pin EF_SPARE_EN_Pin WATCHDOG_Pin FAULT_MCU_Pin */
+  GPIO_InitStruct.Pin = EF_RADFAN_EN_Pin|EF_SPARE_EN_Pin|WATCHDOG_Pin|FAULT_MCU_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
@@ -1027,6 +1131,13 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(GPIOG, &GPIO_InitStruct);
 
+  /*Configure GPIO pin : EF_SHUTDOWN_EN_Pin */
+  GPIO_InitStruct.Pin = EF_SHUTDOWN_EN_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(EF_SHUTDOWN_EN_GPIO_Port, &GPIO_InitStruct);
+
   /*Configure GPIO pins : MUX_SEL1_Pin MUX_SEL2_Pin MUX_SEL3_Pin MUX_SEL4_Pin */
   GPIO_InitStruct.Pin = MUX_SEL1_Pin|MUX_SEL2_Pin|MUX_SEL3_Pin|MUX_SEL4_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
@@ -1034,11 +1145,18 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : IMU_INT1_Pin IMU_INT2_Pin */
-  GPIO_InitStruct.Pin = IMU_INT1_Pin|IMU_INT2_Pin;
+  /*Configure GPIO pin : IMU_INT2_Pin */
+  GPIO_InitStruct.Pin = IMU_INT2_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+  HAL_GPIO_Init(IMU_INT2_GPIO_Port, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : EF_LV_EN_Pin */
+  GPIO_InitStruct.Pin = EF_LV_EN_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(EF_LV_EN_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pin : IMU_CS_Pin */
   GPIO_InitStruct.Pin = IMU_CS_Pin;

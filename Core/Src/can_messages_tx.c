@@ -16,67 +16,6 @@
 static void handle_bitstream_overflow(bitstream_t *bitstream_res,
 					    uint32_t can_id);
 
-uint8_t send_ac_current_command
-(float current_target_ac)
-{
-    can_msg_t msg;
-    msg.id = 0x036;
-    msg.id_is_extended = false;
-    
-            uint16_t data = 0;
-            msg.len = 2;
-                        int32_t current_target_ac_i = (int32_t)(current_target_ac*10);
-                        if(current_target_ac_i > 32767) {current_target_ac_i = 32767;
-                        } else if(current_target_ac_i < -32768) {current_target_ac_i = -32768;
-                        }
-                        data |= ((uint32_t)(current_target_ac_i) & 0xFFFFULL) << 0;
-            
-            uint16_t data_bigendian = __builtin_bswap16(data);
-            memcpy(msg.data, &data_bigendian, 2);
-
-    return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
-}
-
-uint8_t send_brake_current_command
-(float brake_ac_current)
-{
-    can_msg_t msg;
-    msg.id = 0x056;
-    msg.id_is_extended = false;
-    
-            uint64_t data = 0;
-            msg.len = 8;
-                        int32_t brake_ac_current_i = (int32_t)(brake_ac_current*10);
-                        if(brake_ac_current_i > 32767) {brake_ac_current_i = 32767;
-                        } else if(brake_ac_current_i < -32768) {brake_ac_current_i = -32768;
-                        }
-                        data |= ((uint32_t)(brake_ac_current_i) & 0xFFFFULL) << 48;
-            
-            uint64_t data_bigendian = __builtin_bswap64(data);
-            memcpy(msg.data, &data_bigendian, 8);
-
-    return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
-}
-
-uint8_t send_drive_enable_command
-(uint8_t drive_enable)
-{
-    can_msg_t msg;
-    msg.id = 0x196;
-    msg.id_is_extended = false;
-    
-            uint8_t data = 0;
-            msg.len = 1;
-                        uint32_t drive_enable_i = (uint32_t)(drive_enable);
-                        if(drive_enable_i > 255ULL) {drive_enable_i = 255;
-                        }
-                        data |= ((drive_enable_i) & 0xFFULL) << 0;
-            
-            msg.data[0] = data;
-
-    return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
-}
-
 uint8_t send_dashboard_efuse
 (uint16_t ADC,float voltage,float current,bool is_faulted,bool is_enabled,uint8_t control_state)
 {
@@ -562,7 +501,7 @@ uint8_t send_spare_efuse
 }
 
 uint8_t send_shutdown_pins
-(bool bms_gpio,bool bots_gpio,bool spare_gpio,bool bspd_gpio,bool hv_c,bool hvd_gpio,bool imd_gpio,bool ckpt_gpio,bool inertia_sw_gpio,bool tsms_gpio,uint8_t UNUSED)
+(bool bms_gpio,bool bots_gpio,bool bspd_gpio,bool hv_c,bool hvd_gpio,bool imd_gpio,bool ckpt_gpio,bool inertia_sw_gpio,bool tsms_gpio)
 {
     can_msg_t msg;
     msg.id = 0x123;
@@ -580,50 +519,41 @@ uint8_t send_shutdown_pins
                         }
                         data |= ((bots_gpio_i) & 0x1ULL) << 14;
             
-                        uint32_t spare_gpio_i = (uint32_t)(spare_gpio);
-                        if(spare_gpio_i > 1ULL) {spare_gpio_i = 1;
-                        }
-                        data |= ((spare_gpio_i) & 0x1ULL) << 13;
-            
                         uint32_t bspd_gpio_i = (uint32_t)(bspd_gpio);
                         if(bspd_gpio_i > 1ULL) {bspd_gpio_i = 1;
                         }
-                        data |= ((bspd_gpio_i) & 0x1ULL) << 12;
+                        data |= ((bspd_gpio_i) & 0x1ULL) << 13;
             
                         uint32_t hv_c_i = (uint32_t)(hv_c);
                         if(hv_c_i > 1ULL) {hv_c_i = 1;
                         }
-                        data |= ((hv_c_i) & 0x1ULL) << 11;
+                        data |= ((hv_c_i) & 0x1ULL) << 12;
             
                         uint32_t hvd_gpio_i = (uint32_t)(hvd_gpio);
                         if(hvd_gpio_i > 1ULL) {hvd_gpio_i = 1;
                         }
-                        data |= ((hvd_gpio_i) & 0x1ULL) << 10;
+                        data |= ((hvd_gpio_i) & 0x1ULL) << 11;
             
                         uint32_t imd_gpio_i = (uint32_t)(imd_gpio);
                         if(imd_gpio_i > 1ULL) {imd_gpio_i = 1;
                         }
-                        data |= ((imd_gpio_i) & 0x1ULL) << 9;
+                        data |= ((imd_gpio_i) & 0x1ULL) << 10;
             
                         uint32_t ckpt_gpio_i = (uint32_t)(ckpt_gpio);
                         if(ckpt_gpio_i > 1ULL) {ckpt_gpio_i = 1;
                         }
-                        data |= ((ckpt_gpio_i) & 0x1ULL) << 8;
+                        data |= ((ckpt_gpio_i) & 0x1ULL) << 9;
             
                         uint32_t inertia_sw_gpio_i = (uint32_t)(inertia_sw_gpio);
                         if(inertia_sw_gpio_i > 1ULL) {inertia_sw_gpio_i = 1;
                         }
-                        data |= ((inertia_sw_gpio_i) & 0x1ULL) << 7;
+                        data |= ((inertia_sw_gpio_i) & 0x1ULL) << 8;
             
                         uint32_t tsms_gpio_i = (uint32_t)(tsms_gpio);
                         if(tsms_gpio_i > 1ULL) {tsms_gpio_i = 1;
                         }
-                        data |= ((tsms_gpio_i) & 0x1ULL) << 6;
+                        data |= ((tsms_gpio_i) & 0x1ULL) << 7;
             
-                        uint32_t UNUSED_i = (uint32_t)(UNUSED);
-                        if(UNUSED_i > 63ULL) {UNUSED_i = 63;
-                        }
-                        data |= ((UNUSED_i) & 0x3FULL) << 0;
             
             uint16_t data_bigendian = __builtin_bswap16(data);
             memcpy(msg.data, &data_bigendian, 2);
@@ -632,7 +562,7 @@ uint8_t send_shutdown_pins
 }
 
 uint8_t send_car_state
-(bool home_mode,uint8_t nero_index,int32_t car_speed,bool tsms,uint32_t torque_limit_percentage,bool reverse,uint16_t regen_limit,bool launch_control,uint8_t functional_state,bool traction_control)
+(bool home_mode,uint8_t nero_index,float car_speed,bool tsms,float torque_limit_percentage,bool reverse,uint16_t regen_limit,bool launch_control,uint8_t functional_state,bool traction_control)
 {
     can_msg_t msg;
     msg.id = 0x501;
@@ -698,26 +628,38 @@ uint8_t send_car_state
 }
 
 uint8_t send_pedal_percent_pressed_values
-(float accel_norm,float brake_norm)
+(float accel_norm,float brake_norm,float brake_psi_brake1,float brake_psi_brake2)
 {
     can_msg_t msg;
     msg.id = 0x505;
     msg.id_is_extended = false;
     
-            uint32_t data = 0;
-            msg.len = 4;
+            uint64_t data = 0;
+            msg.len = 8;
                         uint32_t accel_norm_i = (uint32_t)(accel_norm*100);
                         if(accel_norm_i > 65535ULL) {accel_norm_i = 65535;
                         }
-                        data |= ((accel_norm_i) & 0xFFFFULL) << 16;
+                        data |= ((accel_norm_i) & 0xFFFFULL) << 48;
             
                         uint32_t brake_norm_i = (uint32_t)(brake_norm*100);
                         if(brake_norm_i > 65535ULL) {brake_norm_i = 65535;
                         }
-                        data |= ((brake_norm_i) & 0xFFFFULL) << 0;
+                        data |= ((brake_norm_i) & 0xFFFFULL) << 32;
             
-            uint32_t data_bigendian = __builtin_bswap32(data);
-            memcpy(msg.data, &data_bigendian, 4);
+                        int32_t brake_psi_brake1_i = (int32_t)(brake_psi_brake1*10);
+                        if(brake_psi_brake1_i > 32767) {brake_psi_brake1_i = 32767;
+                        } else if(brake_psi_brake1_i < -32768) {brake_psi_brake1_i = -32768;
+                        }
+                        data |= ((uint32_t)(brake_psi_brake1_i) & 0xFFFFULL) << 16;
+            
+                        int32_t brake_psi_brake2_i = (int32_t)(brake_psi_brake2*10);
+                        if(brake_psi_brake2_i > 32767) {brake_psi_brake2_i = 32767;
+                        } else if(brake_psi_brake2_i < -32768) {brake_psi_brake2_i = -32768;
+                        }
+                        data |= ((uint32_t)(brake_psi_brake2_i) & 0xFFFFULL) << 0;
+            
+            uint64_t data_bigendian = __builtin_bswap64(data);
+            memcpy(msg.data, &data_bigendian, 8);
 
     return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
 }
@@ -844,19 +786,19 @@ uint8_t send_imu_gyro
     
             uint64_t data = 0;
             msg.len = 8;
-                        int32_t imu_gyro_x_i = (int32_t)(imu_gyro_x*100);
+                        int32_t imu_gyro_x_i = (int32_t)(imu_gyro_x*4);
                         if(imu_gyro_x_i > 32767) {imu_gyro_x_i = 32767;
                         } else if(imu_gyro_x_i < -32768) {imu_gyro_x_i = -32768;
                         }
                         data |= ((uint32_t)(imu_gyro_x_i) & 0xFFFFULL) << 48;
             
-                        int32_t imu_gyro_y_i = (int32_t)(imu_gyro_y*100);
+                        int32_t imu_gyro_y_i = (int32_t)(imu_gyro_y*4);
                         if(imu_gyro_y_i > 32767) {imu_gyro_y_i = 32767;
                         } else if(imu_gyro_y_i < -32768) {imu_gyro_y_i = -32768;
                         }
                         data |= ((uint32_t)(imu_gyro_y_i) & 0xFFFFULL) << 32;
             
-                        int32_t imu_gyro_z_i = (int32_t)(imu_gyro_z*100);
+                        int32_t imu_gyro_z_i = (int32_t)(imu_gyro_z*4);
                         if(imu_gyro_z_i > 32767) {imu_gyro_z_i = 32767;
                         } else if(imu_gyro_z_i < -32768) {imu_gyro_z_i = -32768;
                         }
@@ -869,96 +811,101 @@ uint8_t send_imu_gyro
 }
 
 uint8_t send_faults
-(bool CAN_OUTGOING_FAULT,bool CAN_INCOMING_FAULT,bool BMS_CAN_MONITOR_FAULT,bool LIGHTNING_CAN_MONITOR_FAULT,bool SHUTDOWN_FAULT,bool ONBOARD_TEMP_FAULT,bool IMU_ACCEL_FAULT,bool IMU_GYRO_FAULT,bool BSPD_PREFAULT,bool ONBOARD_BRAKE_OPEN_CIRCUIT_FAULT,bool ONBOARD_ACCEL_OPEN_CIRCUIT_FAULT,bool ONBOARD_BRAKE_SHORT_CIRCUIT_FAULT,bool ONBOARD_ACCEL_SHORT_CIRCUIT_FAULT,bool ONBOARD_PEDAL_DIFFERENCE_FAULT,bool RTDS_FAULT,bool LV_LOW_VOLTAGE_FAULT)
+(bool CAN_OUTGOING_FAULT,bool CAN_INCOMING_FAULT,bool BMS_CAN_MONITOR_FAULT,bool LIGHTNING_CAN_MONITOR_FAULT,bool ONBOARD_TEMP_FAULT,bool IMU_ACCEL_FAULT,bool IMU_GYRO_FAULT,bool BSPD_PREFAULT,bool ONBOARD_BRAKE_OPEN_CIRCUIT_FAULT,bool ONBOARD_ACCEL_OPEN_CIRCUIT_FAULT,bool ONBOARD_BRAKE_SHORT_CIRCUIT_FAULT,bool ONBOARD_ACCEL_SHORT_CIRCUIT_FAULT,bool ONBOARD_PEDAL_DIFFERENCE_FAULT,bool RTDS_FAULT,bool LV_LOW_VOLTAGE_FAULT,bool PRECHARGE_FLOATING_FAULT,bool LATCHING_ACTIVE_FAULT)
 {
     can_msg_t msg;
     msg.id = 0x502;
     msg.id_is_extended = false;
     
-            uint16_t data = 0;
-            msg.len = 2;
+            uint32_t data = 0;
+            msg.len = 4;
                         uint32_t CAN_OUTGOING_FAULT_i = (uint32_t)(CAN_OUTGOING_FAULT);
                         if(CAN_OUTGOING_FAULT_i > 1ULL) {CAN_OUTGOING_FAULT_i = 1;
                         }
-                        data |= ((CAN_OUTGOING_FAULT_i) & 0x1ULL) << 15;
+                        data |= ((CAN_OUTGOING_FAULT_i) & 0x1ULL) << 31;
             
                         uint32_t CAN_INCOMING_FAULT_i = (uint32_t)(CAN_INCOMING_FAULT);
                         if(CAN_INCOMING_FAULT_i > 1ULL) {CAN_INCOMING_FAULT_i = 1;
                         }
-                        data |= ((CAN_INCOMING_FAULT_i) & 0x1ULL) << 14;
+                        data |= ((CAN_INCOMING_FAULT_i) & 0x1ULL) << 30;
             
                         uint32_t BMS_CAN_MONITOR_FAULT_i = (uint32_t)(BMS_CAN_MONITOR_FAULT);
                         if(BMS_CAN_MONITOR_FAULT_i > 1ULL) {BMS_CAN_MONITOR_FAULT_i = 1;
                         }
-                        data |= ((BMS_CAN_MONITOR_FAULT_i) & 0x1ULL) << 13;
+                        data |= ((BMS_CAN_MONITOR_FAULT_i) & 0x1ULL) << 29;
             
                         uint32_t LIGHTNING_CAN_MONITOR_FAULT_i = (uint32_t)(LIGHTNING_CAN_MONITOR_FAULT);
                         if(LIGHTNING_CAN_MONITOR_FAULT_i > 1ULL) {LIGHTNING_CAN_MONITOR_FAULT_i = 1;
                         }
-                        data |= ((LIGHTNING_CAN_MONITOR_FAULT_i) & 0x1ULL) << 12;
-            
-                        uint32_t SHUTDOWN_FAULT_i = (uint32_t)(SHUTDOWN_FAULT);
-                        if(SHUTDOWN_FAULT_i > 1ULL) {SHUTDOWN_FAULT_i = 1;
-                        }
-                        data |= ((SHUTDOWN_FAULT_i) & 0x1ULL) << 11;
+                        data |= ((LIGHTNING_CAN_MONITOR_FAULT_i) & 0x1ULL) << 28;
             
                         uint32_t ONBOARD_TEMP_FAULT_i = (uint32_t)(ONBOARD_TEMP_FAULT);
                         if(ONBOARD_TEMP_FAULT_i > 1ULL) {ONBOARD_TEMP_FAULT_i = 1;
                         }
-                        data |= ((ONBOARD_TEMP_FAULT_i) & 0x1ULL) << 10;
+                        data |= ((ONBOARD_TEMP_FAULT_i) & 0x1ULL) << 27;
             
                         uint32_t IMU_ACCEL_FAULT_i = (uint32_t)(IMU_ACCEL_FAULT);
                         if(IMU_ACCEL_FAULT_i > 1ULL) {IMU_ACCEL_FAULT_i = 1;
                         }
-                        data |= ((IMU_ACCEL_FAULT_i) & 0x1ULL) << 9;
+                        data |= ((IMU_ACCEL_FAULT_i) & 0x1ULL) << 26;
             
                         uint32_t IMU_GYRO_FAULT_i = (uint32_t)(IMU_GYRO_FAULT);
                         if(IMU_GYRO_FAULT_i > 1ULL) {IMU_GYRO_FAULT_i = 1;
                         }
-                        data |= ((IMU_GYRO_FAULT_i) & 0x1ULL) << 8;
+                        data |= ((IMU_GYRO_FAULT_i) & 0x1ULL) << 25;
             
                         uint32_t BSPD_PREFAULT_i = (uint32_t)(BSPD_PREFAULT);
                         if(BSPD_PREFAULT_i > 1ULL) {BSPD_PREFAULT_i = 1;
                         }
-                        data |= ((BSPD_PREFAULT_i) & 0x1ULL) << 7;
+                        data |= ((BSPD_PREFAULT_i) & 0x1ULL) << 24;
             
                         uint32_t ONBOARD_BRAKE_OPEN_CIRCUIT_FAULT_i = (uint32_t)(ONBOARD_BRAKE_OPEN_CIRCUIT_FAULT);
                         if(ONBOARD_BRAKE_OPEN_CIRCUIT_FAULT_i > 1ULL) {ONBOARD_BRAKE_OPEN_CIRCUIT_FAULT_i = 1;
                         }
-                        data |= ((ONBOARD_BRAKE_OPEN_CIRCUIT_FAULT_i) & 0x1ULL) << 6;
+                        data |= ((ONBOARD_BRAKE_OPEN_CIRCUIT_FAULT_i) & 0x1ULL) << 23;
             
                         uint32_t ONBOARD_ACCEL_OPEN_CIRCUIT_FAULT_i = (uint32_t)(ONBOARD_ACCEL_OPEN_CIRCUIT_FAULT);
                         if(ONBOARD_ACCEL_OPEN_CIRCUIT_FAULT_i > 1ULL) {ONBOARD_ACCEL_OPEN_CIRCUIT_FAULT_i = 1;
                         }
-                        data |= ((ONBOARD_ACCEL_OPEN_CIRCUIT_FAULT_i) & 0x1ULL) << 5;
+                        data |= ((ONBOARD_ACCEL_OPEN_CIRCUIT_FAULT_i) & 0x1ULL) << 22;
             
                         uint32_t ONBOARD_BRAKE_SHORT_CIRCUIT_FAULT_i = (uint32_t)(ONBOARD_BRAKE_SHORT_CIRCUIT_FAULT);
                         if(ONBOARD_BRAKE_SHORT_CIRCUIT_FAULT_i > 1ULL) {ONBOARD_BRAKE_SHORT_CIRCUIT_FAULT_i = 1;
                         }
-                        data |= ((ONBOARD_BRAKE_SHORT_CIRCUIT_FAULT_i) & 0x1ULL) << 4;
+                        data |= ((ONBOARD_BRAKE_SHORT_CIRCUIT_FAULT_i) & 0x1ULL) << 21;
             
                         uint32_t ONBOARD_ACCEL_SHORT_CIRCUIT_FAULT_i = (uint32_t)(ONBOARD_ACCEL_SHORT_CIRCUIT_FAULT);
                         if(ONBOARD_ACCEL_SHORT_CIRCUIT_FAULT_i > 1ULL) {ONBOARD_ACCEL_SHORT_CIRCUIT_FAULT_i = 1;
                         }
-                        data |= ((ONBOARD_ACCEL_SHORT_CIRCUIT_FAULT_i) & 0x1ULL) << 3;
+                        data |= ((ONBOARD_ACCEL_SHORT_CIRCUIT_FAULT_i) & 0x1ULL) << 20;
             
                         uint32_t ONBOARD_PEDAL_DIFFERENCE_FAULT_i = (uint32_t)(ONBOARD_PEDAL_DIFFERENCE_FAULT);
                         if(ONBOARD_PEDAL_DIFFERENCE_FAULT_i > 1ULL) {ONBOARD_PEDAL_DIFFERENCE_FAULT_i = 1;
                         }
-                        data |= ((ONBOARD_PEDAL_DIFFERENCE_FAULT_i) & 0x1ULL) << 2;
+                        data |= ((ONBOARD_PEDAL_DIFFERENCE_FAULT_i) & 0x1ULL) << 19;
             
                         uint32_t RTDS_FAULT_i = (uint32_t)(RTDS_FAULT);
                         if(RTDS_FAULT_i > 1ULL) {RTDS_FAULT_i = 1;
                         }
-                        data |= ((RTDS_FAULT_i) & 0x1ULL) << 1;
+                        data |= ((RTDS_FAULT_i) & 0x1ULL) << 18;
             
                         uint32_t LV_LOW_VOLTAGE_FAULT_i = (uint32_t)(LV_LOW_VOLTAGE_FAULT);
                         if(LV_LOW_VOLTAGE_FAULT_i > 1ULL) {LV_LOW_VOLTAGE_FAULT_i = 1;
                         }
-                        data |= ((LV_LOW_VOLTAGE_FAULT_i) & 0x1ULL) << 0;
+                        data |= ((LV_LOW_VOLTAGE_FAULT_i) & 0x1ULL) << 17;
             
-            uint16_t data_bigendian = __builtin_bswap16(data);
-            memcpy(msg.data, &data_bigendian, 2);
+                        uint32_t PRECHARGE_FLOATING_FAULT_i = (uint32_t)(PRECHARGE_FLOATING_FAULT);
+                        if(PRECHARGE_FLOATING_FAULT_i > 1ULL) {PRECHARGE_FLOATING_FAULT_i = 1;
+                        }
+                        data |= ((PRECHARGE_FLOATING_FAULT_i) & 0x1ULL) << 16;
+            
+                        uint32_t LATCHING_ACTIVE_FAULT_i = (uint32_t)(LATCHING_ACTIVE_FAULT);
+                        if(LATCHING_ACTIVE_FAULT_i > 1ULL) {LATCHING_ACTIVE_FAULT_i = 1;
+                        }
+                        data |= ((LATCHING_ACTIVE_FAULT_i) & 0x1ULL) << 15;
+            
+            uint32_t data_bigendian = __builtin_bswap32(data);
+            memcpy(msg.data, &data_bigendian, 4);
 
     return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
 }
@@ -1255,16 +1202,165 @@ uint8_t send_lv_box_fan_pwm
     can_msg_t msg;
     msg.id = 0xD5;
     msg.id_is_extended = false;
-    msg.len = 1;
-
+    
             uint8_t data = 0;
+            msg.len = 1;
                         uint32_t fan_pwm_percentage_i = (uint32_t)(fan_pwm_percentage);
-                        if(fan_pwm_percentage_i > 100ULL) {fan_pwm_percentage_i = 100;
+                        if(fan_pwm_percentage_i > 255ULL) {fan_pwm_percentage_i = 255;
                         }
                         data |= ((fan_pwm_percentage_i) & 0xFFULL) << 0;
-
+            
             msg.data[0] = data;
 
+    return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
+}
+
+uint8_t send_bms_shutdown_status_as_reported_by_vcu
+(bool bms_shutdown_as_reported_by_vcu)
+{
+    can_msg_t msg;
+    msg.id = 0xEB;
+    msg.id_is_extended = false;
+    
+            uint8_t data = 0;
+            msg.len = 1;
+                        uint32_t bms_shutdown_as_reported_by_vcu_i = (uint32_t)(bms_shutdown_as_reported_by_vcu);
+                        if(bms_shutdown_as_reported_by_vcu_i > 255ULL) {bms_shutdown_as_reported_by_vcu_i = 255;
+                        }
+                        data |= ((bms_shutdown_as_reported_by_vcu_i) & 0xFFULL) << 0;
+            
+            msg.data[0] = data;
+
+    return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
+}
+
+uint8_t send_drive_lock_states
+(bool BRAKE_OC,bool BRAKE_SC,bool ACCEL_OC,bool ACCEL_SC,bool ACCEL_DIFF,bool BSPD_PREF,bool BMS_NOT_PRECHARGED_YET)
+{
+    can_msg_t msg;
+    msg.id = 0x503;
+    msg.id_is_extended = false;
+    
+            uint8_t data = 0;
+            msg.len = 1;
+                        uint32_t BRAKE_OC_i = (uint32_t)(BRAKE_OC);
+                        if(BRAKE_OC_i > 1ULL) {BRAKE_OC_i = 1;
+                        }
+                        data |= ((BRAKE_OC_i) & 0x1ULL) << 7;
+            
+                        uint32_t BRAKE_SC_i = (uint32_t)(BRAKE_SC);
+                        if(BRAKE_SC_i > 1ULL) {BRAKE_SC_i = 1;
+                        }
+                        data |= ((BRAKE_SC_i) & 0x1ULL) << 6;
+            
+                        uint32_t ACCEL_OC_i = (uint32_t)(ACCEL_OC);
+                        if(ACCEL_OC_i > 1ULL) {ACCEL_OC_i = 1;
+                        }
+                        data |= ((ACCEL_OC_i) & 0x1ULL) << 5;
+            
+                        uint32_t ACCEL_SC_i = (uint32_t)(ACCEL_SC);
+                        if(ACCEL_SC_i > 1ULL) {ACCEL_SC_i = 1;
+                        }
+                        data |= ((ACCEL_SC_i) & 0x1ULL) << 4;
+            
+                        uint32_t ACCEL_DIFF_i = (uint32_t)(ACCEL_DIFF);
+                        if(ACCEL_DIFF_i > 1ULL) {ACCEL_DIFF_i = 1;
+                        }
+                        data |= ((ACCEL_DIFF_i) & 0x1ULL) << 3;
+            
+                        uint32_t BSPD_PREF_i = (uint32_t)(BSPD_PREF);
+                        if(BSPD_PREF_i > 1ULL) {BSPD_PREF_i = 1;
+                        }
+                        data |= ((BSPD_PREF_i) & 0x1ULL) << 2;
+            
+                        uint32_t BMS_NOT_PRECHARGED_YET_i = (uint32_t)(BMS_NOT_PRECHARGED_YET);
+                        if(BMS_NOT_PRECHARGED_YET_i > 1ULL) {BMS_NOT_PRECHARGED_YET_i = 1;
+                        }
+                        data |= ((BMS_NOT_PRECHARGED_YET_i) & 0x1ULL) << 1;
+            
+            
+            msg.data[0] = data;
+
+    return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
+}
+
+uint8_t send_reset_latching_fault
+(bool reset_latching)
+{
+    can_msg_t msg;
+    msg.id = 0x510;
+    msg.id_is_extended = false;
+    
+            uint8_t data = 0;
+            msg.len = 1;
+                        uint32_t reset_latching_i = (uint32_t)(reset_latching);
+                        if(reset_latching_i > 1ULL) {reset_latching_i = 1;
+                        }
+                        data |= ((reset_latching_i) & 0x1ULL) << 7;
+            
+            
+            msg.data[0] = data;
+
+    return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
+}
+
+uint8_t send_ac_current_command
+(float current_target_ac)
+{
+    can_msg_t msg;
+    msg.id = 0x036;
+    msg.id_is_extended = false;
+    
+            uint16_t data = 0;
+            msg.len = 2;
+                        int32_t current_target_ac_i = (int32_t)(current_target_ac*10);
+                        if(current_target_ac_i > 32767) {current_target_ac_i = 32767;
+                        } else if(current_target_ac_i < -32768) {current_target_ac_i = -32768;
+                        }
+                        data |= ((uint32_t)(current_target_ac_i) & 0xFFFFULL) << 0;
+            
+            uint16_t data_bigendian = __builtin_bswap16(data);
+            memcpy(msg.data, &data_bigendian, 2);
+
+    return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
+}
+
+uint8_t send_brake_current_command
+(float brake_ac_current)
+{
+    can_msg_t msg;
+    msg.id = 0x056;
+    msg.id_is_extended = false;
+    
+            uint64_t data = 0;
+            msg.len = 8;
+                        int32_t brake_ac_current_i = (int32_t)(brake_ac_current*10);
+                        if(brake_ac_current_i > 32767) {brake_ac_current_i = 32767;
+                        } else if(brake_ac_current_i < -32768) {brake_ac_current_i = -32768;
+                        }
+                        data |= ((uint32_t)(brake_ac_current_i) & 0xFFFFULL) << 48;
+            
+            uint64_t data_bigendian = __builtin_bswap64(data);
+            memcpy(msg.data, &data_bigendian, 8);
+
+    return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
+}
+
+uint8_t send_drive_enable_command
+(uint8_t drive_enable)
+{
+    can_msg_t msg;
+    msg.id = 0x196;
+    msg.id_is_extended = false;
+    
+            uint8_t data = 0;
+            msg.len = 1;
+                        uint32_t drive_enable_i = (uint32_t)(drive_enable);
+                        if(drive_enable_i > 255ULL) {drive_enable_i = 255;
+                        }
+                        data |= ((drive_enable_i) & 0xFFULL) << 0;
+            
+            msg.data[0] = data;
 
     return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
 }

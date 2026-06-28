@@ -5,6 +5,9 @@
 #include <stdbool.h>
 #include "main.h"
 
+/* Override Calypso define. When uncommented, VCU eFuses will ignore all Calypso commands and fall back to its default state as specified in the eFuse config table. */
+//#define EFUSES_OVERRIDE_CALYPSO
+
 typedef enum {
     EFUSE_DASHBOARD,
     EFUSE_BRAKE,
