@@ -198,20 +198,6 @@ void EXTI8_IRQHandler(void)
 }
 
 /**
-  * @brief This function handles EXTI Line9 interrupt.
-  */
-void EXTI9_IRQHandler(void)
-{
-  /* USER CODE BEGIN EXTI9_IRQn 0 */
-
-  /* USER CODE END EXTI9_IRQn 0 */
-  HAL_GPIO_EXTI_IRQHandler(PHY_IRQ_Pin);
-  /* USER CODE BEGIN EXTI9_IRQn 1 */
-
-  /* USER CODE END EXTI9_IRQn 1 */
-}
-
-/**
   * @brief This function handles EXTI Line11 interrupt.
   */
 void EXTI11_IRQHandler(void)

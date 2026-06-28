@@ -6,6 +6,9 @@
 
 .idea/
 
+# Claude Code Settings
+.claude/
+
 # Build files
 build/
 

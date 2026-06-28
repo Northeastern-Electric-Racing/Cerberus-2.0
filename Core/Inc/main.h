@@ -119,7 +119,6 @@ void Error_Handler(void);
 #define HVD_GPIO_GPIO_Port GPIOF
 #define PHY_IRQ_Pin GPIO_PIN_9
 #define PHY_IRQ_GPIO_Port GPIOE
-#define PHY_IRQ_EXTI_IRQn EXTI9_IRQn
 #define PHY_RESET_Pin GPIO_PIN_10
 #define PHY_RESET_GPIO_Port GPIOE
 #define PHY_GPIO_Pin GPIO_PIN_11

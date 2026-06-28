@@ -265,6 +265,12 @@ NX_INTERFACE *interface_ptr;
     }
 #endif /* NX_ENABLE_INTERFACE_CAPABILITY */
 
+  case NX_DRIVER_GET_STATE:
+    {
+      *(driver_req_ptr->nx_ip_driver_return_ptr) = nx_driver_information.nx_driver_information_state;
+      break;
+    }
+
   default:
 
 
