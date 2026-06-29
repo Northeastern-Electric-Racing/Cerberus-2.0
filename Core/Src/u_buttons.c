@@ -15,7 +15,7 @@ void buttons_process(button_t button) {
             break;
         case BUTTON_LEFT:
             PRINTLN_INFO("Button BUTTON_LEFT pressed.");
-		    decrement_nero_index();
+		    increment_nero_index();
             break;
         case BUTTON_LAUNCH_CONTROL_TOGGLE:
             PRINTLN_INFO("Button BUTTON_LAUNCH_CONTROL_TOGGLE pressed.");
@@ -39,7 +39,7 @@ void buttons_process(button_t button) {
             break;
         case BUTTON_RIGHT:
             PRINTLN_INFO("Button BUTTON_RIGHT pressed.");
-		    increment_nero_index();
+            decrement_nero_index();
             break;
         case BUTTON_TRACTION_CONTROL_TOGGLE:
             PRINTLN_INFO("Button BUTTON_TRACTION_CONTROL_TOGGLE pressed.");
