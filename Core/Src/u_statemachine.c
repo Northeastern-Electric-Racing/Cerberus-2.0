@@ -108,8 +108,6 @@ static int transition_functional_state(func_state_t new_state)
 		printf("Reverse is disabled.");
 		return 4;
 #endif
-		rtds_startReverseSound();
-		break;
 	case F_PIT:
 	case F_PERFORMANCE:
 	case F_EFFICIENCY:
@@ -131,8 +129,12 @@ static int transition_functional_state(func_state_t new_state)
 			printf("Shutdown must be closed to enter drive mode!\n");
 			return 3;
 		}
-		
-		rtds_soundRTDS();
+
+		if (new_state == F_REVERSE) {
+			rtds_startReverseSound();
+		} else {
+			rtds_soundRTDS();
+		}
 
 		printf("ACTIVE STATE\r\n");
 		break;
