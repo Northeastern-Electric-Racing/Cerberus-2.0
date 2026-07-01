@@ -77,7 +77,7 @@ nero_state_t get_nero_state()
 
 static int transition_functional_state(func_state_t new_state)
 {
-	cerberus_state.state_transition_error
+	cerberus_state.state_transition_error = ERROR_OK;
 	/* Special case: should be able to fault no matter what conditions */
 	if (new_state == FAULTED) {
 		/* Turn off high power peripherals */
