@@ -45,13 +45,15 @@ void send_carstate_msg(void)
 		pedals_getRegenLimit(),
 		pedals_getLaunchControl(),
 		cerberus_state.functional,
-		tc_isEnabled()
+		tc_isEnabled(),
+		cerberus_state.state_transition_error
 	);
 }
 
 int init_statemachine(void) {
 	PRINTLN_INFO("Ran init_statemachine().");
 	cerberus_state.nero.home_mode = true;
+	cerberus_state.state_transition_error = ERROR_OK;
 	return U_SUCCESS;
 }
 
@@ -75,6 +77,7 @@ nero_state_t get_nero_state()
 
 static int transition_functional_state(func_state_t new_state)
 {
+	cerberus_state.state_transition_error
 	/* Special case: should be able to fault no matter what conditions */
 	if (new_state == FAULTED) {
 		/* Turn off high power peripherals */
@@ -85,6 +88,7 @@ static int transition_functional_state(func_state_t new_state)
 
 	if (pedals_getAccelState()) {
 		PRINTLN_WARNING("Accelerator should not be pressed when entering a state");
+		cerberus_state.state_transition_error |= CHANGE_STATE_ACCEL_PRESSED;
 		return 3;
 	}
 
@@ -106,6 +110,7 @@ static int transition_functional_state(func_state_t new_state)
 	case F_REVERSE:
 #ifdef DISABLE_REVERSE
 		printf("Reverse is disabled.");
+		cerberus_state.state_transition_error |= REVERSE_DISABLED;
 		return 4;
 #endif
 	case F_PIT:
@@ -116,17 +121,20 @@ static int transition_functional_state(func_state_t new_state)
 
 		if (cerberus_state.functional == FAULTED) {
 			printf("Cannot drive from a fault!\n");
+			cerberus_state.state_transition_error |= DRIVE_FROM_FAULT;
 			return 3;
 		}
 
 		/* Only turn on motor if brakes engaged and shutdown is closed */
 		if (!brake_state) {
 			printf("Must press brake to enter drive mode!\n");
+			cerberus_state.state_transition_error |= ENTER_DRIVE_BREAKS_NOT_ENGAGED;
 			return 3;
 		} 
 		
 		if (!is_shutdown_closed()) {
 			printf("Shutdown must be closed to enter drive mode!\n");
+			cerberus_state.state_transition_error |= ENTER_DRIVE_SHUTDOWN_OPEN;
 			return 3;
 		}
 
@@ -175,7 +183,13 @@ static int transition_nero_state(nero_state_t new_state)
 		/* Shutdown = Open and MPH = 0 to enter games */
 		if (new_state.nero_index == GAMES) {
 
-			if (is_shutdown_closed() || dti_get_mph() >= 1) {
+			if (is_shutdown_closed()) {
+				cerberus_state.state_transition_error |= ENTER_GAMES_SHUTDOWN_CLOSED;
+				return 1;
+			}
+
+			if (dti_get_mph() >= 1) {
+				cerberus_state.state_transition_error |= ENTER_GAMES_WHILE_MOVING;
 				return 1;
 			}
 
