@@ -27,10 +27,27 @@
 #define SEND_NERO_TIMEOUT	200 /*in millis*/
 #define TS_RISING_BLOCK_TIMEOUT 3000 /*in millis*/
 
+#define STATE_TRANS_ERROR_CLEAR_TIMEOUT 1000
+
 // #define DISABLE_REVERSE
 
 /* Globals. */
 static state_t cerberus_state;
+
+static void _clear_state_transition_error(ULONG args); // Forward declaration for callback function.
+static timer_t state_transition_error_timer = {
+	.name = "State Transition Error Timer",
+	.callback = _clear_state_transition_error,
+	.callback_input = 0,
+	.duration = STATE_TRANS_ERROR_CLEAR_TIMEOUT,
+	.type = ONESHOT,
+	.auto_activate = false
+};
+
+static void _clear_state_transition_error(ULONG args)
+{
+	cerberus_state.state_transition_error = ERROR_OK;
+}
 
 void send_carstate_msg(void)
 {
@@ -54,6 +71,13 @@ int init_statemachine(void) {
 	PRINTLN_INFO("Ran init_statemachine().");
 	cerberus_state.nero.home_mode = true;
 	cerberus_state.state_transition_error = ERROR_OK;
+
+	int status = timer_init(&state_transition_error_timer);
+	if (status != U_SUCCESS) {
+		PRINTLN_ERROR("Failed to init state transition error timer (Status: %d).", status);
+		return U_ERROR;
+	}
+
 	return U_SUCCESS;
 }
 
@@ -317,6 +341,11 @@ void statemachine_process(state_req_t new_state_req) {
 	if(check_state_change(new_state_req)) {
 		if(new_state_req.id == NERO) { transition_nero_state(new_state_req.state.nero); }
 		else if(new_state_req.id == FUNCTIONAL) { transition_functional_state(new_state_req.state.functional); }
+
+		/* clear state transition rejection reason after 1 second */
+		if(cerberus_state.state_transition_error != ERROR_OK) {
+			timer_restart(&state_transition_error_timer);
+		}
 	}
 
 	send_carstate_msg();

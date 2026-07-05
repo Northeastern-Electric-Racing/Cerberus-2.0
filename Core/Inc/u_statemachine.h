@@ -26,12 +26,11 @@ typedef enum {
     ERROR_OK                       = 0,
     REVERSE_DISABLED               = 1 << 0,
     DRIVE_FROM_FAULT               = 1 << 1,
-    ENTER_DRIVE_DISABLED           = 1 << 2,
-    ENTER_DRIVE_SHUTDOWN_OPEN	   = 1 << 3,
-    ENTER_DRIVE_BREAKS_NOT_ENGAGED = 1 << 4,
-    ENTER_GAMES_SHUTDOWN_CLOSED    = 1 << 5,
-    ENTER_GAMES_WHILE_MOVING       = 1 << 6,
-	CHANGE_STATE_ACCEL_PRESSED     = 1 << 7,
+    ENTER_DRIVE_SHUTDOWN_OPEN	   = 1 << 2,
+    ENTER_DRIVE_BREAKS_NOT_ENGAGED = 1 << 3,
+    ENTER_GAMES_SHUTDOWN_CLOSED    = 1 << 4,
+    ENTER_GAMES_WHILE_MOVING       = 1 << 5,
+    CHANGE_STATE_ACCEL_PRESSED     = 1 << 6,
 } state_transition_error_t;
 
 /**
