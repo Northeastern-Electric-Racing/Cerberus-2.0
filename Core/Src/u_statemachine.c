@@ -111,6 +111,7 @@ static int transition_functional_state(func_state_t new_state)
 	case F_PIT:
 	case F_PERFORMANCE:
 	case F_EFFICIENCY:
+	case F_CRUISE:
 
 		brake_state = pedals_getBrakeState();
 

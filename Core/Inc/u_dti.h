@@ -129,6 +129,12 @@ uint16_t dti_get_motor_temp(void);
  */
 uint16_t dti_get_controller_temp(void);
 
+
+/**
+ * @brief takes a mph value and returns it in RPMs
+ */
+float dti_mph_to_rpm(float);
+
 /**
  * @brief Record the currents from DTI
  *

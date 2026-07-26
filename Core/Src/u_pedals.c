@@ -361,6 +361,71 @@ static int16_t _derate_torque(float mph, float percentage_accel)
 	return sum / TORQUE_ACCUMULATOR_SIZE;
 }
 
+
+
+
+volatile int32_t cruise_speed = 10;
+
+void increment_cruise_speed(){
+	cruise_speed += 1;
+}
+
+void decrement_cruise_speed(){
+	if (cruise_speed > 0){
+		cruise_speed -= 1;
+	}
+}
+
+
+
+/**
+ * @brief Derate torque target to keep car below the maximum cruise mode speed.
+ *
+ * @param mph Speed of the car
+ * @param percentage_accel Percent travel of the acceleration pedal from 0-1
+ * @return int16_t Derated torque
+ */
+static int16_t _derate_torque_cruise(float mph, float percentage_accel)
+{
+	static int16_t torque_accumulator[TORQUE_ACCUMULATOR_SIZE];
+	/* index in moving average */
+	static uint8_t index = 0;
+
+	int16_t torque;
+
+
+	
+
+	/* If we are going too fast, we don't want to apply any torque to the moving average */
+	if (mph > cruise_speed) {
+		torque = 0;
+	} else {
+		/* Highest torque % in pit mode */
+		static const float max_torque_percent = 1.00;
+		/* Linearly derate torque from 100% to 0% as speed increases */
+		// THE REASON THIS IS NOT LIKE 70% PERCENT OR SOMETHING IS BECAUSE THE LINEAR 
+		float torque_derating_factor =
+			max_torque_percent *
+			(1.0f - (mph / cruise_speed));
+		percentage_accel *= torque_derating_factor;
+		torque = MAX_TORQUE * percentage_accel;
+	}
+
+	/* Add value to moving average */
+	torque_accumulator[index] = torque;
+	index = (index + 1) % TORQUE_ACCUMULATOR_SIZE;
+
+	/* Get moving average then send torque command to dti motor controller */
+	int16_t sum = 0;
+	for (uint8_t i = 0; i < TORQUE_ACCUMULATOR_SIZE; i++) {
+		sum += torque_accumulator[i];
+	}
+	return sum / TORQUE_ACCUMULATOR_SIZE;
+}
+
+
+
+
 /**
  * @brief Calculate and send torque command to motor controller.
  *
@@ -504,6 +569,35 @@ static void _handle_reverse(float mph, float percentage_accel)
 {
 	dti_set_torque(-1 * _derate_torque(fabs(mph), percentage_accel));
 }
+
+
+/**
+ * @brief ONLY FOR TESTING | Drive mode for cruise control; Will limit the top speed of the car.
+ * @param mph Current speed of the car.
+ * @param percentage_accel % pedal travel of the accelerator pedal.
+ */
+static void _handle_cruise(float mph, float percentage_accel){
+
+	float current_speed = dti_get_mph();
+
+	#ifdef __SET_SPEED_CRUISE
+		if (current_speed < cruise_speed){
+			_linear_accel_to_torque(percentage_accel);
+		} else if (current_speed >= cruise_speed){
+			dti_set_speed(dti_mph_to_rpm(cruise_speed));
+		}
+	#else
+		if (dti_get_mph() < cruise_speed){
+		_linear_accel_to_torque(percentage_accel);
+		} else if (dti_get_mph() >= cruise_speed){
+		if (dti_get_mph() > cruise_speed + 0.25){
+			dti_set_torque(_derate_torque_cruise(mph, percentage_accel));
+		}
+		}
+	#endif
+	
+}
+
 
 /* Converts the ADC to the voltage out of 5V (for rules). */
 static float _adc_to_voltage(uint16_t raw_adc) {
@@ -748,6 +842,8 @@ void pedals_process(void) {
         case F_EFFICIENCY:
             _handle_endurance(mph, pedal_data.percentage_accel);
             break;
+		case F_CRUISE:
+			_handle_cruise(mph, pedal_data.percentage_accel);
         default:
             PRINTLN_ERROR("Failed to process pedals due to unknown functional state.");
             break;
