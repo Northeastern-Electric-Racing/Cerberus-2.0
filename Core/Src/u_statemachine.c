@@ -82,7 +82,7 @@ static int transition_functional_state(func_state_t new_state)
 		write_mcu_fault(true);
 		printf("FAULTED\r\n");
 	}
-
+ 
 	if (pedals_getAccelState()) {
 		PRINTLN_WARNING("Accelerator should not be pressed when entering a state");
 		return 3;
@@ -132,7 +132,8 @@ static int transition_functional_state(func_state_t new_state)
 		}
 
 		if (new_state == F_REVERSE) {
-			rtds_startReverseSound();
+			// rtds_startReverseSound();
+
 		} else {
 			rtds_soundRTDS();
 		}
@@ -144,7 +145,12 @@ static int transition_functional_state(func_state_t new_state)
 		break;
 	}
 
-	cerberus_state.functional = new_state;
+	if (new_state == F_REVERSE){
+		cerberus_state.functional = F_CRUISE;
+	} else {
+		cerberus_state.functional = new_state;
+	}
+	
 	PRINTLN_INFO("Transitioned functional state to %d.", cerberus_state.functional);
 
 	return 0;
