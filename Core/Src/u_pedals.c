@@ -393,11 +393,11 @@ static int16_t _derate_torque_cruise(float mph, float percentage_accel)
 
 	int16_t torque;
 
-
+	int32_t buffered_cruise_speed = cruise_speed + 1; 
 	
 
 	/* If we are going too fast, we don't want to apply any torque to the moving average */
-	if (mph > cruise_speed) {
+	if (mph > buffered_cruise_speed ) {
 		torque = 0;
 	} else {
 		/* Highest torque % in pit mode */
@@ -406,7 +406,7 @@ static int16_t _derate_torque_cruise(float mph, float percentage_accel)
 		// THE REASON THIS IS NOT LIKE 70% PERCENT OR SOMETHING IS BECAUSE THE LINEAR 
 		float torque_derating_factor =
 			max_torque_percent *
-			(1.0f - (mph / cruise_speed));
+			(1.0f - (mph / buffered_cruise_speed));
 		percentage_accel *= torque_derating_factor;
 		torque = MAX_TORQUE * percentage_accel;
 	}
@@ -578,19 +578,17 @@ static void _handle_reverse(float mph, float percentage_accel)
  */
 static void _handle_cruise(float mph, float percentage_accel){
 
-	float current_speed = dti_get_mph();
-
 	#ifdef __SET_SPEED_CRUISE
-		if (current_speed < cruise_speed){
+		if (mph < cruise_speed){
 			_linear_accel_to_torque(percentage_accel);
-		} else if (current_speed >= cruise_speed){
+		} else if (mph >= cruise_speed && percentage_accel > 0.65){
 			dti_set_speed(dti_mph_to_rpm(cruise_speed));
 		}
 	#else
-		if (dti_get_mph() < cruise_speed){
+		if (mph < cruise_speed){
 		_linear_accel_to_torque(percentage_accel);
-		} else if (dti_get_mph() >= cruise_speed){
-		if (dti_get_mph() > cruise_speed + 0.25){
+		} else if (mph >= cruise_speed && percentage_accel > 0.65){
+		if (mph > cruise_speed + 1){
 			dti_set_torque(_derate_torque_cruise(mph, percentage_accel));
 		}
 		}
