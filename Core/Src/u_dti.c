@@ -91,7 +91,7 @@ void dti_set_torque(int16_t torque)
 	}
 
 	/* Motor controller expects AC current target to be received as multiplied by 10 */
-	int16_t ac_current = (((float)average / EMRAX_KT) * 10);
+	int16_t ac_current = (((float)average / EMRAX_KT) * 1.414 * 10);
 
 	dti_set_current(ac_current);
 }
@@ -124,6 +124,9 @@ void dti_set_current(int16_t current)
 {
 	if (!bms_getPrecharge()) {
 		return;
+	}
+	if (current > 499 * 10) {
+		current = 499*10;
 	}
 	can_msg_t msg = { .id = 0x036, .len = 2, .data = { 0 } };
 
