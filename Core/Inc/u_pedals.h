@@ -2,7 +2,7 @@
 
 #ifndef __U_PEDALS_H
 #define __U_PEDALS_H
-// #define __SET_SPEED_CRUISE
+#define __SET_SPEED_CRUISE
 
 /* Pedal sensors. This enum is ordered based on the order of the sensors' ADC
  * indexes, as set up in u_adc.c  */
