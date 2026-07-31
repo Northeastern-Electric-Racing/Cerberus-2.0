@@ -21,7 +21,7 @@
 #include "u_tc.h"
 
 /* Globals. */
-static uint16_t regen_limits[2] = { 0, 50 }; // [PERFORMANCE, ENDURANCE]
+static uint16_t regen_limits[2] = { 0, 150 }; // [PERFORMANCE, ENDURANCE]
 static const float MPH_TO_KMH = 1.609;       // Factor for converting MPH to KMH
 
 typedef enum {
@@ -71,7 +71,7 @@ static pedal_data_t pedal_data = { 0 };
 #define MAX_VOLTS_UNSCALED 5.0  // (Volts). Actual sensor voltage before voltage divider scaling.
 
 /* Pedal Tuning */
-#define MAX_APPS1_VOLTS		    3.3 // (Volts). Upper bound on APPS1 voltage range.
+#define MAX_APPS1_VOLTS		    3.4 // (Volts). Upper bound on APPS1 voltage range.
 #define MIN_APPS1_VOLTS		    2.1 // (Volts). Lower bound on APPS1 voltage range.
 #define MAX_APPS2_VOLTS		    2.2 // (Volts). Upper bound on APPS2 voltage range.
 #define MIN_APPS2_VOLTS		    1.1 // (Volts). Lower bound on APPS2 voltage range.
@@ -80,9 +80,9 @@ static pedal_data_t pedal_data = { 0 };
 
 /* Performance Limits */
 #define PIT_MAX_SPEED           5.0 // (mph). Speed limit in pit mode.
-#define MAX_TORQUE              160 // (Nm). Maximum torque output
+#define MAX_TORQUE              214 // (Nm). Maximum torque output
 #define TORQUE_ACCUMULATOR_SIZE 10  // (Number). Size of the moving average filter for torque stuff.
-#define MAX_REGEN_CURRENT       250 // (AC Amps). Maximum regenerative braking current.
+#define MAX_REGEN_CURRENT       400 // (AC Amps). Maximum regenerative braking current.
 
 /* Endurance Mode */
 #define ACCELERATION_THRESHOLD 0.25 // (Percentage). Pedal position above which acceleration begins.
