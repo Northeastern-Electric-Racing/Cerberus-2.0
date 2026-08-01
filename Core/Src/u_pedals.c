@@ -85,8 +85,8 @@ static pedal_data_t pedal_data = { 0 };
 #define MAX_REGEN_CURRENT       400 // (AC Amps). Maximum regenerative braking current.
 
 /* Endurance Mode */
-#define ACCELERATION_THRESHOLD 0.25 // (Percentage). Pedal position above which acceleration begins.
-#define REGEN_THRESHOLD 0.10        // (Percentage). Pedal position below which regenerative braking activates.
+#define ACCELERATION_THRESHOLD 0.30 // (Percentage). Pedal position above which acceleration begins.
+#define REGEN_THRESHOLD 0.25        // (Percentage). Pedal position below which regenerative braking activates.
 
 /* Fault Detection */
 #define BRAKE_SENSOR_IRREGULAR_HIGH 4.5  // (Volts). The brake sensor voltage should not exceed this value.
@@ -465,7 +465,8 @@ static void _handle_performance(float mph, float percentage_accel)
 }
 
 /**
- * @brief Torque calculations for efficiency mode. If the driver is braking, do regenerative braking.
+ * @brief Torque calculations for efficiency mode. If the driver is accelerating less than REGEN_THRESHOLD and more than 5 kph, do regenerative braking.
+ * If the driver is accelerating more than ACCELERATION_THRESHOLD, do regen torque. Else dead zone by doing nothing.
  *
  * @param mph mph of the car
  * @param percentage_accel adjusted value of the acceleration pedal
