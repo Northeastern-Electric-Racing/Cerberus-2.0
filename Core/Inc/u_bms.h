@@ -2,6 +2,7 @@
 #define __U_BMS_H
 
 #include <stdint.h>
+#include <stdbool.h>
 
 /* API */
 
