@@ -2,6 +2,7 @@
 
 #ifndef __U_PEDALS_H
 #define __U_PEDALS_H
+#define __SET_SPEED_CRUISE
 
 /* Pedal sensors. This enum is ordered based on the order of the sensors' ADC
  * indexes, as set up in u_adc.c  */
@@ -45,6 +46,8 @@ uint16_t pedals_getRegenLimit(void);       // Sets regen limit.
 void pedals_toggleLaunchControl(void);     // Toggles launch control.
 void pedals_enableLaunchControl(void);     // Enables launch control.
 void pedals_disableLaunchControl(void);    // Disables launch control.
+void increment_cruise_speed(void); // Increments the cruise control speed by 1 mph
+void decrement_cruise_speed(void); // Decrements the cruise control speed by 1mph
 bool pedals_getLaunchControl(void);        // Gets launch control.
 
 #endif /* u_pedals.h */

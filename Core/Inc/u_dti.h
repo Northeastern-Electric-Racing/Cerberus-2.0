@@ -75,6 +75,15 @@ void dti_set_torque(int16_t torque);
  */
 void dti_set_regen(uint16_t current_target);
 
+
+/**
+ * @brief Sets the speed of the wheels based on rpms. ALLEGEDLY (needs to be tested) will apply an appropriate amount of regen or torque necessary 
+ *
+ * @param rpm The amount of rpms the wheels should be doing: Use helper function dti_mph_to_rpm so you can actually use a speed.
+ */
+void dti_set_speed(int32_t rpm);
+
+
 /**
  * @brief Send a CAN message containing the AC current target for regenerative braking.
  *
@@ -128,6 +137,12 @@ uint16_t dti_get_motor_temp(void);
  * @brief gets the motor controller tempature
  */
 uint16_t dti_get_controller_temp(void);
+
+
+/**
+ * @brief takes a mph value and returns it in RPMs
+ */
+float dti_mph_to_rpm(float);
 
 /**
  * @brief Record the currents from DTI
