@@ -39,6 +39,7 @@ static const float MPH_TO_KMH = 1.609;       // Factor for converting MPH to KMH
 /* Endurance Mode */
 #define ACCELERATION_THRESHOLD 0.30 // (Percentage). Pedal position above which acceleration begins.
 #define REGEN_THRESHOLD 0.25        // (Percentage). Pedal position below which regenerative braking activates.
+#define MIN_REGEN_CURRENT 75        // (Amps). When in regen pedal positon
 
 /* Fault Detection */
 #define BRAKE_SENSOR_IRREGULAR_HIGH 4.5  // (Volts). The brake sensor voltage should not exceed this value.

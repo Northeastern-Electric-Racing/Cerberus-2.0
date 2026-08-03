@@ -346,7 +346,7 @@ static void _accel_pedal_regen_braking(float percentage_accel)
 
 	/* Calculate AC current target for regenerative braking */
 	float regen_current =
-		(regen_limit / REGEN_THRESHOLD) * (REGEN_THRESHOLD - percentage_accel);
+		((regen_limit - MIN_REGEN_CURRENT) / REGEN_THRESHOLD) * (REGEN_THRESHOLD - percentage_accel) + MIN_REGEN_CURRENT;
 
 	if (regen_current > regen_limit) {
 		regen_current = regen_limit;

@@ -36,7 +36,9 @@ static uint16_t expected_accel_torque(float percentage_accel, float tc_scale, fl
 
 /* Mirrors _accel_pedal_regen_braking()'s math. */
 static uint16_t expected_regen_current_x10(float percentage_accel, uint16_t regen_limit) {
-    float regen_current = (regen_limit / REGEN_THRESHOLD) * (REGEN_THRESHOLD - percentage_accel);
+    float regen_current =
+        ((regen_limit - MIN_REGEN_CURRENT) / REGEN_THRESHOLD) * (REGEN_THRESHOLD - percentage_accel) + MIN_REGEN_CURRENT;
+
     if (regen_current > regen_limit) {
         regen_current = (float)regen_limit;
     }
