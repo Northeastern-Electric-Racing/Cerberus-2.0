@@ -27,10 +27,27 @@
 #define SEND_NERO_TIMEOUT	200 /*in millis*/
 #define TS_RISING_BLOCK_TIMEOUT 3000 /*in millis*/
 
+#define STATE_TRANS_ERROR_CLEAR_TIMEOUT 3000
+
 // #define DISABLE_REVERSE
 
 /* Globals. */
 static state_t cerberus_state;
+
+static void _clear_state_transition_error(ULONG args); // Forward declaration for callback function.
+static timer_t state_transition_error_timer = {
+	.name = "State Transition Error Timer",
+	.callback = _clear_state_transition_error,
+	.callback_input = 0,
+	.duration = STATE_TRANS_ERROR_CLEAR_TIMEOUT,
+	.type = ONESHOT,
+	.auto_activate = false
+};
+
+static void _clear_state_transition_error(ULONG args)
+{
+	cerberus_state.state_transition_error = ERROR_OK;
+}
 
 void send_carstate_msg(void)
 {
@@ -45,13 +62,22 @@ void send_carstate_msg(void)
 		pedals_getRegenLimit(),
 		pedals_getLaunchControl(),
 		cerberus_state.functional,
-		tc_isEnabled()
+		tc_isEnabled(),
+		cerberus_state.state_transition_error
 	);
 }
 
 int init_statemachine(void) {
 	PRINTLN_INFO("Ran init_statemachine().");
 	cerberus_state.nero.home_mode = true;
+	cerberus_state.state_transition_error = ERROR_OK;
+
+	int status = timer_init(&state_transition_error_timer);
+	if (status != U_SUCCESS) {
+		PRINTLN_ERROR("Failed to init state transition error timer (Status: %d).", status);
+		return U_ERROR;
+	}
+
 	return U_SUCCESS;
 }
 
@@ -75,6 +101,7 @@ nero_state_t get_nero_state()
 
 static int transition_functional_state(func_state_t new_state)
 {
+	cerberus_state.state_transition_error = ERROR_OK;
 	/* Special case: should be able to fault no matter what conditions */
 	if (new_state == FAULTED) {
 		/* Turn off high power peripherals */
@@ -85,6 +112,7 @@ static int transition_functional_state(func_state_t new_state)
 
 	if (pedals_getAccelState()) {
 		PRINTLN_WARNING("Accelerator should not be pressed when entering a state");
+		cerberus_state.state_transition_error |= CHANGE_STATE_ACCEL_PRESSED;
 		return 3;
 	}
 
@@ -106,6 +134,7 @@ static int transition_functional_state(func_state_t new_state)
 	case F_REVERSE:
 #ifdef DISABLE_REVERSE
 		printf("Reverse is disabled.");
+		cerberus_state.state_transition_error |= REVERSE_DISABLED;
 		return 4;
 #endif
 	case F_PIT:
@@ -116,17 +145,20 @@ static int transition_functional_state(func_state_t new_state)
 
 		if (cerberus_state.functional == FAULTED) {
 			printf("Cannot drive from a fault!\n");
+			cerberus_state.state_transition_error |= DRIVE_FROM_FAULT;
 			return 3;
 		}
 
 		/* Only turn on motor if brakes engaged and shutdown is closed */
 		if (!brake_state) {
 			printf("Must press brake to enter drive mode!\n");
+			cerberus_state.state_transition_error |= ENTER_DRIVE_BREAKS_NOT_ENGAGED;
 			return 3;
 		} 
 		
 		if (!is_shutdown_closed()) {
 			printf("Shutdown must be closed to enter drive mode!\n");
+			cerberus_state.state_transition_error |= ENTER_DRIVE_SHUTDOWN_OPEN;
 			return 3;
 		}
 
@@ -175,7 +207,13 @@ static int transition_nero_state(nero_state_t new_state)
 		/* Shutdown = Open and MPH = 0 to enter games */
 		if (new_state.nero_index == GAMES) {
 
-			if (is_shutdown_closed() || dti_get_mph() >= 1) {
+			if (is_shutdown_closed()) {
+				cerberus_state.state_transition_error |= ENTER_GAMES_SHUTDOWN_CLOSED;
+				return 1;
+			}
+
+			if (dti_get_mph() >= 1) {
+				cerberus_state.state_transition_error |= ENTER_GAMES_WHILE_MOVING;
 				return 1;
 			}
 
@@ -303,6 +341,11 @@ void statemachine_process(state_req_t new_state_req) {
 	if(check_state_change(new_state_req)) {
 		if(new_state_req.id == NERO) { transition_nero_state(new_state_req.state.nero); }
 		else if(new_state_req.id == FUNCTIONAL) { transition_functional_state(new_state_req.state.functional); }
+
+		/* clear state transition rejection reason after 1 second */
+		if(cerberus_state.state_transition_error != ERROR_OK) {
+			timer_restart(&state_transition_error_timer);
+		}
 	}
 
 	send_carstate_msg();
