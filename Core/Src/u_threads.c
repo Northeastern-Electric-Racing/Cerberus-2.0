@@ -357,8 +357,8 @@ void vEFuses(ULONG thread_input) {
         }
 
         /* Determine radfan eFuse state. */
-        static const uint16_t RADFAN_UPPERBOUND = 65;
-        static const uint16_t RADFAN_LOWERBOUND = 35;
+        static const uint16_t RADFAN_UPPERBOUND = 45;
+        static const uint16_t RADFAN_LOWERBOUND = 40;
         switch(data.control_state[EFUSE_RADFAN]) {
             case EF_ON: efuse_enable(EFUSE_RADFAN); break;
             case EF_OFF: efuse_disable(EFUSE_RADFAN); break;
@@ -373,8 +373,8 @@ void vEFuses(ULONG thread_input) {
         }
 
         /* Determine fanbatt eFuse state. */
-        static const float FANBATT_UPPERBOUND = 50;
-        static const float FANBATT_LOWERBOUND = 30;
+        static const float FANBATT_UPPERBOUND = 45;
+        static const float FANBATT_LOWERBOUND = 40;
         switch(data.control_state[EFUSE_FANBATT]) {
             case EF_ON: efuse_enable(EFUSE_FANBATT); break;
             case EF_OFF: efuse_disable(EFUSE_FANBATT); break;
@@ -390,7 +390,7 @@ void vEFuses(ULONG thread_input) {
 
         /* Determine pump1 eFuse state. */
         static const uint16_t PUMP1_UPPERBOUND = 45;
-        static const uint16_t PUMP1_LOWERBOUND = 35;
+        static const uint16_t PUMP1_LOWERBOUND = 40;
         static const int PUMP1_SWITCHING_TIMEOUT = 5000;
         static nertimer_t pump1_switching_timer = { 0 };
         switch(data.control_state[EFUSE_PUMP1]) {
@@ -418,7 +418,7 @@ void vEFuses(ULONG thread_input) {
 
         /* Determine pump2 eFuse state. */
         static const uint16_t PUMP2_UPPERBOUND = 45;
-        static const uint16_t PUMP2_LOWERBOUND = 35;
+        static const uint16_t PUMP2_LOWERBOUND = 40;
         static const int PUMP2_SWITCHING_TIMEOUT = 5000;
         static nertimer_t pump2_switching_timer = { 0 };
         switch(data.control_state[EFUSE_PUMP2]) {
@@ -494,8 +494,8 @@ void vEFuses(ULONG thread_input) {
         }
 
         /* Determine Spare (other radfan) eFuse state. */
-        static const uint16_t SPARE_UPPERBOUND = 65;
-        static const uint16_t SPARE_LOWERBOUND = 35;
+        static const uint16_t SPARE_UPPERBOUND = 45;
+        static const uint16_t SPARE_LOWERBOUND = 40;
         switch(data.control_state[EFUSE_SPARE]) {
             case EF_ON: efuse_enable(EFUSE_SPARE); break;
             case EF_OFF: efuse_disable(EFUSE_SPARE); break;
