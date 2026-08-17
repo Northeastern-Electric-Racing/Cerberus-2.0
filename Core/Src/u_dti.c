@@ -122,9 +122,6 @@ void dti_set_regen(uint16_t current_target)
 
 void dti_set_current(int16_t current)
 {
-	if (!bms_getPrecharge()) {
-		return;
-	}
 	if (current > 499 * 10) {
 		current = 499*10;
 	}

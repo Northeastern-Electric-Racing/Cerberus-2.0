@@ -52,14 +52,16 @@ typedef struct {
 static pedal_data_t pedal_data = { 0 };
 
 /* Set a drive lock, remember to unset when the fault condition disappears*/
-static void _drive_lock_set(drive_lock_t lock) {
+static inline void _drive_lock_set(drive_lock_t lock) {
     //PRINTLN_INFO("Drive Lock %d set", lock);
     NER_SET_BIT(drive_lock_map, lock);
 }
-/* Unset drive lock */
-static void _drive_lock_unset(drive_lock_t lock) {
+/* Unset drive lock.  Only obeyed if accel is not pressed! */
+static inline void _drive_lock_unset(drive_lock_t lock) {
     //PRINTLN_INFO("Drive Lock %d unset", lock);
-    NER_CLEAR_BIT(drive_lock_map, lock);
+	if (!accel_pressed) {
+        NER_CLEAR_BIT(drive_lock_map, lock);
+	}
 }
 
 /* Checks if driving is currently locked by one of the drive locks.  */
@@ -98,13 +100,6 @@ static void _pedal_difference_fault_callback(void *arg) {
 /* Send Pedal Data Callback */
 static void _send_pedal_data(ULONG args) {
     (void)args; // The args parameter is unused for this callback.
-
-	/* Set BMS prechrage drive lock. */
-	if(!bms_getPrecharge()) {
-		_drive_lock_set(BMS_NOT_PRECHARGED_YET);
-	} else {
-		_drive_lock_unset(BMS_NOT_PRECHARGED_YET);
-	}
 
     /* Send Pedal Volts Message. */
 	send_pedal_sensor_voltages(
@@ -673,6 +668,13 @@ void pedals_process(void) {
         _drive_lock_unset(BSPD_PREF);
     }
 
+    /* Set BMS prechrage drive lock. */
+	if(!bms_getPrecharge()) {
+		_drive_lock_set(BMS_NOT_PRECHARGED_YET);
+	} else {
+		_drive_lock_unset(BMS_NOT_PRECHARGED_YET);
+	}
+
 	// if we have a drive lock condition, set torque to zero and bail
 	if (_is_drive_locked()) {
 		//PRINTLN_WARNING("Drive is locked, so setting torque to zero and skipping pedals processing.");
@@ -704,6 +706,7 @@ void pedals_process(void) {
             break;
         default:
             PRINTLN_ERROR("Failed to process pedals due to unknown functional state.");
+			dti_set_torque(0);
             break;
     }
 
