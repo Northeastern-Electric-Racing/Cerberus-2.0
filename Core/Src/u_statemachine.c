@@ -109,7 +109,7 @@ static int transition_functional_state(func_state_t new_state)
 		write_mcu_fault(true);
 		printf("FAULTED\r\n");
 	}
-
+ 
 	if (pedals_getAccelState()) {
 		PRINTLN_WARNING("Accelerator should not be pressed when entering a state");
 		cerberus_state.state_transition_error |= CHANGE_STATE_ACCEL_PRESSED;
@@ -140,6 +140,7 @@ static int transition_functional_state(func_state_t new_state)
 	case F_PIT:
 	case F_PERFORMANCE:
 	case F_EFFICIENCY:
+	case F_CRUISE:
 
 		brake_state = pedals_getBrakeState();
 
@@ -163,7 +164,8 @@ static int transition_functional_state(func_state_t new_state)
 		}
 
 		if (new_state == F_REVERSE) {
-			rtds_startReverseSound();
+			// rtds_startReverseSound();
+
 		} else {
 			rtds_soundRTDS();
 		}
@@ -175,7 +177,12 @@ static int transition_functional_state(func_state_t new_state)
 		break;
 	}
 
-	cerberus_state.functional = new_state;
+	if (new_state == F_REVERSE){
+		cerberus_state.functional = F_CRUISE;
+	} else {
+		cerberus_state.functional = new_state;
+	}
+	
 	PRINTLN_INFO("Transitioned functional state to %d.", cerberus_state.functional);
 
 	return 0;

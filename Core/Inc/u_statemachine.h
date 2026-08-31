@@ -18,6 +18,7 @@ typedef enum {
 	F_REVERSE, // can only enter reverse from PIT
 	F_PERFORMANCE,
 	F_EFFICIENCY,
+	F_CRUISE,
 	FAULTED,
 	MAX_FUNC_STATES
 } func_state_t;
@@ -43,6 +44,7 @@ typedef enum {
 	REVERSE,
 	PERFORMANCE, //AUTOCROSS
 	EFFICIENCY, //ENDURANCE
+	CRUISE, //CRUISE CONTROL TESTING MODE
 	GAMES,
 	THEMES,
 	EXIT,

@@ -2,6 +2,7 @@
 
 #ifndef __U_PEDALS_H
 #define __U_PEDALS_H
+#define __SET_SPEED_CRUISE
 
 static uint16_t regen_limits[2] = { 0, 150 }; // [PERFORMANCE, ENDURANCE]
 static const float MPH_TO_KMH = 1.609;       // Factor for converting MPH to KMH
@@ -92,6 +93,8 @@ uint16_t pedals_getRegenLimit(void);       // Sets regen limit.
 void pedals_toggleLaunchControl(void);     // Toggles launch control.
 void pedals_enableLaunchControl(void);     // Enables launch control.
 void pedals_disableLaunchControl(void);    // Disables launch control.
+void increment_cruise_speed(void); // Increments the cruise control speed by 1 mph
+void decrement_cruise_speed(void); // Decrements the cruise control speed by 1mph
 bool pedals_getLaunchControl(void);        // Gets launch control.
 
 void _handle_endurance(float mph, float percentage_accel);

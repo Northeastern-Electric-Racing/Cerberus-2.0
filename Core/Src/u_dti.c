@@ -317,6 +317,11 @@ float dti_get_mph(void)
 	       (TIRE_DIAMETER / 63360.0) * M_PI;
 }
 
+float dti_mph_to_rpm(float mph)
+{
+	return mph * GEAR_RATIO * 63360 / (60 * M_PI * TIRE_DIAMETER);
+}
+
 void dti_record_rpm(can_msg_t* msg)
 {
 	/* ERPM is first four bytes of can message in big endian format */
