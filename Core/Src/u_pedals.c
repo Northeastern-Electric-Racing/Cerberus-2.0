@@ -275,7 +275,7 @@ static void _power_regression_accel_to_torque(float percentage_accel)
  * @param percentage_accel Percent travel of the acceleration pedal from 0-1
  * @return int16_t Derated torque
  */
-static int16_t _derate_torque(float mph, float percentage_accel)
+int16_t _derate_torque(float mph, float percentage_accel)
 {
 	static int16_t torque_accumulator[TORQUE_ACCUMULATOR_SIZE];
 	/* index in moving average */
@@ -349,109 +349,6 @@ static void _accel_pedal_regen_braking(float percentage_accel)
 
 	/* Send regen current to motor controller */
 	dti_set_regen((uint16_t)(regen_current * 10));
-}
-
-/* Implements Launch Control. */
-/* (i.e. Prevents the car from accelerating too aggressively from a standstill, helping to maintain traction). */
-static void _launch_control(float mph, float percentage_accel)
-{
-	static float last_mph = 0.0f;
-	static uint32_t prevTime = 0;
-	static float prev_accel = 0;
-
-    const float deltaMPHPS_max = 22.0f; // Miles per hour per second, based on matlab accel numbers
-    const float max_limiting_mph = 30;
-
-	if (prevTime == 0) { // Initialize time
-		prevTime = HAL_GetTick();
-		return;
-	}
-
-	uint32_t now = HAL_GetTick();
-	uint32_t delta_ms = now - prevTime;
-
-	float delta_mph = mph - last_mph;
-	float max_delta_adjusted = deltaMPHPS_max * (delta_ms / 1000.0f);
-
-	if (mph < max_limiting_mph && delta_mph > max_delta_adjusted) {
-		_linear_accel_to_torque(prev_accel / 2);
-	} else {
-		_linear_accel_to_torque(percentage_accel);
-	}
-
-	// Update for next cycle
-	prevTime = now;
-	last_mph = mph;
-	prev_accel = percentage_accel;
-}
-
-/* Manages torque control when the car is in Performance Mode. */
-static void _handle_performance(float mph, float percentage_accel)
-{
-#ifndef POWER_REGRESSION_PEDAL_TORQUE_TRANSFER
-	uint16_t regen_limit = pedals_getRegenLimit();
-	if (regen_limit <= 0.01) {
-		_linear_accel_to_torque(percentage_accel);
-		return;
-	}
-
-	if (percentage_accel >= ACCELERATION_THRESHOLD) {
-		if (launch_control_enabled) {
-			_launch_control(mph, (percentage_accel - 0.25) / 0.75);
-		} else {
-			_accel_pedal_regen_torque(percentage_accel);
-		}
-	} else if (mph * MPH_TO_KMH > 5 && percentage_accel <= REGEN_THRESHOLD) {
-		_accel_pedal_regen_braking(percentage_accel);
-	} else {
-		/* Pedal travel is between thresholds, so there should not be acceleration or braking */
-		dti_set_torque(0);
-	}
-#else
-	power_regression_accel_to_torque(percentage_accel);
-#endif
-}
-
-/**
- * @brief Torque calculations for efficiency mode. If the driver is accelerating less than REGEN_THRESHOLD and more than 5 kph, do regenerative braking.
- * If the driver is accelerating more than ACCELERATION_THRESHOLD, do regen torque. Else dead zone by doing nothing.
- *
- * @param mph mph of the car
- * @param percentage_accel adjusted value of the acceleration pedal
- */
-void _handle_endurance(float mph, float percentage_accel)
-{
-	/* Pedal is in acceleration range. Set forward torque target. */
-	if (percentage_accel >= ACCELERATION_THRESHOLD) {
-		_accel_pedal_regen_torque(percentage_accel);
-	} else if (mph * MPH_TO_KMH > 5 && percentage_accel <= REGEN_THRESHOLD) {
-		_accel_pedal_regen_braking(percentage_accel);
-	} else {
-		/* Pedal travel is between thresholds, so there should not be acceleration or braking */
-		dti_set_torque(0);
-	}
-}
-
-/**
- * @brief Drive forward with a speed limit of 5 mph.
- *
- * @param mph Current speed of the car.
- * @param percentage_accel % pedal travel of the accelerator pedal.
- */
-static void _handle_pit(float mph, float percentage_accel)
-{
-	dti_set_torque(_derate_torque(mph, percentage_accel));
-}
-
-/**
- * @brief Drive in speed limited reverse mode.
- *
- * @param mph Current speed of the car.
- * @param percentage_accel % pedal travel of the accelerator pedal.
- */
-static void _handle_reverse(float mph, float percentage_accel)
-{
-	dti_set_torque(-1 * _derate_torque(fabs(mph), percentage_accel));
 }
 
 /* Converts the ADC to the voltage out of 5V (for rules). */
