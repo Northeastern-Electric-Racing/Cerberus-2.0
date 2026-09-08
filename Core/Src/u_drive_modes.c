@@ -1,3 +1,5 @@
+#include "u_drive_modes.h"
+
 #include "u_pedals.h"
 #include "u_buttons.h"
 #include <stdatomic.h>
@@ -6,11 +8,11 @@
 #include "debounce.h"
 #include "can_messages_tx.h"
 #include "c_utils.h"
+#include "u_statemachine.h"
+#include "u_tc.h"
+#include "u_tx_debug.h"
 
 /* Globals. */
-static uint16_t regen_limits[2] = { 0, 50 }; // [PERFORMANCE, ENDURANCE]
-static const float MPH_TO_KMH = 1.609;       // Factor for converting MPH to KMH
-
 typedef enum {
     BRAKE_OC,
     BRAKE_SC,
@@ -28,72 +30,90 @@ static _Atomic bool accel_pressed = false;
 static _Atomic bool launch_control_enabled = false;
 static float torque_limit_percentage = 1.0f;
 
-/* Pedal Data. */
-typedef struct {
-	float voltage_accel1;
-	float voltage_accel2;
-	float voltage_brake1;
-	float voltage_brake2;
-	float percentage_accel;
-	float percentage_brake;
-	float psi_brake1;
-	float psi_brake2;
-} pedal_data_t;
-static pedal_data_t pedal_data = { 0 };
-
-/* =================================== */
-/*            CONFIG MACROS            */
-/* =================================== */
-/* Misc */
-#define MAX_ADC_VAL_12b    4096       // Maximum value for a 12-bit ADC.
-#define PEDAL_DATA_MSG_FREQUENCY 100  // (Ticks). How often the pedal data message should get sent.
-
-/* Motor Control Timing/Safety */
-#define MIN_COMMAND_FREQ     60                      // (Hz). Minimum frequency for sending torque commands.
-#define MAX_COMMAND_DELAY    1000 / MIN_COMMAND_FREQ // (ms). Maximum delay between torque commands.
-#define REGEN_INCREMENT_STEP 10                      // (AC Amps). Steo size for increasing/decreasing regenerative braking current.
-
-/* Voltage Stuff */
-#define MAX_VOLTS          3.3  // (Volts). Maximum voltage for the ADC.
-#define MAX_VOLTS_UNSCALED 5.0  // (Volts). Actual sensor voltage before voltage divider scaling.
-
-/* Pedal Tuning */
-#define MAX_APPS1_VOLTS		    3.4 // (Volts). Upper bound on APPS1 voltage range.
-#define MIN_APPS1_VOLTS		    2.1 // (Volts). Lower bound on APPS1 voltage range.
-#define MAX_APPS2_VOLTS		    2.2 // (Volts). Upper bound on APPS2 voltage range.
-#define MIN_APPS2_VOLTS		    1.1 // (Volts). Lower bound on APPS2 voltage range.
-#define PEDAL_BRAKE_THRESH	    0.15 // (Percantage). Pedal position above which the system registers the brake pedal as "pressed".
-#define PEDAL_HARD_BRAKE_THRESH 0.20 // (Percentage). Pedal position above which a "hard brake" is detected.
-
-/* Performance Limits */
-#define PIT_MAX_SPEED           5.0 // (mph). Speed limit in pit mode.
-#define MAX_TORQUE              160 // (Nm). Maximum torque output
-#define TORQUE_ACCUMULATOR_SIZE 10  // (Number). Size of the moving average filter for torque stuff.
-#define MAX_REGEN_CURRENT       250 // (AC Amps). Maximum regenerative braking current.
-
-/* Endurance Mode */
-#define ACCELERATION_THRESHOLD 0.25 // (Percentage). Pedal position above which acceleration begins.
-#define REGEN_THRESHOLD 0.10        // (Percentage). Pedal position below which regenerative braking activates.
-
-/* Fault Detection */
-#define BRAKE_SENSOR_IRREGULAR_HIGH 4.5  // (Volts). The brake sensor voltage should not exceed this value.
-#define BRAKE_SENSOR_IRREGULAR_LOW  0.5  // (Volts). The brake sensor voltage should not go below this value.
-#define PEDAL_DIFF_THRESH           0.20 // (Percentage). Maximum allowed difference between the two accelerator sensors.
-#define PEDAL_FAULT_DEBOUNCE        95   // (ms). Debounce time for pedal faults.
-#define BRAKE_FAULT_DEBOUNCE        300  // (ms). Debounce time for brake faults.
-#define APPS_THRESHOLD_TOLERANCE    0.20 // (Volts). Tolerance margin around the accelerator pedal.
-#define BRAKE_THRESHOLD_TOLERANCE   0.25 // (Volts). Tolerance margin around the brake pedal.
-
-
-
 struct drive_mode{
     void (*handle)(float, float);
     void (*button_functions[20])();
 };
 
 
+#ifndef POWER_REGRESSION_PEDAL_TORQUE_TRANSFER
+/* Linearlly translates the "amount pressed" percentage of the acceleration pedal to torque. */
+/* (i.e. This function creates a constant rate of torque increase relative to pedal travel). */
+static void _linear_accel_to_torque(float percentage_accel)
+{
+	/* Sometimes, the pedal travel jumps to 3% even if it is not pressed. */
+	if (percentage_accel < 0.03) {
+		percentage_accel = 0.0f;
+	}
+	if (percentage_accel > 1) {
+		percentage_accel = 1.0f;
+	}
 
+	/* Linearly map acceleration to torque, scaled by TC */
+	int16_t torque = (int16_t)(percentage_accel * MAX_TORQUE * tc_get_torque_scale());
 
+	dti_set_torque(torque);
+}
+
+#else
+/* Non-linearlly translates the "amount pressed" percentage of the acceleration pedal to torque. */
+/* (i.e. This function makes the pedal less sensitive at lower positions, and more agressive at higher positions). */
+static void _power_regression_accel_to_torque(float percentage_accel)
+{
+	/* Sometimes, the pedal travel jumps to 1% even if it is not pressed. */
+	if (fabs(percentage_accel - 0.01) < 0.001) {
+		percentage_accel = 0;
+	}
+	/*  map acceleration to torque */
+	int16_t torque =
+		(int16_t)(0.137609 * powf(percentage_accel, 1.43068) * MAX_TORQUE * tc_get_torque_scale());
+	/* These values came from creating a power regression function intersecting three points: (0,0) (20,10) & (100,100)*/
+
+	dti_set_torque(torque);
+}
+#endif
+
+/**
+ * @brief Calculate and send torque command to motor controller.
+ *
+ * @param percentage_accel Accelerator pedal percent travel from 0-1
+ */
+static void _accel_pedal_regen_torque(float percentage_accel)
+{
+	/* Coefficient to map accel pedal travel % to the % of max torqye we should command */
+	float coeff = tc_get_torque_scale() * (percentage_accel - ACCELERATION_THRESHOLD) / (1.0 - ACCELERATION_THRESHOLD);
+
+	/* Makes acceleration pedal more sensitive since domain is compressed but range is the same */
+	uint16_t torque = coeff * torque_limit_percentage * MAX_TORQUE;
+
+	/* Limit torque percentage wise in endurance mode */
+	if (torque > MAX_TORQUE * torque_limit_percentage) {
+		torque = MAX_TORQUE * torque_limit_percentage;
+	}
+
+	dti_set_torque(torque);
+}
+
+/**
+ * @brief Calculate regen braking AC current target based on accelerator pedal percent travel.
+ *
+ * @param percentage_accel Accelerator pedal percent travel from 0-1
+ */
+static void _accel_pedal_regen_braking(float percentage_accel)
+{
+	uint16_t regen_limit = pedals_getRegenLimit();
+
+	/* Calculate AC current target for regenerative braking */
+	float regen_current =
+		((regen_limit - MIN_REGEN_CURRENT) / REGEN_THRESHOLD) * (REGEN_THRESHOLD - percentage_accel) + MIN_REGEN_CURRENT;
+
+	if (regen_current > regen_limit) {
+		regen_current = regen_limit;
+	}
+
+	/* Send regen current to motor controller */
+	dti_set_regen((uint16_t)(regen_current * 10));
+}
 
 /* Implements Launch Control. */
 /* (i.e. Prevents the car from accelerating too aggressively from a standstill, helping to maintain traction). */
@@ -181,6 +201,17 @@ static void _handle_endurance(float mph, float percentage_accel)
 }
 
 /**
+ * @brief Drive at a targeted speed with at the torque given by the accelerator pedal.
+ *
+ * @param mph mpf of the car
+ * @param percentage_accel adjusted value of the acceleration pedal
+ */
+static void _handle_cruise(float mph, float percentage_accel)
+{
+  // TODO: use dti set_speed api, mph param is from dti get_mph already
+}
+
+/**
  * @brief Drive forward with a speed limit of 5 mph.
  *
  * @param mph Current speed of the car.
@@ -209,28 +240,53 @@ static float _adc_to_voltage(uint16_t raw_adc) {
 	return ((2000.0 + 3000) / 3000) * v3_volts;
 }
 
+/* Handles the drive mode based responses to the requested pedal acceleration */
+void drive_process(float mph, float percentage_accel)
+{
+	switch(get_func_state()) {
+		case READY:
+		case FAULTED:
+			dti_set_torque(0);
+			break;
+		case F_PIT:
+			_handle_pit(mph, percentage_accel);
+			break;
+		case F_REVERSE:
+			_handle_reverse(mph, percentage_accel);
+			break;
+		case F_PERFORMANCE:
+			_handle_performance(mph, percentage_accel);
+			break;
+		case F_EFFICIENCY:
+			_handle_endurance(mph, percentage_accel);
+			break;
+		case F_CRUISE_CONTROL:
+			_handle_cruise(mph, percentage_accel);
+		default:
+			PRINTLN_ERROR("Failed to process pedals due to unknown functional state.");
+			dti_set_torque(0);
+			break;
+		}
+}
 
 /* */
 
 struct drive_mode performance = {
     .handle = &_handle_performance,
-    .button_functions = {&_handle_performance}
+    .button_functions = {0}
 };
-
 
 struct drive_mode endurance = {
     .handle = &_handle_endurance,
-    .button_functions = {&_handle_performance}
+    .button_functions = {0}
 };
 
 struct drive_mode pit = {
     .handle = &_handle_pit,
-    .button_functions = {&_handle_performance}
+    .button_functions = {0}
 };
 
 struct drive_mode reverse = {
     .handle = &_handle_reverse,
-    .button_functions = {&_handle_performance}
+    .button_functions = {0}
 };
-
-

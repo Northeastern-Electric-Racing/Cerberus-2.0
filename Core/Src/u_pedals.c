@@ -18,6 +18,7 @@
 #include "serial.h"
 #include "u_statemachine.h"
 #include "u_adc.h"
+#include "u_drive_modes.h"
 #include "u_tc.h"
 
 /* Globals. */
@@ -231,43 +232,6 @@ static bool _calc_bspd_prefault(float percentage_accel, float percentage_brake, 
 	return motor_disabled;
 }
 
-#ifndef POWER_REGRESSION_PEDAL_TORQUE_TRANSFER
-/* Linearlly translates the "amount pressed" percentage of the acceleration pedal to torque. */
-/* (i.e. This function creates a constant rate of torque increase relative to pedal travel). */
-static void _linear_accel_to_torque(float percentage_accel)
-{
-	/* Sometimes, the pedal travel jumps to 3% even if it is not pressed. */
-	if (percentage_accel < 0.03) {
-		percentage_accel = 0.0;
-	}
-	if (percentage_accel > 1) {
-		percentage_accel = 1.0;
-	}
-
-	/* Linearly map acceleration to torque, scaled by TC */
-	int16_t torque = (int16_t)(percentage_accel * MAX_TORQUE * tc_get_torque_scale());
-
-	dti_set_torque(torque);
-}
-
-#else
-/* Non-linearlly translates the "amount pressed" percentage of the acceleration pedal to torque. */
-/* (i.e. This function makes the pedal less sensitive at lower positions, and more agressive at higher positions). */
-static void _power_regression_accel_to_torque(float percentage_accel)
-{
-	/* Sometimes, the pedal travel jumps to 1% even if it is not pressed. */
-	if (fabs(percentage_accel - 0.01) < 0.001) {
-		percentage_accel = 0;
-	}
-	/*  map acceleration to torque */
-	int16_t torque =
-		(int16_t)(0.137609 * powf(percentage_accel, 1.43068) * MAX_TORQUE * tc_get_torque_scale());
-	/* These values came from creating a power regression function intersecting three points: (0,0) (20,10) & (100,100)*/
-
-	dti_set_torque(torque);
-}
-#endif
-
 /**
  * @brief Derate torque target to keep car below the maximum pit/reverse mode speed.
  *
@@ -307,48 +271,6 @@ int16_t _derate_torque(float mph, float percentage_accel)
 		sum += torque_accumulator[i];
 	}
 	return sum / TORQUE_ACCUMULATOR_SIZE;
-}
-
-/**
- * @brief Calculate and send torque command to motor controller.
- *
- * @param percentage_accel Accelerator pedal percent travel from 0-1
- */
-static void _accel_pedal_regen_torque(float percentage_accel)
-{
-	/* Coefficient to map accel pedal travel % to the % of max torqye we should command */
-	float coeff = tc_get_torque_scale() * (percentage_accel - ACCELERATION_THRESHOLD) / (1.0 - ACCELERATION_THRESHOLD);
-
-	/* Makes acceleration pedal more sensitive since domain is compressed but range is the same */
-	uint16_t torque = coeff * torque_limit_percentage * MAX_TORQUE;
-
-	/* Limit torque percentage wise in endurance mode */
-	if (torque > MAX_TORQUE * torque_limit_percentage) {
-		torque = MAX_TORQUE * torque_limit_percentage;
-	}
-
-	dti_set_torque(torque);
-}
-
-/**
- * @brief Calculate regen braking AC current target based on accelerator pedal percent travel.
- *
- * @param percentage_accel Accelerator pedal percent travel from 0-1
- */
-static void _accel_pedal_regen_braking(float percentage_accel)
-{
-	uint16_t regen_limit = pedals_getRegenLimit();
-
-	/* Calculate AC current target for regenerative braking */
-	float regen_current =
-		((regen_limit - MIN_REGEN_CURRENT) / REGEN_THRESHOLD) * (REGEN_THRESHOLD - percentage_accel) + MIN_REGEN_CURRENT;
-
-	if (regen_current > regen_limit) {
-		regen_current = regen_limit;
-	}
-
-	/* Send regen current to motor controller */
-	dti_set_regen((uint16_t)(regen_current * 10));
 }
 
 /* Converts the ADC to the voltage out of 5V (for rules). */
@@ -582,32 +504,7 @@ void pedals_process(void) {
     /* Update TC torque scale before issuing any torque command. */
     tc_process();
 
-    switch(get_func_state()) {
-        case READY:
-            dti_set_torque(0);
-            break;
-        case FAULTED:
-            dti_set_torque(0);
-            break;
-        case F_PIT:
-            _handle_pit(mph, pedal_data.percentage_accel);
-            break;
-        case F_REVERSE:
-            _handle_reverse(mph, pedal_data.percentage_accel);
-            break;
-        case F_PERFORMANCE:
-            _handle_performance(mph, pedal_data.percentage_accel);
-            break;
-        case F_EFFICIENCY:
-            _handle_endurance(mph, pedal_data.percentage_accel);
-            break;
-        default:
-            PRINTLN_ERROR("Failed to process pedals due to unknown functional state.");
-			dti_set_torque(0);
-            break;
-    }
-
-    return;
+	drive_process(mph, pedal_data.percentage_accel);
 }
 
 _Static_assert(NUM_LOCKS <= sizeof(drive_lock_map) * 8, "Increase the drive lock map to accomodate more drive locks."); // Ensures there aren't more locks than the bitmap can hold.

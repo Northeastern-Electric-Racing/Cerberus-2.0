@@ -18,6 +18,7 @@ typedef enum {
 	F_REVERSE, // can only enter reverse from PIT
 	F_PERFORMANCE,
 	F_EFFICIENCY,
+	F_CRUISE_CONTROL,
 	FAULTED,
 	MAX_FUNC_STATES
 } func_state_t;
@@ -31,6 +32,7 @@ typedef enum {
     ENTER_GAMES_SHUTDOWN_CLOSED    = 1 << 4,
     ENTER_GAMES_WHILE_MOVING       = 1 << 5,
     CHANGE_STATE_ACCEL_PRESSED     = 1 << 6,
+	TEST_MODES_DISABLED			   = 1 << 7, // TODO: Move after reverse if not too annoying?
 } state_transition_error_t;
 
 /**
@@ -39,10 +41,11 @@ typedef enum {
  */
 typedef enum {
 	OFF,
-	PIT, //SPEED_LIMITIED
+	PIT, //SPEED_LIMITED
 	REVERSE,
 	PERFORMANCE, //AUTOCROSS
 	EFFICIENCY, //ENDURANCE
+	CRUISE_CONTROL, // TODO: append other test modes
 	GAMES,
 	THEMES,
 	EXIT,
