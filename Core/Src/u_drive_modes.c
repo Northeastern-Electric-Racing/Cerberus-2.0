@@ -23,18 +23,9 @@ typedef enum {
 	BMS_NOT_PRECHARGED_YET,
     NUM_LOCKS,
 } drive_lock_t; // Add to this enum anything that can lock the drive
-static uint8_t drive_lock_map = 0;
 
-static _Atomic bool brake_pressed = false;
-static _Atomic bool accel_pressed = false;
 static _Atomic bool launch_control_enabled = false;
 static float torque_limit_percentage = 1.0f;
-
-struct drive_mode{
-    void (*handle)(float, float);
-    void (*button_functions[20])();
-};
-
 
 #ifndef POWER_REGRESSION_PEDAL_TORQUE_TRANSFER
 /* Linearlly translates the "amount pressed" percentage of the acceleration pedal to torque. */
@@ -266,27 +257,5 @@ void drive_process(float mph, float percentage_accel)
 			PRINTLN_ERROR("Failed to process pedals due to unknown functional state.");
 			dti_set_torque(0);
 			break;
-		}
+	}
 }
-
-/* */
-
-struct drive_mode performance = {
-    .handle = &_handle_performance,
-    .button_functions = {0}
-};
-
-struct drive_mode endurance = {
-    .handle = &_handle_endurance,
-    .button_functions = {0}
-};
-
-struct drive_mode pit = {
-    .handle = &_handle_pit,
-    .button_functions = {0}
-};
-
-struct drive_mode reverse = {
-    .handle = &_handle_reverse,
-    .button_functions = {0}
-};

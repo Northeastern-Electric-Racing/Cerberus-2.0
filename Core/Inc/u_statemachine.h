@@ -45,10 +45,10 @@ typedef enum {
 	REVERSE,
 	PERFORMANCE, //AUTOCROSS
 	EFFICIENCY, //ENDURANCE
-	CRUISE_CONTROL, // TODO: append other test modes
 	GAMES,
 	THEMES,
 	EXIT,
+	CRUISE_CONTROL, // TODO: append other test modes
 	MAX_NERO_STATES
 } nero_menu_t;
 
