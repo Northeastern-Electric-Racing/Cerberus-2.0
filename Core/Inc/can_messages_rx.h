@@ -45,11 +45,11 @@ typedef struct {
 void receive_front_msb_strain(const can_msg_t *message, front_msb_strain_t *front_msb_strain);
 
 typedef struct {
- float shock1;
- uint16_t shock1_raw;
-} front_shockpot_t;
+ float shock_left;
+ uint32_t shock_left_raw;
+} front_left_shockpot_t;
 
-void receive_front_shockpot(const can_msg_t *message, front_shockpot_t *front_shockpot);
+void receive_front_left_shockpot(const can_msg_t *message, front_left_shockpot_t *front_left_shockpot);
 
 typedef struct {
  float rh;
@@ -102,11 +102,11 @@ typedef struct {
 void receive_back_msb_strain(const can_msg_t *message, back_msb_strain_t *back_msb_strain);
 
 typedef struct {
- float shock1;
- uint16_t shock1_raw;
-} back_shockpot_t;
+ float shock_right;
+ uint32_t shock_right_raw;
+} front_right_shockpot_t;
 
-void receive_back_shockpot(const can_msg_t *message, back_shockpot_t *back_shockpot);
+void receive_front_right_shockpot(const can_msg_t *message, front_right_shockpot_t *front_right_shockpot);
 
 typedef struct {
  float rh;
@@ -127,6 +127,13 @@ typedef struct {
 } back_msb_orientation_t;
 
 void receive_back_msb_orientation(const can_msg_t *message, back_msb_orientation_t *back_msb_orientation);
+
+typedef struct {
+ uint16_t left_rpm;
+ uint16_t right_rpm;
+} front_wheel_rpm_t;
+
+void receive_front_wheel_rpm(const can_msg_t *message, front_wheel_rpm_t *front_wheel_rpm);
 
 typedef struct {
  uint16_t R_iso_corrected;
@@ -206,6 +213,7 @@ typedef struct {
  bool die_temp_max;
  bool segment_comms;
  bool hv_plate_comms;
+ bool cell_open_wire;
 } fault_status_t;
 
 void receive_fault_status(const can_msg_t *message, fault_status_t *fault_status);
@@ -292,6 +300,8 @@ typedef struct {
  bool discharging_b;
  bool cvs_a;
  bool cvs_b;
+ bool ow_a;
+ bool ow_b;
 } alpha_cell_data_debug_t;
 
 void receive_alpha_cell_data_debug(const can_msg_t *message, alpha_cell_data_debug_t *alpha_cell_data_debug);
@@ -307,9 +317,31 @@ typedef struct {
  bool discharging_b;
  bool cvs_a;
  bool cvs_b;
+ bool ow_a;
+ bool ow_b;
 } beta_cell_data_debug_t;
 
 void receive_beta_cell_data_debug(const can_msg_t *message, beta_cell_data_debug_t *beta_cell_data_debug);
+
+typedef struct {
+ float s_voltage_a;
+ float s_voltage_b;
+ uint8_t chip_id;
+ uint8_t cell_a;
+ uint8_t cell_b;
+} alpha_cell_s_adc_data_t;
+
+void receive_alpha_cell_s_adc_data(const can_msg_t *message, alpha_cell_s_adc_data_t *alpha_cell_s_adc_data);
+
+typedef struct {
+ float s_voltage_a;
+ float s_voltage_b;
+ uint8_t chip_id;
+ uint8_t cell_a;
+ uint8_t cell_b;
+} beta_cell_s_adc_data_t;
+
+void receive_beta_cell_s_adc_data(const can_msg_t *message, beta_cell_s_adc_data_t *beta_cell_s_adc_data);
 
 typedef struct {
  uint8_t chip_id;
@@ -511,6 +543,12 @@ typedef struct {
 void receive_pack_current_and_shunt_temp_adbms(const can_msg_t *message, pack_current_and_shunt_temp_adbms_t *pack_current_and_shunt_temp_adbms);
 
 typedef struct {
+ float balancing_pwm_duty_cycle;
+} current_cell_balancing_pwm_duty_cycle_t;
+
+void receive_current_cell_balancing_pwm_duty_cycle(const can_msg_t *message, current_cell_balancing_pwm_duty_cycle_t *current_cell_balancing_pwm_duty_cycle);
+
+typedef struct {
  float accel_x;
  float accel_y;
  float accel_z;
@@ -663,6 +701,19 @@ typedef struct {
 } bms_charge_message_send_t;
 
 void receive_bms_charge_message_send(const can_msg_t *message, bms_charge_message_send_t *bms_charge_message_send);
+
+typedef struct {
+ float voltage;
+ float current;
+ uint8_t reserved_status;
+ bool comm_timeout;
+ bool battery_not_detected;
+ bool voltage_wrong;
+ bool over_temp;
+ bool hardware_failure;
+} charger_box_status_t;
+
+void receive_charger_box_status(const can_msg_t *message, charger_box_status_t *charger_box_status);
 
 
 void receive_can(const can_msg_t *msg);
