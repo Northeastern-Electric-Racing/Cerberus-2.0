@@ -20,7 +20,7 @@ static timer_t rtds_timer = {
 };
 
 /* Timer for Reverse Sound. */
-static void _reverse_sound_callback(ULONG args); // Forward declaratoin for callback function.
+static void _reverse_sound_callback(ULONG args); // Forward declaration for callback function.
 static timer_t reverse_sound_timer = {
     .name = "Reverse Sound Timer",
     .callback = _reverse_sound_callback,

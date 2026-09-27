@@ -24,8 +24,10 @@ typedef enum {
     NUM_LOCKS,
 } drive_lock_t; // Add to this enum anything that can lock the drive
 
-static _Atomic bool launch_control_enabled = false;
-static float torque_limit_percentage = 1.0f;
+static float cruise_speed_setpoint = 20;
+
+static test_mode_t nero_test_mode = CRUISE_CONTROL;
+static test_mode_t test_mode = UNSELECTED;
 
 #ifndef POWER_REGRESSION_PEDAL_TORQUE_TRANSFER
 /* Linearlly translates the "amount pressed" percentage of the acceleration pedal to torque. */
@@ -68,8 +70,9 @@ static void _power_regression_accel_to_torque(float percentage_accel)
  * @brief Calculate and send torque command to motor controller.
  *
  * @param percentage_accel Accelerator pedal percent travel from 0-1
+ * @param torque_limit_percentage Torque limit percent from 0-1
  */
-static void _accel_pedal_regen_torque(float percentage_accel)
+static void _accel_pedal_regen_torque(float percentage_accel, float torque_limit_percentage)
 {
 	/* Coefficient to map accel pedal travel % to the % of max torqye we should command */
 	float coeff = tc_get_torque_scale() * (percentage_accel - ACCELERATION_THRESHOLD) / (1.0 - ACCELERATION_THRESHOLD);
@@ -140,7 +143,6 @@ static void _launch_control(float mph, float percentage_accel)
 	prev_accel = percentage_accel;
 }
 
-
 /* =================================== */
 /*            DRIVE HANDLES            */
 /* =================================== */
@@ -156,10 +158,10 @@ static void _handle_performance(float mph, float percentage_accel)
 	}
 
 	if (percentage_accel >= ACCELERATION_THRESHOLD) {
-		if (launch_control_enabled) {
+		if (pedals_getLaunchControl()) {
 			_launch_control(mph, (percentage_accel - 0.25) / 0.75);
 		} else {
-			_accel_pedal_regen_torque(percentage_accel);
+			_accel_pedal_regen_torque(percentage_accel, pedals_getTorqueLimitPercentage());
 		}
 	} else if (mph * MPH_TO_KMH > 5 && percentage_accel <= REGEN_THRESHOLD) {
 		_accel_pedal_regen_braking(percentage_accel);
@@ -182,7 +184,7 @@ static void _handle_endurance(float mph, float percentage_accel)
 {
 	/* Pedal is in acceleration range. Set forward torque target. */
 	if (percentage_accel >= ACCELERATION_THRESHOLD) {
-		_accel_pedal_regen_torque(percentage_accel);
+		_accel_pedal_regen_torque(percentage_accel, pedals_getTorqueLimitPercentage());
 	} else if (mph * MPH_TO_KMH > 5 && percentage_accel <= REGEN_THRESHOLD) {
 		_accel_pedal_regen_braking(percentage_accel);
 	} else {
@@ -224,16 +226,11 @@ static void _handle_reverse(float mph, float percentage_accel)
 	dti_set_torque(-1 * _derate_torque(fabs(mph), percentage_accel));
 }
 
-/* Converts the ADC to the voltage out of 5V (for rules). */
-static float _adc_to_voltage(uint16_t raw_adc) {
-    float v3_volts = raw_adc * MAX_VOLTS / MAX_ADC_VAL_12b;
-	// undo 2k + 3k voltage divider on APPS lines
-	return ((2000.0 + 3000) / 3000) * v3_volts;
-}
-
 /* Handles the drive mode based responses to the requested pedal acceleration */
 void drive_process(float mph, float percentage_accel)
 {
+	send_test_modes(0, cruise_speed_setpoint, get_test_modes_disabled());
+
 	switch(get_func_state()) {
 		case READY:
 		case FAULTED:
@@ -251,10 +248,22 @@ void drive_process(float mph, float percentage_accel)
 		case F_EFFICIENCY:
 			_handle_endurance(mph, percentage_accel);
 			break;
-		case F_CRUISE_CONTROL:
-			_handle_cruise(mph, percentage_accel);
+		case F_TEST_MODES:
+			switch (test_mode)
+			{
+				case UNSELECTED:
+					return;
+				case CRUISE_CONTROL:
+					_handle_cruise(mph, percentage_accel);
+					break;
+				default:
+					PRINTLN_ERROR("Failed to process drive mode due to unknown test drive mode state.");
+					dti_set_torque(0);
+					break;
+			}
+			break;
 		default:
-			PRINTLN_ERROR("Failed to process pedals due to unknown functional state.");
+			PRINTLN_ERROR("Failed to process drive mode due to drive mode state.");
 			dti_set_torque(0);
 			break;
 	}

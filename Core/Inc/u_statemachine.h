@@ -5,11 +5,12 @@
 // #define IGNORE_FAULT
 
 #include "u_dti.h"
+#include "u_drive_modes.h"
 #include <stdbool.h>
 
 /**
  * @brief Enum defining the functional states of the car.
- * 
+ *
  */
 typedef enum {
 	READY,
@@ -18,8 +19,8 @@ typedef enum {
 	F_REVERSE, // can only enter reverse from PIT
 	F_PERFORMANCE,
 	F_EFFICIENCY,
+	F_TEST_MODES,
 	FAULTED,
-	F_CRUISE_CONTROL,
 	MAX_FUNC_STATES
 } func_state_t;
 
@@ -47,8 +48,8 @@ typedef enum {
 	EFFICIENCY, //ENDURANCE
 	GAMES,
 	THEMES,
+	TEST_MODES,
 	EXIT,
-	CRUISE_CONTROL, // TODO: append other test modes
 	MAX_NERO_STATES
 } nero_menu_t;
 
@@ -59,7 +60,7 @@ typedef struct {
 
 /**
  * @brief Struct for defining the state of the car.
- * 
+ *
  */
 typedef struct {
 	func_state_t functional;
@@ -77,24 +78,30 @@ typedef struct {
 
 /**
  * @brief Retrieve the current functional state.
- * 
+ *
  * @return func_state_t Struct containing the current functional state
  */
 func_state_t get_func_state();
 
 /**
  * @brief Returns true if car is in active state (pit, performance, efficiency)
- * 
+ *
  * @return Whether or not the car is in an active state.
  */
 bool get_active();
 
 /**
  * @brief Retrieves the current NERO state.
- * 
+ *
  * @return nero_state_t The current NERO state
  */
 nero_state_t get_nero_state();
+
+/**
+ * @brief Retrieves whether test modes are disabled
+ * @return bool True if enabled, False if disabled
+ */
+bool get_test_modes_disabled();
 
 /**
  * @brief Increments the nero index in the order of nero_menu_t which will be used to select a drive mode.
