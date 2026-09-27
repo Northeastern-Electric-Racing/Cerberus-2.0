@@ -1,4 +1,5 @@
 #include <stdbool.h>
+#include <stdint.h>
 
 #ifndef __U_PEDALS_H
 #define __U_PEDALS_H
@@ -93,6 +94,5 @@ void pedals_toggleLaunchControl(void);     // Toggles launch control.
 void pedals_enableLaunchControl(void);     // Enables launch control.
 void pedals_disableLaunchControl(void);    // Disables launch control.
 bool pedals_getLaunchControl(void);        // Gets launch control.
-
-void _handle_endurance(float mph, float percentage_accel);
+int16_t _derate_torque(float mph, float percentage_accel); // Derate torque target to keep car below the maximum pit/reverse mode speed.
 #endif /* u_pedals.h */

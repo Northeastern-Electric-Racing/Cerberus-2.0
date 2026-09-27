@@ -152,6 +152,7 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     "./Core/Src/u_ethernet.c"
     "./Core/Src/u_tc.c"
     "./Core/Src/u_traceout_app.c"
+    "./Core/Src/u_drive_modes.c"
     "./Drivers/Embedded-Base/traceX/src/tracex.c"
     "./Drivers/Embedded-Base/traceX/src/traceout.c"
 )

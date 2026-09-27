@@ -29,7 +29,8 @@
 
 #define STATE_TRANS_ERROR_CLEAR_TIMEOUT 3000
 
-// #define DISABLE_REVERSE
+// #define DISABLE_TEST_MODES // disable cruise control, etc... test modes
+#define DISABLE_REVERSE
 
 /* Globals. */
 static state_t cerberus_state;
@@ -99,6 +100,15 @@ nero_state_t get_nero_state()
 	return cerberus_state.nero;
 }
 
+bool get_test_modes_disabled()
+{
+#ifdef DISABLE_TEST_MODES
+	return false;
+#else
+	return true;
+#endif
+}
+
 static int transition_functional_state(func_state_t new_state)
 {
 	cerberus_state.state_transition_error = ERROR_OK;
@@ -118,7 +128,7 @@ static int transition_functional_state(func_state_t new_state)
 
 	/* Make sure wheels are not spinning before changing modes */
 	bool brake_state;
-	
+
 	/* If we're actively in the reverse state, stop the reverse sound before doing any state changes. */
 	if(cerberus_state.functional == F_REVERSE) {
 		rtds_stopReverseSound();
@@ -126,53 +136,61 @@ static int transition_functional_state(func_state_t new_state)
 
 	/* Catching state transitions */
 	switch (new_state) {
-	case READY:
-		/* Turn off high power peripherals */
-		write_mcu_fault(false);
-		printf("READY\n");
-		break;
-	case F_REVERSE:
-#ifdef DISABLE_REVERSE
-		printf("Reverse is disabled.");
-		cerberus_state.state_transition_error |= REVERSE_DISABLED;
-		return 4;
+		case READY:
+			/* Turn off high power peripherals */
+			write_mcu_fault(false);
+			printf("READY\n");
+			break;
+		case F_TEST_MODES:
+#ifdef DISABLE_TEST_MODES
+			printf("Test modes are disabled.");
+			cerberus_state.state_transition_error |= TEST_MODES_DISABLED;
+			return 4;
 #endif
-	case F_PIT:
-	case F_PERFORMANCE:
-	case F_EFFICIENCY:
-
-		brake_state = pedals_getBrakeState();
-
-		if (cerberus_state.functional == FAULTED) {
-			printf("Cannot drive from a fault!\n");
-			cerberus_state.state_transition_error |= DRIVE_FROM_FAULT;
-			return 3;
+		case F_REVERSE:
+#ifdef DISABLE_REVERSE
+		if (new_state != F_TEST_MODES) {
+			printf("Reverse is disabled.");
+			cerberus_state.state_transition_error |= REVERSE_DISABLED;
+			return 4;
 		}
+#endif
+		case F_PIT:
+		case F_PERFORMANCE:
+		case F_EFFICIENCY:
 
-		/* Only turn on motor if brakes engaged and shutdown is closed */
-		if (!brake_state) {
-			printf("Must press brake to enter drive mode!\n");
-			cerberus_state.state_transition_error |= ENTER_DRIVE_BREAKS_NOT_ENGAGED;
-			return 3;
-		} 
-		
-		if (!is_shutdown_closed()) {
-			printf("Shutdown must be closed to enter drive mode!\n");
-			cerberus_state.state_transition_error |= ENTER_DRIVE_SHUTDOWN_OPEN;
-			return 3;
-		}
+			brake_state = pedals_getBrakeState();
 
-		if (new_state == F_REVERSE) {
-			rtds_startReverseSound();
-		} else {
-			rtds_soundRTDS();
-		}
+			if (cerberus_state.functional == FAULTED) {
+				printf("Cannot drive from a fault!\n");
+				cerberus_state.state_transition_error |= DRIVE_FROM_FAULT;
+				return 3;
+			}
 
-		printf("ACTIVE STATE\r\n");
-		break;
-	default:
-		// Do Nothing
-		break;
+			/* Only turn on motor if brakes engaged and shutdown is closed */
+			if (!brake_state) {
+				printf("Must press brake to enter drive mode!\n");
+				cerberus_state.state_transition_error |= ENTER_DRIVE_BREAKS_NOT_ENGAGED;
+				return 3;
+			}
+
+			if (!is_shutdown_closed()) {
+				printf("Shutdown must be closed to enter drive mode!\n");
+				cerberus_state.state_transition_error |= ENTER_DRIVE_SHUTDOWN_OPEN;
+				return 3;
+			}
+
+			if (new_state == F_REVERSE) {
+				rtds_startReverseSound();
+			} else {
+				rtds_soundRTDS();
+			}
+
+			printf("ACTIVE STATE\r\n");
+			break;
+		default:
+			// Do Nothing
+			break;
 	}
 
 	cerberus_state.functional = new_state;
@@ -266,10 +284,9 @@ static int queue_state_transition(state_req_t new_state)
 	if(status != U_SUCCESS) {
 		PRINTLN_ERROR("Failed to call queue_send() to add new_state to state_transition_queue()");
 		return status;
-	} else {
-		PRINTLN_INFO("Successfully called queue_send() for the state_transition_queue.");
-		return status;
 	}
+	PRINTLN_INFO("Successfully called queue_send() for the state_transition_queue.");
+	return status;
 }
 
 /* HANDLE USER INPUT */

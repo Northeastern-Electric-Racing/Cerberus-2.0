@@ -76,29 +76,17 @@ void receive_front_msb_strain(const can_msg_t *message, front_msb_strain_t *fron
     front_msb_strain->strain2 = (uint32_t)strain2_raw;
 }
 
-void receive_front_shockpot(const can_msg_t *message, front_shockpot_t *front_shockpot) {
+void receive_front_left_shockpot(const can_msg_t *message, front_left_shockpot_t *front_left_shockpot) {
     
-    struct __attribute__((__packed__)) {
-        uint32_t shock1;
-        uint16_t shock1_raw;
-        
-    } bitstream_data;
-
-    memcpy(&bitstream_data, message->data, sizeof(bitstream_data));
-
-    
-    
-    
-    front_shockpot->shock1 = (float)bitstream_data.shock1;
-    
-    
-    
-    
-    
-    front_shockpot->shock1_raw = (uint16_t)bitstream_data.shock1_raw;
-    
-    
-    
+    uint64_t data_bigendian;
+    memcpy(&data_bigendian, message->data, 8);
+    uint64_t data = __builtin_bswap64(data_bigendian);
+    uint64_t shock_left_mask = (1ULL << 32) - 1ULL;
+    uint64_t shock_left_raw = (data >> 32) & shock_left_mask;
+    front_left_shockpot->shock_left = (float)(shock_left_raw / 1000);
+    uint64_t shock_left_raw_mask = (1ULL << 32) - 1ULL;
+    uint64_t shock_left_raw_raw = (data >> 0) & shock_left_raw_mask;
+    front_left_shockpot->shock_left_raw = (uint32_t)shock_left_raw_raw;
 }
 
 void receive_front_ride_height(const can_msg_t *message, front_ride_height_t *front_ride_height) {
@@ -225,29 +213,17 @@ void receive_back_msb_strain(const can_msg_t *message, back_msb_strain_t *back_m
     back_msb_strain->strain2 = (uint32_t)strain2_raw;
 }
 
-void receive_back_shockpot(const can_msg_t *message, back_shockpot_t *back_shockpot) {
+void receive_front_right_shockpot(const can_msg_t *message, front_right_shockpot_t *front_right_shockpot) {
     
-    struct __attribute__((__packed__)) {
-        uint32_t shock1;
-        uint16_t shock1_raw;
-        
-    } bitstream_data;
-
-    memcpy(&bitstream_data, message->data, sizeof(bitstream_data));
-
-    
-    
-    
-    back_shockpot->shock1 = (float)bitstream_data.shock1;
-    
-    
-    
-    
-    
-    back_shockpot->shock1_raw = (uint16_t)bitstream_data.shock1_raw;
-    
-    
-    
+    uint64_t data_bigendian;
+    memcpy(&data_bigendian, message->data, 8);
+    uint64_t data = __builtin_bswap64(data_bigendian);
+    uint64_t shock_right_mask = (1ULL << 32) - 1ULL;
+    uint64_t shock_right_raw = (data >> 32) & shock_right_mask;
+    front_right_shockpot->shock_right = (float)(shock_right_raw / 1000);
+    uint64_t shock_right_raw_mask = (1ULL << 32) - 1ULL;
+    uint64_t shock_right_raw_raw = (data >> 0) & shock_right_raw_mask;
+    front_right_shockpot->shock_right_raw = (uint32_t)shock_right_raw_raw;
 }
 
 void receive_back_ride_height(const can_msg_t *message, back_ride_height_t *back_ride_height) {
@@ -296,6 +272,19 @@ void receive_back_msb_orientation(const can_msg_t *message, back_msb_orientation
         ? (int64_t)(z_fdeg_bits | ~z_fdeg_mask)
         : (int64_t)z_fdeg_bits;
     back_msb_orientation->z_fdeg = (float)z_fdeg_raw;
+}
+
+void receive_front_wheel_rpm(const can_msg_t *message, front_wheel_rpm_t *front_wheel_rpm) {
+    
+    uint32_t data_bigendian;
+    memcpy(&data_bigendian, message->data, 4);
+    uint32_t data = __builtin_bswap32(data_bigendian);
+    uint64_t left_rpm_mask = (1ULL << 16) - 1ULL;
+    uint64_t left_rpm_raw = (data >> 16) & left_rpm_mask;
+    front_wheel_rpm->left_rpm = (uint16_t)left_rpm_raw;
+    uint64_t right_rpm_mask = (1ULL << 16) - 1ULL;
+    uint64_t right_rpm_raw = (data >> 0) & right_rpm_mask;
+    front_wheel_rpm->right_rpm = (uint16_t)right_rpm_raw;
 }
 
 void receive_imd_general_information(const can_msg_t *message, imd_general_information_t *imd_general_information) {
@@ -565,6 +554,9 @@ void receive_fault_status(const can_msg_t *message, fault_status_t *fault_status
     uint64_t hv_plate_comms_mask = (1ULL << 1) - 1ULL;
     uint64_t hv_plate_comms_raw = (data >> 7) & hv_plate_comms_mask;
     fault_status->hv_plate_comms = (bool)hv_plate_comms_raw;
+    uint64_t cell_open_wire_mask = (1ULL << 1) - 1ULL;
+    uint64_t cell_open_wire_raw = (data >> 6) & cell_open_wire_mask;
+    fault_status->cell_open_wire = (bool)cell_open_wire_raw;
 }
 
 void receive_segment_average_voltages(const can_msg_t *message, segment_average_voltages_t *segment_average_voltages) {
@@ -751,6 +743,12 @@ void receive_alpha_cell_data_debug(const can_msg_t *message, alpha_cell_data_deb
     uint64_t cvs_b_mask = (1ULL << 1) - 1ULL;
     uint64_t cvs_b_raw = (data >> 12) & cvs_b_mask;
     alpha_cell_data_debug->cvs_b = (bool)cvs_b_raw;
+    uint64_t ow_a_mask = (1ULL << 1) - 1ULL;
+    uint64_t ow_a_raw = (data >> 11) & ow_a_mask;
+    alpha_cell_data_debug->ow_a = (bool)ow_a_raw;
+    uint64_t ow_b_mask = (1ULL << 1) - 1ULL;
+    uint64_t ow_b_raw = (data >> 10) & ow_b_mask;
+    alpha_cell_data_debug->ow_b = (bool)ow_b_raw;
 }
 
 void receive_beta_cell_data_debug(const can_msg_t *message, beta_cell_data_debug_t *beta_cell_data_debug) {
@@ -788,6 +786,56 @@ void receive_beta_cell_data_debug(const can_msg_t *message, beta_cell_data_debug
     uint64_t cvs_b_mask = (1ULL << 1) - 1ULL;
     uint64_t cvs_b_raw = (data >> 12) & cvs_b_mask;
     beta_cell_data_debug->cvs_b = (bool)cvs_b_raw;
+    uint64_t ow_a_mask = (1ULL << 1) - 1ULL;
+    uint64_t ow_a_raw = (data >> 11) & ow_a_mask;
+    beta_cell_data_debug->ow_a = (bool)ow_a_raw;
+    uint64_t ow_b_mask = (1ULL << 1) - 1ULL;
+    uint64_t ow_b_raw = (data >> 10) & ow_b_mask;
+    beta_cell_data_debug->ow_b = (bool)ow_b_raw;
+}
+
+void receive_alpha_cell_s_adc_data(const can_msg_t *message, alpha_cell_s_adc_data_t *alpha_cell_s_adc_data) {
+    
+    uint64_t data_bigendian;
+    memcpy(&data_bigendian, message->data, 8);
+    uint64_t data = __builtin_bswap64(data_bigendian);
+    uint64_t s_voltage_a_mask = (1ULL << 13) - 1ULL;
+    uint64_t s_voltage_a_raw = (data >> 51) & s_voltage_a_mask;
+    alpha_cell_s_adc_data->s_voltage_a = (float)(s_voltage_a_raw / 1000);
+    uint64_t s_voltage_b_mask = (1ULL << 13) - 1ULL;
+    uint64_t s_voltage_b_raw = (data >> 38) & s_voltage_b_mask;
+    alpha_cell_s_adc_data->s_voltage_b = (float)(s_voltage_b_raw / 1000);
+    uint64_t chip_id_mask = (1ULL << 4) - 1ULL;
+    uint64_t chip_id_raw = (data >> 34) & chip_id_mask;
+    alpha_cell_s_adc_data->chip_id = (uint8_t)chip_id_raw;
+    uint64_t cell_a_mask = (1ULL << 4) - 1ULL;
+    uint64_t cell_a_raw = (data >> 30) & cell_a_mask;
+    alpha_cell_s_adc_data->cell_a = (uint8_t)cell_a_raw;
+    uint64_t cell_b_mask = (1ULL << 4) - 1ULL;
+    uint64_t cell_b_raw = (data >> 26) & cell_b_mask;
+    alpha_cell_s_adc_data->cell_b = (uint8_t)cell_b_raw;
+}
+
+void receive_beta_cell_s_adc_data(const can_msg_t *message, beta_cell_s_adc_data_t *beta_cell_s_adc_data) {
+    
+    uint64_t data_bigendian;
+    memcpy(&data_bigendian, message->data, 8);
+    uint64_t data = __builtin_bswap64(data_bigendian);
+    uint64_t s_voltage_a_mask = (1ULL << 13) - 1ULL;
+    uint64_t s_voltage_a_raw = (data >> 51) & s_voltage_a_mask;
+    beta_cell_s_adc_data->s_voltage_a = (float)(s_voltage_a_raw / 1000);
+    uint64_t s_voltage_b_mask = (1ULL << 13) - 1ULL;
+    uint64_t s_voltage_b_raw = (data >> 38) & s_voltage_b_mask;
+    beta_cell_s_adc_data->s_voltage_b = (float)(s_voltage_b_raw / 1000);
+    uint64_t chip_id_mask = (1ULL << 4) - 1ULL;
+    uint64_t chip_id_raw = (data >> 34) & chip_id_mask;
+    beta_cell_s_adc_data->chip_id = (uint8_t)chip_id_raw;
+    uint64_t cell_a_mask = (1ULL << 4) - 1ULL;
+    uint64_t cell_a_raw = (data >> 30) & cell_a_mask;
+    beta_cell_s_adc_data->cell_a = (uint8_t)cell_a_raw;
+    uint64_t cell_b_mask = (1ULL << 4) - 1ULL;
+    uint64_t cell_b_raw = (data >> 26) & cell_b_mask;
+    beta_cell_s_adc_data->cell_b = (uint8_t)cell_b_raw;
 }
 
 void receive_alpha_chip_a_debug(const can_msg_t *message, alpha_chip_a_debug_t *alpha_chip_a_debug) {
@@ -1254,6 +1302,16 @@ void receive_pack_current_and_shunt_temp_adbms(const can_msg_t *message, pack_cu
     pack_current_and_shunt_temp_adbms->shunt_temp = (float)(shunt_temp_raw / 100);
 }
 
+void receive_current_cell_balancing_pwm_duty_cycle(const can_msg_t *message, current_cell_balancing_pwm_duty_cycle_t *current_cell_balancing_pwm_duty_cycle) {
+    
+    uint16_t data_bigendian;
+    memcpy(&data_bigendian, message->data, 2);
+    uint16_t data = __builtin_bswap16(data_bigendian);
+    uint64_t balancing_pwm_duty_cycle_mask = (1ULL << 16) - 1ULL;
+    uint64_t balancing_pwm_duty_cycle_raw = (data >> 0) & balancing_pwm_duty_cycle_mask;
+    current_cell_balancing_pwm_duty_cycle->balancing_pwm_duty_cycle = (float)(balancing_pwm_duty_cycle_raw / 10);
+}
+
 void receive_lightning_board_imu_acceleration_data(const can_msg_t *message, lightning_board_imu_acceleration_data_t *lightning_board_imu_acceleration_data) {
     
     uint64_t data_bigendian;
@@ -1533,5 +1591,39 @@ void receive_bms_charge_message_send(const can_msg_t *message, bms_charge_messag
     uint64_t enable_charging_mask = (1ULL << 8) - 1ULL;
     uint64_t enable_charging_raw = (data >> 24) & enable_charging_mask;
     bms_charge_message_send->enable_charging = (uint8_t)enable_charging_raw;
+}
+
+void receive_charger_box_status(const can_msg_t *message, charger_box_status_t *charger_box_status) {
+    
+    uint64_t data_bigendian;
+    memcpy(&data_bigendian, message->data, 8);
+    uint64_t data = __builtin_bswap64(data_bigendian);
+    uint64_t voltage_mask = (1ULL << 16) - 1ULL;
+    uint64_t voltage_raw = (data >> 48) & voltage_mask;
+    charger_box_status->voltage = (float)(voltage_raw / 10);
+    uint64_t current_mask = (1ULL << 16) - 1ULL;
+    uint64_t current_bits = (data >> 32) & current_mask;
+    int64_t current_raw = (current_bits & (1ULL << (16 - 1)))
+        ? (int64_t)(current_bits | ~current_mask)
+        : (int64_t)current_bits;
+    charger_box_status->current = (float)(current_raw / 10);
+    uint64_t reserved_status_mask = (1ULL << 3) - 1ULL;
+    uint64_t reserved_status_raw = (data >> 29) & reserved_status_mask;
+    charger_box_status->reserved_status = (uint8_t)reserved_status_raw;
+    uint64_t comm_timeout_mask = (1ULL << 1) - 1ULL;
+    uint64_t comm_timeout_raw = (data >> 28) & comm_timeout_mask;
+    charger_box_status->comm_timeout = (bool)comm_timeout_raw;
+    uint64_t battery_not_detected_mask = (1ULL << 1) - 1ULL;
+    uint64_t battery_not_detected_raw = (data >> 27) & battery_not_detected_mask;
+    charger_box_status->battery_not_detected = (bool)battery_not_detected_raw;
+    uint64_t voltage_wrong_mask = (1ULL << 1) - 1ULL;
+    uint64_t voltage_wrong_raw = (data >> 26) & voltage_wrong_mask;
+    charger_box_status->voltage_wrong = (bool)voltage_wrong_raw;
+    uint64_t over_temp_mask = (1ULL << 1) - 1ULL;
+    uint64_t over_temp_raw = (data >> 25) & over_temp_mask;
+    charger_box_status->over_temp = (bool)over_temp_raw;
+    uint64_t hardware_failure_mask = (1ULL << 1) - 1ULL;
+    uint64_t hardware_failure_raw = (data >> 24) & hardware_failure_mask;
+    charger_box_status->hardware_failure = (bool)hardware_failure_raw;
 }
 

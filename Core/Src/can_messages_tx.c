@@ -1365,6 +1365,37 @@ uint8_t send_reset_latching_fault
     return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
 }
 
+uint8_t send_test_modes
+(uint8_t test_mode_index,float speed_setpoint,bool test_modes_enabled)
+{
+    can_msg_t msg;
+    msg.id = 0x511;
+    msg.id_is_extended = false;
+    
+            uint32_t data = 0;
+            msg.len = 4;
+                        uint32_t test_mode_index_i = (uint32_t)(test_mode_index);
+                        if(test_mode_index_i > 255ULL) {test_mode_index_i = 255;
+                        }
+                        data |= ((test_mode_index_i) & 0xFFULL) << 24;
+            
+                        int32_t speed_setpoint_i = (int32_t)(speed_setpoint*10);
+                        if(speed_setpoint_i > 32767) {speed_setpoint_i = 32767;
+                        } else if(speed_setpoint_i < -32768) {speed_setpoint_i = -32768;
+                        }
+                        data |= ((uint32_t)(speed_setpoint_i) & 0xFFFFULL) << 8;
+            
+                        uint32_t test_modes_enabled_i = (uint32_t)(test_modes_enabled);
+                        if(test_modes_enabled_i > 1ULL) {test_modes_enabled_i = 1;
+                        }
+                        data |= ((test_modes_enabled_i) & 0x1ULL) << 7;
+            
+            uint32_t data_bigendian = __builtin_bswap32(data);
+            memcpy(msg.data, &data_bigendian, 4);
+
+    return queue_send(&can_outgoing, &msg, TX_NO_WAIT);
+}
+
 
 
 /// @brief A helper which sends appropriate error to stdout and CAN if a bistream overflows
